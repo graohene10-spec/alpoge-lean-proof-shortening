@@ -302,8 +302,7 @@ theorem Ok.sum_le_named (h : X.Ok) : ∑ la ∈ X.s, X.rr la * X.l la ≤ X.tota
   linarith [h.deep, h.quot]
 
 theorem Ok.named_le_total (h : X.Ok) {PP : ℝ} (hP : X.Rel PP) : X.totalNamed ≤ X.total PP := by
-  unfold SumDat.totalNamed SumDat.total
-  exact total_le_of_bounds _ _ _ _ _ _ _ _ _ _ _ _ h.d0 (by linarith [h.T1]) h.c0 h.κ0 h.γ0 hP.r1 hP.r2 hP.r3 hP.r4
+  simpa [SumDat.totalNamed, SumDat.total] using total_le_of_bounds _ _ _ _ _ _ _ _ _ _ _ _ h.d0 (by linarith [h.T1]) h.c0 h.κ0 h.γ0 hP.r1 hP.r2 hP.r3 hP.r4
 
 theorem Ok.sum_le_total (h : X.Ok) {PP : ℝ} (hP : X.Rel PP) :
     ∑ la ∈ X.s, X.rr la * X.l la ≤ X.total PP := (h.sum_le_named).trans (h.named_le_total hP)

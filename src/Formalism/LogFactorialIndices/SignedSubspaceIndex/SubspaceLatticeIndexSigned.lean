@@ -55,11 +55,8 @@ theorem isLat_comap (A : Submodule O X) (hA : IsLat O K X A) (W : Submodule K X)
     rintro w -
     obtain ⟨d, hd, hdw⟩ := LatticeIndexLength.exists_smul_mem_of_span (K := K) A hA.2 (w : X)
     have hdK : algebraMap O K d ≠ 0 := (map_ne_zero_iff _ (IsFractionRing.injective O K)).2 hd
-    have hmem : d • w ∈ Submodule.span K (A.comap ι : Set W) := by
-      apply Submodule.subset_span
-      show ((d • w : W) : X) ∈ A
-      rw [Submodule.coe_smul_of_tower]
-      exact hdw
+    have hmem : d • w ∈ Submodule.span K (A.comap ι : Set W) :=
+      Submodule.subset_span (by simpa [ι, Submodule.coe_smul_of_tower] using hdw)
     have hw : w = (algebraMap O K d)⁻¹ • (d • w) := by
       rw [← algebraMap_smul K d w, smul_smul, inv_mul_cancel₀ hdK, one_smul]
     rw [hw]

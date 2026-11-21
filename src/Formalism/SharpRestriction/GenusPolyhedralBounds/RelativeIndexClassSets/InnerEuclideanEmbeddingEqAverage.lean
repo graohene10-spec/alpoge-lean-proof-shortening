@@ -41,8 +41,7 @@ theorem herm_inner (σ : B.KO →+* ℂ) (F G : B.Cusp j ka) :
 
 theorem herm_conj : Nt.herm.Conj := by
   intro σ f g
-  rw [Nt.herm_inner, Nt.herm_inner, Nt.inner_euclideanEmbedding_eq_average, Nt.inner_euclideanEmbedding_eq_average]
-  rw [← Fintype.card_congr (Nt.cj σ), ← (Nt.cj σ).sum_comp]
+  rw [Nt.herm_inner, Nt.herm_inner, Nt.inner_euclideanEmbedding_eq_average, Nt.inner_euclideanEmbedding_eq_average, ← Fintype.card_congr (Nt.cj σ), ← (Nt.cj σ).sum_comp]
   simp only [Nt.ev_conj, Complex.conj_conj, star_mul', Complex.star_def, Complex.conj_ofReal, map_sum, map_mul]
 
 end NetData
@@ -52,7 +51,6 @@ theorem sup_L2_bound_of_net : SupL2BoundFromNet (D := D) (B := B) (j := j) (ka :
   rw [Nt.Bp_L2N_run hM hL]
   change B.supN j ka σ F ^ 2 ≤ _ * Nt.netN σ F ^ 2
   obtain ⟨y, hy⟩ := hM σ F
-  have hS := B.supN_nonneg j ka σ F
   have hn : (1 : ℝ) ≤ (Fintype.card (Nt.NN σ) : ℝ) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Fintype.card_pos_iff.mpr ⟨y⟩).ne'
   have hsum0 : (0 : ℝ) ≤ ∑ y, ‖Nt.ev σ y F‖ ^ 2 := Finset.sum_nonneg fun _ _ => sq_nonneg _
@@ -60,7 +58,7 @@ theorem sup_L2_bound_of_net : SupL2BoundFromNet (D := D) (B := B) (j := j) (ka :
     Real.sq_sqrt (mul_nonneg (inv_nonneg.mpr (by linarith)) hsum0)
   have h1 : ‖Nt.ev σ y F‖ ^ 2 ≤ ∑ y, ‖Nt.ev σ y F‖ ^ 2 :=
     Finset.single_le_sum (f := fun y => ‖Nt.ev σ y F‖ ^ 2) (fun _ _ => sq_nonneg _) (Finset.mem_univ y)
-  have h2 : (B.supN j ka σ F / 4) ^ 2 ≤ ‖Nt.ev σ y F‖ ^ 2 := pow_le_pow_left₀ (by positivity) hy 2
+  have h2 : (B.supN j ka σ F / 4) ^ 2 ≤ ‖Nt.ev σ y F‖ ^ 2 := pow_le_pow_left₀ (div_nonneg (B.supN_nonneg j ka σ F) (by norm_num)) hy 2
   have h3 : B.supN j ka σ F ^ 2 ≤ 16 * (Fintype.card (Nt.NN σ) : ℝ) * Nt.netN σ F ^ 2 := by
     rw [hsq]
     have : 16 * (Fintype.card (Nt.NN σ) : ℝ) * ((Fintype.card (Nt.NN σ) : ℝ)⁻¹ * ∑ y, ‖Nt.ev σ y F‖ ^ 2) =

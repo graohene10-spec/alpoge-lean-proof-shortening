@@ -11,14 +11,13 @@ open NumberField Formalism.BasicNotions Formalism.MainNotions ReciprocityTheory.
 
 theorem g_mod (D : D7) (k : Fin 2) : D.host.g k % 4 = 1 ∧ D.host.g k % D.host.d = 1 := by
   have hc := D.ntypes.g_cond k
-  have hd : D.host.d % 16 = 7 := D.host.hyp.2.2.2.1
   refine ⟨?_, ?_⟩
   · rw [← Nat.mod_mod_of_dvd (D.host.g k)
       (show 4 ∣ D.host.QS * D.host.q * D.host.d from
         ((show 4 ∣ 2 ^ (D.R.e + 2) from ⟨2 ^ D.R.e, by ring⟩).trans D.host.tower_dvd).mul_right _ |>.mul_right _), hc]
   · rw [← Nat.mod_mod_of_dvd (D.host.g k)
       (show D.host.d ∣ D.host.QS * D.host.q * D.host.d from Dvd.intro_left _ rfl), hc]
-    exact Nat.mod_eq_of_lt (by omega)
+    exact Nat.mod_eq_of_lt (by have hd : D.host.d % 16 = 7 := D.host.hyp.2.2.2.1; omega)
 
 theorem g_ne_two (D : D7) (k : Fin 2) : D.host.g k ≠ 2 := by
   intro h
@@ -183,7 +182,6 @@ theorem isDatW_datumOf (D : D7) (hU) (j : ℕ) (hI : DatInt D j) (hL : DatLaws D
   exact intForm_cast (efQ D j) hI x y
 
 theorem inR_one (D : D7) : InR D 1 := by
-  unfold InR
   exact ⟨le_refl 1, le_trans (by norm_num) D.R.two_le_m⟩
 
 open Classical in
@@ -219,9 +217,8 @@ theorem exists_par_pins (D : D7) (hB : UnramBridge) (hF : OFull D) (hz : OZeta D
       eO := eOf D hF }
   refine ⟨Q, ⟨rfl, rfl, rfl, tauEmb_sqrt D⟩, levelG_M D hU, eOf_spec D hF, fun j hj => ?_⟩
   show IsDatW D j (datumAtLift D hU hDat j)
-  unfold datumAtLift
-  rw [dif_pos hj]
-  exact isDatW_datumOf D hU j _ _
+  simpa only [datumAtLift, dif_pos hj] using
+    isDatW_datumOf D hU j (hDat j hj).choose (hDat j hj).choose_spec
 
 theorem exists_parameter_conditions (D : D7) (hF : OFull D) (hz : OZeta D)
     (hDat : ∀ j, InR D j → ∃ hI : DatInt D j, DatLaws D j hI) (hN : N1ab) : ∃ Q : Par D, Q.Pins :=

@@ -65,18 +65,15 @@ theorem lnN_pos (la : HeightOneSpectrum (𝓞 K)) : 0 < lnN la := by
 theorem vAdd_mul' (la : HeightOneSpectrum (𝓞 K)) {x y : K} (hx : x ≠ 0) (hy : y ≠ 0) :
     vAdd la (x * y) = vAdd la x + vAdd la y := by
   unfold vAdd
-  rw [map_mul, WithZero.log_mul ((map_ne_zero _).2 hx) ((map_ne_zero _).2 hy)]
-  ring
+  rw [map_mul, WithZero.log_mul ((map_ne_zero _).2 hx) ((map_ne_zero _).2 hy), neg_add]
 
 theorem vAdd_pow' (la : HeightOneSpectrum (𝓞 K)) (x : K) (n : ℕ) : vAdd la (x ^ n) = n * vAdd la x := by
   unfold vAdd
-  rw [map_pow, WithZero.log_pow, nsmul_eq_mul]
-  ring
+  rw [map_pow, WithZero.log_pow, nsmul_eq_mul, mul_neg]
 
 theorem additiveValuation_zpow (la : HeightOneSpectrum (𝓞 K)) (x : K) (m : ℤ) : vAdd la (x ^ m) = m * vAdd la x := by
   unfold vAdd
-  rw [map_zpow₀, WithZero.log_zpow, smul_eq_mul]
-  ring
+  rw [map_zpow₀, WithZero.log_zpow, smul_eq_mul, mul_neg]
 
 theorem val_le_one_iff (la : HeightOneSpectrum (𝓞 K)) {x : K} (hx : x ≠ 0) :
     la.valuation K x ≤ 1 ↔ 0 ≤ vAdd la x := by
@@ -166,9 +163,10 @@ theorem sum_vDiff (K : Type) [Field K] [NumberField K] :
   have hI : differentIdeal ℤ (𝓞 K) ≠ 0 := differentIdeal_ne_bot_of_numberField K
   have hfin := Ideal.finite_factors hI
   have hsub : (Function.support fun la : HeightOneSpectrum (𝓞 K) => (vDiff K la : ℝ) * lnN la) ⊆
-      {v : HeightOneSpectrum (𝓞 K) | v.asIdeal ∣ differentIdeal ℤ (𝓞 K)} := by
+      (hfin.toFinset : Set (HeightOneSpectrum (𝓞 K))) := by
     intro v hv
     rw [Function.mem_support] at hv
+    simp only [Set.Finite.coe_toFinset, Set.mem_ofPred_eq]
     by_contra hnd
     apply hv
     have : vDiff K v = 0 := by
@@ -176,11 +174,8 @@ theorem sum_vDiff (K : Type) [Field K] [NumberField K] :
       by_contra hc
       exact hnd ((Associates.count_ne_zero_iff_dvd hI v.irreducible).1 hc)
     rw [this]; simp
-  refine ⟨hfin.subset hsub, ?_⟩
-  have hsub' : (Function.support fun la : HeightOneSpectrum (𝓞 K) => (vDiff K la : ℝ) * lnN la) ⊆
-      (hfin.toFinset : Set (HeightOneSpectrum (𝓞 K))) := by
-    simpa using hsub
-  rw [finsum_eq_sum_of_support_subset _ hsub']
+  refine ⟨hfin.subset (by simpa using hsub), ?_⟩
+  rw [finsum_eq_sum_of_support_subset _ hsub]
   have hN : (Ideal.absNorm (differentIdeal ℤ (𝓞 K)) : ℝ) = |((discr K : ℤ) : ℝ)| := by
     rw [absNorm_differentIdeal K (𝓞 K), Nat.cast_natAbs, Int.cast_abs]
   rw [← hN]
@@ -217,16 +212,12 @@ theorem vAdd_of_inCodiff {x : K} (hx : x ≠ 0) (h : InCodiff x) (la : HeightOne
     -(vDiff K la : ℤ) ≤ vAdd la x := by
   classical
   have hI : differentIdeal ℤ (𝓞 K) ≠ 0 := differentIdeal_ne_bot_of_numberField K
-
   have hxd : x ∈ FractionalIdeal.dual ℤ ℚ (1 : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) := by
     rw [FractionalIdeal.mem_dual (one_ne_zero : (1 : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) ≠ 0)]
     intro a ha
     obtain ⟨a', rfl⟩ := (FractionalIdeal.mem_one_iff _).1 ha
     obtain ⟨z, hz⟩ := h a'
-    refine ⟨z, ?_⟩
-    rw [Algebra.traceForm_apply, mul_comm, hz]
-    simp
-
+    exact ⟨z, by simpa [Algebra.traceForm_apply, mul_comm] using hz.symm⟩
   have hnd : ¬ la.asIdeal ^ (vDiff K la + 1) ∣ differentIdeal ℤ (𝓞 K) := by
     rw [← Associates.mk_le_mk_iff_dvd, Associates.mk_pow,
       Associates.prime_pow_dvd_iff_le (Associates.mk_ne_zero.mpr hI) la.associates_irreducible]
@@ -239,7 +230,6 @@ theorem vAdd_of_inCodiff {x : K} (hx : x ≠ 0) (h : InCodiff x) (la : HeightOne
     exact hyn (Submodule.zero_mem _)
   have hyK : ((y : 𝓞 K) : K) ≠ 0 := by
     simpa using hy0
-
   have hmem : x * (y : K) ∈ (1 : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) := by
     have h1 : FractionalIdeal.dual ℤ ℚ (1 : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) *
         ((differentIdeal ℤ (𝓞 K) : Ideal (𝓞 K)) : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) = 1 := by
@@ -350,9 +340,7 @@ theorem Herm.had {K : Type} [Field K] [NumberField K] {V : Type} [AddCommGroup V
   have h1 : σ (Matrix.of fun i k => φ i (v k)).det =
       (Matrix.of fun i k => inner ℂ (a i) (Hm.e σ (v k))).det := by
     rw [RingHom.map_det]
-    congr 1
-    ext i k
-    simp [ha2]
+    exact congrArg Matrix.det (Matrix.ext fun i k => by simpa using ha2 i (v k))
   rw [h1]
   refine (had_inner dH ρ a fun k => Hm.e σ (v k)).trans ?_
   simp only [Hm.norm_e]
@@ -414,10 +402,9 @@ theorem detPoly_smul {ρ : ℕ} (t : K) (φ : Fin ρ → V →ₗ[K] K) (z : Fin
     detPoly (fun i => t • φ i) z = MvPolynomial.C (t ^ ρ) * detPoly φ z := by
   classical
   unfold detPoly
-  have : (Matrix.of fun i k => polyOf (t • φ i) (z k)) =
-      Matrix.of fun i k => (fun _ : Fin ρ => MvPolynomial.C t) i * (Matrix.of fun i k => polyOf (φ i) (z k)) i k := by
-    funext i k; simp [polyOf_smul]
-  rw [this, Matrix.det_mul_column]
+  simp_rw [polyOf_smul]
+  change (Matrix.of fun i k => (fun _ : Fin ρ => MvPolynomial.C t) i * (Matrix.of fun i' k' => polyOf (φ i') (z k')) i k).det = MvPolynomial.C (t ^ ρ) * (Matrix.of fun i k => polyOf (φ i) (z k)).det
+  rw [Matrix.det_mul_column]
   simp
 
 theorem exists_minor_ne_zero {ρ m : ℕ} (cf : Fin m → (V →ₗ[K] K)) (hcf : Submodule.span K (Set.range cf) = ⊤)
@@ -660,8 +647,7 @@ theorem gaussC_nonneg (M : Submodule (𝓞 K) V) {ρ : ℕ} (z : Fin ρ → (ι 
 theorem gaussC_gaussLe {M : Submodule (𝓞 K) V} {ρ : ℕ} {z : Fin ρ → (ι →₀ ℕ) →₀ V} (hz : ∀ k β, z k β ∈ M) :
     GaussLe M z (fun la => (gaussC M z la : ℝ)) := by
   intro la φ hφ β hβ
-  have h0 : 0 ≤ vAdd la ((detPoly φ z).coeff β) := (val_le_one_iff la hβ).mp (gc_coeff_int hz la φ hφ β)
-  obtain ⟨n, hn⟩ := Int.eq_ofNat_of_zero_le h0
+  obtain ⟨n, hn⟩ := Int.eq_ofNat_of_zero_le ((val_le_one_iff la hβ).mp (gc_coeff_int hz la φ hφ β))
   have hle : gaussC M z la ≤ n := Nat.sInf_le ⟨φ, β, hφ, hβ, hn⟩
   rw [hn]
   show ((gaussC M z la : ℕ) : ℝ) ≤ (((n : ℕ) : ℤ) : ℝ)
@@ -1336,9 +1322,8 @@ theorem bound_sum_alt (h0 : ∀ w, n w 0 = 0) (hadd : ∀ w x y, n w (x + y) ≤
   induction S using Finset.induction_on with
   | empty => simpa using bound_zero_polynomial w
   | insert a S ha ih =>
-    rw [Finset.sum_insert ha, Finset.sum_insert ha]
-    exact bound_add h0 hadd (h a (Finset.mem_insert_self _ _))
-      (ih fun x hx => h x (Finset.mem_insert_of_mem hx))
+    simpa [Finset.sum_insert ha] using
+      bound_add h0 hadd (h a (Finset.mem_insert_self _ _)) (ih fun x hx => h x (Finset.mem_insert_of_mem hx))
 
 theorem bound_monomial (h0 : ∀ w, n w 0 = 0) (w : W) (β : ι →₀ ℕ) (a : G w) :
     Bd inc n w (MvPolynomial.monomial β (inc w a)) (n w a) := by
@@ -1915,20 +1900,19 @@ theorem br_scale {M : Submodule (𝓞 K) V} (hfgM : M.FG) (la : HeightOneSpectru
   obtain ⟨S, hS⟩ := hfgM
   obtain ⟨b, hb⟩ := IsLocalization.exist_integer_multiples_of_finset (nonZeroDivisors (𝓞 K))
     (Finset.univ.biUnion fun i : Fin ρ => S.image fun s => φ i s)
-  refine ⟨algebraMap (𝓞 K) K b, ?_, ?_⟩
-  · exact (map_ne_zero_iff _ (IsFractionRing.injective (𝓞 K) K)).mpr (nonZeroDivisors.ne_zero b.2)
-  · intro i f hf
-    rw [← hS] at hf
-    induction hf using Submodule.span_induction with
-    | mem x hx =>
-      obtain ⟨y, hy⟩ := hb (φ i x) (Finset.mem_biUnion.mpr ⟨i, Finset.mem_univ _, Finset.mem_image_of_mem _ hx⟩)
-      rw [LinearMap.smul_apply, smul_eq_mul, ← Algebra.smul_def, ← hy]
-      exact la.valuation_le_one y
-    | zero => rw [map_zero, map_zero]; exact zero_le_one
-    | add x y _ _ hx hy => rw [map_add]; exact (Valuation.map_add_le _ hx hy)
-    | smul o x _ hx =>
-      rw [← IsScalarTower.algebraMap_smul K o x, map_smul, smul_eq_mul, map_mul]
-      exact mul_le_one' (la.valuation_le_one o) hx
+  refine ⟨algebraMap (𝓞 K) K b, (map_ne_zero_iff _ (IsFractionRing.injective (𝓞 K) K)).mpr (nonZeroDivisors.ne_zero b.2), ?_⟩
+  intro i f hf
+  rw [← hS] at hf
+  induction hf using Submodule.span_induction with
+  | mem x hx =>
+    obtain ⟨y, hy⟩ := hb (φ i x) (Finset.mem_biUnion.mpr ⟨i, Finset.mem_univ _, Finset.mem_image_of_mem _ hx⟩)
+    rw [LinearMap.smul_apply, smul_eq_mul, ← Algebra.smul_def, ← hy]
+    exact la.valuation_le_one y
+  | zero => rw [map_zero, map_zero]; exact zero_le_one
+  | add x y _ _ hx hy => rw [map_add]; exact (Valuation.map_add_le _ hx hy)
+  | smul o x _ hx =>
+    rw [← IsScalarTower.algebraMap_smul K o x, map_smul, smul_eq_mul, map_mul]
+    exact mul_le_one' (la.valuation_le_one o) hx
 
 theorem br_nonempty {M : Submodule (𝓞 K) V} (hfgM : M.FG) {ρ : ℕ} {z : Fin ρ → (ι →₀ ℕ) →₀ V}
     (hz : ∀ k β, z k β ∈ M) (hW : ∃ φ : Fin ρ → V →ₗ[K] K, detPoly φ z ≠ 0) (la : HeightOneSpectrum (𝓞 K)) :
@@ -2104,8 +2088,7 @@ theorem weight_ext (a b : WeightFamilies.Wt D j) (h1 : a.aP = b.aP) (h2 : a.aM =
 theorem weight_iterate_positive_part (wL w0 : WeightFamilies.Wt D j) (m : ℕ) (τ i) :
     (wtIter wadd wL w0 m).aP τ i = w0.aP τ i + m * wL.aP τ i := by
   induction m with
-  | zero => simp [wtIter]
-  | succ m ih => simp only [wtIter, wadd]; rw [ih]; ring
+  | zero => simp [wtIter] | succ m ih => simp only [wtIter, wadd, ih]; ring
 
 theorem weight_iterate_negative_part (wL w0 : WeightFamilies.Wt D j) (m : ℕ) (τ i) :
     (wtIter wadd wL w0 m).aM τ i = w0.aM τ i + m * wL.aM τ i := by

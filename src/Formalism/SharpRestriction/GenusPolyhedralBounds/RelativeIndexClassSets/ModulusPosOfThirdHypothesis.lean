@@ -52,7 +52,6 @@ theorem quotCoreE (large₂ : SizeData₂ D) {CRm Ch Ah Cq Aq : ℝ} (ka : Weigh
   obtain ⟨be, -, hbeS, hall⟩ := hE
   obtain ⟨nn, hnn, hnnS⟩ := hall th hspan hsup
   choose ℓ hℓeq hℓle using hnn
-  have hlw : ∀ la, 0 ≤ lw B.KO la := fun la => lw_nonneg' B.KO la
   have hρ0 : 0 ≤ (WeightFamilies.rhoP B CRm T c j ka : ℝ) := Nat.cast_nonneg _
   have hg0 : ∀ la ∉ nn.support ∪ be.support, (nn la + (WeightFamilies.rhoP B CRm T c j ka : ℝ) * be la) * lw B.KO la = 0 := by
     intro la hla
@@ -67,17 +66,15 @@ theorem quotCoreE (large₂ : SizeData₂ D) {CRm Ch Ah Cq Aq : ℝ} (ka : Weigh
   have hsg : Summable fun la => (nn la + (WeightFamilies.rhoP B CRm T c j ka : ℝ) * be la) * lw B.KO la :=
     summable_of_ne_finset_zero hg0
   have hle : ∀ la, (ℓ la : ℝ) * lw B.KO la ≤ (nn la + (WeightFamilies.rhoP B CRm T c j ka : ℝ) * be la) * lw B.KO la :=
-    fun la => mul_le_mul_of_nonneg_right (hℓle la) (hlw la)
+    fun la => mul_le_mul_of_nonneg_right (hℓle la) (lw_nonneg' B.KO la)
   have hsf : Summable fun la => (ℓ la : ℝ) * lw B.KO la :=
-    Summable.of_nonneg_of_le (fun la => mul_nonneg (Nat.cast_nonneg _) (hlw la)) hle hsg
+    Summable.of_nonneg_of_le (fun la => mul_nonneg (Nat.cast_nonneg _) (lw_nonneg' B.KO la)) hle hsg
   refine ⟨fun la => ?_, ?_, ?_⟩
   · rw [hℓeq la]
     exact ENat.coe_ne_top _
   · simp only [hℓeq, ENat.toNat_coe]
     exact hsf
   · simp only [hℓeq, ENat.toNat_coe]
-    have hsub1 : nn.support ⊆ nn.support ∪ be.support := fun x hx => Finset.mem_union_left _ hx
-    have hsub2 : be.support ⊆ nn.support ∪ be.support := fun x hx => Finset.mem_union_right _ hx
     calc ∑' la, (ℓ la : ℝ) * lw B.KO la
         ≤ ∑' la, (nn la + (WeightFamilies.rhoP B CRm T c j ka : ℝ) * be la) * lw B.KO la := Summable.tsum_le_tsum hle hsf hsg
       _ = ∑ la ∈ nn.support ∪ be.support, (nn la + (WeightFamilies.rhoP B CRm T c j ka : ℝ) * be la) * lw B.KO la := tsum_eq_sum hg0
@@ -87,7 +84,7 @@ theorem quotCoreE (large₂ : SizeData₂ D) {CRm Ch Ah Cq Aq : ℝ} (ka : Weigh
         exact Finset.sum_congr rfl (fun la _ => by ring)
       _ = (nn.sum fun la v => v * WeightFamilies.lnN B la) / WeightFamilies.degO B +
             (WeightFamilies.rhoP B CRm T c j ka : ℝ) * ((be.sum fun la v => v * WeightFamilies.lnN B la) / WeightFamilies.degO B) := by
-        rw [sum_mul_lw B nn _ hsub1, sum_mul_lw B be _ hsub2]
+        rw [sum_mul_lw B nn (nn.support ∪ be.support) (by simp), sum_mul_lw B be (nn.support ∪ be.support) (by simp)]
       _ ≤ (WeightFamilies.rhoP B CRm T c j ka : ℝ) * WeightFamilies.PPv D large₂ Cq Aq * ka.size + (WeightFamilies.rhoP B CRm T c j ka : ℝ) * (WeightFamilies.PPv D large₂ Cq Aq * ka.size) :=
         add_le_add hnnS (mul_le_mul_of_nonneg_left hbeS hρ0)
       _ = 2 * (WeightFamilies.rhoP B CRm T c j ka : ℝ) * WeightFamilies.PPv D large₂ Cq Aq * ka.size := by ring
@@ -212,9 +209,8 @@ theorem T_mul_cc_le_one {large₂ : SizeData₂ D} {K : KAdm} {H : KHyp}
     have hr : 1 ≤ D.R.r := by
       simp only [Formalism.BasicNotions.Ranks.r]
       omega
-    have h5 : (2 : ℕ) * 5 ^ 4 = 1250 := by norm_num
     have hr' : 1 ≤ 2 * 5 ^ 4 * D.R.r := by
-      rw [h5]
+      norm_num
       omega
     exact_mod_cast hr'
   have hq := modulus_pos_of_third_hypothesis h3
@@ -222,7 +218,7 @@ theorem T_mul_cc_le_one {large₂ : SizeData₂ D} {K : KAdm} {H : KHyp}
   have hPP := PPv_pos_of_PolyDom hP
   simp only [H3] at h3
   obtain ⟨-, h2, -⟩ := h3
-  simp only [pow_zero, Real.rpow_zero, one_mul] at h2
+  simp only [Real.rpow_zero, one_mul] at h2
   have hA : 0 ≤ (T : ℝ) * WeightFamilies.RRv D CR * WeightFamilies.PPv D large₂ C2 A2 * (DF wL : ℝ) ^ 2 :=
     mul_nonneg (mul_nonneg (mul_nonneg (Nat.cast_nonneg _) hRR.le) hPP.le) (sq_nonneg _)
   have key : (T : ℝ) * WeightFamilies.RRv D CR * WeightFamilies.PPv D large₂ C2 A2 * (DF wL : ℝ) ^ 2 ≤ (qq D : ℝ) := by

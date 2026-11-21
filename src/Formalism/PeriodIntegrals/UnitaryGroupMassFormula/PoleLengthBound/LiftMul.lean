@@ -59,8 +59,7 @@ theorem intD_mul (hC : Q.InCurve) {f1 f2 : Lw X la G.w} (h1 : IntD G la f1) (h2 
   · show _ = PI.HJP.H X la G.w γ (f1 * f2)
     rw [PI.HJP.H_mul]
     push_cast
-    refine Finset.sum_congr rfl fun q _ => ?_
-    rw [hg1, hg2]
+    simp only [hg1, hg2]
     rfl
   · rw [map_sum]
     refine ord_sum_nonneg hC ζ _ _ fun q _ => ?_
@@ -83,9 +82,7 @@ theorem intD_prod (hC : Q.InCurve) {ι : Type*} (s : Finset ι) (f : ι → Lw X
   Finset.prod_induction f (fun x => IntD G la x) (fun _ _ hx hy => intD_mul hC hx hy) (intD_one hC) h
 
 theorem intD_pow (hC : Q.InCurve) {f : Lw X la G.w} (hf : IntD G la f) (n : ℕ) : IntD G la (f ^ n) := by
-  induction n with
-  | zero => rw [pow_zero]; exact intD_one hC
-  | succ n ih => rw [pow_succ]; exact intD_mul hC ih hf
+  simpa [Finset.prod_const, Finset.card_range] using intD_prod hC (Finset.range n) (fun _ => f) (fun _ _ => hf)
 
 theorem intD_sfr (hC : Q.InCurve) (u : Fin G.N → OsK X la G.w) (hu : uSpec G la u)
     (ho : ∀ (ζ : PtsG G la) col, 0 ≤ ord (unifO X la G.N) ζ (u col)) (i : Fin (WeightFamilies.dimY D j + 1)) :
@@ -174,8 +171,7 @@ theorem good_mul (hC : Q.InCurve) {T : ℕ} {f : ↥(Frac0 X la G.w)} (hf : IntD
     rw [PI.HJP.sum_eq_degree] at hβ ⊢
     have : Finsupp.degree β = Finsupp.degree q.1 + Finsupp.degree q.2 := by rw [← hq, map_add]
     omega
-  have := hx q.2 hq2 ζ
-  rwa [rD_eq G la q.2 x (hP q.2 _ x.2)] at this
+  simpa [rD_eq G la q.2 x (hP q.2 _ x.2)] using hx q.2 hq2 ζ
 
 end
 

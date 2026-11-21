@@ -143,8 +143,7 @@ theorem chi_mul (hS : ∀ a ∈ S, ∀ b ∈ S, Commute a b) {χ : Algebra.adjoi
 theorem chi_alg {χ : Algebra.adjoin O S → K} (hW : W _ χ ≠ ⊥) (c : O) :
     χ (algebraMap O (Algebra.adjoin O S) c) = algebraMap O K c := by
   refine eq_of_le_maxGen hW (W_le _ χ _) ?_
-  rw [Subalgebra.coe_algebraMap, algebraMap_end_eq, maxGen_smul_one]
-  exact le_top
+  simp only [Subalgebra.coe_algebraMap, algebraMap_end_eq, maxGen_smul_one, le_top]
 
 theorem chi_int (hS : ∀ a ∈ S, ∀ b ∈ S, Commute a b)
     (hint : ∀ a ∈ S, ∀ μ, a.maxGenEigenspace μ ≠ ⊥ → μ ∈ (algebraMap O K).range)

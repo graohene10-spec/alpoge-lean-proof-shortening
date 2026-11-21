@@ -18,8 +18,7 @@ variable {j : ℕ} {X : PJ D B P j} {ka wL wF : WeightFamilies.Wt D j} {G : Glob
 
 theorem vEt_nonneg_comb4 {S : Scal B} {c : ℝ} {nus : HeightOneSpectrum (𝓞 B.KO) → ℝ} {Qf : ∀ la, LocalPointData G la}
     (hB : CombBound4 G Qf S c nus) (la : HeightOneSpectrum (𝓞 B.KO)) (ζ : PtsG G la) : 0 ≤ vEt (Qf la) ζ := by
-  unfold vEt
-  split_ifs with hj
+  unfold vEt; split_ifs with hj
   · exact div_nonneg (EReal.toReal_nonneg (hB la ζ).1) (mul_nonneg (by norm_num) (Nat.cast_nonneg _))
   · exact le_rfl
 

@@ -223,8 +223,7 @@ theorem reduction_uniformizer_smul_mem (hC : Q.InCurve) (hT : Q.InTie S) (hw : �
       (LinearMap.id : ↥(Vw X la G.N (addL wF wL T)) →ₗ[Op X la G.N] ↥(Vw X la G.N (addL wF wL T))))) :
     rhoO G la x ∈ Q.AAp T (Q.mm S T e) := by
   obtain ⟨y, hy, rfl⟩ := hx
-  rw [LinearMap.smul_apply, LinearMap.id_apply, map_smul]
-  exact smul_AAp_mem Q hC e _ _ (mm_zero_le Q S e) (reduction_integral_mem Q S hC hT hw hy)
+  simpa only [LinearMap.smul_apply, LinearMap.id_apply, map_smul] using smul_AAp_mem Q hC e _ _ (mm_zero_le Q S e) (reduction_integral_mem Q S hC hT hw hy)
 
 theorem reduced_generators_le (hC : Q.InCurve) (hT : Q.InTie S) (hw : ∀ k, G.w k ∈ X.WWc S.sW wL)
     (hth : ∀ i, G.th' i ∈ B.Mlat j wF) : firstLength_le_prime_bound G la T ≤ Q.AA T := by

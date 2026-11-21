@@ -121,9 +121,7 @@ lemma biLe_add {n0 : ι →₀ ℕ} {W W' : MvPolynomial κ (MvPolynomial ι K)}
   classical
   intro β n hn
   rw [MvPolynomial.coeff_add] at hn
-  rcases Finset.mem_union.mp (MvPolynomial.support_add hn) with hn1 | hn1
-  · exact h β n hn1
-  · exact h' β n hn1
+  exact (Finset.mem_union.mp (MvPolynomial.support_add hn)).elim (h β n) (h' β n)
 
 lemma biLe_sum {α : Type*} {n0 : ι →₀ ℕ} (s : Finset α)
     (W : α → MvPolynomial κ (MvPolynomial ι K)) (h : ∀ a ∈ s, BiLe n0 (W a)) :
@@ -145,12 +143,10 @@ lemma biLe_mul {n0 n0' : ι →₀ ℕ} {W W' : MvPolynomial κ (MvPolynomial ι
   rw [MvPolynomial.coeff_mul] at hq0
   obtain ⟨r, hr, hr0⟩ := Finset.exists_ne_zero_of_sum_ne_zero hq0
   rw [Finset.HasAntidiagonal.mem_antidiagonal] at hq hr
-  have hA : r.1 ∈ (MvPolynomial.coeff q.1 W).support :=
-    MvPolynomial.mem_support_iff.mpr (left_ne_zero_of_mul hr0)
-  have hB : r.2 ∈ (MvPolynomial.coeff q.2 W').support :=
-    MvPolynomial.mem_support_iff.mpr (right_ne_zero_of_mul hr0)
-  obtain ⟨hA1, hA2⟩ := h q.1 r.1 hA
-  obtain ⟨hB1, hB2⟩ := h' q.2 r.2 hB
+  obtain ⟨hA1, hA2⟩ := h q.1 r.1
+    (MvPolynomial.mem_support_iff.mpr (left_ne_zero_of_mul hr0))
+  obtain ⟨hB1, hB2⟩ := h' q.2 r.2
+    (MvPolynomial.mem_support_iff.mpr (right_ne_zero_of_mul hr0))
   refine ⟨?_, ?_⟩
   · rw [← hr]
     exact add_le_add hA1 hB1
@@ -172,8 +168,7 @@ private theorem eq_zero_and_mem_support_of_mem_support_coeff_C {R σ κ' : Type*
   classical
   rw [MvPolynomial.coeff_C] at hn
   by_cases hβ : (0 : κ' →₀ ℕ) = β
-  · rw [if_pos hβ] at hn
-    exact ⟨hβ.symm, hn⟩
+  · exact ⟨hβ.symm, by simpa [if_pos hβ] using hn⟩
   · rw [if_neg hβ] at hn
     simp at hn
 
@@ -231,8 +226,7 @@ private theorem biLe_single_one_X (x : ι) (k : κ) :
 lemma biLe_CC_mul_X (x : ι) (a : K) (k : κ) : BiLe (Finsupp.single x 1)
     (MvPolynomial.C (MvPolynomial.C a) * MvPolynomial.X k :
       MvPolynomial κ (MvPolynomial ι K)) := by
-  have h := biLe_mul (biLe_CC (ι := ι) (κ := κ) a) (biLe_single_one_X (K := K) x k)
-  rwa [zero_add] at h
+  simpa using biLe_mul (biLe_CC (ι := ι) (κ := κ) a) (biLe_single_one_X (K := K) x k)
 
 lemma biLe_gen [Fintype κ] (b : κ → ι → K) (x : ι) : BiLe (Finsupp.single x 1)
     (MvPolynomial.C (MvPolynomial.X x) +

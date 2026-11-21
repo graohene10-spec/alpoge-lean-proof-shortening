@@ -222,8 +222,7 @@ theorem gmap_lattice (g : Sp E n ≃ₗ[E] Sp E n) (L : Submodule (𝓞 E) (Sp E
 
 theorem mem_dual (L : Submodule (𝓞 E) (Sp E n)) (x : Sp E n) :
     x ∈ dual (hStd E n) L ↔ ∀ y ∈ L, hStd E n y x ∈ (1 : Submodule (𝓞 E) E) := by
-  unfold dual Formalism.E.hdual
-  simp only [Submodule.mem_iInf, Submodule.mem_comap, LinearMap.restrictScalars_apply]
+  simp only [dual, Formalism.E.hdual, Submodule.mem_iInf, Submodule.mem_comap, LinearMap.restrictScalars_apply]
 
 theorem dual_gmap (g : Sp E n ≃ₗ[E] Sp E n) (hg : g ∈ UF E n) (L : Submodule (𝓞 E) (Sp E n)) :
     dual (hStd E n) (gmap g L) = gmap g (dual (hStd E n) L) := by

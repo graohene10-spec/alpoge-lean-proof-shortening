@@ -33,12 +33,11 @@ theorem ord_wfr_nonneg (G : GlobalFamilyData X ka wL wF) (la : HeightOneSpectrum
   obtain ⟨hd1, hd2, -, -, -, hk, -⟩ := hT ζ
   have e := hk 1 ((add_zero_weight_one_eq wL).symm ▸ G.w jj : B.Cusp j (addL (wt0 D j) wL 1))
   rw [wfr_eq, inc_cast] at e
-  have hv : X.depth S.sW wL la (Q.y ζ) ≤ X.vAt la (Q.y ζ) (X.inc wL (G.w jj)) := iInf₂_le _ (hw jj)
   have hd : X.depth S.sW wL la (Q.y ζ) = (((X.depth S.sW wL la (Q.y ζ)).toReal : ℝ) : EReal) :=
     (EReal.coe_toReal hd1 hd2).symm
-  have hv' : (((X.depth S.sW wL la (Q.y ζ)).toReal : ℝ) : EReal) ≤ X.vAt la (Q.y ζ) (X.inc wL (G.w jj)) := by
-    rw [← hd]; exact hv
-  have hb := ereal_bound (ep := ep (unifO X la G.N) ζ) (T := 1) hd hv'
+  have hv : (((X.depth S.sW wL la (Q.y ζ)).toReal : ℝ) : EReal) ≤ X.vAt la (Q.y ζ) (X.inc wL (G.w jj)) := by
+    rw [← hd]; exact iInf₂_le _ (hw jj)
+  have hb := ereal_bound (ep := ep (unifO X la G.N) ζ) (T := 1) hd hv
   have key : (((0 : ℤ) : ℝ) : EReal) ≤ toE (ord (unifO X la G.N) ζ (toOsK X la G.w (wfr G la jj))) := by
     rw [e]
     refine le_trans (le_of_eq ?_) hb

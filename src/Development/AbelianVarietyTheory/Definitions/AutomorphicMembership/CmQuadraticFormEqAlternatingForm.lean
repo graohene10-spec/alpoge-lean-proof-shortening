@@ -228,8 +228,7 @@ theorem mem_offSet_of_mem_avPrimes (X : Stages) {p : ℕ} (hp : p ∈ avPrimes X
   · exact .inr (.inr (.inr (.inl rfl)))
   · exact .inr (.inr (.inr (.inr (.inr (.inl rfl)))))
   · exact .inr (.inr (.inr (.inr (.inl ⟨u, X.C.A_T u⟩))))
-  · have h : X.toD7.host.ccK = ⊤ := X.B.ccK_top
-    rw [h, Ideal.absNorm_top] at hp
+  · rw [show X.toD7.host.ccK = ⊤ from X.B.ccK_top, Ideal.absNorm_top] at hp
     simp at hp
 
 theorem TwDat.notMem_avRec (X : Stages) (T : TwDat X.B) (w : X.B.places.Pl) {v : HeightOneSpectrum (𝓞 X.B.host.E)}
@@ -315,13 +314,12 @@ theorem ev_le_splitBound (n : ℕ) : Ev fun K => n ≤ K.P.H.splitBound := by
     ⟨0, fun _ _ => ⟨0, fun _ _ => ⟨(n : ℝ) ^ (5 * C8 / eps), fun K h1 _ _ h4 hx => ?_⟩⟩⟩⟩⟩
   have hv : HostVal K.s C8 K.P.H := by rw [← hC, ← h1]; exact K.ok.val
   have he' := hv.eps_div_le_ez
-  rw [h4] at he'
   have h0 : 0 < C8 := by linarith
   refine le_trans (Nat.le_floor ?_) hv.split_tie
   calc (n : ℝ) = ((n : ℝ) ^ (5 * C8 / eps)) ^ (eps / C8 / 5) := by
         rw [← Real.rpow_mul (Nat.cast_nonneg _), show 5 * C8 / eps * (eps / C8 / 5) = 1 by field_simp, Real.rpow_one]
     _ ≤ K.s.x ^ (eps / C8 / 5) := Real.rpow_le_rpow (by positivity) hx (by positivity)
-    _ ≤ K.s.x ^ (K.s.ez / 5) := Real.rpow_le_rpow_of_exponent_le K.s.one_lt_alt.le (by linarith)
+    _ ≤ K.s.x ^ (K.s.ez / 5) := Real.rpow_le_rpow_of_exponent_le K.s.one_lt_alt.le (by rw [h4] at he'; linarith)
 
 theorem EvG.imp {p q : Ctx → Prop} (hp : EvG p) (hpq : ∀ (K : Ctx) (C5 c6 Cb : ℝ), K.Good C5 c6 Cb → p K → q K) : EvG q := by
   obtain ⟨ε0, h0, h⟩ := hp

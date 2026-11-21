@@ -63,9 +63,8 @@ theorem dualLat_dualLat : dualLat (dualLat Λ) = Λ := by
   have hnd : LinearMap.BilinForm.Nondegenerate (innerₗ E) := by
     rw [LinearMap.BilinForm.nondegenerate_iff_ker_eq_bot, LinearMap.ker_eq_bot']
     intro m hm
-    have h0 := congrArg (fun f => f m) hm
-    simp only [innerₗ_apply_apply, LinearMap.zero_apply] at h0
-    exact inner_self_eq_zero.1 h0
+    exact inner_self_eq_zero.1 (by
+      simpa only [innerₗ_apply_apply, LinearMap.zero_apply] using congrArg (fun f => f m) hm)
   have hsym : LinearMap.BilinForm.IsSymm (innerₗ E) :=
     LinearMap.BilinForm.isSymm_def.2 fun x y => by simp [innerₗ_apply_apply, real_inner_comm]
   rw [dualLat_eq, dualLat_eq, ← hspan,

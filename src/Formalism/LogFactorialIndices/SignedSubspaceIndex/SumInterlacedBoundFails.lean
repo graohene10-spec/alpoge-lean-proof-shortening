@@ -63,8 +63,7 @@ def phm (x : ℝ) : ℝ := ph (max x 1)
 
 lemma phm_mono : Monotone phm := by
   intro x y hxy
-  unfold phm
-  exact ph_mono (le_max_right _ _) (max_le (le_trans hxy (le_max_left _ _)) (le_max_right _ _))
+  simpa only [phm] using ph_mono (le_max_right _ _) (max_le (le_trans hxy (le_max_left _ _)) (le_max_right _ _))
 
 lemma phm_ge {x : ℝ} : -1 ≤ phm x := ph_ge_neg_one (le_trans zero_le_one (le_max_right x 1))
 

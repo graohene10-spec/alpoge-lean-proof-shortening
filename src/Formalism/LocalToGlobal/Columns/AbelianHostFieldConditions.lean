@@ -577,12 +577,11 @@ theorem normal_of_map_le (L : Fld) (h : ∀ s : Qb ≃ₐ[ℚ] Qb, L.map (s : Qb
 theorem map_le_of_normal (L : Fld) [hL : Normal ℚ L] (s : Qb ≃ₐ[ℚ] Qb) : L.map (s : Qb →ₐ[ℚ] Qb) ≤ L := IntermediateField.normal_iff_forall_map_le'.1 hL s
 
 theorem normal_adjoin {S : Set Qb} (hS : ∀ (s : Qb ≃ₐ[ℚ] Qb), ∀ x ∈ S, s x ∈ S) : Normal ℚ (adjoin ℚ S) := by
-  apply normal_of_map_le
-  intro s
+  refine normal_of_map_le (adjoin ℚ S) fun s => ?_
   rw [IntermediateField.adjoin_map]
-  refine IntermediateField.adjoin_le_iff.2 ?_
-  rintro x ⟨y, hy, rfl⟩
-  exact IntermediateField.subset_adjoin ℚ S (hS s y hy)
+  exact IntermediateField.adjoin_le_iff.2 fun x ⟨y, hy, hxy⟩ => by
+    rw [← hxy]
+    exact IntermediateField.subset_adjoin ℚ S (hS s y hy)
 
 theorem normal_sup' (L M : Fld) [Normal ℚ L] [Normal ℚ M] : Normal ℚ (L ⊔ M : Fld) := by
   have e : (L ⊔ M : Fld) = IntermediateField.adjoin ℚ ((L : Set Qb) ∪ (M : Set Qb)) := by

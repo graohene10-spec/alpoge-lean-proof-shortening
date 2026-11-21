@@ -68,8 +68,7 @@ theorem bAt_of {n : ℕ} (h : n < R.m) : (of P).bAt n = P.b ⟨n, h⟩ := by
   rfl
 
 theorem eAt_of {n : ℕ} (h : n < R.m) : (of P).eAt n = P.e ⟨n, h⟩ := by
-  unfold RowPar.eAt
-  rw [dif_pos h]
+  simp [RowPar.eAt, h]
   rfl
 
 theorem bAt_int (n : ℕ) : ∃ z : ℤ, (of P).bAt n = z := by
@@ -86,8 +85,7 @@ theorem eAt_int (n : ℕ) : ∃ z : ℤ, (of P).eAt n = z := by
 
 theorem vb_lo {n : ℕ} (h : n < R.k - 1) : (of P).vb n = P.v ⟨n, h⟩ := by
   unfold RowPar.vb
-  rw [dif_pos h]
-  rfl
+  exact dif_pos h
 
 theorem vb_hi {n : ℕ} (h : ¬ n < R.k - 1) : (of P).vb n = -(of P).bAt (n - (R.k - 1)) := by
   simp [RowPar.vb, h]
@@ -471,8 +469,7 @@ theorem lamTrue_eq (u : Word) (j : ℕ) (τ : X.Tau) (i : Fin (R.N j)) :
   ring
 
 theorem lamTrue_zero (u : Word) (τ : X.Tau) (i : Fin (R.N 0)) : (W.lamTrue u 0 τ).w i = (W.lamN u 0 τ).w i := by
-  show (W.lamN u 0 τ).w i + -(((0 : ℕ) : ℤ) * (((R.t + 1) / 2 : ℕ) : ℤ)) = (W.lamN u 0 τ).w i
-  simp
+  simp [Wts.lamTrue, shiftW]
 
 theorem lamTrue_old (u : Word) {j : ℕ} (hj : j < R.m) (τ : X.Tau) (i : Fin (R.N (j + 1))) (h : i.1 < R.N j) :
     ((W.lamTrue u (j + 1) τ).w i : ℚ) =
@@ -596,9 +593,7 @@ theorem absNorm_conjO (a : 𝓞 X.E) :
   exact Nat.card_congr (Ideal.quotientEquiv _ _ X.conjOEquiv rfl).toEquiv.symm
 
 theorem absNorm_nat (n : ℕ) : Ideal.absNorm (Ideal.span {(n : 𝓞 X.E)}) = n ^ Module.finrank ℚ X.E := by
-  rw [Ideal.absNorm_span_singleton]
-  have h : ((n : 𝓞 X.E)) = algebraMap ℤ (𝓞 X.E) (n : ℤ) := by simp
-  rw [h, Algebra.norm_algebraMap, NumberField.RingOfIntegers.rank]
+  rw [Ideal.absNorm_span_singleton, show ((n : 𝓞 X.E)) = algebraMap ℤ (𝓞 X.E) (n : ℤ) by simp, Algebra.norm_algebraMap, NumberField.RingOfIntegers.rank]
   simp
 
 variable {X}

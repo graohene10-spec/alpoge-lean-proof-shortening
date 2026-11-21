@@ -188,9 +188,8 @@ theorem coe_uV (F : B.Cusp j ka) : (uV X la N ka F : Rp X la N) = emb X la N (X.
 
 theorem uV_smul (a : B.KO) (F : B.Cusp j ka) :
     uV X la N ka (a • F) = jF X la N (MvPolynomial.C a) • uV X la N ka F := by
-  apply Subtype.ext
-  rw [Submodule.coe_smul, coe_uV, coe_uV, map_smul, emb_smul, jF_C,
-    algebraMap_smul (Kp X la N) (algebraMap B.KO (X.Kl la) a)]
+  ext
+  simp [coe_uV, map_smul, emb_smul, jF_C, algebraMap_smul]
 
 theorem exists_ext (φ : B.Cusp j ka →ₗ[B.KO] B.KO) :
     ∃ φ1 : ↥(Vw X la N ka) →ₗ[Kp X la N] Kp X la N, ∀ F, φ1 (uV X la N ka F) = jF X la N (MvPolynomial.C (φ F)) := by
@@ -233,8 +232,7 @@ theorem integralForms_eq_span_image : M1 X la N ka = Submodule.span (Op X la N) 
     rw [this]; exact hv
   · rw [Submodule.span_le]
     rintro _ ⟨F, hF, rfl⟩
-    refine Submodule.subset_span ⟨toW X la ka ⟨F, hF⟩, ?_, rfl⟩
-    exact Submodule.subset_span ⟨X.inc ka F, ⟨F, hF, rfl⟩, rfl⟩
+    exact Submodule.subset_span ⟨toW X la ka ⟨F, hF⟩, Submodule.subset_span ⟨X.inc ka F, ⟨F, hF, rfl⟩, rfl⟩, rfl⟩
 
 def psi : MvPolynomial (Idx D j N) X.Forms →+* Rp X la N :=
   MvPolynomial.eval₂Hom (emb X la N)
@@ -252,8 +250,7 @@ variable (X : PJ D B P j) (la : HeightOneSpectrum (𝓞 B.KO)) {N : ℕ} {wL w0 
 
 theorem psi_zPoly (al : Fin (WeightFamilies.dimY D j) → ℕ) (θ : B.Cusp j w0) :
     psi X la N (SizeBoundsAlt.zPoly X w al θ) = secPow X la w al * emb X la N (X.inc w0 θ) := by
-  unfold SizeBoundsAlt.zPoly secPow sec psi
-  simp only [map_mul, map_prod, map_pow, map_sum, MvPolynomial.eval₂Hom_X', MvPolynomial.eval₂Hom_C, Algebra.smul_def]
+  simp only [SizeBoundsAlt.zPoly, secPow, sec, psi, map_mul, map_prod, map_pow, map_sum, MvPolynomial.eval₂Hom_X', MvPolynomial.eval₂Hom_C, Algebra.smul_def]
 
 theorem coe_zSum (ka : WeightFamilies.Wt D j) (al : Fin (WeightFamilies.dimY D j) → ℕ) (θ : B.Cusp j w0)
     (zc : (Idx D j N →₀ ℕ) →₀ B.Cusp j ka) (h : ∀ β, X.inc ka (zc β) = (SizeBoundsAlt.zPoly X w al θ).coeff β) :
@@ -261,9 +258,7 @@ theorem coe_zSum (ka : WeightFamilies.Wt D j) (al : Fin (WeightFamilies.dimY D j
       secPow X la w al * emb X la N (X.inc w0 θ) := by
   rw [← psi_zPoly, SizeBoundsAlt.polynomial_eq_sum_monomials (inc := fun w => (X.inc w).toAddMonoidHom) zc h, map_sum,
     AddSubmonoidClass.coe_finsetSum]
-  refine Finset.sum_congr rfl fun β _ => ?_
-  rw [psi_monomial, Submodule.coe_smul, coe_uV]
-  rfl
+  simp [psi_monomial, coe_uV]
 
 end Word
 

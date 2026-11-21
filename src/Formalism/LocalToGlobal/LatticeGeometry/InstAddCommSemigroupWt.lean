@@ -334,11 +334,9 @@ theorem tup_inj (j : ℕ) (w : WeightFamilies.Wt D j) : Function.Injective (P.tu
   by_contra hne
   have h1 : LinearIndependent P.KO ![F] := by
     rw [linearIndependent_unique_iff]; simpa using hne
-  have h2 := (P.cmp_indep j w ![F] h1).ne_zero 0
-  apply h2
-  have := congrArg Prod.snd hF
-  funext c
-  exact congrFun this c
+  exact (P.cmp_indep j w ![F] h1).ne_zero 0 (by
+    funext c
+    exact congrFun (congrArg Prod.snd hF) c)
 
 theorem tup_mul {j : ℕ} {w w' : WeightFamilies.Wt D j} (F : P.Cusp j w) (F' : P.Cusp j w') :
     P.tup j w F * P.tup j w' F' = P.tup j (w + w') (P.mulC j w w' F F') := by

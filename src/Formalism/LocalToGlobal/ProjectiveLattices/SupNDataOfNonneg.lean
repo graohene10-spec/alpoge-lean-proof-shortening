@@ -19,12 +19,9 @@ theorem htI2et_of_pt (d : Data K ι Ω WT A)
     (hpt : ∀ sg, Real.log (d.supN sg (d.n1 • d.wde) d.et) / d.i ≤ d.Pet) : d.HeightIntegralEstimateTrivialPlace := by
   unfold Data.HeightIntegralEstimateTrivialPlace meanK
   have hN : (0 : ℝ) < (Fintype.card (K →+* ℂ) : ℝ) := by
-    first
-    | exact_mod_cast Fintype.card_pos
-    | (haveI : Nonempty (K →+* ℂ) := ⟨(IsAlgClosed.lift : K →ₐ[ℚ] ℂ).toRingHom⟩
-       exact_mod_cast Fintype.card_pos)
+    exact_mod_cast Fintype.card_pos_iff.mpr ⟨(IsAlgClosed.lift : K →ₐ[ℚ] ℂ).toRingHom⟩
   rw [div_right_comm, Finset.sum_div, div_le_iff₀ hN]
-  calc ∑ sg, (fun sg => Real.log (d.supN sg (d.n1 • d.wde) d.et)) sg / (d.i : ℝ)
+  calc ∑ sg, Real.log (d.supN sg (d.n1 • d.wde) d.et) / (d.i : ℝ)
       ≤ ∑ _sg : K →+* ℂ, d.Pet := Finset.sum_le_sum (fun sg _ => hpt sg)
     _ = d.Pet * (Fintype.card (K →+* ℂ) : ℝ) := by
       rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_comm]
@@ -185,11 +182,8 @@ theorem htI2be_of_etArch (hG : GenFrEx (T.Q.Xo j) T.Q.c)
     (hI2 : I2AtFramePoints (T.U j) (xiR D) wR uL th tableLineDegreeFive DF cc) (harch : EtArch hL th tableLineDegreeTwo j i η) :
     (dataOf hG δ fn yP Dd N Tn i g0 cc uL uF uka ude (wtA (wEt D j i), (wEt D j i).n) uta1 uta2 wR jc np thpR n0 th0R uF0 nk thkR MR η.1 ta1R ta2R nu ip wsize DF PN PQ tableDegreeThreeBase PP0' Pd Gc PI4 Pet tableLineDegreeFive tableLineDegreeTwo Prw PO f r).HeightIntegralBoundEstimate := by
   apply htI2be_of (hi := hi) (hcc := hcc) (hfn := hfn) (het := het) (huet := huet) (htie := htie) (hI2 := hI2)
-  first
-  | exact harch
-  | (unfold EtArch at harch; exact harch)
-  | (intro σ hσ k x hx; exact harch σ hσ k x hx)
-  | (unfold EtArch at harch; exact (harch : (0 : ℕ) = 0))
+  unfold EtArch at harch
+  exact harch
 
 end Rec
 

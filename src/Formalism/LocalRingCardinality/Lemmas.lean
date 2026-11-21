@@ -46,7 +46,6 @@ theorem MramL_map (u : D.what₂.Word) :
 
 theorem ramL_fg (u : D.what₂.Word) : (D.fm u).ramL.FG := by
   have : Module.Finite (𝓞 D.what₂.LL) ((D.fm u).lat 0).L := Module.Finite.iff_fg.2 ((D.fm u).lat_good 0).2.1
-  have : IsNoetherian (𝓞 D.what₂.LL) ((D.fm u).lat 0).L := inferInstance
   have h : (D.fm u).ramL ≤ ((D.fm u).lat 0).L := inf_le_left
   have := (IsNoetherian.noetherian ((D.fm u).ramL.comap ((D.fm u).lat 0).L.subtype)).map ((D.fm u).lat 0).L.subtype
   rwa [Submodule.map_comap_subtype, inf_eq_right.2 h] at this
@@ -1488,10 +1487,9 @@ theorem Sram_eq (u : D.what₂.Word) (w : D.what₂.places.Pl) :
   constructor
   · rintro ⟨⟨s, hs, h1⟩, h2⟩
     refine ⟨s, hs, h1, ?_⟩
-    have h3 : y ∈ (D.fm u).ramSub := h2
     show s • y ∈ (D.fm u).ramSub
     rw [← algebraMap_smul D.what₂.LL s y]
-    exact Submodule.smul_mem _ _ h3
+    exact Submodule.smul_mem _ _ (h2 : y ∈ (D.fm u).ramSub)
   · rintro ⟨s, hs, h1, h2⟩
     refine ⟨⟨s, hs, h1⟩, ?_⟩
     have h3 : s • y ∈ (D.fm u).ramSub := h2

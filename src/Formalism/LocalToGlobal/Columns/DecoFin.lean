@@ -1324,8 +1324,7 @@ theorem Deco.IsUp.act {P : ST} {q : 𝓞 E} {d d' : Deco E n ST SG} (hdd : Deco.
     Deco.IsUp P q (d.act g h) (d'.act g h) := by
   obtain ⟨x, hx, hfx, rfl⟩ := hdd
   refine ⟨g x, Submodule.mem_map.mpr ⟨x, hx, rfl⟩, ?_, (Deco.up_act d hg h P q x).symm⟩
-  show d.f P (g.symm (g x)) = 1
-  rw [LinearEquiv.symm_apply_apply, hfx]
+  simpa only [Deco.act, LinearMap.restrictScalars_apply, LinearEquiv.coe_coe, LinearEquiv.symm_apply_apply] using hfx
 
 theorem Deco.kerAt_act (d : Deco E n ST SG) (g : Sp E n ≃ₗ[E] Sp E n) (h : GLG E n SG) (P : ST) :
     (d.act g h).kerAt P = gmap g (d.kerAt P) := by
@@ -1355,8 +1354,7 @@ theorem Deco.dn_act (d : Deco E n ST SG) {g : Sp E n ≃ₗ[E] Sp E n} (hg : g �
   · exact Deco.dnN_act d hg h P
   · funext Q y
     by_cases hQ : Q = P
-    · subst hQ
-      simp [Deco.dn, Deco.act]
+    · subst hQ; simp [Deco.dn, Deco.act]
     · simp [Deco.dn, Deco.act, hQ]
   · rfl
 
@@ -1909,8 +1907,7 @@ theorem T_notMem_sq (hPr : Pr.Ok) (u : Pr.Word) (P : Pr.vT u)
     linear_combination (-Pr.piT u) * htp'
   rw [e]
   refine Ideal.add_mem _ (Ideal.mul_mem_left _ _ hT) ?_
-  rw [sq]
-  exact Ideal.mul_mem_mul hp hpi
+  simpa [sq] using Ideal.mul_mem_mul hp hpi
 
 end AtBase
 
@@ -2453,8 +2450,7 @@ theorem decoFin_gram_hStd : Formalism.UG.gram (hStd E n) = 1 := by
 
 theorem mem_UJ_iff (g : GL (Fin n) E) :
     g ∈ Formalism.UG.UJ (starRingEnd E) (1 : Matrix (Fin n) (Fin n) E) ↔ Formalism.UG.glEquiv g ∈ UF E n := by
-  rw [← decoFin_gram_hStd]
-  exact Formalism.UG.Final.HermBridge E (Fin n) (hStd E n) g
+  simpa only [← decoFin_gram_hStd] using Formalism.UG.Final.HermBridge E (Fin n) (hStd E n) g
 
 end Bridge
 

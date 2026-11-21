@@ -12,13 +12,12 @@ theorem poleOrderGood : PoleOrderGood := by
   intro ep T ν νs c' vet e hep hc hv hν ⟨n, hn⟩ he
   have hepR : (1 : ℝ) ≤ ep := by exact_mod_cast hep
   have hT0 : (0 : ℝ) ≤ T := by positivity
-  have hy : 0 ≤ (ep : ℝ) * (T * c' * vet) := by positivity
   rw [div_le_iff₀ (by linarith)]
   have hint : (ep : ℝ) * ((T : ℝ) * ν - e) = (((T : ℤ) * n - ep * e : ℤ) : ℝ) := by
     push_cast; rw [← hn]; ring
-  rw [hint, Int.ceil_intCast, Int.cast_max]
+  rw [hint, Int.ceil_intCast, Int.cast_max, Int.cast_zero]
   apply max_le
-  · simpa [mul_comm] using hy
+  · positivity
   · rw [← hint]
     have : (T : ℝ) * ν - e ≤ T * c' * vet := by nlinarith
     nlinarith
@@ -33,12 +32,10 @@ theorem poleOrderBad : PoleOrderBad := by
   have hx : (ep : ℝ) * ((T : ℝ) * ν - e) ≤ (ep : ℝ) * (T * c' * vet) - ep := by
     have : (T : ℝ) * ν - e ≤ T * c' * vet - 1 := by nlinarith
     nlinarith
-  have hc1 : ((⌈(ep : ℝ) * ((T : ℝ) * ν - e)⌉ : ℤ) : ℝ) < (ep : ℝ) * ((T : ℝ) * ν - e) + 1 :=
-    Int.ceil_lt_add_one _
   rw [Int.cast_max]
   apply max_le
   · simpa [mul_comm] using hy
-  · nlinarith
+  · nlinarith [Int.ceil_lt_add_one ((ep : ℝ) * ((T : ℝ) * ν - e))]
 
 theorem shareExponent : ShareExponent := by
   intro D T δ xL xF hδ h1 h2

@@ -216,10 +216,9 @@ theorem nu_le_of_tieW (large₂ : SizeData₂ D) (X : PJ D B P j) (H : KHyp) (S 
     L.ν z ≤ nus la + max 0 (cc D large₂ H.Cc H.Ac H.CRc wL) * L.v z := by
   have h : L.ν z ≤ nus la + cc D large₂ H.Cc H.Ac H.CRc wL * X.phiC la (L.y z) :=
     EReal.coe_le_coe_iff.1 ((hTie z).1.trans (hH1.2.2.2 la (L.y z)))
-  have hv : 0 ≤ X.phiC la (L.y z) := phiC_nonneg X la (L.y z)
   have hm : cc D large₂ H.Cc H.Ac H.CRc wL * X.phiC la (L.y z) ≤
       max 0 (cc D large₂ H.Cc H.Ac H.CRc wL) * X.phiC la (L.y z) :=
-    mul_le_mul_of_nonneg_right (le_max_right _ _) hv
+    mul_le_mul_of_nonneg_right (le_max_right _ _) (phiC_nonneg X la (L.y z))
   show L.ν z ≤ nus la + max 0 (cc D large₂ H.Cc H.Ac H.CRc wL) * X.phiC la (L.y z)
   linarith
 
@@ -259,9 +258,8 @@ theorem thm0LocalW : @Thm0LocalW D B P j := by
   rw [hrk] at hb
   unfold Formalism.LatticeIndexTer.idx at hb
   rw [h0] at hb
-  have hb' := hb
-  simp only [ENat.toNat_zero, Nat.cast_zero, sub_zero, Int.cast_natCast] at hb'
-  exact hb'
+  simp only [ENat.toNat_zero, Nat.cast_zero, sub_zero, Int.cast_natCast] at hb
+  exact hb
 
 theorem localForm_of_weakForm (h : Thm0LocalW (D := D) (B := B) (P := P) (j := j)) :
     Thm0Local (D := D) (B := B) (P := P) (j := j) := by
@@ -285,9 +283,7 @@ theorem thm0ConclW : Thm0ConclW (D := D) (B := B) (P := P) (j := j) := by
   refine ⟨r, hr, hs, hb, ?_⟩
   intro la e he V' hV
   have h0 : (0 : ℝ) ≤ (T : ℝ) * nus la := mul_nonneg (Nat.cast_nonneg _) (hH1.1 la)
-  have he0 : (0 : ℤ) ≤ e := by
-    have : (0 : ℝ) ≤ (e : ℝ) := h0.trans he
-    exact_mod_cast this
+  have he0 : (0 : ℤ) ≤ e := by exact_mod_cast h0.trans he
   obtain ⟨n, rfl⟩ := Int.eq_ofNat_of_zero_le he0
   have he' : (T : ℝ) * nus la ≤ (n : ℝ) := by simpa using he
   obtain ⟨L, hOk, herr⟩ := hL la n he'

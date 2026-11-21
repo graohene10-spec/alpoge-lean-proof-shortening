@@ -18,9 +18,7 @@ theorem ql_map_le (A S : Submodule O V) (f : V →ₗ[O] W) (P : Submodule O W) 
   have hk : S.comap A.subtype ≤ LinearMap.ker g := by
     intro x hx
     rw [LinearMap.mem_ker]
-    show (P.comap (A.map f).subtype).mkQ (f.submoduleMap A x) = 0
-    rw [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
-    exact h ⟨x, hx, rfl⟩
+    exact (Submodule.Quotient.mk_eq_zero (P.comap (A.map f).subtype)).2 (h ⟨x, hx, rfl⟩)
   refine Module.length_le_of_surjective ((S.comap A.subtype).liftQ g hk) ?_
   intro z
   obtain ⟨z, rfl⟩ := Submodule.Quotient.mk_surjective _ z
@@ -322,9 +320,7 @@ theorem ql_span_le {V V₁ : Type} [AddCommGroup V] [Module O V] [AddCommGroup V
   have hk : S.comap A.subtype ≤ LinearMap.ker g0 := by
     intro x hx
     rw [LinearMap.mem_ker]
-    show (S₁.comap A₁.subtype).mkQ _ = 0
-    rw [Submodule.mkQ_apply, Submodule.Quotient.mk_eq_zero]
-    exact h x hx
+    exact (Submodule.Quotient.mk_eq_zero (S₁.comap A₁.subtype)).2 (h x hx)
   refine length_le_of_semilinear ϖ hϖ hϖ' ((S.comap A.subtype).liftQ g0 hk) ?_
   rw [eq_top_iff]
   intro z hz

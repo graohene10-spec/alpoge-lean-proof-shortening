@@ -195,13 +195,11 @@ theorem ord_unif (h : IsUnif A ϖ) : ord ϖ ζ (algebraMap O A ϖ) = ((ep ϖ ζ 
 
 theorem ord_zero (h : IsUnif A ϖ) : ord ϖ ζ 0 = ⊤ := by
   rw [ord_of_mem ζ h (As O A).zero_mem]
-  have : (⟨0, (As O A).zero_mem⟩ : ↥(As O A)) = 0 := rfl
-  rw [this, vL_zero, ENat.map_top]
+  rw [(show (⟨0, (As O A).zero_mem⟩ : ↥(As O A)) = 0 from rfl), vL_zero, ENat.map_top]
 
 theorem ord_one (h : IsUnif A ϖ) : ord ϖ ζ 1 = 0 := by
-  rw [ord_of_mem ζ h (As O A).one_mem]
-  have : (⟨1, (As O A).one_mem⟩ : ↥(As O A)) = 1 := rfl
-  rw [this, vL_one]
+  rw [ord_of_mem ζ h (As O A).one_mem,
+    show (⟨1, (As O A).one_mem⟩ : ↥(As O A)) = 1 from rfl, vL_one]
   rfl
 
 theorem ordAt_mul (n m : ℕ) (a b : ↥(As O A)) :
@@ -478,10 +476,8 @@ theorem ord_congr {ϖ ϖ' : O} (ζ : Pts O A) [IsDVRAt ζ] (h : IsUnif A ϖ) (h'
     intro ϖ'' h''
     rw [Algebra.smul_def, map_pow, ord_mul ζ h'', ord_pow ζ h'', ord_of_mem ζ h'' hm, hm',
       ← coe_ep ζ h, ENat.map_natCast, ← WithTop.coe_nsmul, nsmul_eq_mul]
-  have h1 : ord ϖ ζ (ϖ ^ n • x) = ord ϖ' ζ (ϖ ^ n • x) := by
-    rw [ord_of_mem ζ h hn, ord_of_mem ζ h' hn]
-  rw [key ϖ h, key ϖ' h'] at h1
-  exact (WithTop.add_left_inj WithTop.coe_ne_top).1 h1
+  exact (WithTop.add_left_inj WithTop.coe_ne_top).1 (by
+    rw [← key ϖ h, ← key ϖ' h', ord_of_mem ζ h hn, ord_of_mem ζ h' hn])
 
 end Compare
 

@@ -62,8 +62,7 @@ open Classical in
 def goodOf (σ : c.F →+* ℂ) : c.F →+* ℂ := if GoodEmb c σ then σ else (starRingEnd ℂ).comp σ
 
 theorem norm_goodOf (σ : c.F →+* ℂ) (x : c.F) : ‖goodOf c σ x‖ = ‖σ x‖ := by
-  unfold goodOf
-  split_ifs <;> simp
+  by_cases h : GoodEmb c σ <;> simp [goodOf, h]
 
 theorem goodEmb_goodOf (σ : c.F →+* ℂ) : GoodEmb c (goodOf c σ) := by
   unfold goodOf

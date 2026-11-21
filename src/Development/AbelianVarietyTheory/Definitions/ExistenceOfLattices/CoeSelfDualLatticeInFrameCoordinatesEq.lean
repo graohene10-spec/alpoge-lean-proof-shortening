@@ -184,11 +184,8 @@ theorem ok_iff_recOK : C.OK ↔ GlobalTheory.RecDict.RecOK C.M V C.hr C.ι C.th 
 
 theorem markSpec_iff_mark (h : GA D V) (p : Σ k, Frame (C.M.X k).Ψ r) :
     GlobalTheory.RecDict.MarkSpec C.M V C.hr C.ι C.th C.x₀ h p ↔ ∃ γ, C.Mark h p.1 γ ∧ p.2 = C.fr (γ * h) p.1 := by
-  constructor
-  · rintro ⟨γ, h1, h2, h3, h4⟩
-    exact ⟨γ, ⟨h1, h2, h3⟩, funext h4⟩
-  · rintro ⟨γ, ⟨h1, h2, h3⟩, h4⟩
-    exact ⟨γ, h1, h2, h3, fun τ => congrFun h4 τ⟩
+  exact Iff.intro (fun ⟨γ, h1, h2, h3, h4⟩ => ⟨γ, ⟨h1, h2, h3⟩, funext h4⟩)
+    (fun ⟨γ, ⟨h1, h2, h3⟩, h4⟩ => ⟨γ, h1, h2, h3, congrFun h4⟩)
 
 theorem isDict_iff_markSpec (dict : GA D V → Σ k, Frame (C.M.X k).Ψ r) :
     C.IsDict dict ↔ (∀ h, GlobalTheory.RecDict.MarkSpec C.M V C.hr C.ι C.th C.x₀ h (dict h)) ∧

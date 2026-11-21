@@ -10,7 +10,6 @@ theorem m_pow_four_le_n {D : D7} (L : SizeData₂ D) (hN : SizeN L) (hM : SizeM 
   obtain ⟨-, hMu⟩ := hM
   have hx : 1 < L.sc.x := L.sc.one_lt_alt
   have hx0 : 0 < L.sc.x := by linarith
-  have he : 0 < L.sc.eps := L.sc.eps_pos
   have hd0 : 0 ≤ L.sc.delta1 := by
     unfold Scale.delta1
     exact Real.rpow_nonneg hx0.le _
@@ -36,17 +35,14 @@ theorem m_pow_four_le_n {D : D7} (L : SizeData₂ D) (hN : SizeN L) (hM : SizeM 
     unfold Scale.delta1
     rw [Real.rpow_two, Real.rpow_two]
   have h1 : (D.R.m : ℝ) ^ 4 ≤ (L.sc.x ^ szTh L * Real.sqrt (L.sc.x * L.sc.delta1)) ^ 4 :=
-    by
-      first
-        | exact pow_le_pow_left₀ (Nat.cast_nonneg _) hMu 4
-        | gcongr
+    pow_le_pow_left₀ (Nat.cast_nonneg _) hMu 4
   have h2 : (L.sc.x ^ szTh L * Real.sqrt (L.sc.x * L.sc.delta1)) ^ 4
       = L.sc.x ^ (szTh L * 4 + (2 - L.sc.eps / 4)) := by
     rw [mul_pow, e1, e2, ← Real.rpow_add hx0]
   have h3 : L.sc.x ^ (szTh L * 4 + (2 - L.sc.eps / 4)) ≤ L.sc.x ^ (2 + 8 * L.sc.eps - szTh L) := by
     apply Real.rpow_le_rpow_of_exponent_le hx.le
     rw [hth]
-    linarith
+    linarith [L.sc.eps_pos]
   have h6 : ((D.R.m ^ 4 : ℕ) : ℝ) ≤ ((D.R.n : ℕ) : ℝ) := by
     push_cast
     linarith

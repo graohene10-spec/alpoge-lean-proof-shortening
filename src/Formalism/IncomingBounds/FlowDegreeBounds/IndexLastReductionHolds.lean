@@ -19,11 +19,8 @@ theorem map_comap_sub (W : Submodule K X) (A : Submodule O X) :
       A ⊓ W.restrictScalars O := by
   ext x
   simp only [Submodule.mem_map, Submodule.mem_comap, Submodule.mem_inf, Submodule.restrictScalars_mem]
-  constructor
-  · rintro ⟨y, hy, rfl⟩
-    exact ⟨hy, y.2⟩
-  · rintro ⟨hx, hW⟩
-    exact ⟨⟨x, hW⟩, hx, rfl⟩
+  exact ⟨fun ⟨y, hy, hxy⟩ => ⟨hxy ▸ hy, hxy ▸ y.2⟩,
+    fun ⟨hx, hW⟩ => ⟨⟨x, hW⟩, hx, rfl⟩⟩
 
 theorem qlen_comap (W : Submodule K X) (A B : Submodule O X) :
     qlen O W (A.comap ((W.subtype).restrictScalars O)) (B.comap ((W.subtype).restrictScalars O)) =
@@ -95,7 +92,6 @@ theorem index_last_reduction_holds : IndexLastStep := by
     intro x hx
     rw [← hN]
     exact Submodule.mem_sup_left ⟨x, hx, by simp⟩
-  have hΘN : Θ ≤ N := hN ▸ le_sup_right
   let ι : W →ₗ[O] X := (W.subtype).restrictScalars O
   have hι : Function.Injective ι := Subtype.val_injective
   let fW : W →ₗ[O] W := ((((algebraMap O K ϖ) ^ e) • LinearMap.id : W →ₗ[K] W).restrictScalars O)
@@ -121,8 +117,7 @@ theorem index_last_reduction_holds : IndexLastStep := by
     unfold qlen
     rw [LatticeIndexValuation.length_map_inj ι hι]
     refine subgroupData.length_le_of_le (Submodule.map_comap_le ι N) (Submodule.map_comap_le ι Θ) ?_
-    intro x hx
-    obtain ⟨⟨w, -, rfl⟩, hxΘ⟩ := Submodule.mem_inf.mp hx
+    rintro x ⟨⟨w, -, rfl⟩, hxΘ⟩
     exact ⟨w, hxΘ, rfl⟩
   have h3 : idx O W (N.comap ι) (Θ.comap ι) ≤ ((qlen O X N Θ).toNat : ℤ) := by
     have h4 : (qlen O W (N.comap ι) (Θ.comap ι)).toNat ≤ (qlen O X N Θ).toNat :=

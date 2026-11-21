@@ -65,8 +65,7 @@ theorem MggK_eq_top_of_rho {j : ℕ} (hρ : WeightFamilies.rho D j = 0) (CR T c 
 theorem MggIn_eq_top_of_rho {j : ℕ} (hρ : WeightFamilies.rho D j = 0) (CR T c : ℝ) (ka : WeightFamilies.Wt D j) :
     WeightFamilies.MggIn B CR T c j ka = ⊤ := by
   unfold WeightFamilies.MggIn
-  rw [MggK_eq_top_of_rho hρ]
-  rfl
+  simp [MggK_eq_top_of_rho hρ]
 
 theorem Qm_subsingleton_of_rho {j : ℕ} (hρ : WeightFamilies.rho D j = 0) (CR T c : ℝ) (ka : WeightFamilies.Wt D j) :
     Subsingleton (WeightFamilies.Qm B CR T c j ka) :=
@@ -183,11 +182,9 @@ theorem rLa_tsum_split {j : ℕ} {X : PJ D B P j} {ka wL wF : WeightFamilies.Wt 
 theorem lenQ_tsum_of_ge {j : ℕ} {X : PJ D B P j} {ka wL wF : WeightFamilies.Wt D j} (G : GlobalFamilyData X ka wL wF) (hj : D.R.m ≤ j)
     (CRm : ℝ) (T : ℕ) (c : ℝ) :
     Summable (fun la => lenQ G CRm T c la * X.lN la) ∧ ∑' la, lenQ G CRm T c la * X.lN la = 0 := by
-  have e : (fun la => lenQ G CRm T c la * X.lN la) = fun _ => (0 : ℝ) := by
-    funext la
-    rw [lenQ_of_ge G hj, zero_mul]
-  rw [e]
-  exact ⟨summable_zero, tsum_zero⟩
+  constructor
+  · simp [lenQ_of_ge G hj]
+  · simp [lenQ_of_ge G hj]
 
 theorem ka_eq_addL {j : ℕ} {ka wL wF : WeightFamilies.Wt D j} {T nP nW : ℕ} (hF : IsF' ka wL wF T nP) (hn : wL.n = nW)
     (hk : ka.n = nP + T * nW) : ka = addL wF wL T := by

@@ -30,9 +30,8 @@ theorem q_chain {A B C : Submodule O X} (hAB : A ≤ B) (hBC : B ≤ C) :
   simpa [add_comm] using length_chain' hAB hBC
 
 theorem q_sup (A B : Submodule O X) : q (A ⊔ B) B = q A B := by
-  have h := (LinearMap.quotientInfEquivSupQuotient A B).length_eq
-  have h2 : q A (A ⊓ B) = q A B := q_congr A (by simp)
-  exact h.symm.trans h2
+  exact (LinearMap.quotientInfEquivSupQuotient A B).length_eq.symm.trans
+    (q_congr A (by simp) : q A (A ⊓ B) = q A B)
 
 theorem q_zero {A B : Submodule O X} (h : A ≤ B) : q A B = 0 := qlen_eq_zero h
 

@@ -25,12 +25,9 @@ theorem valued_algebraMap_int (a : R) :
 theorem isUnit_algebraMap_int_iff (a : R) :
     IsUnit (algebraMap R (v.adicCompletionIntegers K) a) ↔ a ∈ v.asIdeal.primeCompl := by
   rw [ValuationSubring.valuation_eq_one_iff]
-  have h1 := valued_algebraMap_int K v a
-  have h2 : (v.adicCompletionIntegers K).valuation
-      ((algebraMap R (v.adicCompletionIntegers K) a : v.adicCompletionIntegers K) : v.adicCompletion K) = 1 ↔
-      Valued.v ((algebraMap R (v.adicCompletionIntegers K) a : v.adicCompletionIntegers K) : v.adicCompletion K) = 1 := by
+  have h2 : (v.adicCompletionIntegers K).valuation ((algebraMap R (v.adicCompletionIntegers K) a : v.adicCompletionIntegers K) : v.adicCompletion K) = 1 ↔ Valued.v ((algebraMap R (v.adicCompletionIntegers K) a : v.adicCompletionIntegers K) : v.adicCompletion K) = 1 := by
     exact (Valuation.isEquiv_valuation_valuationSubring Valued.v).symm.eq_one_iff_eq_one
-  rw [h2, h1, Ideal.mem_primeCompl_iff, ← IsDedekindDomain.HeightOneSpectrum.intValuation_lt_one_iff_mem]
+  rw [h2, valued_algebraMap_int K v a, Ideal.mem_primeCompl_iff, ← IsDedekindDomain.HeightOneSpectrum.intValuation_lt_one_iff_mem]
   constructor
   · intro h hlt
     rw [h] at hlt
@@ -256,8 +253,7 @@ theorem locK_le_of_span (N : Submodule (𝓞 B.KO) (B.Cusp j ka))
   rw [Submodule.span_le]
   rintro _ ⟨G, ⟨F, -, rfl⟩, rfl⟩
   have hF : F ∈ Submodule.span B.KO (N : Set (B.Cusp j ka)) := by
-    rw [hsp]
-    trivial
+    simp [hsp]
   have h1 : X.bc la (X.inc ka F) ∈ Submodule.span B.KO ((X.bc la ∘ₗ X.inc ka) '' (N : Set (B.Cusp j ka))) := by
     rw [← Submodule.map_span]
     exact ⟨F, hF, rfl⟩

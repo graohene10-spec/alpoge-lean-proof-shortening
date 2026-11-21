@@ -28,8 +28,7 @@ theorem rep_pow (la : HeightOneSpectrum (𝓞 B.KO)) (y : X.Pt la) {wL wF : Weig
   induction a with
   | zero =>
     intro m F hF
-    simp only [pow_zero, one_mul, Nat.cast_zero, zero_mul, EReal.coe_zero, add_zero]
-    exact ⟨hF, le_rfl⟩
+    simpa only [pow_zero, one_mul, Nat.cast_zero, zero_mul, EReal.coe_zero, add_zero] using ⟨hF, le_rfl⟩
   | succ a ih =>
     intro m F hF
     obtain ⟨hR, hv⟩ := ih m F hF
@@ -56,8 +55,7 @@ theorem rep_prod (la : HeightOneSpectrum (𝓞 B.KO)) (y : X.Pt la) {N : ℕ} {w
   induction s using Finset.induction_on with
   | empty =>
     intro m F hF
-    simp only [Finset.prod_empty, Finset.sum_empty, one_mul, add_zero, Nat.cast_zero, zero_mul, EReal.coe_zero]
-    exact ⟨hF, le_rfl⟩
+    simpa using hF
   | @insert a s ha ih =>
     intro m F hF
     obtain ⟨hR, hv⟩ := ih m F hF

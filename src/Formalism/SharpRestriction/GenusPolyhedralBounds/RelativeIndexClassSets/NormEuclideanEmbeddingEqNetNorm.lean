@@ -105,9 +105,7 @@ theorem netN_eq_zero (hM : NetMax Nt) (σ : B.KO →+* ℂ) (F : B.Cusp j ka) : 
     have h2 : (Fintype.card (Nt.NN σ) : ℝ)⁻¹ * ∑ y, ‖Nt.ev σ y F‖ ^ 2 ≤ 0 := Real.sqrt_eq_zero'.mp h
     have h3 : ∑ y, ‖Nt.ev σ y F‖ ^ 2 ≤ 0 := by
       by_contra hc
-      push_neg at hc
-      have := mul_pos (inv_pos.mpr hpos) hc
-      linarith
+      exact (not_le_of_gt (mul_pos (inv_pos.mpr hpos) (not_le.mp hc))) h2
     have h4 : ‖Nt.ev σ y F‖ ^ 2 ≤ ∑ y, ‖Nt.ev σ y F‖ ^ 2 :=
       Finset.single_le_sum (f := fun y => ‖Nt.ev σ y F‖ ^ 2) (fun i _ => sq_nonneg _) (Finset.mem_univ y)
     have ht : ‖Nt.ev σ y F‖ = 0 := by
@@ -115,8 +113,7 @@ theorem netN_eq_zero (hM : NetMax Nt) (σ : B.KO →+* ℂ) (F : B.Cusp j ka) : 
       have := norm_nonneg (Nt.ev σ y F)
       nlinarith
     have hs : B.supN j ka σ F ≤ 0 := by
-      rw [ht] at hy
-      linarith
+      linarith [hy, ht]
     have hl : B.l2NormAlt j ka σ F = 0 :=
       le_antisymm ((B.l2Norm_le_supNorm_alt j ka σ F).trans hs) (B.l2Norm_nonneg_bis j ka σ F)
     exact (B.l2Norm_eq_zero_iff j ka σ F).mp hl

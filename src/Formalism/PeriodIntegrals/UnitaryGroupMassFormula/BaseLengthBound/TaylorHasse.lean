@@ -71,9 +71,8 @@ theorem hasse_mem_pow_smul_HK (u : WeightFamilies.Wt D j) (β : Idx D j G.N →�
 
 theorem ym_mem (γ : Fin (WeightFamilies.dimY D j) → ℕ) :
     ((ym G la γ : ↥(Frac0 X la G.w)) : Lw X la G.w) ∈ Jid X la G.w ^ (∑ i, γ i) • HK X la G.w (wt0 D j) := by
-  have := Submodule.smul_mem_smul (prod_sfr_mem X la G.w γ) (one_mem_hasse_kernel G la)
-  rw [smul_eq_mul', mul_one] at this
-  exact this
+  have h := Submodule.smul_mem_smul (prod_sfr_mem X la G.w γ) (one_mem_hasse_kernel G la)
+  rwa [smul_eq_mul', mul_one] at h
 
 theorem hasse_mem_HK (u : WeightFamilies.Wt D j) (β : Idx D j G.N →₀ ℕ) {z : Lw X la G.w} (hz : z ∈ HK X la G.w u) :
     hs G la β z ∈ HK X la G.w u :=

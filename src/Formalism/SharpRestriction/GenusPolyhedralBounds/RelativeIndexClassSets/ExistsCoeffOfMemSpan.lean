@@ -184,8 +184,7 @@ theorem pdLw_algebraMap_Kp (p : Idx D j N) (c : Kp X la N) :
 theorem pdLw_mem (p : Idx D j N) (u : WeightFamilies.Wt D j) (a : ℕ) {x : Lw X la w} (hx : x ∈ JHfr X la w u (a + 1)) :
     pdLw X la w p x ∈ JHfr X la w u a := by
   have h := hasse_jid_power X la w u (Finsupp.single p 1) (a + 1) x hx
-  rw [Finsupp.sum_single_index rfl, Nat.add_sub_cancel] at h
-  exact h
+  rwa [Finsupp.sum_single_index rfl, Nat.add_sub_cancel] at h
 
 theorem pdLw_w0inv (p : Idx D j N) (hp : p.1 ≠ 0) : pdLw X la w p (w0inv X la w) = 0 := by
   have h := congrArg (pdLw X la w p) (section_mul_inverse_eq_one X la w)
@@ -253,8 +252,7 @@ theorem JHfr_succ_le (u : WeightFamilies.Wt D j) (a : ℕ) : JHfr X la w u (a + 
   have h1 : x ∈ JHs X la w u (a + 1) := hx
   rw [← Jid_pow_smul_HK] at h1
   have h2 : x ∈ Jid X la w ^ a • HK X la w u := Submodule.smul_mono (Ideal.pow_le_pow_right (Nat.le_succ a)) le_rfl h1
-  rw [Jid_pow_smul_HK] at h2
-  exact h2
+  rwa [Jid_pow_smul_HK] at h2
 
 open MvPolynomial in
 theorem aeval_ySec_monomial (m : Fin (WeightFamilies.dimY D j) →₀ ℕ) :

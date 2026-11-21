@@ -32,8 +32,7 @@ theorem phiC_le_vEt (Q : LocalPointData G la) (ζ : PtsG G la)
     have h1 := h (Q.y ζ)
     rw [← EReal.coe_toReal (hfin hj) (X.vAt_ne_bot la (Q.y ζ) _), EReal.coe_le_coe_iff] at h1
     linarith
-  · unfold PJ.phiC
-    rw [if_neg hj]
+  · simp [PJ.phiC, hj]
 
 theorem vEt_nonneg (Q : LocalPointData G la) (ζ : PtsG G la)
     (hfin : j < D.R.m → X.vAt la (Q.y ζ) (X.inc _ G.et) ≠ ⊤)

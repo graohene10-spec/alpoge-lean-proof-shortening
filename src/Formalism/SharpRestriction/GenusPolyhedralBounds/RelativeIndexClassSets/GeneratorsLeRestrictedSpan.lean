@@ -49,8 +49,7 @@ theorem Np_le_NovK (e : ℕ) : Np G la e ≤ (NovK G la).restrictScalars (Op X l
 
 theorem poleSpan_le_integralForms (e : ℕ) (h : N1 G la ≤ M1 X la G.N (addL wF wL T)) : Np G la e ≤ M1 X la G.N (addL wF wL T) := by
   refine sup_le (sup_le (inf_le_left.trans ?_) h) inf_le_left
-  rintro _ ⟨y, hy, rfl⟩
-  exact Submodule.smul_mem _ _ hy
+  exact Submodule.map_le_iff_le_comap.2 (fun y hy => Submodule.smul_mem _ _ hy)
 
 theorem Zl_le_Zm (h : Zl G la ≤ M1 X la G.N (addL wF wL T)) : Zl G la ≤ Zm G la :=
   le_inf h (Submodule.span_le.2 fun _ hx => Submodule.subset_span hx)

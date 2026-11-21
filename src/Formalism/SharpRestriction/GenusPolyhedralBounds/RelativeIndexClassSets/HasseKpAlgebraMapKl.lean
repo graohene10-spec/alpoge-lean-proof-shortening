@@ -347,9 +347,8 @@ theorem dv_iterate_co (hi : ∀ p x, IterAt τ p x) (p : σ) (n : ℕ) (β : σ 
     ring
 
 theorem IsCst.of_mul {s y : A} (hs : IsCst τ s) (hsy : IsCst τ (s * y)) (hu : IsUnit s) : IsCst τ y := by
-  have hs' : τ s = C s := hs
   have hsy' : τ (s * y) = C (s * y) := hsy
-  simp only [map_mul, hs'] at hsy'
+  simp only [map_mul, show τ s = C s from hs] at hsy'
   exact (hu.map (C : A →+* MvPowerSeries σ A)).mul_left_cancel hsy'
 
 variable (R : Type*) [CommRing R] [Algebra R A]
@@ -719,8 +718,7 @@ variable (X : PJ D B P j) (la : HeightOneSpectrum (𝓞 B.KO)) {N : ℕ} {wL : W
 
 theorem hasseRp_sec (β : Idx D j N →₀ ℕ) (i : Fin (WeightFamilies.dimY D j + 1)) : hasseRp X la N β (sec X la w i) =
     ∑ k, algebraMap (Op X la N) (Kp X la N) (hasseOp X la N β (Tv X la N (i, k))) • emb X la N (X.inc wL (w k)) := by
-  show hasseRp X la N β (∑ k, algebraMap (Op X la N) (Kp X la N) (Tv X la N (i, k)) • emb X la N (X.inc wL (w k))) = _
-  rw [map_sum]
+  rw [show sec X la w i = ∑ k, algebraMap (Op X la N) (Kp X la N) (Tv X la N (i, k)) • emb X la N (X.inc wL (w k)) from rfl, map_sum]
   refine Finset.sum_congr rfl fun k _ => ?_
   rw [show emb X la N (X.inc wL (w k)) = bcV X la N ((1 : X.Kl la) ⊗ₜ[B.KO] (X.inc wL (w k))) from rfl, hasseRp_smul_bcV, hasseKp_algebraMap]
 
@@ -789,8 +787,7 @@ theorem hasse_bcV_mul (β : Idx D j N →₀ ℕ) (v : X.Vl la) (x : Lc X la w) 
 theorem hasse_algebraMap_Op (β : Idx D j N →₀ ℕ) (x : Op X la N) :
     hasse X la w β (algebraMap (Rp X la N) (Lc X la w) (algebraMap (Op X la N) (Rp X la N) x)) =
       algebraMap (Rp X la N) (Lc X la w) (algebraMap (Op X la N) (Rp X la N) (hasseOp X la N β x)) := by
-  rw [hasse_algebraMap, IsScalarTower.algebraMap_apply (Op X la N) (Kp X la N) (Rp X la N) x,
-    hasseRp_algebraMap, hasseKp_algebraMap, ← IsScalarTower.algebraMap_apply (Op X la N) (Kp X la N) (Rp X la N)]
+  simp only [hasse_algebraMap, IsScalarTower.algebraMap_apply (Op X la N) (Kp X la N) (Rp X la N), hasseRp_algebraMap, hasseKp_algebraMap]
 
 theorem hasse_of_mul_eq (β : Idx D j N →₀ ℕ) {s x : Rp X la N} {y : Lc X la w}
     (h : algebraMap (Rp X la N) (Lc X la w) s * y = algebraMap (Rp X la N) (Lc X la w) x) :
@@ -829,8 +826,7 @@ theorem Kl_charZero : CharZero (X.Kl la) := by
 theorem hasse_eq (β : Idx D j N →₀ ℕ) (x : Lc X la w) :
     hasse X la w β x = ((∏ p, (β p).factorial : ℕ) : X.Kl la)⁻¹ • iterPd X la w β x := by
   haveI := Kl_charZero X la
-  rw [iterPd_apply, ← Nat.cast_smul_eq_nsmul (X.Kl la), smul_smul, inv_mul_cancel₀, one_smul]
-  exact Nat.cast_ne_zero.mpr (Finset.prod_ne_zero_iff.mpr fun p _ => Nat.factorial_ne_zero (β p))
+  rw [iterPd_apply, ← Nat.cast_smul_eq_nsmul (X.Kl la), smul_smul, inv_mul_cancel₀ (Nat.cast_ne_zero.mpr (Finset.prod_ne_zero_iff.mpr fun p _ => Nat.factorial_ne_zero (β p))), one_smul]
 
 end
 

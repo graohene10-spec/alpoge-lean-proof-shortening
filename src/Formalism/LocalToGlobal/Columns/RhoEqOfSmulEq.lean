@@ -56,8 +56,7 @@ def outSec : S.Sec where
   spec := fun c => Quotient.out_eq c
 
 theorem cls_eq_iff (d e : S.D) : S.cls d = S.cls e ↔ ∃ g : S.G, g • e = d := by
-  unfold cls
-  rw [Quotient.eq, MulAction.orbitRel_apply, MulAction.mem_orbit_iff]
+  simp [cls, Quotient.eq, MulAction.orbitRel_apply, MulAction.mem_orbit_iff]
 
 theorem cls_smul (g : S.G) (d : S.D) : S.cls (g • d) = S.cls d := by
   exact (S.cls_eq_iff _ _).2 ⟨g, rfl⟩
@@ -229,9 +228,7 @@ theorem toCSDOf_good {n : ℕ} (G : S.Good n) (s : S.Sec) : (S.toCSDOf G.ok s).G
   del_stable := by
     intro c γ y hy
     have h1 := G.ok.del_smul ((γ : MulAction.stabilizer S.G (s.rep c)) : S.G) (s.rep c)
-    have h2 : ((γ : MulAction.stabilizer S.G (s.rep c)) : S.G) • s.rep c = s.rep c :=
-      (γ : MulAction.stabilizer S.G (s.rep c)).2
-    rw [h2] at h1
+    rw [γ.2] at h1
     show S.ρ ((γ : MulAction.stabilizer S.G (s.rep c)) : S.G) y ∈ S.Del (s.rep c)
     rw [h1]
     exact Submodule.mem_map_of_mem hy
@@ -489,15 +486,11 @@ theorem triv_ok (h1 : Finite (MulAction.orbitRel.Quotient G D)) (h2 : ∀ d : D,
   fin_stab := h2
   nab_smul := by
     intro g d
-    show (1 : Submodule (𝓞 K) K) = (1 : Submodule (𝓞 K) K).map ((1 : Module.End K K).restrictScalars (𝓞 K))
-    exact (Submodule.map_id _).symm
+    exact (Submodule.map_id (1 : Submodule (𝓞 K) K)).symm
   del_smul := by
     intro g d
-    show (1 : Submodule (𝓞 K) K) = (1 : Submodule (𝓞 K) K).map ((1 : Module.End K K).restrictScalars (𝓞 K))
-    exact (Submodule.map_id _).symm
-  inv := by
-    intro g x y
-    rfl
+    exact (Submodule.map_id (1 : Submodule (𝓞 K) K)).symm
+  inv := fun g x y => rfl
 
 theorem triv_good (h1 : Finite (MulAction.orbitRel.Quotient G D))
     (h2 : ∀ d : D, Finite (MulAction.stabilizer G d)) : (triv K G D).Good 1 where
@@ -514,8 +507,7 @@ def trivOne : (triv K G D).EqFun := ⟨fun _ => (1 : K), fun _ _ => rfl⟩
 
 theorem trivOne_mem : trivOne K G D ∈ (triv K G D).intDel := by
   intro d
-  show (1 : K) ∈ (1 : Submodule (𝓞 K) K)
-  exact Submodule.one_le.mp le_rfl
+  simp [trivOne, triv]
 
 theorem trivOne_ne_zero [Nonempty D] : trivOne K G D ≠ 0 := by
   intro h

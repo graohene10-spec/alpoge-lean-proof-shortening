@@ -42,10 +42,9 @@ theorem conj_mem_AAbar (D : D7) {a : D.host.E} (ha : a ∈ D.host.AA) : D.host.c
 
 theorem hT_int (D : D7) (j : ℕ) {x y : (D.sp.W j).V} (hx : x ∈ (D.sp.W j).L0) (hy : y ∈ (D.sp.W j).L0) :
     (D.sp.W j).hT x y ∈ (1 : Submodule (𝓞 D.host.E) D.host.E) := by
-  have hy' : y ∈ Formalism.HermitianLatticesTheory.dual (D.sp.W j).hT (D.sp.W j).L0 := by
-    rw [(D.sp.W j).baseLattice_isUnimodular]; exact hy
-  simp only [Formalism.HermitianLatticesTheory.dual, Formalism.E.hdual, Submodule.mem_iInf, Submodule.mem_comap] at hy'
-  exact hy' x hx
+  rw [← (D.sp.W j).baseLattice_isUnimodular] at hy
+  simp only [Formalism.HermitianLatticesTheory.dual, Formalism.E.hdual, Submodule.mem_iInf, Submodule.mem_comap] at hy
+  exact hy x hx
 
 abbrev NAA (D : D7) : Submodule (𝓞 D.host.E) D.host.E :=
   ((D.host.AA * D.host.AAbar : FractionalIdeal (nonZeroDivisors (𝓞 D.host.E)) D.host.E) :
@@ -97,8 +96,7 @@ theorem trace_int_of_mem (hP : Formalism.BasicNotions.FactPrincipalDatum) (D : D
   rw [hJ, mem_dual (@one_ne_zero (FractionalIdeal (nonZeroDivisors (𝓞 D.host.E)) D.host.E) _ _ _)] at hm
   obtain ⟨n, hn⟩ := hm 1 (one_mem_one _)
   refine ⟨n, ?_⟩
-  rw [Algebra.traceForm_apply, mul_one] at hn
-  rw [← hn]; simp
+  simpa [Algebra.traceForm_apply] using hn.symm
 
 theorem datInt_of (hP : Formalism.BasicNotions.FactPrincipalDatum) (D : D7) (j : ℕ) : DatInt D j := by
   exact fun x y => trace_int_of_mem hP D (hT_lat_mem D j x.2 y.2)
@@ -113,8 +111,7 @@ theorem algebraMap_gal_smul (D : D7) (σ : D.host.E ≃ₐ[ℚ] D.host.E) (z : �
     algebraMap (𝓞 D.host.E) D.host.E (σ • z) = σ (algebraMap (𝓞 D.host.E) D.host.E z) := rfl
 
 theorem conj_conj (D : D7) (x : D.host.E) : D.host.conj (D.host.conj x) = x := by
-  rw [← bridge_star_holds D.R D.host x, ← bridge_star_holds D.R D.host (star x)]
-  exact star_star x
+  simp [← bridge_star_holds D.R D.host]
 
 theorem conj_inv_apply (D : D7) (x : D.host.E) : (D.host.conj⁻¹ : D.host.E ≃ₐ[ℚ] D.host.E) x = D.host.conj x := by
   rw [AlgEquiv.aut_inv, AlgEquiv.symm_apply_eq, conj_conj]
@@ -135,10 +132,9 @@ theorem conj_mem_AA (D : D7) {a : D.host.E} (ha : a ∈ D.host.AAbar) : D.host.c
   rw [algebraMap_gal_smul, conj_inv_apply, hw', algebraMap_gal_smul, map_mul, conj_conj]
 
 theorem AA_ne_zero (hP : Formalism.BasicNotions.FactPrincipalDatum) (D : D7) : D.host.AA ≠ 0 := by
-  intro h
-  have h1 := hP D.R D.host
-  rw [h, mul_zero, zero_mul, zero_mul] at h1
-  exact zero_ne_one h1
+  exact fun h =>
+    (show (0 : FractionalIdeal (nonZeroDivisors (𝓞 D.host.E)) D.host.E) ≠ 1 from zero_ne_one)
+      (by simpa [h] using hP D.R D.host)
 
 theorem cmHost_imaginaryGenerator_ne_zero (hP : Formalism.BasicNotions.FactPrincipalDatum) (D : D7) : D.host.xi0 ≠ 0 := by
   intro h
@@ -180,11 +176,10 @@ theorem trace_sep (D : D7) {w : D.host.E}
   apply (traceForm_nondegenerate ℚ D.host.E).1 w
   intro e
   obtain ⟨n, hn, hint⟩ := exists_integral_multiples ℤ ℚ ({e} : Finset D.host.E)
-  have h1 := h ⟨n • e, hint e (Finset.mem_singleton_self e)⟩
-  have h2 : Algebra.trace ℚ D.host.E (w * (n • e)) = 0 := h1
-  rw [mul_smul_comm, map_zsmul, smul_eq_zero] at h2
+  have h1 : Algebra.trace ℚ D.host.E (w * (n • e)) = 0 := h ⟨n • e, hint e (Finset.mem_singleton_self e)⟩
+  rw [mul_smul_comm, map_zsmul, smul_eq_zero] at h1
   rw [Algebra.traceForm_apply]
-  exact h2.resolve_left hn
+  exact h1.resolve_left hn
 
 theorem trace_rep (D : D7) (g : 𝓞 D.host.E →ₗ[ℤ] ℤ) : ∃ z : D.host.E, ∀ c : 𝓞 D.host.E,
     Algebra.trace ℚ D.host.E (z * algebraMap (𝓞 D.host.E) D.host.E c) = g c := by
@@ -397,13 +392,12 @@ theorem efQ_inj (hP : Formalism.BasicNotions.FactPrincipalDatum) (D : D7) (j : �
 
 theorem efW_unimod_of (hP : Formalism.BasicNotions.FactPrincipalDatum) (D : D7) (j : ℕ) (hI : DatInt D j) :
     Function.Bijective (efW D j hI) := by
-  have hb : Function.Bijective (intForm (efQ D j) hI) := ⟨efQ_inj hP D j hI, fun f => efQ_surj hP D j hI f⟩
+  have hb : Function.Bijective (intForm (efQ D j) hI) := ⟨efQ_inj hP D j hI, efQ_surj hP D j hI⟩
   unfold efW
   by_cases h : ∃ hI' : DatInt D j, DomFor D j (intForm (efQ D j) hI')
   · rw [sgnW, if_pos h, one_smul]; exact hb
   · rw [sgnW, if_neg h]
-    have e : ⇑((-1 : ℤ) • intForm (efQ D j) hI) = Neg.neg ∘ ⇑(intForm (efQ D j) hI) := by
-      funext y; simp
+    have e : ⇑((-1 : ℤ) • intForm (efQ D j) hI) = Neg.neg ∘ ⇑(intForm (efQ D j) hI) := by funext y; simp
     rw [e]; exact neg_involutive.bijective.comp hb
 
 end Main

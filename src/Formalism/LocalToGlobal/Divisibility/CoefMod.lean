@@ -124,11 +124,10 @@ def rhoP (lam : ι → DomWeight n) : (ι → GL (Fin n) K) →* Module.End K (P
 
 theorem polyAction_mem_VV (lam : ι → DomWeight n) (g : ι → GL (Fin n) K) {F : Pol K ι n} (hF : F ∈ VV K lam) :
     actP lam g F ∈ VV K lam := by
-  have h := (Formalism.GradedWeylDivisibility.blockActTensor K K ι n n
+  exact (VV K lam).smul_mem (detTwK lam g)
+    ((Formalism.GradedWeylDivisibility.blockActTensor K K ι n n
       (fun τ => ((g τ : GL (Fin n) K) : Matrix (Fin n) (Fin n) K)ᵀ)).2
-    (fun τ => nablaSq K n (lam τ)) (fun τ => nablaSq K n (lam τ))
-    (fun τ f hf => Formalism.GradedWeylDivisibility.dualWeylRowStable K n n _ _ f hf) F hF
-  exact (VV K lam).smul_mem (detTwK lam g) h
+      (fun τ => nablaSq K n (lam τ)) (fun τ => nablaSq K n (lam τ)) (fun τ f hf => Formalism.GradedWeylDivisibility.dualWeylRowStable K n n _ _ f hf) F hF)
 
 def rhoK (lam : ι → DomWeight n) : (ι → GL (Fin n) K) →* Module.End K (VV K lam) where
   toFun g := (actP lam g).restrict fun _ hF => polyAction_mem_VV lam g hF

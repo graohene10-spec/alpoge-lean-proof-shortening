@@ -93,10 +93,8 @@ theorem mem_lat {ρ : ℂ} {a : D.La} : a ∈ lat hP ρ ↔ ∀ j, ty j (H.rt : 
 
 theorem period_rt_smul {ρ : ℂ} {a : D.La} (ha : a ∈ lat hP ρ) : Pe (H.rt • a) = ρ • Pe a := by
   funext j
-  rw [hP.1, Pi.smul_apply, smul_eq_mul]
-  by_cases h : ty j (H.rt : E) = ρ
-  · rw [h]
-  · rw [ha j h, mul_zero, mul_zero]
+  rw [hP.1, Pi.smul_apply, smul_eq_mul, mul_eq_mul_right_iff]
+  exact or_iff_not_imp_left.mpr (ha j)
 
 theorem period_w0_smul {ρ : ℂ} {a : D.La} (ha : a ∈ lat hP ρ) : Pe (H.w0 • a) = ((1 + ρ) / 2) • Pe a := by
   have h : (2 : ℂ) • Pe (H.w0 • a) = (1 + ρ) • Pe a := by
