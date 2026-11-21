@@ -1,0 +1,12 @@
+{
+  "snapshot_utc": "2026-11-21T06:25:33.213705+00:00",
+  "status": "module checks in progress",
+  "files": 668,
+  "planned_files": 1997,
+  "included_candidates": 916,
+  "merged_files_rechecked": 11,
+  "saved_nonblank": 1870,
+  "lean_toolchain": "leanprover/lean4:v4.33.1",
+  "mathlib_revision": "0df444a360eaa60ab8c11dca51a86af692955474",
+  "upstream_archive_sha256": "9631b4f020199e580ba86178cb56c6e9b09f690c2369a80dc4334aa93f49c7fc"
+}
