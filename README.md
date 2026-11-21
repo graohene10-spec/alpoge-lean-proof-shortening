@@ -10,7 +10,7 @@ To use these files, start with the original release and copy the files into the 
 
 ## Verification
 
-Verification uses the imports from the pinned upstream build. Multiple edits to a file are checked together; single edits use their individual verification record. The checks compare the elaborated types and axiom reports of edited declarations and reject new warnings. These results cover the modules individually, not the whole overlay as a single build.
+Verification uses the imports from the pinned upstream build. Multiple edits to a file are checked together; single edits use their individual verification record. The checks compare the elaborated types and axiom reports of edited declarations and reject new warnings. Checks are module-level unless a follow-up records a targeted multi-module rebuild. Neither is a whole-overlay build.
 
 The structural follow-up records in `snapshot.json` list the rechecked modules and the direct importer smoke tests against the corresponding updated `.olean` files. Their candidate IDs in `verification.tsv` describe the edits inherited from the base snapshot; the file digests and line totals describe the current sources.
 

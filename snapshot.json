@@ -4,11 +4,11 @@
   "planned_files": 4809,
   "checked_files": 4809,
   "files": 4809,
-  "merged_files_rechecked": 3118,
+  "merged_files_rechecked": 3119,
   "planned_candidates": 16430,
   "included_candidates": 16430,
   "deferred_candidates": 0,
-  "saved_nonblank": 33177,
+  "saved_nonblank": 33229,
   "lean_toolchain": "leanprover/lean4:v4.33.1",
   "mathlib_revision": "0df444a360eaa60ab8c11dca51a86af692955474",
   "upstream_archive_sha256": "9631b4f020199e580ba86178cb56c6e9b09f690c2369a80dc4334aa93f49c7fc",
@@ -18,50 +18,43 @@
     "result": "passed"
   },
   "structural_followup": {
-    "base_commit": "adf2d290d94f3750cf4be70e62d12d9833e5b238",
-    "checked_source_commit": "a847ff818d701dbe3e76733179a6c0a6dda0f2f1",
+    "base_commit": "b3a8d47e246f1422b3f16c65af47b9a911290145",
+    "checked_source_commit": "f7daa1e83f84dbb08dcf6f901631a5bc20e77c65",
     "checked_modules": [
-      "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/QxChain.lean",
-      "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/UnipotentCoordinatesMeasurePreserving.lean"
+      "src/Formalism/SharpRestriction/GrowthBounds/PolBridge.lean",
+      "src/Formalism/SharpRestriction/GrowthBounds/RootWeights/GeneratedModuleWeightLemmaOfInterfaces.lean",
+      "src/Formalism/SharpRestriction/GrowthBounds/RootWeights/SubstitutionPreservesOfGenerators.lean",
+      "src/Formalism/SharpRestriction/GrowthBounds/RootWeights/WeightEntryRestrictionMem.lean"
     ],
-    "import_environment": "pinned original upstream build cache",
-    "matched_elaborated_signature_and_axiom_reports": 8,
+    "import_environment": "joint targeted rebuild using pinned original build cache for other dependencies",
+    "matched_elaborated_signature_and_axiom_reports": 11,
     "direct_importer_smoke": [
       {
-        "module": "Formalism.HermitianCurvature.HermitianCurvatureProofs.ResGDifferentiableAt",
+        "module": "Formalism.SharpRestriction.GrowthBounds.PlaneCountTheoremWithConstants",
         "source_variants": [
-          "upstream"
-        ],
-        "result": "passed"
-      },
-      {
-        "module": "Formalism.HermitianCurvature.HermitianCurvatureProofs.InvariantOperatorUnderJacquet",
-        "source_variants": [
-          "upstream"
-        ],
-        "result": "passed"
-      },
-      {
-        "module": "Formalism.HermitianCurvature.HermitianCurvatureProofs.ExistsHaarStabilizer",
-        "source_variants": [
-          "upstream"
-        ],
-        "result": "passed"
-      },
-      {
-        "module": "Formalism.HermitianCurvature.HermitianCurvatureProofs.UnitriangularEqOneOfMinorsNonzero",
-        "source_variants": [
-          "upstream"
+          "overlay"
         ],
         "result": "passed"
       }
     ],
-    "combined_import_smoke": "passed",
-    "additional_saved_nonblank": 395,
-    "savings_by_module": {
-      "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/QxChain.lean": 12,
-      "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/UnipotentCoordinatesMeasurePreserving.lean": 383
-    }
+    "joint_targeted_rebuild": {
+      "root_module": "Formalism.SharpRestriction.GrowthBounds.PlaneCountTheoremWithConstants",
+      "call_site": "loc8All_of, field instanceClauseEight",
+      "checked_root": "Formalism.MainNotions.G.loc8All_of",
+      "root_axioms": [
+        "propext",
+        "Classical.choice",
+        "Quot.sound"
+      ],
+      "rebuilt_project_modules": 44,
+      "rebuilt_edited_modules": 4,
+      "rebuilt_unchanged_overlay_connectors": 23,
+      "rebuilt_unchanged_upstream_connectors": 16,
+      "rebuilt_caller_modules": 1,
+      "cached_off_path_project_modules": 1204,
+      "import_path_check": "Affected-path dependencies resolved to the exact rebuilt artifacts."
+    },
+    "compatibility_note": "substitution_preserves_mul retains its original [Fintype ι] binder; unusedSectionVars is disabled on that declaration only."
   },
   "previous_structural_followups": [
     {
@@ -173,6 +166,52 @@
           "result": "passed"
         }
       ]
+    },
+    {
+      "base_commit": "adf2d290d94f3750cf4be70e62d12d9833e5b238",
+      "checked_source_commit": "a847ff818d701dbe3e76733179a6c0a6dda0f2f1",
+      "checked_modules": [
+        "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/QxChain.lean",
+        "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/UnipotentCoordinatesMeasurePreserving.lean"
+      ],
+      "import_environment": "pinned original upstream build cache",
+      "matched_elaborated_signature_and_axiom_reports": 8,
+      "direct_importer_smoke": [
+        {
+          "module": "Formalism.HermitianCurvature.HermitianCurvatureProofs.ResGDifferentiableAt",
+          "source_variants": [
+            "upstream"
+          ],
+          "result": "passed"
+        },
+        {
+          "module": "Formalism.HermitianCurvature.HermitianCurvatureProofs.InvariantOperatorUnderJacquet",
+          "source_variants": [
+            "upstream"
+          ],
+          "result": "passed"
+        },
+        {
+          "module": "Formalism.HermitianCurvature.HermitianCurvatureProofs.ExistsHaarStabilizer",
+          "source_variants": [
+            "upstream"
+          ],
+          "result": "passed"
+        },
+        {
+          "module": "Formalism.HermitianCurvature.HermitianCurvatureProofs.UnitriangularEqOneOfMinorsNonzero",
+          "source_variants": [
+            "upstream"
+          ],
+          "result": "passed"
+        }
+      ],
+      "combined_import_smoke": "passed",
+      "additional_saved_nonblank": 395,
+      "savings_by_module": {
+        "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/QxChain.lean": 12,
+        "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/UnipotentCoordinatesMeasurePreserving.lean": 383
+      }
     }
   ]
 }
