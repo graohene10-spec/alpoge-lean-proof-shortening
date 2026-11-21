@@ -1,5 +1,5 @@
 {
-  "snapshot_utc": "2026-11-21T10:33:53.676564+00:00",
+  "snapshot_utc": "2026-11-21T13:29:16.195Z",
   "status": "module checks complete",
   "planned_files": 4809,
   "checked_files": 4809,
@@ -8,7 +8,7 @@
   "planned_candidates": 16430,
   "included_candidates": 16430,
   "deferred_candidates": 0,
-  "saved_nonblank": 32782,
+  "saved_nonblank": 33177,
   "lean_toolchain": "leanprover/lean4:v4.33.1",
   "mathlib_revision": "0df444a360eaa60ab8c11dca51a86af692955474",
   "upstream_archive_sha256": "9631b4f020199e580ba86178cb56c6e9b09f690c2369a80dc4334aa93f49c7fc",
@@ -18,32 +18,78 @@
     "result": "passed"
   },
   "structural_followup": {
-    "base_commit": "3bfc39e9901f5c57664dd3a7eb5529e36124b760",
-    "checked_source_commit": "4d41eedbf453b5337848655e1482ec1e5214f014",
+    "base_commit": "adf2d290d94f3750cf4be70e62d12d9833e5b238",
+    "checked_source_commit": "a847ff818d701dbe3e76733179a6c0a6dda0f2f1",
     "checked_modules": [
-      "src/Formalism/SizeWindowBrackets/ChainSlopeWindows/LipschitzWeightAndMinimum.lean",
-      "src/Formalism/ThetaLogCoordinates/BihomogeneousPairs/LetterChainEmbeddings/LetterAtSuccVal.lean"
+      "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/QxChain.lean",
+      "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/UnipotentCoordinatesMeasurePreserving.lean"
     ],
     "import_environment": "pinned original upstream build cache",
     "matched_elaborated_signature_and_axiom_reports": 8,
     "direct_importer_smoke": [
       {
-        "module": "Formalism.SizeWindowBrackets.ChainSlopeWindows.PChain",
+        "module": "Formalism.HermitianCurvature.HermitianCurvatureProofs.ResGDifferentiableAt",
         "source_variants": [
-          "overlay"
+          "upstream"
         ],
         "result": "passed"
       },
       {
-        "module": "Formalism.ThetaLogCoordinates.BihomogeneousPairs.LetterChainEmbeddings.ChainEmbInj",
+        "module": "Formalism.HermitianCurvature.HermitianCurvatureProofs.InvariantOperatorUnderJacquet",
         "source_variants": [
-          "overlay"
+          "upstream"
+        ],
+        "result": "passed"
+      },
+      {
+        "module": "Formalism.HermitianCurvature.HermitianCurvatureProofs.ExistsHaarStabilizer",
+        "source_variants": [
+          "upstream"
+        ],
+        "result": "passed"
+      },
+      {
+        "module": "Formalism.HermitianCurvature.HermitianCurvatureProofs.UnitriangularEqOneOfMinorsNonzero",
+        "source_variants": [
+          "upstream"
         ],
         "result": "passed"
       }
-    ]
+    ],
+    "combined_import_smoke": "passed",
+    "additional_saved_nonblank": 395,
+    "savings_by_module": {
+      "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/QxChain.lean": 12,
+      "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/UnipotentCoordinatesMeasurePreserving.lean": 383
+    }
   },
   "previous_structural_followups": [
+    {
+      "base_commit": "3bfc39e9901f5c57664dd3a7eb5529e36124b760",
+      "checked_source_commit": "4d41eedbf453b5337848655e1482ec1e5214f014",
+      "checked_modules": [
+        "src/Formalism/SizeWindowBrackets/ChainSlopeWindows/LipschitzWeightAndMinimum.lean",
+        "src/Formalism/ThetaLogCoordinates/BihomogeneousPairs/LetterChainEmbeddings/LetterAtSuccVal.lean"
+      ],
+      "import_environment": "pinned original upstream build cache",
+      "matched_elaborated_signature_and_axiom_reports": 8,
+      "direct_importer_smoke": [
+        {
+          "module": "Formalism.SizeWindowBrackets.ChainSlopeWindows.PChain",
+          "source_variants": [
+            "overlay"
+          ],
+          "result": "passed"
+        },
+        {
+          "module": "Formalism.ThetaLogCoordinates.BihomogeneousPairs.LetterChainEmbeddings.ChainEmbInj",
+          "source_variants": [
+            "overlay"
+          ],
+          "result": "passed"
+        }
+      ]
+    },
     {
       "base_commit": "d7fe34a350746d393a4983e7ff6415a163592b86",
       "checked_source_commit": "8188bc546193716276678f2cd13521ea80249875",
