@@ -870,8 +870,7 @@ theorem sigS_oToS (hc : CMData F E) (a : 𝓞 E) : sigS hc (oToS F E a) = oToS F
 
 theorem sigS_adS (hc : CMData F E) (a : intAd F) : sigS hc (adS F E a) = adS F E a := by
   apply Subtype.ext
-  rw [sigS_coe, adS_coe]
-  simp [sigR]
+  simp [sigS_coe, adS_coe, sigR]
 
 theorem sigR_sigR (hc : CMData F E) (x : E ⊗[F] Af F) : sigR hc.sig (Af F) (sigR hc.sig (Af F) x) = x := by
   induction x using TensorProduct.induction_on with
@@ -2292,8 +2291,7 @@ def lc_starO (E : Type) [Field E] [NumberField E] [StarRing E] : 𝓞 E ≃+* �
 theorem lc_starO_coe (a : 𝓞 E) : ((lc_starO E a : 𝓞 E) : E) = star (a : E) := rfl
 
 theorem lc_starO_starO (a : 𝓞 E) : lc_starO E (lc_starO E a) = a := by
-  apply RingOfIntegers.ext
-  rw [lc_starO_coe, lc_starO_coe, star_star]
+  exact RingOfIntegers.ext (by rw [lc_starO_coe, lc_starO_coe, star_star])
 
 def lc_conjPl (PP : Pl E) : Pl E where
   asIdeal := PP.asIdeal.comap (lc_starO E : 𝓞 E →+* 𝓞 E)
@@ -2375,10 +2373,8 @@ theorem lc_gp_sq (h : IsTypeDatum gp pb) (i : Fin 2) (PP : Pl E) : (gp i : 𝓞 
 
 theorem lc_gp_dvd (h : IsTypeDatum gp pb) (i : Fin 2) (b : 𝓞 E)
     (hb : ∀ PP : Pl E, (gp i : 𝓞 E) ∈ PP.asIdeal → b ∈ PP.asIdeal) : (gp i : 𝓞 E) ∣ b := by
-  have hbot : ∀ P : Ideal (𝓞 E), (gp i : 𝓞 E) ∈ P → P ≠ ⊥ := by
-    intro P hP h0
-    rw [h0, Ideal.mem_bot] at hP
-    exact lc_gp_ne h i hP
+  have hbot : ∀ P : Ideal (𝓞 E), (gp i : 𝓞 E) ∈ P → P ≠ ⊥ :=
+    fun P hP h0 => lc_gp_ne h i (by simpa [h0, Ideal.mem_bot] using hP)
   refine lc_dvd_of_sqfree _ b (lc_gp_ne h i) ?_ ?_
   · intro P hPp hP
     exact lc_gp_sq h i ⟨P, hPp, hbot P hP⟩
