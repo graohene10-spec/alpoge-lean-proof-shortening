@@ -57,27 +57,13 @@ theorem substitution_preserves_of_generators (h h' : Matrix (Fin n) (Fin n) L)
     rw [MvPolynomial.smul_eq_C_mul, map_mul, matrixSubst_C, RingHom.id_apply, ← MvPolynomial.smul_eq_C_mul]
     exact Submodule.smul_mem _ c hy
 
-private theorem v1r_act_mul_lemma (h1 h1' h2 h2' : Matrix (Fin n) (Fin n) L) :
-    matrixSubst LL S (RingHom.id L) (h1 * h2) (h2' * h1') =
-      (matrixSubst LL S (RingHom.id L) h1 h1').comp (matrixSubst LL S (RingHom.id L) h2 h2') := by
-  apply MvPolynomial.ringHom_ext
-  · intro c
-    simp [matrixSubst]
-  · rintro ⟨l, a⟩
-    by_cases hl : l ∈ S
-    · by_cases hv : LL.vec l = true
-      · simp [matrixSubst, hl, hv, Matrix.mul_apply, Finset.mul_sum, Finset.sum_mul, map_sum, ← mul_assoc]
-        rw [Finset.sum_comm]
-        refine Finset.sum_congr rfl fun c _ => Finset.sum_congr rfl fun b _ => ?_
-        ring
-      · simp [matrixSubst, hl, hv, Matrix.mul_apply, Finset.mul_sum, Finset.sum_mul, map_sum, ← mul_assoc]
-        rw [Finset.sum_comm]
-    · simp [matrixSubst, hl]
-
+-- Keep the existing [Fintype ι] parameter for callers.
+set_option linter.unusedSectionVars false in
 theorem substitution_preserves_mul {h1 h1' h2 h2' : Matrix (Fin n) (Fin n) L} (H1 : SubstitutionPreservesExtension LL S φ W h1 h1')
     (H2 : SubstitutionPreservesExtension LL S φ W h2 h2') : SubstitutionPreservesExtension LL S φ W (h1 * h2) (h2' * h1') := by
   intro x hx
-  simpa [v1r_act_mul_lemma, RingHom.comp_apply] using H1 _ (H2 x hx)
+  rw [← matrixSubst_comp LL S (RingHom.id L) h1 h1' h2 h2' x]
+  exact H1 _ (H2 x hx)
 
 theorem substitution_preserves_transvection (hT : TransvectionExpansion) (hW : ∀ a b k, a ≠ b → ∀ x ∈ W, divPow R LL S a b k x ∈ W)
     (a b : Fin n) (hab : a ≠ b) (t : L) :
