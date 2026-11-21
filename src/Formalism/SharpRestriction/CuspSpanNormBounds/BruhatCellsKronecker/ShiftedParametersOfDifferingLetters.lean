@@ -835,6 +835,20 @@ theorem assembly_numerics_of_large (C0 C' Cl Cg cb Cu cT CT : ℝ) (ca : Admissi
 
 end Numbers
 
+theorem theorem_S_of_large_parameters (D : D7) (large₂ : SizeData₂ D) (C0 C' Cl Cg cb Cu cT CT : ℝ) (ca : AdmissibleBoundsFromSource.AdmC) (hCl : 2 < Cl)
+    (hk1 : 2 * (1030 * ca.CA + 3) ≤ (D.R.k : ℝ)) (hk2 : 3000 ≤ (D.R.k : ℝ)) (hk3 : ca.CA' ≤ (D.R.k : ℝ) ^ ca.c5)
+    (hk4 : 1 ≤ ca.cL * Real.log D.R.k) (hk5 : 1 ≤ ca.cN * Real.log D.R.k)
+    (hb : 13 + 8 * ca.CA + 8 * ca.Ce ≤ large₂.sc.b) : AdmissibleBoundsFromSource.IntegralityFromMetric D large₂ C0 C' Cl Cg cb Cu cT CT ca := by
+  intro hOk hG hH hA
+  have hC' : 1 ≤ C' := by
+    have h1 : 8 * large₂.CGam ≤ C' := hH.2.1.1
+    have h2 : 0 ≤ ca.CE := hOk.2.2.2.2.2.2.1
+    have h3 : ca.CE ≤ max ca.CE ca.CN := le_max_left _ _
+    unfold AdmissibleBoundsFromSource.GamDef at hG
+    linarith
+  exact theorem_S_of_numerical_inequalities D large₂ C0 C' Cl Cg cb Cu cT CT ca hOk hC' hCl hH hA
+    (assembly_numerics_of_large D large₂ C0 C' Cl Cg cb Cu cT CT ca hOk hCl hG hH hk1 hk2 hk3 hk4 hk5 hb)
+
 section Family
 
 variable {eps : ℝ} (Fm : FamP eps)
@@ -842,7 +856,7 @@ variable {eps : ℝ} (Fm : FamP eps)
 theorem theorem_S_family (gc : AdmissibleBoundsFromSource.GivC) (ca : AdmissibleBoundsFromSource.AdmC) (hCl : 2 < sCl Fm) : AdmissibleBoundsFromSource.PeriodFamilyStatement Fm gc ca := by
   intro _ hOk hG hA
   obtain ⟨⟨x1, A1⟩, ⟨x2, A2⟩, ⟨x3, A3⟩, ⟨x4, A4⟩, ⟨x5, A5⟩, ⟨x6, A6⟩, ⟨x7, A7⟩, ⟨x8, A8⟩, ⟨x9, A9⟩,
-    ⟨⟨x11a, EigenbasisExists⟩, ⟨x11b, FunctionalCalculusLaws⟩, ⟨x11c, EigenspacesOrthogonalAlt⟩⟩, A12, ⟨x13, A13⟩, ⟨x14, A14⟩, ⟨x15, A15⟩⟩ := hA
+    ⟨⟨x11a, WeylDimension⟩, ⟨x11b, VandermondeLower⟩, ⟨x11c, VandermondeUpper⟩⟩, A12, ⟨x13, A13⟩, ⟨x14, A14⟩, ⟨x15, A15⟩⟩ := hA
   have o4 : 0 < ca.cL := hOk.2.2.2.1
   have o5 : 0 < ca.cN := hOk.2.2.2.2.1
   have oc5 : 0 < ca.c5 := hOk.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2
@@ -857,12 +871,6 @@ theorem theorem_S_family (gc : AdmissibleBoundsFromSource.GivC) (ca : Admissible
     ⟨⟨⟨le9, le11a⟩, ⟨le11b, le11c⟩⟩, ⟨⟨le13, le14⟩, ⟨le15, ⟨lez1, lez2⟩⟩⟩⟩⟩ := hx
   have hGam : AdmissibleBoundsFromSource.GamDef (Fm.D x i) (Fm.L x i) ca.CE ca.CN := by
     unfold AdmissibleBoundsFromSource.GamDef; rw [Fm.CGam_eq]; exact hG
-  have hC' : 1 ≤ sC' Fm := by
-    have h1 : 8 * (Fm.L x i).CGam ≤ sC' Fm := hH.2.1.1
-    have h2 : 0 ≤ ca.CE := hOk.2.2.2.2.2.2.1
-    have h3 : ca.CE ≤ max ca.CE ca.CN := le_max_left _ _
-    unfold AdmissibleBoundsFromSource.GamDef at hGam
-    linarith
   have hk := Z1 x lez1 i
   simp only [max_le_iff] at hk
   obtain ⟨⟨h1030, h3000⟩, ⟨hy0k, ⟨hEL, hEN⟩⟩⟩ := hk
@@ -872,39 +880,20 @@ theorem theorem_S_family (gc : AdmissibleBoundsFromSource.GivC) (ca : Admissible
     have := (Real.le_log_iff_exp_le hkpos).2 h
     calc (1 : ℝ) = c * (1 / c) := by field_simp
       _ ≤ c * Real.log ((Fm.D x i).R.k : ℝ) := mul_le_mul_of_nonneg_left this hc.le
-  have hN : AdmissibleConstantInequalities (Fm.D x i) (Fm.L x i) ca :=
-    assembly_numerics_of_large (Fm.D x i) (Fm.L x i) gc.C0 (sC' Fm) (sCl Fm) gc.Cg gc.cb gc.Cu gc.cT gc.CT ca hOk hCl hGam hH
-      h1030
-      h3000
-      (hy0 _ hy0k)
-      (hlog _ o4 hEL)
-      (hlog _ o5 hEN)
-      (by
-        have h1 := Z2 x lez2 i
-        have h2 := Real.add_one_le_exp (Fm.L x i).sc.L
-        have h3 : (Fm.L x i).sc.b = Real.exp (Fm.L x i).sc.L := rfl
-        linarith)
-  exact theorem_S_of_numerical_inequalities (Fm.D x i) (Fm.L x i) gc.C0 (sC' Fm) (sCl Fm) gc.Cg gc.cb gc.Cu gc.cT gc.CT ca hOk hC' hCl hH
+  have hb : 13 + 8 * ca.CA + 8 * ca.Ce ≤ (Fm.L x i).sc.b := by
+    have h1 := Z2 x lez2 i
+    have h2 := Real.add_one_le_exp (Fm.L x i).sc.L
+    have h3 : (Fm.L x i).sc.b = Real.exp (Fm.L x i).sc.L := rfl
+    linarith
+  exact theorem_S_of_large_parameters (Fm.D x i) (Fm.L x i)
+    gc.C0 (sC' Fm) (sCl Fm) gc.Cg gc.cb gc.Cu gc.cT gc.CT ca hCl h1030 h3000
+    (hy0 _ hy0k) (hlog _ o4 hEL) (hlog _ o5 hEN) hb hOk hGam hH
     ⟨A1 x le1 i, A2 x le2 i, A3 x le3 i, A4 x le4 i, A5 x le5 i, A6 x le6 i, A7 x le7 i, A8 x le8 i, A9 x le9 i,
-      ⟨EigenbasisExists x le11a i, FunctionalCalculusLaws x le11b i, EigenspacesOrthogonalAlt x le11c i⟩, A12, A13 x le13 i, A14 x le14 i, A15 x le15 i⟩ hN
+      ⟨WeylDimension x le11a i, VandermondeLower x le11b i, VandermondeUpper x le11c i⟩, A12, A13 x le13 i, A14 x le14 i, A15 x le15 i⟩
 
 end Family
 
 section Forms
-
-theorem theorem_S_of_large_parameters (D : D7) (large₂ : SizeData₂ D) (C0 C' Cl Cg cb Cu cT CT : ℝ) (ca : AdmissibleBoundsFromSource.AdmC) (hCl : 2 < Cl)
-    (hk1 : 2 * (1030 * ca.CA + 3) ≤ (D.R.k : ℝ)) (hk2 : 3000 ≤ (D.R.k : ℝ)) (hk3 : ca.CA' ≤ (D.R.k : ℝ) ^ ca.c5)
-    (hk4 : 1 ≤ ca.cL * Real.log D.R.k) (hk5 : 1 ≤ ca.cN * Real.log D.R.k)
-    (hb : 13 + 8 * ca.CA + 8 * ca.Ce ≤ large₂.sc.b) : AdmissibleBoundsFromSource.IntegralityFromMetric D large₂ C0 C' Cl Cg cb Cu cT CT ca := by
-  intro hOk hG hH hA
-  have hC' : 1 ≤ C' := by
-    have h1 : 8 * large₂.CGam ≤ C' := hH.2.1.1
-    have h2 : 0 ≤ ca.CE := hOk.2.2.2.2.2.2.1
-    have h3 : ca.CE ≤ max ca.CE ca.CN := le_max_left _ _
-    unfold AdmissibleBoundsFromSource.GamDef at hG
-    linarith
-  exact theorem_S_of_numerical_inequalities D large₂ C0 C' Cl Cg cb Cu cT CT ca hOk hC' hCl hH hA
-    (assembly_numerics_of_large D large₂ C0 C' Cl Cg cb Cu cT CT ca hOk hCl hG hH hk1 hk2 hk3 hk4 hk5 hb)
 
 theorem theorem_S_closed_form (𝒞 : Formalism.MainNotions.FamClass) : AdmissibleBoundsFromSource.ClosedFormWithDensityConstant 𝒞 := fun gc ca =>
   ⟨1, one_pos, fun _ _ _ => ⟨⟨0, fun _ => 0, fun _ => 0, fun _ => 3⟩, fun Fm _ _ hL =>
