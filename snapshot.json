@@ -8,7 +8,7 @@
   "planned_candidates": 7946,
   "included_candidates": 7946,
   "deferred_candidates": 0,
-  "saved_nonblank": 15222,
+  "saved_nonblank": 15357,
   "lean_toolchain": "leanprover/lean4:v4.33.1",
   "mathlib_revision": "0df444a360eaa60ab8c11dca51a86af692955474",
   "upstream_archive_sha256": "9631b4f020199e580ba86178cb56c6e9b09f690c2369a80dc4334aa93f49c7fc",
@@ -18,24 +18,28 @@
     "result": "passed"
   },
   "structural_followup": {
-    "base_commit": "23164a76ec4ce0525b4937933427e36a7560b687",
-    "checked_source_commit": "bd12d4dc07a83d26110cc28b8296717c77eb8da3",
+    "base_commit": "db3f2ddca2cf791590225489fc8bb20768468222",
+    "checked_source_commit": "0c0c8cd43630d73f2fe3bf6d0ba47abb1bf9ba14",
     "checked_modules": [
-      "src/Formalism/FlagUnipotentLattices/MinkowskiFactorialBounds/ExponentInequalityNondegenerateMid.lean",
-      "src/Formalism/SharpRestriction/CuspSpanNormBounds/BruhatCellsKronecker/ShiftedParametersOfDifferingLetters.lean"
+      "src/Formalism/FormalDegreeBessel/FormalDegreeRatio/IOCentral.lean",
+      "src/Formalism/RealPlaceAnalysis/RealPlaceTaylor/IndefiniteUnitaryPreservesForm.lean",
+      "src/Formalism/RealPlaceAnalysis/RealPlaceTaylor/KoszulLowersPower.lean",
+      "src/Formalism/RealPlaceAnalysis/RealPlaceTaylor/LieOperatorConjHolds.lean",
+      "src/Formalism/RealPlaceAnalysis/RealPlaceTaylor/MemUnitaryGroupIffMulConjTranspose.lean",
+      "src/Formalism/SharpRestriction/GrowthBounds/JointsLit.lean"
     ],
     "import_environment": "pinned original upstream build cache",
-    "matched_elaborated_signature_and_axiom_reports": 12,
+    "matched_elaborated_signature_and_axiom_reports": 29,
     "direct_importer_smoke": [
       {
-        "module": "Formalism.SharpRestriction.CuspSpanNormBounds.BruhatCellsKronecker.FamilyPacketOfEquivalentStatement",
+        "module": "Formalism.RealPlaceAnalysis.SmoothOnGVIff",
         "source_variants": [
           "overlay"
         ],
         "result": "passed"
       },
       {
-        "module": "Formalism.SharpRestriction.CuspSpanNormBounds.BruhatCellsKronecker.WeightedProjectionSumSelfAdjoint",
+        "module": "Formalism.FormalDegreeBessel.FormalDegreeRatio.CapelliHighestWeightConjugated",
         "source_variants": [
           "overlay"
         ],
@@ -67,6 +71,32 @@
           "module": "Formalism.SharpRestriction.GrowthBounds.RootWeights.CrLift",
           "source_variants": [
             "upstream"
+          ],
+          "result": "passed"
+        }
+      ]
+    },
+    {
+      "base_commit": "23164a76ec4ce0525b4937933427e36a7560b687",
+      "checked_source_commit": "bd12d4dc07a83d26110cc28b8296717c77eb8da3",
+      "checked_modules": [
+        "src/Formalism/FlagUnipotentLattices/MinkowskiFactorialBounds/ExponentInequalityNondegenerateMid.lean",
+        "src/Formalism/SharpRestriction/CuspSpanNormBounds/BruhatCellsKronecker/ShiftedParametersOfDifferingLetters.lean"
+      ],
+      "import_environment": "pinned original upstream build cache",
+      "matched_elaborated_signature_and_axiom_reports": 12,
+      "direct_importer_smoke": [
+        {
+          "module": "Formalism.SharpRestriction.CuspSpanNormBounds.BruhatCellsKronecker.FamilyPacketOfEquivalentStatement",
+          "source_variants": [
+            "overlay"
+          ],
+          "result": "passed"
+        },
+        {
+          "module": "Formalism.SharpRestriction.CuspSpanNormBounds.BruhatCellsKronecker.WeightedProjectionSumSelfAdjoint",
+          "source_variants": [
+            "overlay"
           ],
           "result": "passed"
         }
