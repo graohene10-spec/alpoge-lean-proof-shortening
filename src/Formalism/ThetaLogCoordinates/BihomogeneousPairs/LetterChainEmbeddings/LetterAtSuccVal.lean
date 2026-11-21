@@ -54,51 +54,37 @@ theorem pos_ne_succ (hB : D.BlockOK) (i i' : Fin D.T.t) : D.T.pos i ≠ D.T.pos 
 
 theorem pos_lt_u (hB : D.BlockOK) (i : Fin D.T.t) : D.T.pos i + 1 < (D.uPos : ℕ) := hB.2.1 i
 
-theorem deg_lettersAt_pos (hB : D.BlockOK) (j : Fin D.T.t → ℕ) (jp : ℕ) (i : Fin D.T.t) :
-    (D.lettersAt j jp).deg (D.letterAt (D.T.pos i)) = D.LL.deg (D.letterAt (D.T.pos i)) - j i := by
+private theorem deg_lettersAt_of_pair (hB : D.BlockOK) (j : Fin D.T.t → ℕ) (jp : ℕ)
+    (i : Fin D.T.t) (p : Fin N) (hp : p.val = D.T.pos i ∨ p.val = D.T.pos i + 1) :
+    (D.lettersAt j jp).deg p = D.LL.deg p - j i := by
   simp only [BlockData.lettersAt]
-  have hs : (∑ i', if ((D.letterAt (D.T.pos i) : Fin N) : ℕ) = D.T.pos i' ∨
-      ((D.letterAt (D.T.pos i) : Fin N) : ℕ) = D.T.pos i' + 1 then j i' else 0) = j i := by
+  have hs : (∑ i', if p.val = D.T.pos i' ∨ p.val = D.T.pos i' + 1 then j i' else 0) = j i := by
     rw [Finset.sum_eq_single i]
-    · simp [letterAt_pos_val hB]
+    · rw [if_pos hp]
     · intro b _ hb
       rw [if_neg]
-      rw [letterAt_pos_val hB]
-      rintro (h | h)
-      · exact hb (pos_inj hB h).symm
-      · exact pos_ne_succ hB i b h
+      rintro (hb₀ | hb₁) <;> rcases hp with hi₀ | hi₁
+      · exact hb (pos_inj hB (hb₀.symm.trans hi₀))
+      · exact pos_ne_succ hB b i (hb₀.symm.trans hi₁)
+      · exact pos_ne_succ hB i b (hi₀.symm.trans hb₁)
+      · exact hb (pos_inj hB (Nat.add_right_cancel (hb₁.symm.trans hi₁)))
     · intro h
       exact absurd (Finset.mem_univ _) h
-  have hu : D.letterAt (D.T.pos i) ≠ D.uPos := by
+  have hu : p ≠ D.uPos := by
     intro h
-    have h1 := congrArg Fin.val h
-    rw [letterAt_pos_val hB] at h1
-    have := pos_lt_u hB i
-    omega
+    have hval := congrArg Fin.val h
+    have hlt := pos_lt_u hB i
+    rcases hp with hp | hp <;> omega
   rw [hs, if_neg hu, Nat.sub_zero]
+
+theorem deg_lettersAt_pos (hB : D.BlockOK) (j : Fin D.T.t → ℕ) (jp : ℕ) (i : Fin D.T.t) :
+    (D.lettersAt j jp).deg (D.letterAt (D.T.pos i)) = D.LL.deg (D.letterAt (D.T.pos i)) - j i := by
+  exact deg_lettersAt_of_pair hB j jp i (D.letterAt (D.T.pos i)) (Or.inl (letterAt_pos_val hB i))
 
 theorem deg_lettersAt_pos_succ (hB : D.BlockOK) (j : Fin D.T.t → ℕ) (jp : ℕ) (i : Fin D.T.t) :
     (D.lettersAt j jp).deg (D.letterAt (D.T.pos i + 1)) = D.LL.deg (D.letterAt (D.T.pos i + 1)) - j i := by
-  simp only [BlockData.lettersAt]
-  have hs : (∑ i', if ((D.letterAt (D.T.pos i + 1) : Fin N) : ℕ) = D.T.pos i' ∨
-      ((D.letterAt (D.T.pos i + 1) : Fin N) : ℕ) = D.T.pos i' + 1 then j i' else 0) = j i := by
-    rw [Finset.sum_eq_single i]
-    · simp [letterAt_succ_val hB]
-    · intro b _ hb
-      rw [if_neg]
-      rw [letterAt_succ_val hB]
-      rintro (h | h)
-      · exact pos_ne_succ hB b i h.symm
-      · exact hb (pos_inj hB (by omega)).symm
-    · intro h
-      exact absurd (Finset.mem_univ _) h
-  have hu : D.letterAt (D.T.pos i + 1) ≠ D.uPos := by
-    intro h
-    have h1 := congrArg Fin.val h
-    rw [letterAt_succ_val hB] at h1
-    have := pos_lt_u hB i
-    omega
-  rw [hs, if_neg hu, Nat.sub_zero]
+  exact deg_lettersAt_of_pair hB j jp i (D.letterAt (D.T.pos i + 1))
+    (Or.inr (letterAt_succ_val hB i))
 
 theorem deg_U (hB : D.BlockOK) (j : Fin D.T.t → ℕ) (jp : ℕ) :
     (D.lettersAt j jp).deg D.uPos = D.LL.deg D.uPos - jp := by

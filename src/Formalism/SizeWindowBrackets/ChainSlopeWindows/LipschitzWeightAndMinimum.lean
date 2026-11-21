@@ -677,10 +677,11 @@ lemma psi_le_three {y : ℝ} (hy : 0 ≤ y) : Chebyshev.psi y ≤ 3 * y := by
 lemma sum_vM_le {Y : ℝ} (hY : 0 ≤ Y) : ∑ n ∈ Icc 1 ⌊Y⌋₊, Λ n ≤ 3 * Y := by
   rw [Formalism.LogFactorialMertensBounds.Icc_one_eq_Ioc]; exact psi_le_three hY
 
-lemma truncC (c : ℕ → ℂ) (y : ℝ) (M : ℕ) (hM : ⌊y⌋₊ ≤ M) :
-    ∑ n ∈ Icc 1 ⌊y⌋₊, c n * ((y / n - 1 : ℝ) : ℂ) = ∑ n ∈ Icc 1 M, c n * ((max (y / n - 1) 0 : ℝ) : ℂ) := by
-  have h1 : ∑ n ∈ Icc 1 ⌊y⌋₊, c n * ((max (y / n - 1) 0 : ℝ) : ℂ)
-      = ∑ n ∈ Icc 1 M, c n * ((max (y / n - 1) 0 : ℝ) : ℂ) := by
+private lemma trunc_smul {V : Type*} [AddCommMonoid V] [Module ℝ V]
+    (c : ℕ → V) (y : ℝ) (M : ℕ) (hM : ⌊y⌋₊ ≤ M) :
+    ∑ n ∈ Icc 1 ⌊y⌋₊, (y / n - 1) • c n = ∑ n ∈ Icc 1 M, max (y / n - 1) 0 • c n := by
+  have h1 : ∑ n ∈ Icc 1 ⌊y⌋₊, max (y / n - 1) 0 • c n
+      = ∑ n ∈ Icc 1 M, max (y / n - 1) 0 • c n := by
     apply Finset.sum_subset (Finset.Icc_subset_Icc_right hM)
     intro n hn hn'
     rw [Finset.mem_Icc] at hn hn'
@@ -690,7 +691,7 @@ lemma truncC (c : ℕ → ℂ) (y : ℝ) (M : ℕ) (hM : ⌊y⌋₊ ≤ M) :
     have hn0 : (0 : ℝ) < n := by exact_mod_cast hn.1
     have : y / n - 1 ≤ 0 := by
       have := (div_lt_one hn0).2 hy; linarith
-    rw [max_eq_right this]; simp
+    rw [max_eq_right this, zero_smul]
   rw [← h1]
   apply Finset.sum_congr rfl
   intro n hn
@@ -701,28 +702,13 @@ lemma truncC (c : ℕ → ℂ) (y : ℝ) (M : ℕ) (hM : ⌊y⌋₊ ≤ M) :
     have := (one_le_div hn0).2 hy; linarith
   rw [max_eq_left this]
 
+lemma truncC (c : ℕ → ℂ) (y : ℝ) (M : ℕ) (hM : ⌊y⌋₊ ≤ M) :
+    ∑ n ∈ Icc 1 ⌊y⌋₊, c n * ((y / n - 1 : ℝ) : ℂ) = ∑ n ∈ Icc 1 M, c n * ((max (y / n - 1) 0 : ℝ) : ℂ) := by
+  simpa only [Complex.real_smul, mul_comm] using trunc_smul c y M hM
+
 lemma truncR (c : ℕ → ℝ) (y : ℝ) (M : ℕ) (hM : ⌊y⌋₊ ≤ M) :
     ∑ n ∈ Icc 1 ⌊y⌋₊, c n * (y / n - 1) = ∑ n ∈ Icc 1 M, c n * (max (y / n - 1) 0) := by
-  have h1 : ∑ n ∈ Icc 1 ⌊y⌋₊, c n * (max (y / n - 1) 0) = ∑ n ∈ Icc 1 M, c n * (max (y / n - 1) 0) := by
-    apply Finset.sum_subset (Finset.Icc_subset_Icc_right hM)
-    intro n hn hn'
-    rw [Finset.mem_Icc] at hn hn'
-    have hlt : ⌊y⌋₊ < n := by
-      by_contra h; exact hn' ⟨hn.1, not_lt.1 h⟩
-    have hy : y < n := (Nat.floor_lt' (by omega)).1 hlt
-    have hn0 : (0 : ℝ) < n := by exact_mod_cast hn.1
-    have : y / n - 1 ≤ 0 := by
-      have := (div_lt_one hn0).2 hy; linarith
-    rw [max_eq_right this]; simp
-  rw [← h1]
-  apply Finset.sum_congr rfl
-  intro n hn
-  rw [Finset.mem_Icc] at hn
-  have hn0 : (0 : ℝ) < n := by exact_mod_cast hn.1
-  have hy : (n : ℝ) ≤ y := (Nat.le_floor_iff' (by omega)).1 hn.2
-  have : 0 ≤ y / n - 1 := by
-    have := (one_le_div hn0).2 hy; linarith
-  rw [max_eq_left this]
+  simpa only [smul_eq_mul, mul_comm] using trunc_smul c y M hM
 
 section
 variable {H : Type} [AddCommGroup H] [Fintype H] [DecidableEq H]
