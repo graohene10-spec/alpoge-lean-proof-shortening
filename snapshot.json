@@ -1,10 +1,10 @@
 {
-  "snapshot_utc": "2026-11-21T07:56:13.038040+00:00",
-  "status": "structural refactor pending module recheck",
+  "snapshot_utc": "2026-11-21T08:05:56.407374+00:00",
+  "status": "module checks complete",
   "planned_files": 1997,
-  "checked_files": 1994,
+  "checked_files": 1997,
   "files": 1997,
-  "merged_files_rechecked": 1338,
+  "merged_files_rechecked": 1341,
   "planned_candidates": 7946,
   "included_candidates": 7946,
   "deferred_candidates": 0,
@@ -19,10 +19,30 @@
   },
   "structural_followup": {
     "base_commit": "d7fe34a350746d393a4983e7ff6415a163592b86",
-    "pending_modules": [
+    "checked_source_commit": "8188bc546193716276678f2cd13521ea80249875",
+    "checked_modules": [
       "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/LevelSizesJointMean.lean",
       "src/Formalism/SharpRestriction/GrowthBounds/RootWeights/CasimirIsotypicNoHigherWeight.lean",
       "src/Formalism/SharpRestriction/GrowthBounds/RootWeights/GeneratedModuleWeightLemmaOfInterfaces.lean"
+    ],
+    "import_environment": "pinned original upstream build cache",
+    "matched_elaborated_signature_and_axiom_reports": 8,
+    "direct_importer_smoke": [
+      {
+        "module": "Formalism.SharpRestriction.GrowthBounds.RootWeights.SpecialiseGenericMatrixInverse",
+        "source_variants": [
+          "upstream",
+          "overlay"
+        ],
+        "result": "passed"
+      },
+      {
+        "module": "Formalism.SharpRestriction.GrowthBounds.RootWeights.CrLift",
+        "source_variants": [
+          "upstream"
+        ],
+        "result": "passed"
+      }
     ]
   }
 }
