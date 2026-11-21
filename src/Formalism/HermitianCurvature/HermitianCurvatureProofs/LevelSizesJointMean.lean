@@ -164,6 +164,42 @@ theorem t_LatticeSumsJoint : LatticeSumsJoint := by
     exact key (aaL (i - s + 1) s) (D.Lap (i - s + 1) s) (D.szL (i - s + 1) s) a h1 h2 h3
       (by linarith) le_rfl h4 L hL
 
+private theorem levelVolumeBound (f s : ℕ) (C M Θ A : ℝ) (vol : ℕ → ℝ)
+    (hf : 1 ≤ f) (hs : 2 ≤ s) (hC : 1 ≤ C) (hM : 2 * C ≤ M) (hA : A ≤ 4)
+    (hvol : ∀ j ∈ Ico 1 s, 0 ≤ vol j ∧ vol j ≤ ((Θ ^ f)⁻¹) ^ 2) :
+    0 ≤ C ^ (f * s) * (∏ j ∈ Ico 1 s, vol j) ∧
+      A * (C ^ (f * s) * ∏ j ∈ Ico 1 s, vol j) ≤ ((M / Θ) ^ f) ^ (2 * (s - 1)) := by
+  have hC0 : 0 ≤ C := zero_le_one.trans hC
+  have hCpow : 0 ≤ C ^ (f * s) := pow_nonneg hC0 _
+  have hP0 : 0 ≤ ∏ j ∈ Ico 1 s, vol j := Finset.prod_nonneg (fun j hj => (hvol j hj).1)
+  have hPQ : ∏ j ∈ Ico 1 s, vol j ≤ (((Θ ^ f)⁻¹) ^ 2) ^ (s - 1) := by
+    calc ∏ j ∈ Ico 1 s, vol j ≤ ∏ _j ∈ Ico 1 s, ((Θ ^ f)⁻¹) ^ 2 :=
+          Finset.prod_le_prod (fun j hj => (hvol j hj).1) (fun j hj => (hvol j hj).2)
+      _ = _ := by rw [Finset.prod_const, Nat.card_Ico]
+  have hexp : 2 ≤ f * (2 * (s - 1)) := by
+    have htwo : 2 ≤ 2 * (s - 1) := by omega
+    simpa using Nat.mul_le_mul hf htwo
+  have hexpC : f * s ≤ f * (2 * (s - 1)) := Nat.mul_le_mul le_rfl (by omega)
+  have htwo : (4 : ℝ) ≤ 2 ^ (f * (2 * (s - 1))) := by
+    calc (4 : ℝ) = 2 ^ 2 := by norm_num
+      _ ≤ _ := pow_le_pow_right₀ (by norm_num) hexp
+  have hscale : 4 * C ^ (f * s) ≤ (M ^ f) ^ (2 * (s - 1)) := by
+    calc 4 * C ^ (f * s) ≤ 2 ^ (f * (2 * (s - 1))) * C ^ (f * (2 * (s - 1))) :=
+          mul_le_mul htwo (pow_le_pow_right₀ hC hexpC) hCpow (by positivity)
+      _ = (2 * C) ^ (f * (2 * (s - 1))) := by rw [mul_pow]
+      _ ≤ M ^ (f * (2 * (s - 1))) := pow_le_pow_left₀ (by positivity) hM _
+      _ = _ := by rw [pow_mul]
+  refine ⟨mul_nonneg hCpow hP0, ?_⟩
+  rw [show ((M / Θ) ^ f) ^ (2 * (s - 1)) =
+    (M ^ f) ^ (2 * (s - 1)) * (((Θ ^ f)⁻¹) ^ 2) ^ (s - 1) by
+    rw [div_pow, div_eq_mul_inv, mul_pow, ← pow_mul ((Θ ^ f)⁻¹) 2 (s - 1)]]
+  calc A * (C ^ (f * s) * ∏ j ∈ Ico 1 s, vol j) ≤ 4 * (C ^ (f * s) * ∏ j ∈ Ico 1 s, vol j) :=
+        mul_le_mul_of_nonneg_right hA (mul_nonneg hCpow hP0)
+    _ ≤ 4 * (C ^ (f * s) * (((Θ ^ f)⁻¹) ^ 2) ^ (s - 1)) :=
+        mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hPQ hCpow) (by norm_num)
+    _ = (4 * C ^ (f * s)) * (((Θ ^ f)⁻¹) ^ 2) ^ (s - 1) := by ring
+    _ ≤ _ := mul_le_mul_of_nonneg_right hscale (by positivity)
+
 theorem t_LevelSizesJoint : LevelSizesJoint := by
   intro C₁ C₄ hC₁ hC₄ E W _ D Θ hK hf hΘ hav hszD hszL he hSB hLS i hi
   have hΘpos : 0 < Θ := by linarith
@@ -237,63 +273,17 @@ theorem t_LevelSizesJoint : LevelSizesJoint := by
     apply mul_le_mul (by linarith) (by linarith) (by linarith) (by linarith)
   · intro s hs
     have hs' := Finset.mem_Icc.mp hs
-    have hvol0 : ∀ s', 0 ≤ D.vol (i - s + 1) s' := fun s' => hSB.1 _ _
-    have hP0 : 0 ≤ ∏ s' ∈ Ico 1 s, D.vol (i - s + 1) s' :=
-      Finset.prod_nonneg (fun s' _ => hvol0 s')
-    have hC4p : 0 ≤ C₄ ^ (D.f * s) := pow_nonneg (by linarith) _
-    refine ⟨mul_nonneg hC4p hP0, ?_⟩
-    have hPQ : ∏ s' ∈ Ico 1 s, D.vol (i - s + 1) s' ≤ (((Θ ^ D.f)⁻¹) ^ 2) ^ (s - 1) := by
-      calc ∏ s' ∈ Ico 1 s, D.vol (i - s + 1) s' ≤ ∏ s' ∈ Ico 1 s, ((Θ ^ D.f)⁻¹) ^ 2 := by
-            apply Finset.prod_le_prod (fun s' _ => hvol0 s')
-            intro s' hs''
-            have h5 := Finset.mem_Ico.mp hs''
-            exact hSB.2 _ _ (by omega) h5.1 (by omega)
-        _ = (((Θ ^ D.f)⁻¹) ^ 2) ^ (s - 1) := by rw [Finset.prod_const, Nat.card_Ico]
-    have hQ0 : 0 ≤ (((Θ ^ D.f)⁻¹) ^ 2) ^ (s - 1) := by positivity
-    have hAe : 1 + (Fintype.card (Fin D.f → Fin 3) : ℝ) * X ^ D.f ≤ 2 := by
+    have ha : 1 + (Fintype.card (Fin D.f → Fin 3) : ℝ) * X ^ D.f ≤ 2 := by
       rw [hcard]
       linarith
-    have hBe : 1 + D.e i ≤ 2 := by linarith [(he i hi'.1 hi'.2).2]
-    have hB0 : 0 ≤ 1 + D.e i := by linarith [(he i hi'.1 hi'.2).1]
-    have hkey : 4 * C₄ ^ (D.f * s) ≤ (M ^ D.f) ^ (2 * (s - 1)) := by
-      have h2C : 2 * C₄ ≤ M := le_max_right _ _
-      have h22 : 2 ≤ 2 * (s - 1) := by omega
-      have hexp : 2 ≤ D.f * (2 * (s - 1)) := by
-        have h6 := Nat.mul_le_mul hf h22
-        simpa using h6
-      have hexp2 : D.f * s ≤ D.f * (2 * (s - 1)) := Nat.mul_le_mul le_rfl (by omega)
-      have h4 : (4 : ℝ) ≤ 2 ^ (D.f * (2 * (s - 1))) := by
-        calc (4 : ℝ) = 2 ^ 2 := by norm_num
-          _ ≤ 2 ^ (D.f * (2 * (s - 1))) := by
-            first
-            | exact pow_le_pow_right₀ (by norm_num) hexp
-            | exact pow_le_pow_right (by norm_num) hexp
-      have hc : C₄ ^ (D.f * s) ≤ C₄ ^ (D.f * (2 * (s - 1))) := by
-        first
-        | exact pow_le_pow_right₀ hC₄ hexp2
-        | exact pow_le_pow_right hC₄ hexp2
-      calc 4 * C₄ ^ (D.f * s) ≤ 2 ^ (D.f * (2 * (s - 1))) * C₄ ^ (D.f * (2 * (s - 1))) :=
-            mul_le_mul h4 hc (pow_nonneg (by linarith) _) (by positivity)
-        _ = (2 * C₄) ^ (D.f * (2 * (s - 1))) := by rw [mul_pow]
-        _ ≤ M ^ (D.f * (2 * (s - 1))) := by
-            first
-            | exact pow_le_pow_left (by linarith) h2C _
-            | exact pow_le_pow_left₀ (by linarith) h2C _
-        _ = (M ^ D.f) ^ (2 * (s - 1)) := by rw [pow_mul]
-    have hRHS : ((M / Θ) ^ D.f) ^ (2 * (s - 1)) =
-        (M ^ D.f) ^ (2 * (s - 1)) * (((Θ ^ D.f)⁻¹) ^ 2) ^ (s - 1) := by
-      rw [div_pow, div_eq_mul_inv, mul_pow, ← pow_mul ((Θ ^ D.f)⁻¹) 2 (s - 1)]
-    show (1 + (Fintype.card (Fin D.f → Fin 3) : ℝ) * X ^ D.f) * (1 + D.e i) *
-        (C₄ ^ (D.f * s) * ∏ s' ∈ Ico 1 s, D.vol (i - s + 1) s') ≤ ((M / Θ) ^ D.f) ^ (2 * (s - 1))
-    rw [hRHS]
-    calc (1 + (Fintype.card (Fin D.f → Fin 3) : ℝ) * X ^ D.f) * (1 + D.e i) *
-          (C₄ ^ (D.f * s) * ∏ s' ∈ Ico 1 s, D.vol (i - s + 1) s')
-        ≤ 2 * 2 * (C₄ ^ (D.f * s) * (((Θ ^ D.f)⁻¹) ^ 2) ^ (s - 1)) :=
-          mul_le_mul (mul_le_mul hAe hBe hB0 (by norm_num)) (mul_le_mul_of_nonneg_left hPQ hC4p)
-            (mul_nonneg hC4p hP0) (by norm_num)
-      _ = (4 * C₄ ^ (D.f * s)) * (((Θ ^ D.f)⁻¹) ^ 2) ^ (s - 1) := by ring
-      _ ≤ (M ^ D.f) ^ (2 * (s - 1)) * (((Θ ^ D.f)⁻¹) ^ 2) ^ (s - 1) :=
-          mul_le_mul_of_nonneg_right hkey hQ0
+    have hb := he i hi'.1 hi'.2
+    have hA : (1 + (Fintype.card (Fin D.f → Fin 3) : ℝ) * X ^ D.f) * (1 + D.e i) ≤ 4 := by
+      calc _ ≤ (2 : ℝ) * 2 := mul_le_mul ha (by linarith [hb.2]) (by linarith [hb.1]) (by norm_num)
+        _ = _ := by norm_num
+    refine levelVolumeBound D.f s C₄ M Θ _ (D.vol (i - s + 1)) hf (by omega) hC₄ (le_max_right _ _) hA ?_
+    intro j hj
+    obtain ⟨hj₁, hj₂⟩ := Finset.mem_Ico.mp hj
+    exact ⟨hSB.1 _ _, hSB.2 _ _ (by omega) hj₁ (by omega)⟩
 
 theorem t_LevelSizesJointMean : LevelSizesJointMean := by
   intro C₁ C₄ hC₁ hC₄ E W _ D Θ hK hf hΘ hav hszD hszL he hSB hLS i hi
@@ -372,63 +362,17 @@ theorem t_LevelSizesJointMean : LevelSizesJointMean := by
     apply mul_le_mul (by linarith) (by linarith) (by linarith) (by linarith)
   · intro s hs
     have hs' := Finset.mem_Icc.mp hs
-    have hvol0 : ∀ s', 0 ≤ D.vol (i - s + 1) s' := fun s' => hSB.1 _ _
-    have hP0 : 0 ≤ ∏ s' ∈ Ico 1 s, D.vol (i - s + 1) s' :=
-      Finset.prod_nonneg (fun s' _ => hvol0 s')
-    have hC4p : 0 ≤ C₄ ^ (D.f * s) := pow_nonneg (by linarith) _
-    refine ⟨mul_nonneg hC4p hP0, ?_⟩
-    have hPQ : ∏ s' ∈ Ico 1 s, D.vol (i - s + 1) s' ≤ (((Θ ^ D.f)⁻¹) ^ 2) ^ (s - 1) := by
-      calc ∏ s' ∈ Ico 1 s, D.vol (i - s + 1) s' ≤ ∏ s' ∈ Ico 1 s, ((Θ ^ D.f)⁻¹) ^ 2 := by
-            apply Finset.prod_le_prod (fun s' _ => hvol0 s')
-            intro s' hs''
-            have h5 := Finset.mem_Ico.mp hs''
-            exact hSB.2 _ _ (by omega) h5.1 (by omega)
-        _ = (((Θ ^ D.f)⁻¹) ^ 2) ^ (s - 1) := by rw [Finset.prod_const, Nat.card_Ico]
-    have hQ0 : 0 ≤ (((Θ ^ D.f)⁻¹) ^ 2) ^ (s - 1) := by positivity
-    have hAe : 1 + (Fintype.card (Fin D.f → Fin 3) : ℝ) * X ^ D.f ≤ 2 := by
+    have ha : 1 + (Fintype.card (Fin D.f → Fin 3) : ℝ) * X ^ D.f ≤ 2 := by
       rw [hcard]
       linarith
-    have hBe : 1 + D.e i ≤ 2 := by linarith [(he i hi'.1 hi'.2).2]
-    have hB0 : 0 ≤ 1 + D.e i := by linarith [(he i hi'.1 hi'.2).1]
-    have hkey : 4 * C₄ ^ (D.f * s) ≤ (M ^ D.f) ^ (2 * (s - 1)) := by
-      have h2C : 2 * C₄ ≤ M := le_max_right _ _
-      have h22 : 2 ≤ 2 * (s - 1) := by omega
-      have hexp : 2 ≤ D.f * (2 * (s - 1)) := by
-        have h6 := Nat.mul_le_mul hf h22
-        simpa using h6
-      have hexp2 : D.f * s ≤ D.f * (2 * (s - 1)) := Nat.mul_le_mul le_rfl (by omega)
-      have h4 : (4 : ℝ) ≤ 2 ^ (D.f * (2 * (s - 1))) := by
-        calc (4 : ℝ) = 2 ^ 2 := by norm_num
-          _ ≤ 2 ^ (D.f * (2 * (s - 1))) := by
-            first
-            | exact pow_le_pow_right₀ (by norm_num) hexp
-            | exact pow_le_pow_right (by norm_num) hexp
-      have hc : C₄ ^ (D.f * s) ≤ C₄ ^ (D.f * (2 * (s - 1))) := by
-        first
-        | exact pow_le_pow_right₀ hC₄ hexp2
-        | exact pow_le_pow_right hC₄ hexp2
-      calc 4 * C₄ ^ (D.f * s) ≤ 2 ^ (D.f * (2 * (s - 1))) * C₄ ^ (D.f * (2 * (s - 1))) :=
-            mul_le_mul h4 hc (pow_nonneg (by linarith) _) (by positivity)
-        _ = (2 * C₄) ^ (D.f * (2 * (s - 1))) := by rw [mul_pow]
-        _ ≤ M ^ (D.f * (2 * (s - 1))) := by
-            first
-            | exact pow_le_pow_left (by linarith) h2C _
-            | exact pow_le_pow_left₀ (by linarith) h2C _
-        _ = (M ^ D.f) ^ (2 * (s - 1)) := by rw [pow_mul]
-    have hRHS : ((M / Θ) ^ D.f) ^ (2 * (s - 1)) =
-        (M ^ D.f) ^ (2 * (s - 1)) * (((Θ ^ D.f)⁻¹) ^ 2) ^ (s - 1) := by
-      rw [div_pow, div_eq_mul_inv, mul_pow, ← pow_mul ((Θ ^ D.f)⁻¹) 2 (s - 1)]
-    show (1 + (Fintype.card (Fin D.f → Fin 3) : ℝ) * X ^ D.f) * (1 + D.e i) *
-        (C₄ ^ (D.f * s) * ∏ s' ∈ Ico 1 s, D.vol (i - s + 1) s') ≤ ((M / Θ) ^ D.f) ^ (2 * (s - 1))
-    rw [hRHS]
-    calc (1 + (Fintype.card (Fin D.f → Fin 3) : ℝ) * X ^ D.f) * (1 + D.e i) *
-          (C₄ ^ (D.f * s) * ∏ s' ∈ Ico 1 s, D.vol (i - s + 1) s')
-        ≤ 2 * 2 * (C₄ ^ (D.f * s) * (((Θ ^ D.f)⁻¹) ^ 2) ^ (s - 1)) :=
-          mul_le_mul (mul_le_mul hAe hBe hB0 (by norm_num)) (mul_le_mul_of_nonneg_left hPQ hC4p)
-            (mul_nonneg hC4p hP0) (by norm_num)
-      _ = (4 * C₄ ^ (D.f * s)) * (((Θ ^ D.f)⁻¹) ^ 2) ^ (s - 1) := by ring
-      _ ≤ (M ^ D.f) ^ (2 * (s - 1)) * (((Θ ^ D.f)⁻¹) ^ 2) ^ (s - 1) :=
-          mul_le_mul_of_nonneg_right hkey hQ0
+    have hb := he i hi'.1 hi'.2
+    have hA : (1 + (Fintype.card (Fin D.f → Fin 3) : ℝ) * X ^ D.f) * (1 + D.e i) ≤ 4 := by
+      calc _ ≤ (2 : ℝ) * 2 := mul_le_mul ha (by linarith [hb.2]) (by linarith [hb.1]) (by norm_num)
+        _ = _ := by norm_num
+    refine levelVolumeBound D.f s C₄ M Θ _ (D.vol (i - s + 1)) hf (by omega) hC₄ (le_max_right _ _) hA ?_
+    intro j hj
+    obtain ⟨hj₁, hj₂⟩ := Finset.mem_Ico.mp hj
+    exact ⟨hSB.1 _ _, hSB.2 _ _ (by omega) hj₁ (by omega)⟩
 
 theorem t_NuIndex : NuIndex := by
   intro r i s _ h2

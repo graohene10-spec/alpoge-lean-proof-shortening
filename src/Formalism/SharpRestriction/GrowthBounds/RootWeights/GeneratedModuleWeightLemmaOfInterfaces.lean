@@ -88,22 +88,21 @@ end asm
 theorem generated_module_weight_lemma_of_interfaces (hT : TransvectionExpansion) (hTo : TorusActsThroughWeight) (hGr : BinomialStableContainsComponents) (hSt : TwistExponentsAreWeightEntries) (hSp : GenericMonomialsSpecialise) :
     GeneratedModuleWeightDescription := by
   intro R _ ι _ LL n _ S
+  have coord_forall (G : MvPolynomial (ι × Fin n) R) (j : Fin n) (P : ℤ → Prop) :
+      (∀ k ∈ sDegs LL S j G, P k) ↔
+        (∀ μ ∈ polWts LL S (polGenSub R LL S G), P (μ j)) := by
+    rw [hSt R ι LL n S j G]
+    constructor
+    · intro h
+      exact weights_property_of_generic_translate (LL := LL) (S := S) (j := j) (Pr := P)
+        hT hTo hSp G (fun m hm => h _ (Finset.mem_image_of_mem _ hm))
+    · intro h k hk
+      obtain ⟨m, hm, rfl⟩ := Finset.mem_image.mp hk
+      exact h _ (generic_translate_weights_mem LL S hT hTo hGr G m hm)
   refine ⟨fun G θ => ?_, fun G M => ?_⟩
-  · rw [valS, hSt R ι LL n S (lastIdx n) G, Finset.le_inf_iff]
-    constructor
-    · intro h
-      exact weights_property_of_generic_translate (LL := LL) (S := S) (j := lastIdx n) (Pr := fun z => θ ≤ z) hT hTo hSp G
-        (fun m hm => by simpa using h _ (Finset.mem_image_of_mem _ hm))
-    · intro h k hk
-      obtain ⟨m, hm, rfl⟩ := Finset.mem_image.mp hk
-      simpa using h _ (generic_translate_weights_mem LL S hT hTo hGr G m hm)
-  · rw [lam1S, hSt R ι LL n S 0 G, Finset.sup_le_iff]
-    constructor
-    · intro h
-      exact weights_property_of_generic_translate (LL := LL) (S := S) (j := 0) (Pr := fun z => z ≤ M) hT hTo hSp G
-        (fun m hm => by simpa using h _ (Finset.mem_image_of_mem _ hm))
-    · intro h k hk
-      obtain ⟨m, hm, rfl⟩ := Finset.mem_image.mp hk
-      simpa using h _ (generic_translate_weights_mem LL S hT hTo hGr G m hm)
+  · rw [valS, Finset.le_inf_iff]
+    simpa only [WithTop.coe_le_coe] using (coord_forall G (lastIdx n) (fun k => θ ≤ k))
+  · rw [lam1S, Finset.sup_le_iff]
+    simpa only [WithBot.coe_le_coe] using (coord_forall G (0 : Fin n) (fun k => k ≤ M))
 
 end Formalism.MainNotions.G.GLWeightTheory

@@ -1,14 +1,14 @@
 {
-  "snapshot_utc": "2026-11-21T06:25:33.213705+00:00",
-  "status": "module checks complete",
+  "snapshot_utc": "2026-11-21T07:56:13.038040+00:00",
+  "status": "structural refactor pending module recheck",
   "planned_files": 1997,
-  "checked_files": 1997,
+  "checked_files": 1994,
   "files": 1997,
-  "merged_files_rechecked": 1341,
+  "merged_files_rechecked": 1338,
   "planned_candidates": 7946,
   "included_candidates": 7946,
   "deferred_candidates": 0,
-  "saved_nonblank": 15036,
+  "saved_nonblank": 15106,
   "lean_toolchain": "leanprover/lean4:v4.33.1",
   "mathlib_revision": "0df444a360eaa60ab8c11dca51a86af692955474",
   "upstream_archive_sha256": "9631b4f020199e580ba86178cb56c6e9b09f690c2369a80dc4334aa93f49c7fc",
@@ -16,5 +16,13 @@
     "module": "src/Formalism/LocalToGlobal/Columns/PolyFn.lean",
     "direct_importer": "src/Formalism/LocalToGlobal/Columns/PolyFnLemmas.lean",
     "result": "passed"
+  },
+  "structural_followup": {
+    "base_commit": "d7fe34a350746d393a4983e7ff6415a163592b86",
+    "pending_modules": [
+      "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/LevelSizesJointMean.lean",
+      "src/Formalism/SharpRestriction/GrowthBounds/RootWeights/CasimirIsotypicNoHigherWeight.lean",
+      "src/Formalism/SharpRestriction/GrowthBounds/RootWeights/GeneratedModuleWeightLemmaOfInterfaces.lean"
+    ]
   }
 }

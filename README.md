@@ -10,8 +10,10 @@ To use these files, start with the original release and copy the files into the 
 
 ## Verification
 
-The checks use the imports from the pinned upstream build. Each file with multiple included edits passed a module check with those edits applied together. The checks compare the elaborated types and axiom reports of the edited declarations against the original and reject new warnings. Files with one edit use its individual module verification record. These results cover the published modules individually.
+For checked rows, verification uses the imports from the pinned upstream build. Multiple edits to a file were checked together; single edits use their individual verification record. The checks compare the elaborated types and axiom reports of edited declarations and reject new warnings. These results cover the modules individually, not the whole overlay as a single build.
+
+Rows marked `module recheck pending` contain proposed structural refactors. Their SHA-256 identifies the candidate source; the original candidate IDs and the downstream smoke result are inherited from the base snapshot, not new verification of these files. Use the base snapshot for those modules until the recheck passes.
 
 ## 中文说明
 
-`src/` 按原工程目录存放完整的 Lean 文件，每个模块只保留一份。将这些文件放入原工程的同名位置即可使用。多个改动合入同一文件后，使用原工程锁定的依赖做模块级 Lean 复验。核验明细见 [verification.tsv](verification.tsv)，导出统计见 [snapshot.json](snapshot.json)。
+`src/` 按原工程目录存放完整的 Lean 文件，每个模块只保留一份。将已核验文件放入原工程的同名位置即可使用。标为 `module recheck pending` 的文件是待复验的结构改写，复验前使用基线版本。核验明细见 [verification.tsv](verification.tsv)，导出统计见 [snapshot.json](snapshot.json)。

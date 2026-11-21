@@ -49,14 +49,6 @@ theorem cr_quot_top (E : GLOps n K V) (Z : Submodule K V) (hZ : IsStableUnderOpe
     exact cr_quot_wt E Z hZ ν w hw
   exact hle h1
 
-private lemma casimir_commute_E (E : GLOps n K V) (hR : SatisfiesGLRelations E) (c d : Fin n) :
-    cr_C E * E c d = E c d * cr_C E := by
-  exact cr_C_comm E hR c d
-
-private lemma casimir_apply_eq_smul_of_isHWV (E : GLOps n K V) (hR : SatisfiesGLRelations E) (ν : Fin n → ℤ) (v : V) (hv : IsHWV E ν v) :
-    cr_C E v = (cr_c ν : K) • v := by
-  exact cr_C_hwv E hR ν v hv
-
 private lemma casimir_commute_of_mem_Umon (E : GLOps n K V) (hR : SatisfiesGLRelations E) (u : Module.End K V) (hu : u ∈ Umon E) :
     cr_C E * u = u * cr_C E := by
   have h : Umon E ≤ Submonoid.centralizer {cr_C E} := by
@@ -65,12 +57,8 @@ private lemma casimir_commute_of_mem_Umon (E : GLOps n K V) (hR : SatisfiesGLRel
     rintro _ ⟨⟨c, d⟩, rfl⟩
     rw [SetLike.mem_coe, Submonoid.mem_centralizer_iff]
     rintro g rfl
-    exact casimir_commute_E E hR c d
+    exact cr_C_comm E hR c d
   exact Submonoid.mem_centralizer_iff.mp (h hu) _ rfl
-
-private lemma aeval_apply_eq_eval_smul_of_eigenvector (f : Module.End K V) (c : K) (t : V) (ht : f t = c • t) (p : K[X]) :
-    aeval f p t = p.eval c • t := by
-  exact cr_aeval_eig f c t ht p
 
 private lemma casimir_apply_eq_smul_of_mem_isotypicPartIn (E : GLOps n K V) (hR : SatisfiesGLRelations E) (W : Submodule K V) (ν : Fin n → ℤ) (x : V)
     (hx : x ∈ isotypicPartIn E W ν) : cr_C E x = (cr_c ν : K) • x := by
@@ -82,11 +70,11 @@ private lemma casimir_apply_eq_smul_of_mem_isotypicPartIn (E : GLOps n K V) (hR 
     have h1 : cr_C E (u v) = u (cr_C E v) := by
       change (cr_C E * u) v = (u * cr_C E) v
       rw [casimir_commute_of_mem_Umon E hR u hu]
-    simp [h1, casimir_apply_eq_smul_of_isHWV E hR ν v hH]
+    simp [h1, cr_C_hwv E hR ν v hH]
   have h := LinearMap.mem_ker.mp (hle hx)
   simpa [sub_eq_zero] using h
 
-private lemma casimir_apply_eq_smul_of_mem_iSup_isotypic (E : GLOps n K V) (hR : SatisfiesGLRelations E) (Wx : (Fin n → ℤ) → Submodule K V) (c0 : ℤ) (z : V)
+theorem casimir_acts_scalar_on_level (E : GLOps n K V) (hR : SatisfiesGLRelations E) (Wx : (Fin n → ℤ) → Submodule K V) (c0 : ℤ) (z : V)
     (hz : z ∈ ⨆ ν ∈ {ν : Fin n → ℤ | cr_c ν = c0}, isotypicPartIn E (Wx ν) ν) : cr_C E z = (c0 : K) • z := by
   have hle : (⨆ ν ∈ {ν : Fin n → ℤ | cr_c ν = c0}, isotypicPartIn E (Wx ν) ν)
       ≤ LinearMap.ker (cr_C E - (c0 : K) • (1 : Module.End K V)) := by
@@ -105,7 +93,7 @@ theorem casimir_polynomial_isolates_level [CharZero K] (E : GLOps n K V) (hR : S
       aeval (cr_C E) r z ∈ ⨆ ν ∈ {ν : Fin n → ℤ | cr_c ν = c0}, isotypicPartIn E (Wx ν) ν := by
   have hK2 : ∀ t ∈ (⨆ ν ∈ {ν : Fin n → ℤ | cr_c ν = c0}, isotypicPartIn E (Wx ν) ν), ∀ p : K[X],
       aeval (cr_C E) p t = p.eval (c0 : K) • t := fun t ht p =>
-    aeval_apply_eq_eval_smul_of_eigenvector _ _ t (casimir_apply_eq_smul_of_mem_iSup_isotypic E hR Wx c0 t ht) p
+    cr_aeval_eig _ _ t (casimir_acts_scalar_on_level E hR Wx c0 t ht) p
   refine Submodule.iSup_induction (x := z) (fun ν => isotypicPartIn E (Wx ν) ν) hz ?_ ?_ ?_
   · intro ν x hx
     have hxC := casimir_apply_eq_smul_of_mem_isotypicPartIn E hR (Wx ν) ν x hx
@@ -121,7 +109,7 @@ theorem casimir_polynomial_isolates_level [CharZero K] (E : GLOps n K V) (hR : S
       · rw [Polynomial.eval_mul, Polynomial.eval_C, Polynomial.eval_sub, Polynomial.eval_X,
           Polynomial.eval_C]
         exact inv_mul_cancel₀ hne
-      · rw [aeval_apply_eq_eval_smul_of_eigenvector _ _ x hxC]
+      · rw [cr_aeval_eig _ _ x hxC]
         simp
   · exact ⟨1, by simp, by simp⟩
   · intro x y hx hy
@@ -138,10 +126,6 @@ theorem casimir_polynomial_isolates_level [CharZero K] (E : GLOps n K V) (hR : S
       change aeval (cr_C E) r1 (aeval (cr_C E) r2 y) ∈ _
       rw [hK2 _ m2]
       exact Submodule.smul_mem _ _ m2
-
-theorem casimir_acts_scalar_on_level (E : GLOps n K V) (hR : SatisfiesGLRelations E) (Wx : (Fin n → ℤ) → Submodule K V) (c0 : ℤ) (z : V)
-    (hz : z ∈ ⨆ ν ∈ {ν : Fin n → ℤ | cr_c ν = c0}, isotypicPartIn E (Wx ν) ν) : cr_C E z = (c0 : K) • z := by
-  exact casimir_apply_eq_smul_of_mem_iSup_isotypic E hR Wx c0 z hz
 
 theorem cr_Pos_zero_or {β : Fin n → ℤ} (h : β ∈ cr_Pos n) : β = 0 ∨ 0 < weightHeight' β := by
   unfold weightHeight'
