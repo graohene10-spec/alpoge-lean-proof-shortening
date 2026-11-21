@@ -8,7 +8,7 @@
   "planned_candidates": 7946,
   "included_candidates": 7946,
   "deferred_candidates": 0,
-  "saved_nonblank": 15357,
+  "saved_nonblank": 15387,
   "lean_toolchain": "leanprover/lean4:v4.33.1",
   "mathlib_revision": "0df444a360eaa60ab8c11dca51a86af692955474",
   "upstream_archive_sha256": "9631b4f020199e580ba86178cb56c6e9b09f690c2369a80dc4334aa93f49c7fc",
@@ -18,28 +18,24 @@
     "result": "passed"
   },
   "structural_followup": {
-    "base_commit": "db3f2ddca2cf791590225489fc8bb20768468222",
-    "checked_source_commit": "0c0c8cd43630d73f2fe3bf6d0ba47abb1bf9ba14",
+    "base_commit": "3bfc39e9901f5c57664dd3a7eb5529e36124b760",
+    "checked_source_commit": "4d41eedbf453b5337848655e1482ec1e5214f014",
     "checked_modules": [
-      "src/Formalism/FormalDegreeBessel/FormalDegreeRatio/IOCentral.lean",
-      "src/Formalism/RealPlaceAnalysis/RealPlaceTaylor/IndefiniteUnitaryPreservesForm.lean",
-      "src/Formalism/RealPlaceAnalysis/RealPlaceTaylor/KoszulLowersPower.lean",
-      "src/Formalism/RealPlaceAnalysis/RealPlaceTaylor/LieOperatorConjHolds.lean",
-      "src/Formalism/RealPlaceAnalysis/RealPlaceTaylor/MemUnitaryGroupIffMulConjTranspose.lean",
-      "src/Formalism/SharpRestriction/GrowthBounds/JointsLit.lean"
+      "src/Formalism/SizeWindowBrackets/ChainSlopeWindows/LipschitzWeightAndMinimum.lean",
+      "src/Formalism/ThetaLogCoordinates/BihomogeneousPairs/LetterChainEmbeddings/LetterAtSuccVal.lean"
     ],
     "import_environment": "pinned original upstream build cache",
-    "matched_elaborated_signature_and_axiom_reports": 29,
+    "matched_elaborated_signature_and_axiom_reports": 8,
     "direct_importer_smoke": [
       {
-        "module": "Formalism.RealPlaceAnalysis.SmoothOnGVIff",
+        "module": "Formalism.SizeWindowBrackets.ChainSlopeWindows.PChain",
         "source_variants": [
           "overlay"
         ],
         "result": "passed"
       },
       {
-        "module": "Formalism.FormalDegreeBessel.FormalDegreeRatio.CapelliHighestWeightConjugated",
+        "module": "Formalism.ThetaLogCoordinates.BihomogeneousPairs.LetterChainEmbeddings.ChainEmbInj",
         "source_variants": [
           "overlay"
         ],
@@ -95,6 +91,36 @@
         },
         {
           "module": "Formalism.SharpRestriction.CuspSpanNormBounds.BruhatCellsKronecker.WeightedProjectionSumSelfAdjoint",
+          "source_variants": [
+            "overlay"
+          ],
+          "result": "passed"
+        }
+      ]
+    },
+    {
+      "base_commit": "db3f2ddca2cf791590225489fc8bb20768468222",
+      "checked_source_commit": "0c0c8cd43630d73f2fe3bf6d0ba47abb1bf9ba14",
+      "checked_modules": [
+        "src/Formalism/FormalDegreeBessel/FormalDegreeRatio/IOCentral.lean",
+        "src/Formalism/RealPlaceAnalysis/RealPlaceTaylor/IndefiniteUnitaryPreservesForm.lean",
+        "src/Formalism/RealPlaceAnalysis/RealPlaceTaylor/KoszulLowersPower.lean",
+        "src/Formalism/RealPlaceAnalysis/RealPlaceTaylor/LieOperatorConjHolds.lean",
+        "src/Formalism/RealPlaceAnalysis/RealPlaceTaylor/MemUnitaryGroupIffMulConjTranspose.lean",
+        "src/Formalism/SharpRestriction/GrowthBounds/JointsLit.lean"
+      ],
+      "import_environment": "pinned original upstream build cache",
+      "matched_elaborated_signature_and_axiom_reports": 29,
+      "direct_importer_smoke": [
+        {
+          "module": "Formalism.RealPlaceAnalysis.SmoothOnGVIff",
+          "source_variants": [
+            "overlay"
+          ],
+          "result": "passed"
+        },
+        {
+          "module": "Formalism.FormalDegreeBessel.FormalDegreeRatio.CapelliHighestWeightConjugated",
           "source_variants": [
             "overlay"
           ],
