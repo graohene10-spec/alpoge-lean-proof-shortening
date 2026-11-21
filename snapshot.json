@@ -8,7 +8,7 @@
   "planned_candidates": 7946,
   "included_candidates": 7946,
   "deferred_candidates": 0,
-  "saved_nonblank": 15106,
+  "saved_nonblank": 15222,
   "lean_toolchain": "leanprover/lean4:v4.33.1",
   "mathlib_revision": "0df444a360eaa60ab8c11dca51a86af692955474",
   "upstream_archive_sha256": "9631b4f020199e580ba86178cb56c6e9b09f690c2369a80dc4334aa93f49c7fc",
@@ -18,31 +18,59 @@
     "result": "passed"
   },
   "structural_followup": {
-    "base_commit": "d7fe34a350746d393a4983e7ff6415a163592b86",
-    "checked_source_commit": "8188bc546193716276678f2cd13521ea80249875",
+    "base_commit": "23164a76ec4ce0525b4937933427e36a7560b687",
+    "checked_source_commit": "bd12d4dc07a83d26110cc28b8296717c77eb8da3",
     "checked_modules": [
-      "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/LevelSizesJointMean.lean",
-      "src/Formalism/SharpRestriction/GrowthBounds/RootWeights/CasimirIsotypicNoHigherWeight.lean",
-      "src/Formalism/SharpRestriction/GrowthBounds/RootWeights/GeneratedModuleWeightLemmaOfInterfaces.lean"
+      "src/Formalism/FlagUnipotentLattices/MinkowskiFactorialBounds/ExponentInequalityNondegenerateMid.lean",
+      "src/Formalism/SharpRestriction/CuspSpanNormBounds/BruhatCellsKronecker/ShiftedParametersOfDifferingLetters.lean"
     ],
     "import_environment": "pinned original upstream build cache",
-    "matched_elaborated_signature_and_axiom_reports": 8,
+    "matched_elaborated_signature_and_axiom_reports": 12,
     "direct_importer_smoke": [
       {
-        "module": "Formalism.SharpRestriction.GrowthBounds.RootWeights.SpecialiseGenericMatrixInverse",
+        "module": "Formalism.SharpRestriction.CuspSpanNormBounds.BruhatCellsKronecker.FamilyPacketOfEquivalentStatement",
         "source_variants": [
-          "upstream",
           "overlay"
         ],
         "result": "passed"
       },
       {
-        "module": "Formalism.SharpRestriction.GrowthBounds.RootWeights.CrLift",
+        "module": "Formalism.SharpRestriction.CuspSpanNormBounds.BruhatCellsKronecker.WeightedProjectionSumSelfAdjoint",
         "source_variants": [
-          "upstream"
+          "overlay"
         ],
         "result": "passed"
       }
     ]
-  }
+  },
+  "previous_structural_followups": [
+    {
+      "base_commit": "d7fe34a350746d393a4983e7ff6415a163592b86",
+      "checked_source_commit": "8188bc546193716276678f2cd13521ea80249875",
+      "checked_modules": [
+        "src/Formalism/HermitianCurvature/HermitianCurvatureProofs/LevelSizesJointMean.lean",
+        "src/Formalism/SharpRestriction/GrowthBounds/RootWeights/CasimirIsotypicNoHigherWeight.lean",
+        "src/Formalism/SharpRestriction/GrowthBounds/RootWeights/GeneratedModuleWeightLemmaOfInterfaces.lean"
+      ],
+      "import_environment": "pinned original upstream build cache",
+      "matched_elaborated_signature_and_axiom_reports": 8,
+      "direct_importer_smoke": [
+        {
+          "module": "Formalism.SharpRestriction.GrowthBounds.RootWeights.SpecialiseGenericMatrixInverse",
+          "source_variants": [
+            "upstream",
+            "overlay"
+          ],
+          "result": "passed"
+        },
+        {
+          "module": "Formalism.SharpRestriction.GrowthBounds.RootWeights.CrLift",
+          "source_variants": [
+            "upstream"
+          ],
+          "result": "passed"
+        }
+      ]
+    }
+  ]
 }

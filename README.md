@@ -12,8 +12,8 @@ To use these files, start with the original release and copy the files into the 
 
 Verification uses the imports from the pinned upstream build. Multiple edits to a file are checked together; single edits use their individual verification record. The checks compare the elaborated types and axiom reports of edited declarations and reject new warnings. These results cover the modules individually, not the whole overlay as a single build.
 
-The structural follow-up in `snapshot.json` records the three rechecked modules and the direct importer smoke tests against the new `.olean` files. Their candidate IDs in `verification.tsv` describe the edits inherited from the base snapshot; the file digests and line totals describe the current sources.
+The structural follow-up records in `snapshot.json` list the rechecked modules and the direct importer smoke tests against the corresponding updated `.olean` files. Their candidate IDs in `verification.tsv` describe the edits inherited from the base snapshot; the file digests and line totals describe the current sources.
 
 ## 中文说明
 
-`src/` 按原工程目录存放完整的 Lean 文件，每个模块只保留一份。将已核验文件放入原工程的同名位置即可使用。结构精简后的三份文件做了模块级复验，其中两份另测了直接下游；见 [verification.tsv](verification.tsv) 和 [snapshot.json](snapshot.json)。
+`src/` 按原工程目录存放完整的 Lean 文件，每个模块只保留一份。将已核验文件放入原工程的同名位置即可使用。各轮记录列出了做过模块级复验的结构精简，以及通过冒烟测试的直接下游；见 [verification.tsv](verification.tsv) 和 [snapshot.json](snapshot.json)。
