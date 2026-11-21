@@ -25,46 +25,6 @@ theorem hat_congr {T S : X → X} (hT : H.Good T) (hS : H.Good S) (h : ∀ x ∈
   rw [hat_apply hT, hat_apply hS]
   exact h _ v.2.1
 
-theorem good_sum {ι : Type*} (s : Finset ι) {T : ι → X → X} (hT : ∀ j ∈ s, H.Good (T j)) :
-    H.Good (fun x => ∑ j ∈ s, T j x) := by
-  classical
-  revert hT
-  refine Finset.induction_on s ?_ ?_
-  · intro _
-    simpa using good_zero
-  · intro j s hj ih hT
-    simpa [Finset.sum_insert hj] using
-      (hT j (Finset.mem_insert_self j s)).add (ih fun i hi => hT i (Finset.mem_insert_of_mem hi))
-
-theorem hat_sum {ι : Type*} (s : Finset ι) {T : ι → X → X} (hT : ∀ j ∈ s, H.Good (T j)) :
-    H.hat (fun x => ∑ j ∈ s, T j x) = ∑ j ∈ s, H.hat (T j) := by
-  classical
-  revert hT
-  refine Finset.induction_on s ?_ ?_
-  · intro _
-    simpa using hat_zero
-  · intro j s hj ih hT
-    have hs : ∀ i ∈ s, H.Good (T i) := fun i hi => hT i (Finset.mem_insert_of_mem hi)
-    simp only [Finset.sum_insert hj]
-    rw [hat_add (hT j (Finset.mem_insert_self j s)) (good_sum s hs), ih hs]
-
-theorem good_foldr (L : List (X → X)) (hL : ∀ T ∈ L, H.Good T) : H.Good (fun x => L.foldr (fun T h => T h) x) := by
-  induction L with
-  | nil => exact good_id
-  | cons T L ih =>
-    exact (hL T (by simp)).comp (ih fun S hS => hL S (by simp [hS]))
-
-theorem hat_foldr (L : List (X → X)) (hL : ∀ T ∈ L, H.Good T) :
-    H.hat (fun x => L.foldr (fun T h => T h) x) = (L.map H.hat).prod := by
-  induction L with
-  | nil =>
-    simp only [List.foldr_nil, List.map_nil, List.prod_nil]
-    exact hat_id
-  | cons T L ih =>
-    have hL' : ∀ S ∈ L, H.Good S := fun S hS => hL S (by simp [hS])
-    simp only [List.foldr_cons, List.map_cons, List.prod_cons]
-    rw [hat_comp (hL T (by simp)) (good_foldr L hL'), ih hL']
-
 def Rep (H : HatData X) (T : X → X) (b : Module.End ℂ H.V) : Prop := H.Good T ∧ H.hat T = b
 
 theorem Rep.comp {T S : X → X} {b b' : Module.End ℂ H.V} (h : Rep H T b) (h' : Rep H S b') :
@@ -99,10 +59,39 @@ theorem rep_zero : Rep H (fun _ => (0 : X)) 0 := And.intro good_zero hat_zero
 
 theorem Rep.sum {ι : Type*} (s : Finset ι) {T : ι → X → X} {b : ι → Module.End ℂ H.V}
     (h : ∀ j ∈ s, Rep H (T j) (b j)) : Rep H (fun x => ∑ j ∈ s, T j x) (∑ j ∈ s, b j) := by
-  have hg : ∀ j ∈ s, H.Good (T j) := fun j hj => (h j hj).1
-  refine And.intro (good_sum s hg) ?_
-  rw [hat_sum s hg]
-  exact Finset.sum_congr rfl (fun j hj => (h j hj).2)
+  classical
+  revert h
+  refine Finset.induction_on s ?_ ?_
+  · intro _
+    simpa only [Finset.sum_empty] using (rep_zero (H := H))
+  · intro j s hj ih h
+    simpa only [Finset.sum_insert hj] using
+      (h j (Finset.mem_insert_self j s)).add (ih fun i hi => h i (Finset.mem_insert_of_mem hi))
+
+theorem good_sum {ι : Type*} (s : Finset ι) {T : ι → X → X} (hT : ∀ j ∈ s, H.Good (T j)) :
+    H.Good (fun x => ∑ j ∈ s, T j x) :=
+  (Rep.sum (H := H) (T := T) (b := fun j => H.hat (T j)) s fun j hj => ⟨hT j hj, rfl⟩).1
+
+theorem hat_sum {ι : Type*} (s : Finset ι) {T : ι → X → X} (hT : ∀ j ∈ s, H.Good (T j)) :
+    H.hat (fun x => ∑ j ∈ s, T j x) = ∑ j ∈ s, H.hat (T j) :=
+  (Rep.sum (H := H) (T := T) (b := fun j => H.hat (T j)) s fun j hj => ⟨hT j hj, rfl⟩).2
+
+private theorem rep_foldr (L : List (X → X)) (hL : ∀ T ∈ L, H.Good T) :
+    Rep H (fun x => L.foldr (fun T h => T h) x) (L.map H.hat).prod := by
+  induction L with
+  | nil =>
+    simpa only [List.foldr_nil, List.map_nil, List.prod_nil] using (rep_id (H := H))
+  | cons T L ih =>
+    have hT : Rep H T (H.hat T) := ⟨hL T (by simp), rfl⟩
+    simpa only [List.foldr_cons, List.map_cons, List.prod_cons] using
+      hT.comp (ih fun S hS => hL S (by simp [hS]))
+
+theorem good_foldr (L : List (X → X)) (hL : ∀ T ∈ L, H.Good T) : H.Good (fun x => L.foldr (fun T h => T h) x) :=
+  (rep_foldr L hL).1
+
+theorem hat_foldr (L : List (X → X)) (hL : ∀ T ∈ L, H.Good T) :
+    H.hat (fun x => L.foldr (fun T h => T h) x) = (L.map H.hat).prod :=
+  (rep_foldr L hL).2
 
 theorem Rep.apply {T : X → X} {b : Module.End ℂ H.V} (h : Rep H T b) {x : X} (hx : x ∈ H.G) :
     H.N (T x) = ((b (H.toV x hx) : H.V) : X) := by
