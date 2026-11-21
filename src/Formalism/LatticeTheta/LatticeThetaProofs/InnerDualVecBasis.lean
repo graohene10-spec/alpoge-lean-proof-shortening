@@ -1,0 +1,63 @@
+import Formalism.LatticeTheta.LatticeSummableDecay
+
+open MeasureTheory Filter Complex
+open scoped RealInnerProductSpace
+
+noncomputable section
+
+namespace Formalism.H
+
+variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V] [FiniteDimensional ℝ V]
+
+theorem innerₗ_nondegenerate : (innerₗ V : LinearMap.BilinForm ℝ V).Nondegenerate := by
+  constructor <;> intro m hm <;> simpa using hm m
+
+variable {ι : Type*} [Fintype ι] [DecidableEq ι]
+
+abbrev dualB (e : Module.Basis ι ℝ V) : Module.Basis ι ℝ V :=
+  LinearMap.BilinForm.dualBasis (innerₗ V) innerₗ_nondegenerate e
+
+theorem inner_dualB (e : Module.Basis ι ℝ V) (i j : ι) :
+    ⟪dualB e i, e j⟫ = if j = i then 1 else 0 := by
+  simpa using LinearMap.BilinForm.apply_dualBasis_left (innerₗ_nondegenerate (V := V)) e i j
+
+def dualVec (e : Module.Basis ι ℝ V) (m : ι → ℤ) : V := ∑ i, m i • dualB e i
+
+theorem dualVec_eq (e : Module.Basis ι ℝ V) (m : ι → ℤ) :
+    dualVec e m = ∑ i, (m i : ℝ) • dualB e i := by
+  simp only [dualVec, Int.cast_smul_eq_zsmul]
+
+theorem inner_dualVec_basis (e : Module.Basis ι ℝ V) (m : ι → ℤ) (j : ι) :
+    ⟪dualVec e m, e j⟫ = m j := by
+  rw [dualVec_eq, sum_inner]
+  simp [real_inner_smul_left, inner_dualB]
+
+theorem dual_span_eq (e : Module.Basis ι ℝ V) :
+    dual (Submodule.span ℤ (Set.range e)) = Submodule.span ℤ (Set.range (dualB e)) := by
+  exact LinearMap.BilinForm.dualSubmodule_span_of_basis (innerₗ V) innerₗ_nondegenerate e
+
+theorem dualVec_mem (e : Module.Basis ι ℝ V) (m : ι → ℤ) :
+    dualVec e m ∈ dual (Submodule.span ℤ (Set.range e)) := by
+  rw [dual_span_eq]
+  exact Submodule.sum_mem _ fun i _ => Submodule.smul_mem _ _ (Submodule.subset_span ⟨i, rfl⟩)
+
+theorem dualVec_injective (e : Module.Basis ι ℝ V) : Function.Injective (dualVec e) := by
+  intro m n h
+  funext j
+  simpa [inner_dualVec_basis] using congrArg (fun x => ⟪x, e j⟫) h
+
+theorem dualVec_surjective (e : Module.Basis ι ℝ V) (μ : V)
+    (hμ : μ ∈ dual (Submodule.span ℤ (Set.range e))) : ∃ m, dualVec e m = μ := by
+  exact (Submodule.mem_span_range_iff_exists_fun ℤ).mp (by simpa [dual_span_eq] using hμ)
+
+def dualEquiv (e : Module.Basis ι ℝ V) : (ι → ℤ) ≃ dual (Submodule.span ℤ (Set.range e)) :=
+  Equiv.ofBijective (fun m => ⟨dualVec e m, dualVec_mem e m⟩)
+    ⟨fun m n h => dualVec_injective e (congrArg Subtype.val h),
+     fun μ => by
+      obtain ⟨m, hm⟩ := dualVec_surjective e μ μ.2
+      exact ⟨m, Subtype.ext hm⟩⟩
+
+@[simp] theorem dualEquiv_apply (e : Module.Basis ι ℝ V) (m : ι → ℤ) :
+    ((dualEquiv e m : dual (Submodule.span ℤ (Set.range e))) : V) = dualVec e m := rfl
+
+end Formalism.H

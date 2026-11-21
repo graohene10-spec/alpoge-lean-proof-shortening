@@ -39,9 +39,7 @@ theorem prBelow_iff (w : slopeLatticeData.FinPl K) (p : ℕ) :
   unfold prBelow
   constructor
   · intro h
-    refine ⟨?_⟩
-    rw [← h]
-    exact Int.ideal_span_absNorm_eq_self _
+    exact ⟨by rw [← h]; exact Int.ideal_span_absNorm_eq_self _⟩
   · intro h
     rw [← h.over]
     simp
@@ -493,9 +491,8 @@ theorem lattice_complete_reduction : Core2cToCore2 := by
 
 theorem hostV_pos (e q d : ℕ) (hq : q.Prime) (hd : d.Prime) : 0 < hostV e q d := by
   unfold hostV
-  have h1 : (0 : ℝ) < (q : ℝ) := by exact_mod_cast hq.pos
-  have h2 : (0 : ℝ) < (d : ℝ) := by exact_mod_cast hd.pos
-  exact mul_pos (Real.rpow_pos_of_pos two_pos _) (Real.sqrt_pos.2 (mul_pos h1 h2))
+  exact mul_pos (Real.rpow_pos_of_pos two_pos _)
+    (Real.sqrt_pos.2 (mul_pos (by exact_mod_cast hq.pos) (by exact_mod_cast hd.pos)))
 
 section DataD
 variable {H : Type} [AddCommGroup H] [Fintype H] [DecidableEq H] {W : H → Type} [∀ u0, Fintype (W u0)] {m : ℕ}
@@ -518,10 +515,9 @@ theorem lattice_discriminant_reduction : Core2dToCore2c := by
   refine (inputs_discriminant_iff _ _ G C cT N TT T2 (a o) (w o) (Fm o) η θ eK K CL).2 ⟨?_, ?_⟩
   · rw [hv]
     exact hostV_pos e q d hHyp.1 hHyp.2.1
-  · have h := hB o ho
-    unfold PerHost at hPer
+  · unfold PerHost at hPer
     rw [hv, ← hPer]
-    exact h
+    exact hB o ho
 
 section ModelLemmas
 
@@ -581,17 +577,13 @@ theorem inclL_matrix (κ κ₁ : Type) [Fintype κ] [Fintype κ₁] [DecidableEq
     (v : InfinitePlace K) :
     (LinearMap.toMatrix (Pi.basisFun K κ) (Pi.basisFun K (κ ⊕ κ₁)) (inclL K κ κ₁)).map v.embedding
       = inclMat κ κ₁ := by
-  ext (a | a) k
-  · simp [LinearMap.toMatrix_apply, inclL, inclMat, Pi.single_apply, apply_ite]
-  · simp [LinearMap.toMatrix_apply, inclL, inclMat]
+  ext (a | a) k <;> simp [LinearMap.toMatrix_apply, inclL, inclMat, Pi.single_apply, apply_ite]
 
 theorem inclMat_norm (κ κ₁ : Type) [Fintype κ] [Fintype κ₁] [DecidableEq κ] [DecidableEq κ₁] :
     ‖LinearMap.toContinuousLinearMap (Matrix.toEuclideanLin (inclMat κ κ₁))‖ ≤ 1 := by
   refine ContinuousLinearMap.opNorm_le_bound _ zero_le_one fun x => ?_
-  rw [one_mul, EuclideanSpace.norm_eq, EuclideanSpace.norm_eq]
-  refine Real.sqrt_le_sqrt (le_of_eq ?_)
-  rw [Fintype.sum_sum_type]
-  simp [Matrix.toLpLin_apply, inclMat, Matrix.mulVec, dotProduct]
+  rw [one_mul, EuclideanSpace.norm_eq, EuclideanSpace.norm_eq, Fintype.sum_sum_type]
+  exact Real.sqrt_le_sqrt (by simp [Matrix.toLpLin_apply, inclMat, Matrix.mulVec, dotProduct])
 
 theorem inclL_ht (κ κ₁ : Type) [Fintype κ] [Fintype κ₁] [DecidableEq κ] [DecidableEq κ₁] :
     htMap (Pi.basisFun K κ) (fun _ => 1) (Pi.basisFun K (κ ⊕ κ₁)) (fun _ => 1) (inclL K κ κ₁) ≤ 0 := by
@@ -855,8 +847,7 @@ variable (v : InfinitePlace K) (m f T p₁ t₁ Mw : ℕ) (hb : ℝ)
 variable {K} in
 theorem lenSelf0 {V : Type} [AddCommGroup V] [Module (𝓞 K) V] (w : slopeLatticeData.FinPl K) (L : Submodule (𝓞 K) V) :
     (slopeLatticeData.lenAt w L L).toNat = 0 := by
-  rw [ProjectiveLineModels.local_length_self_eq_zero]
-  rfl
+  simp [ProjectiveLineModels.local_length_self_eq_zero]
 
 variable {K} in
 theorem exists_place {p : ℕ} (hp : p.Prime) : ∃ w : slopeLatticeData.FinPl K, prBelow w = p := by
@@ -1438,10 +1429,8 @@ variable {K : Type} [Field K] [NumberField K] [StarRing K] [IsTotallyComplex K]
 theorem std_deg_eq (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ) (N : Submodule (𝓞 K) V)
     (h : rk (Formalism.HermitianLatticesTheory.realize b X) N ≠ 0) :
     deg (Formalism.HermitianLatticesTheory.realize b X) N = slope (Formalism.HermitianLatticesTheory.realize b X) N * (rk (Formalism.HermitianLatticesTheory.realize b X) N : ℝ) := by
-  have h' : ((rk (Formalism.HermitianLatticesTheory.realize b X) N : ℕ) : ℝ) ≠ 0 := by exact_mod_cast h
-  show deg (Formalism.HermitianLatticesTheory.realize b X) N
-    = deg (Formalism.HermitianLatticesTheory.realize b X) N / (rk (Formalism.HermitianLatticesTheory.realize b X) N : ℝ) * (rk (Formalism.HermitianLatticesTheory.realize b X) N : ℝ)
-  field_simp
+  show deg (Formalism.HermitianLatticesTheory.realize b X) N = deg (Formalism.HermitianLatticesTheory.realize b X) N / (rk (Formalism.HermitianLatticesTheory.realize b X) N : ℝ) * (rk (Formalism.HermitianLatticesTheory.realize b X) N : ℝ)
+  field_simp [Nat.cast_ne_zero.mpr h]
 
 theorem std_deg_bot_le (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ) (hX : ∀ v, IsUnit (X v).det)
     {L : Submodule (𝓞 K) V} (hL : L.FG) (hL0 : L ≠ ⊥) :
@@ -1449,8 +1438,7 @@ theorem std_deg_bot_le (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι 
   have hlat := (place_lattice_structure K V ι b X hX L hL).1
   have h := ((slope_characterization (𝓞 K) V _ (Formalism.HermitianLatticesTheory.realize b X) L hlat hL0).1
     (muMax (Formalism.HermitianLatticesTheory.realize b X) L)).1 le_rfl ⊥ bot_le
-  rw [hnSum_rk_bot] at h
-  simpa using h
+  simpa [hnSum_rk_bot] using h
 
 theorem std_rank_one (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ) (hX : ∀ v, IsUnit (X v).det)
     {L : Submodule (𝓞 K) V} (hL : L.FG) (hrk : rkK L = 1) :
@@ -1555,10 +1543,8 @@ theorem std_orth {s : Finset n} {a : n} (ha : a ∉ s) {x y : n → K} (hx : x �
   obtain ⟨v, k, e⟩ := p
   by_cases hk : k = a
   · subst hk
-    rw [std_real_zero (std_T_supp hy ha) v e]
-    simp
-  · rw [std_real_zero (std_T_supp hx (by simpa using hk)) v e]
-    simp
+    simp [std_real_zero (std_T_supp hy ha) v e]
+  · simp [std_real_zero (std_T_supp hx (by simpa using hk)) v e]
 
 theorem std_T_fg (s : Finset n) : (standardSpanAlt K n s).FG :=
   Submodule.fg_span ((Finset.finite_toSet s).image _)
@@ -1650,8 +1636,7 @@ theorem standard_lattice_semistable [Nonempty n] :
     unfold stdLat standardSpanAlt
     rw [Finset.coe_univ, Set.image_univ]
   refine ⟨mu_std K n, ?_⟩
-  rw [h]
-  exact std_T_slopes Finset.univ Finset.univ_nonempty
+  simpa [h] using std_T_slopes Finset.univ Finset.univ_nonempty
 
 end StdSlopes
 
@@ -1719,9 +1704,7 @@ theorem twist_vector_at_zero (w : slopeLatticeData.FinPl K) : tau0 K 2 0 w = 0 :
 
 theorem bump_cancel (w : slopeLatticeData.FinPl K) : bump K m gG w + bump K m (gE - gG) w - bump K m gE w = 0 := by
   unfold bump
-  split_ifs
-  · ring
-  · ring
+  split_ifs <;> ring
 
 theorem sum_bump (hm : 1 ≤ m) (c : ℝ) (S : Finset (slopeLatticeData.FinPl K)) (hS : ∀ w : slopeLatticeData.FinPl K, prBelow w = 2 → w ∈ S) :
     2 * ∑ w ∈ S, lE w * bump K m c w = c / (m : ℝ) := by
@@ -1778,15 +1761,12 @@ theorem mem_second_closed (w : slopeLatticeData.FinPl K) (hw : prBelow w = 2) : 
   Finset.mem_union_left _ ((mem_plOver Nat.prime_two w).2 hw)
 
 theorem coll_Ga (hm : 1 ≤ m) : (collFam K v m f T Mw hb gG gE).Ga = gG := by
-  have hm' : (m : ℝ) ≠ 0 := by
-    have : (1 : ℝ) ≤ (m : ℝ) := by exact_mod_cast hm
-    linarith
+  have hm' : (m : ℝ) ≠ 0 := by exact_mod_cast (ne_of_gt (lt_of_lt_of_le zero_lt_one hm))
   show 2 * ∑ w ∈ plOver K 2 ∪ plOver K T, lE w * ((∑ _j : Fin m, bump K m gG w) - ((tau0 K 2 0 w : ℤ) : ℝ) / ramE w) = gG
   have h1 : ∀ w ∈ plOver K 2 ∪ plOver K T, lE w * ((∑ _j : Fin m, bump K m gG w) - ((tau0 K 2 0 w : ℤ) : ℝ) / ramE w)
       = (m : ℝ) * (lE w * bump K m gG w) := by
     intro w _
-    rw [twist_vector_at_zero]
-    simp
+    simp [twist_vector_at_zero]
     ring
   rw [Finset.sum_congr rfl h1, ← Finset.mul_sum]
   have := sum_bump K m hm gG _ (mem_second_closed K T)
@@ -1795,9 +1775,7 @@ theorem coll_Ga (hm : 1 ≤ m) : (collFam K v m f T Mw hb gG gE).Ga = gG := by
     _ = gG := by rw [this]; field_simp
 
 theorem coll_Fo (hm : 1 ≤ m) : (collFam K v m f T Mw hb gG gE).Fo = gE - gG := by
-  have hm' : (m : ℝ) ≠ 0 := by
-    have : (1 : ℝ) ≤ (m : ℝ) := by exact_mod_cast hm
-    linarith
+  have hm' : (m : ℝ) ≠ 0 := by exact_mod_cast (ne_of_gt (lt_of_lt_of_le zero_lt_one hm))
   show 2 * ∑ _j : Fin m, ∑ w ∈ plOver K 2 ∪ plOver K T, lE w * bump K m (gE - gG) w = gE - gG
   have := sum_bump K m hm (gE - gG) _ (mem_second_closed K T)
   rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
@@ -1816,8 +1794,7 @@ theorem coll_Rd (u : Fin Mw) : (collFam K v m f T Mw hb gG gE).Rd u = 0 := by
   show ∑ w ∈ plOver K 2 ∪ plOver K T, 2 * lE w * ((∑ j : Fin m, (bump K m gG w + bump K m (gE - gG) w - bump K m gE w))
     - ((tau0 K 2 0 w : ℤ) : ℝ) / ramE w) = 0
   refine Finset.sum_eq_zero fun w _ => ?_
-  rw [twist_vector_at_zero]
-  simp [bump_cancel]
+  simp [twist_vector_at_zero, bump_cancel]
 
 theorem ht_scaled_id (n : Type) [Fintype n] [DecidableEq n] (c : ℝ) (hc0 : 0 ≤ c) (hc : c ≤ 1) :
     htMap (Pi.basisFun K n) (fun _ => ((c : ℝ) : ℂ) • (1 : Matrix n n ℂ)) (Pi.basisFun K n) (fun _ => 1)
@@ -1834,9 +1811,7 @@ theorem ht_scaled_id (n : Type) [Fintype n] [DecidableEq n] (c : ℝ) (hc0 : 0 �
       = ((c : ℝ) : ℂ) • x := by
     ext i
     simp [Matrix.toLpLin_apply, Matrix.smul_mulVec]
-  rw [this, norm_smul, one_mul]
-  have h1 : ‖((c : ℝ) : ℂ)‖ = c := by simp [abs_of_nonneg hc0]
-  rw [h1]
+  rw [this, norm_smul, one_mul, show ‖((c : ℝ) : ℂ)‖ = c by simp [abs_of_nonneg hc0]]
   exact mul_le_of_le_one_left (norm_nonneg _) hc
 
 def hbT (f T : ℕ) : ℝ :=
@@ -2117,8 +2092,7 @@ theorem lattice_completion : LatticeCompletion := by
     have hb : 0 < bTx G.x G.ε := Real.exp_pos _
     have ha : 0 ≤ aTx G.x G.ε := mul_nonneg (by linarith) hb.le
     exact mul_nonneg (mul_nonneg (mul_nonneg hC.2.2.2.2.2.2.1 (Nat.cast_nonneg _)) ha) hLa
-  · rw [zero_add]
-    exact hTop u0
+  · simpa using hTop u0
 
 section Lm
 variable (K : Type) [Field K] [NumberField K] [StarRing K] [IsTotallyComplex K]
@@ -2230,7 +2204,6 @@ end LmMain2
 theorem ev_level (f T : ℕ) (bb : ℝ) (hf : 1 ≤ f) (h1 : (64 * (f : ℝ) ^ 2 + 5 : ℝ) ≤ (T : ℝ))
     (h2 : 8 * (f : ℝ) * bb ^ 2 ≤ (T : ℝ)) :
     4 * (f : ℝ) / (T : ℝ) * bb ^ 2 + (f : ℝ) * Real.log ((T : ℝ) - 1) / ((T : ℝ) - 2) ≤ 1 := by
-  have hfr : (1 : ℝ) ≤ (f : ℝ) := by exact_mod_cast hf
   have hTpos : (0 : ℝ) < (T : ℝ) := by nlinarith
   have hA : 4 * (f : ℝ) / (T : ℝ) * bb ^ 2 ≤ 1 / 2 := by
     rw [div_mul_eq_mul_div, div_le_iff₀ hTpos]
@@ -2254,7 +2227,7 @@ theorem ev_level (f T : ℕ) (bb : ℝ) (hf : 1 ≤ f) (h1 : (64 * (f : ℝ) ^ 2
     have h6 : (T : ℝ) - 2 = y - 1 := by rw [hy]; ring
     rw [h6]
     have h7 : (f : ℝ) * Real.log y ≤ (f : ℝ) * (2 * Real.sqrt y) :=
-      mul_le_mul_of_nonneg_left hlog (by linarith)
+      mul_le_mul_of_nonneg_left hlog (by positivity)
     have h8 : (f : ℝ) * (2 * Real.sqrt y) ≤ Real.sqrt y * Real.sqrt y / 4 := by nlinarith
     rw [hsq] at h8
     nlinarith
@@ -2338,11 +2311,8 @@ theorem ev_top_arith' (c m A lA lT lg γ lx xe l2 : ℝ) (hc : 0 ≤ c) (hm : 0 
 
 theorem ev_logW (x k : ℝ) (Mw : ℕ) (h48 : 48 ≤ x) (hk2 : x ^ 2 ≤ k) (hM0 : 0 < Mw) (hMx : (Mw : ℝ) < x + 1) :
     Real.log (Mw : ℝ) ≤ (k - 3) * Real.log 2 := by
-  have hMp : (0 : ℝ) < (Mw : ℝ) := by exact_mod_cast hM0
-  have h1 := Real.log_le_sub_one_of_pos hMp
-  have hl2 : (1 : ℝ) / 2 ≤ Real.log 2 := by
-    have := Real.log_two_gt_d9
-    linarith
+  have h1 := Real.log_le_sub_one_of_pos (show (0 : ℝ) < (Mw : ℝ) by exact_mod_cast hM0)
+  have hl2 : (1 : ℝ) / 2 ≤ Real.log 2 := by linarith [Real.log_two_gt_d9]
   have h3 : (3 : ℝ) ≤ x ^ 2 := by nlinarith
   have h2 : (x ^ 2 - 3) * (1 / 2) ≤ (k - 3) * Real.log 2 :=
     mul_le_mul (by linarith) hl2 (by norm_num) (by linarith)
@@ -2350,11 +2320,10 @@ theorem ev_logW (x k : ℝ) (Mw : ℕ) (h48 : 48 ≤ x) (hk2 : x ^ 2 ≤ k) (hM0
 
 theorem ev_trace (x xe b c : ℝ) (h48 : 48 ≤ x) (hxe : 1 ≤ xe) (hb : 0 < b) (hc : 1 ≤ c) :
     (6 * x ^ (-(1 : ℝ)) + 4 * Real.sqrt 0) * (x ^ (1 : ℝ) * b) ≤ 4 * xe * (c * (x * b)) := by
-  have hx0 : 0 < x := by linarith
   rw [Real.sqrt_zero, mul_zero, add_zero, Real.rpow_neg_one, Real.rpow_one]
   have e : 6 * x⁻¹ * (x * b) = 6 * b := by field_simp
   rw [e]
-  have ha0 : 0 < x * b := mul_pos hx0 hb
+  have ha0 : 0 < x * b := mul_pos (by linarith) hb
   have h2 : x * b ≤ c * (x * b) := le_mul_of_one_le_left ha0.le hc
   have h3 : c * (x * b) ≤ xe * (c * (x * b)) := le_mul_of_one_le_left (by positivity) hxe
   have h4 : 6 * b ≤ 4 * (x * b) := by nlinarith
