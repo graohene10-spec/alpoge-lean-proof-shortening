@@ -244,101 +244,6 @@ theorem foldr_smul {R M ι : Type*} [Semiring R] [AddCommMonoid M] [Module R M] 
   exact foldr_rat (fun i => (⇑(f i))^[k]) (fun i => (⇑(f i))^[k])
     (fun x => a • x) (fun i x => iter_smul (f i) k a x) l x
 
-set_option maxHeartbeats 1000000 in
-open Classical in
-
-theorem NPDesc_of (c : LatCmp D) {L : SizeData₂ D} (hT : GatTies D) (X : Inst D L) (Y : LatInst D) (K : Consts)
-    (hv : c.VramDef Y) (hy : YvRat c) : c.NPDesc X Y K := by
-  intro u w hg _
-  haveI := LatCmp.frac_of_ties hT u w hg
-  choose yL hyL using hy u w hg
-  have hpow : ∀ (k : ℕ) (x : ((D.fm u).lat 0).V),
-      c.cmp u w hg (((D.what₂.places.resChar w : D.what₂.LL) ^ k) • x) =
-        (((D.what₂.places.resChar w : (D.gat u w hg).O) ^ k)) • c.cmp u w hg x := by
-    intro k x
-    rw [c.cmp_smul, ← algebraMap_smul (D.gat u w hg).Kf ((D.what₂.places.resChar w : (D.gat u w hg).O) ^ k)]
-    congr 1
-    simp
-  let yLP : Finset (HH D) → ((D.fm u).lat 0).V → ((D.fm u).lat 0).V := fun VV' =>
-    (VV'.toList.map (fun t0 => (⇑(yL (Y.vOf u w hg t0)))^[D.R.m])).foldr (fun f g => f ∘ g) id
-  have hrat : ∀ VV' x, yProd Y u w hg VV' (c.cmp u w hg x) = c.cmp u w hg (yLP VV' x) := by
-    intro VV' x
-    unfold yProd
-    exact foldr_rat _ _ (c.cmp u w hg) (fun t0 x => iter_rat _ _ _ (hyL (Y.vOf u w hg t0)) D.R.m x) VV'.toList x
-  have hyLsmul : ∀ VV' (a : D.what₂.LL) x, yLP VV' (a • x) = a • yLP VV' x := fun VV' a x =>
-    foldr_smul (fun t0 => yL (Y.vOf u w hg t0)) D.R.m VV'.toList a x
-  have hyP : ∀ VV' F, yProd Y u w hg VV' F = yProdL (D.gat u w hg) (VV'.toList.map (Y.vOf u w hg)) D.R.m F := by
-    intro VV' F
-    rw [yProdL_apply, List.map_map]
-    rfl
-  have hM : (D.gat u w hg).M =
-      Submodule.span (D.gat u w hg).O (c.cmp u w hg '' (((D.fm u).lat 0).L : Set ((D.fm u).lat 0).V)) :=
-    (c.cmp_M u w hg).symm
-  let s : Finset (HH D) → ℕ := fun VV' =>
-    ∑ t0 ∈ VV X K (aL L) (bL L) (D.what₂.places.resChar w) \ VV', ⌈Sv X K (aL L) (bL L) (D.what₂.places.resChar w) t0⌉.toNat
-  let τ : ℕ := ⌈tauP X K (aL L) (bL L) (D.what₂.places.resChar w)⌉.toNat
-  let T1 : Set ((D.fm u).lat 0).V := {z | ∃ VV' ⊆ VV X K (aL L) (bL L) (D.what₂.places.resChar w),
-    ∃ x ∈ ((D.fm u).lat 0).L, z = yLP VV' (((D.what₂.places.resChar w : D.what₂.LL) ^ s VV') • x)}
-  let T2 : Set ((D.fm u).lat 0).V := {z | ∃ x ∈ ((D.fm u).lat 0).L, z = ((D.what₂.places.resChar w : D.what₂.LL) ^ τ) • x}
-  have hS1 : Submodule.span (D.gat u w hg).O {F' | ∃ VV' ⊆ VV X K (aL L) (bL L) (D.what₂.places.resChar w),
-      ∃ F ∈ (D.gat u w hg).M,
-      F' = yProd Y u w hg VV' (((D.what₂.places.resChar w : (D.gat u w hg).O) ^ s VV') • F)} =
-      Submodule.span (D.gat u w hg).O (c.cmp u w hg '' T1) := by
-    apply le_antisymm
-    · rw [Submodule.span_le]
-      rintro _ ⟨VV', hVV', F, hF, rfl⟩
-      let Q : Module.End (D.gat u w hg).O (D.gat u w hg).Fn :=
-        ((D.what₂.places.resChar w : (D.gat u w hg).O) ^ s VV') •
-          yProdL (D.gat u w hg) (VV'.toList.map (Y.vOf u w hg)) D.R.m
-      have hQ : yProd Y u w hg VV' (((D.what₂.places.resChar w : (D.gat u w hg).O) ^ s VV') • F) = Q F := by
-        rw [hyP, map_smul]; rfl
-      rw [SetLike.mem_coe, hQ]
-      rw [hM] at hF
-      have := Submodule.mem_map_of_mem (f := Q) hF
-      rw [Submodule.map_span] at this
-      refine Submodule.span_mono ?_ this
-      rintro _ ⟨_, ⟨x, hx, rfl⟩, rfl⟩
-      refine ⟨yLP VV' (((D.what₂.places.resChar w : D.what₂.LL) ^ s VV') • x), ⟨VV', hVV', x, hx, rfl⟩, ?_⟩
-      show c.cmp u w hg _ = Q (c.cmp u w hg x)
-      rw [hyLsmul, hpow, ← hrat, hyP]
-      rfl
-    · rw [Submodule.span_le]
-      rintro _ ⟨z, ⟨VV', hVV', x, hx, rfl⟩, rfl⟩
-      refine Submodule.subset_span ⟨VV', hVV', c.cmp u w hg x, ?_, ?_⟩
-      · rw [hM]; exact Submodule.subset_span ⟨x, hx, rfl⟩
-      · rw [hyLsmul, hpow, ← hrat, hyP, hyP, map_smul]
-  have hS2 : (D.gat u w hg).M.map (((D.what₂.places.resChar w : (D.gat u w hg).O) ^ τ) • LinearMap.id) =
-      Submodule.span (D.gat u w hg).O (c.cmp u w hg '' T2) := by
-    rw [hM, Submodule.map_span]
-    congr 1
-    ext F
-    constructor
-    · rintro ⟨_, ⟨x, hx, rfl⟩, rfl⟩
-      exact ⟨_, ⟨x, hx, rfl⟩, by rw [hpow]; rfl⟩
-    · rintro ⟨_, ⟨x, hx, rfl⟩, rfl⟩
-      exact ⟨_, ⟨x, hx, rfl⟩, by rw [hpow]; rfl⟩
-  have hVr : Y.Vram u w hg = (Submodule.span (D.gat u w hg).Kf
-      (c.cmp u w hg '' ((D.fm u).ramSub : Set ((D.fm u).lat 0).V))).restrictScalars (D.gat u w hg).O :=
-    SetLike.coe_injective (hv u w hg)
-  have hflat := FBC.flat_ext (D.plEq w) (c.embW u w hg) (c.embW_val u w hg) (c.cmp u w hg) (c.cmp_smul u w hg)
-    ((D.fm u).lat 0).b (c.cmp_li u w hg)
-  have hinf := span_inf_span (D.plEq w) (c.embW u w hg) (c.embW_val u w hg) (c.cmp u w hg) (c.cmp_smul u w hg)
-    ((D.fm u).lat 0).b (c.cmp_li u w hg) (Submodule.span (𝓞 D.what₂.LL) T1) (Submodule.span (𝓞 D.what₂.LL) T2)
-  have hNP : NP X Y K u w hg = Submodule.span (D.gat u w hg).O (c.cmp u w hg ''
-      (((Submodule.span (𝓞 D.what₂.LL) T1 ⊓ Submodule.span (𝓞 D.what₂.LL) T2) ⊓
-        (D.fm u).ramSub.restrictScalars (𝓞 D.what₂.LL) : Submodule (𝓞 D.what₂.LL) ((D.fm u).lat 0).V) :
-          Set ((D.fm u).lat 0).V)) := by
-    show Submodule.span (D.gat u w hg).O _ ⊓ _ ⊓ _ = _
-    rw [hS1, hS2, hVr, ← span_image_spanA c u w hg T1, ← span_image_spanA c u w hg T2, hinf]
-    exact hflat.2 _ _
-  calc NP X Y K u w hg = _ := hNP
-    _ ≤ _ := by
-      apply Submodule.span_mono
-      rintro _ ⟨y, hy, rfl⟩
-      refine ⟨y, ⟨hy.2, ?_⟩, rfl⟩
-      rw [hNP]
-      exact Submodule.subset_span ⟨y, hy, rfl⟩
-
 def YvRatU (c : LatCmp D) : Prop :=
   ∀ (u : D.what₂.Word) (w : D.what₂.places.Pl) (hg : GIdx D.host (D.mem u).A.T (D.what₂.places.resChar w))
     (v : Fin (D.gat u w hg).P.nV),
@@ -480,6 +385,15 @@ theorem NPDesc_ofU (c : LatCmp D) {L : SizeData₂ D} (hT : GatTies D) (X : Inst
       refine ⟨y, ⟨hy.2, ?_⟩, rfl⟩
       rw [hNP]
       exact Submodule.subset_span ⟨y, hy, rfl⟩
+
+theorem NPDesc_of (c : LatCmp D) {L : SizeData₂ D} (hT : GatTies D) (X : Inst D L) (Y : LatInst D) (K : Consts)
+    (hv : c.VramDef Y) (hy : YvRat c) : c.NPDesc X Y K := by
+  refine NPDesc_ofU c hT X Y K hv ?_
+  intro u w hg v
+  obtain ⟨yL, hyL⟩ := hy u w hg v
+  refine ⟨yL, 1, ?_⟩
+  intro x
+  simpa only [Units.val_one, one_smul] using hyL x
 
 end Formalism.MainNotions.G.Joints.Lit
 

@@ -9,16 +9,9 @@ namespace Formalism.REAL
 
 variable {n : ℕ}
 
-private lemma Jm_mul_Jm_eq_one (ε : Fin n → Bool) : Jm ε * Jm ε = 1 := by
-  unfold Jm
-  rw [Matrix.diagonal_mul_diagonal, ← Matrix.diagonal_one]
-  congr 1
-  funext i
-  split_ifs <;> norm_num
+lemma isUnit_signature_matrix (ε : Fin n → Bool) : IsUnit (Jm ε) := ⟨⟨Jm ε, Jm ε, Jm_mul_self ε, Jm_mul_self ε⟩, rfl⟩
 
-lemma isUnit_signature_matrix (ε : Fin n → Bool) : IsUnit (Jm ε) := ⟨⟨Jm ε, Jm ε, Jm_mul_Jm_eq_one ε, Jm_mul_Jm_eq_one ε⟩, rfl⟩
-
-lemma signature_matrix_inv_self (ε : Fin n → Bool) : (Jm ε)⁻¹ = Jm ε := Matrix.inv_eq_left_inv (Jm_mul_Jm_eq_one ε)
+lemma signature_matrix_inv_self (ε : Fin n → Bool) : (Jm ε)⁻¹ = Jm ε := Matrix.inv_eq_left_inv (Jm_mul_self ε)
 
 lemma exp_signature_conj (ε : Fin n → Bool) (A : Matrix (Fin n) (Fin n) ℂ) :
     NormedSpace.exp (Jm ε * A * Jm ε) = Jm ε * NormedSpace.exp A * Jm ε := by
@@ -87,7 +80,7 @@ lemma indefinite_unitary_preserves_form {ε : Fin n → Bool} {g : Matrix (Fin n
   unfold inUJ at hg
   have h1 : (Jm ε * gᴴ * Jm ε) * g = 1 := by
     calc (Jm ε * gᴴ * Jm ε) * g = Jm ε * (gᴴ * Jm ε * g) := by simp only [mul_assoc]
-      _ = 1 := by rw [hg, Jm_mul_Jm_eq_one]
+      _ = 1 := by rw [hg, Jm_mul_self]
   have h2 : g * (Jm ε * gᴴ * Jm ε) = 1 := by
     first
     | exact mul_eq_one_comm.mp h1
@@ -95,7 +88,7 @@ lemma indefinite_unitary_preserves_form {ε : Fin n → Bool} {g : Matrix (Fin n
     | exact Matrix.mul_eq_one_comm.1 h1
   refine ⟨?_, ⟨⟨g, _, h2, h1⟩, rfl⟩⟩
   calc g * Jm ε * gᴴ = g * (Jm ε * gᴴ * Jm ε) * Jm ε := by
-        simp only [mul_assoc, Jm_mul_Jm_eq_one, mul_one]
+        simp only [mul_assoc, Jm_mul_self, mul_one]
     _ = Jm ε := by rw [h2, one_mul]
 
 def polarLog (g : Matrix (Fin n) (Fin n) ℂ) : Matrix (Fin n) (Fin n) ℂ :=
@@ -124,14 +117,6 @@ lemma exp_polarLog_double {ε : Fin n → Bool} {g : Matrix (Fin n) (Fin n) ℂ}
   obtain ⟨h1, -, h3⟩ := conjTranspose_mul_self_pos_facts hg
   exact exp_log_of_pos_spectrum h1 h3
 
-private lemma Jm_conjTranspose_eq_self (ε : Fin n → Bool) : (Jm ε)ᴴ = Jm ε := by
-  unfold Jm
-  rw [Matrix.diagonal_conjTranspose]
-  congr 1
-  funext i
-  simp only [Pi.star_apply]
-  split_ifs <;> simp
-
 lemma polar_log_anticommutes_signature {ε : Fin n → Bool} {g : Matrix (Fin n) (Fin n) ℂ} (hg : inUJ ε g) :
     Jm ε * polarLog g * Jm ε = -polarLog g := by
   set L := polarLog g with hL
@@ -143,7 +128,7 @@ lemma polar_log_anticommutes_signature {ε : Fin n → Bool} {g : Matrix (Fin n)
     calc (Jm ε * (gᴴ * g) * Jm ε) * (gᴴ * g) = Jm ε * gᴴ * (g * Jm ε * gᴴ) * g := by
           simp only [mul_assoc]
       _ = Jm ε * (gᴴ * Jm ε * g) := by rw [hgJ]; simp only [mul_assoc]
-      _ = 1 := by rw [hg', Jm_mul_Jm_eq_one]
+      _ = 1 := by rw [hg', Jm_mul_self]
   have hE : NormedSpace.exp (-(L + L)) = Jm ε * (gᴴ * g) * Jm ε := by
     have h0 : NormedSpace.exp (-(L + L)) * (gᴴ * g) = 1 := by
       rw [← hP]
@@ -154,7 +139,7 @@ lemma polar_log_anticommutes_signature {ε : Fin n → Bool} {g : Matrix (Fin n)
         = NormedSpace.exp (-(L + L)) * ((gᴴ * g) * (Jm ε * (gᴴ * g) * Jm ε)) := by rw [h2, mul_one]
       _ = Jm ε * (gᴴ * g) * Jm ε := by rw [← mul_assoc, h0, one_mul]
   have hA : (Jm ε * (L + L) * Jm ε)ᴴ = Jm ε * (L + L) * Jm ε := by
-    rw [Matrix.conjTranspose_mul, Matrix.conjTranspose_mul, Jm_conjTranspose_eq_self, Matrix.conjTranspose_add, hH,
+    rw [Matrix.conjTranspose_mul, Matrix.conjTranspose_mul, Jm_conjTranspose, Matrix.conjTranspose_add, hH,
       mul_assoc]
   have hB : (-(L + L))ᴴ = -(L + L) := by
     rw [Matrix.conjTranspose_neg, Matrix.conjTranspose_add, hH]
@@ -167,7 +152,7 @@ lemma polarLog_mem_hermitian_part {ε : Fin n → Bool} {g : Matrix (Fin n) (Fin
   have hJ := polar_log_anticommutes_signature hg
   have h2 : polarLog g * Jm ε = -(Jm ε * polarLog g) := by
     calc polarLog g * Jm ε = Jm ε * (Jm ε * polarLog g * Jm ε) := by
-          rw [← mul_assoc, ← mul_assoc, Jm_mul_Jm_eq_one, one_mul]
+          rw [← mul_assoc, ← mul_assoc, Jm_mul_self, one_mul]
       _ = -(Jm ε * polarLog g) := by rw [hJ, mul_neg]
   refine ⟨?_, h2⟩
   unfold inG
@@ -201,7 +186,7 @@ lemma mul_exp_neg_polarLog_mem_compact {ε : Fin n → Bool} {g : Matrix (Fin n)
       rw [hFF, ← mul_assoc, hgJ]
     calc g * NormedSpace.exp (-L) * Jm ε = g * Jm ε * NormedSpace.exp L := by
           rw [hJE]
-          simp only [mul_assoc, Jm_mul_Jm_eq_one, mul_one]
+          simp only [mul_assoc, Jm_mul_self, mul_one]
       _ = Jm ε * (g * NormedSpace.exp (-L)) := by
           rw [← mul_assoc, ← h4]
           simp only [mul_assoc]
@@ -217,9 +202,9 @@ lemma hermitian_of_mem_hermitian_part {ε : Fin n → Bool} {X : Matrix (Fin n) 
   have h3 : Xᴴ * Jm ε = X * Jm ε := by
     rw [h2]
     exact eq_neg_of_add_eq_zero_left h1
-  calc Xᴴ = Xᴴ * Jm ε * Jm ε := by rw [mul_assoc, Jm_mul_Jm_eq_one, mul_one]
+  calc Xᴴ = Xᴴ * Jm ε * Jm ε := by rw [mul_assoc, Jm_mul_self, mul_one]
     _ = X * Jm ε * Jm ε := by rw [h3]
-    _ = X := by rw [mul_assoc, Jm_mul_Jm_eq_one, mul_one]
+    _ = X := by rw [mul_assoc, Jm_mul_self, mul_one]
 
 lemma polar_decomposition_unique {ε : Fin n → Bool} (k k' X X' : Matrix (Fin n) (Fin n) ℂ) (hk : k ∈ Kset ε)
     (hk' : k' ∈ Kset ε) (hX : inP ε X) (hX' : inP ε X')
