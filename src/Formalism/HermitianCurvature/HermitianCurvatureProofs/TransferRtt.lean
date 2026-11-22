@@ -102,8 +102,7 @@ theorem xEx_up {j : ℕ} {π π' : Ty P} (h : Up P j π π') (ex : Finset ℕ) (
   unfold xEx
   refine Finset.prod_congr rfl fun i hi => ?_
   have hi' := Finset.mem_sdiff.1 hi
-  have hne : i ≠ j := fun e => hi'.2 (e ▸ hj)
-  rw [rho_up P h hi'.1, if_neg hne, add_zero]
+  rw [rho_up P h hi'.1, if_neg (by rintro rfl; exact hi'.2 hj), add_zero]
 
 def rr (j : ℕ) (u : ℂ) : Ty P → ℂ := fun π => (u + (rho P π j : ℂ))⁻¹
 
@@ -845,10 +844,7 @@ theorem IsPoly.sum {ι : Type*} (s : Finset ι) {f : ι → ℂ → B} (hf : ∀
   classical
   induction s using Finset.induction_on with
   | empty => simpa using IsPoly.const (0 : B)
-  | insert a s ha ih =>
-    have h1 := (hf a (Finset.mem_insert_self a s)).add (ih fun i hi => hf i (Finset.mem_insert_of_mem hi))
-    refine (funext fun y => ?_ : (fun y => ∑ i ∈ insert a s, f i y) = fun y => f a y + ∑ i ∈ s, f i y) ▸ h1
-    rw [Finset.sum_insert ha]
+  | insert a s ha ih => simpa only [Finset.sum_insert ha] using (hf a (Finset.mem_insert_self a s)).add (ih fun i hi => hf i (Finset.mem_insert_of_mem hi))
 
 theorem IsPolyS.id : IsPolyS fun y => y := ⟨X, fun y => by simp⟩
 theorem IsPolyS.const (c : ℂ) : IsPolyS fun _ => c := ⟨C c, fun y => by simp⟩
@@ -1072,8 +1068,7 @@ theorem Lam1 (u v : ℂ) (hu : Good P u) (hv : Good P v) :
     (fun j hj π => by
       have h1 := good0 P hu π hj
       have h2 := good0 P hv π hj
-      simp only [rr]
-      rw [xC_split P π u hj]
+      simp only [rr, xC_split P π u hj]
       field_simp
       ring)
   rw [neg_one_smul] at h

@@ -18,9 +18,7 @@ theorem kap_comm_diagonal (P : Par) (f : Ty P → ℂ) (d : Ty P → Pr P.r) :
     Commute (kap P f) (Matrix.diagonal d) := by
   show kap P f * Matrix.diagonal d = Matrix.diagonal d * kap P f
   rw [kap_eq, Matrix.diagonal_mul_diagonal, Matrix.diagonal_mul_diagonal]
-  congr 1
-  funext π
-  exact Algebra.commutes _ _
+  exact congrArg Matrix.diagonal (funext fun π => Algebra.commutes _ _)
 
 theorem kap_comm_sc (P : Par) (f : Ty P → ℂ) (w : Pr P.r) : Commute (kap P f) (sc P w) := by
   simpa [sc, Matrix.scalar_apply] using kap_comm_diagonal P f (fun _ => w)
@@ -54,11 +52,9 @@ theorem xEx_pair' (P : Par) (π : Ty P) (Y : ℂ) (l j : ℕ) (hl : l ∈ Icc 1 
 theorem xEx_up (hR : RhoUp) (P : Par) (l : ℕ) (π π' : Ty P) (hU : Up P l π π') (ex : Finset ℕ) (hl : l ∈ ex)
     (Y : ℂ) : xEx P ex π' Y = xEx P ex π Y := by
   unfold xEx
-  refine Finset.prod_congr rfl ?_
-  intro i hi
-  have hi' := Finset.mem_sdiff.1 hi
-  have hne : i ≠ l := fun h => hi'.2 (h ▸ hl)
-  rw [hR P l π π' hU i hi'.1, if_neg hne, add_zero]
+  refine Finset.prod_congr rfl fun i hi => ?_
+  rw [Finset.mem_sdiff] at hi
+  rw [hR P l π π' hU i hi.1, if_neg (show i ≠ l from fun h => hi.2 (h ▸ hl)), add_zero]
 
 theorem rho_up (hR : RhoUp) (P : Par) (l : ℕ) (hl : l ∈ Icc 1 (P.k - 1)) (π π' : Ty P) (hU : Up P l π π') :
     rho P π' l = rho P π l + 1 := by
@@ -552,18 +548,14 @@ theorem q_polynomial_monic (P : Par) : (q1P P).Monic :=
 theorem natDegree_q1_polynomial (P : Par) : (q1P P).natDegree = 2 * P.k := by
   unfold q1P
   rw [natDegree_prod_of_monic _ _ (fun _ _ => (monic_X_add_C _).mul (monic_X_add_C _))]
-  have : ∀ i ∈ Icc 1 P.k, ((X + C (1 / 2 + (P.u i : ℂ))) * (X + C (1 / 2 + (P.u' i : ℂ)))).natDegree = 2 := by
-    intro i _
-    rw [Monic.natDegree_mul (monic_X_add_C _) (monic_X_add_C _), natDegree_X_add_C, natDegree_X_add_C]
-  rw [Finset.sum_congr rfl this]
+  simp only [Monic.natDegree_mul, natDegree_X_add_C, monic_X_add_C]
   simp [mul_comm]
 
 theorem q_polynomial_next_coeff (P : Par) :
     (q1P P).nextCoeff = ∑ i ∈ Icc 1 P.k, ((1 / 2 + (P.u i : ℂ)) + (1 / 2 + (P.u' i : ℂ))) := by
   unfold q1P
   rw [Monic.nextCoeff_prod _ _ (fun _ _ => (monic_X_add_C _).mul (monic_X_add_C _))]
-  refine Finset.sum_congr rfl (fun i _ => ?_)
-  rw [Monic.nextCoeff_mul (monic_X_add_C _) (monic_X_add_C _), nextCoeff_X_add_C, nextCoeff_X_add_C]
+  exact Finset.sum_congr rfl (fun i _ => by rw [Monic.nextCoeff_mul (monic_X_add_C _) (monic_X_add_C _), nextCoeff_X_add_C, nextCoeff_X_add_C])
 
 theorem qC_eq (P : Par) (Y : ℂ) : qC P Y = -((P.T : ℂ) * P.T') * (q1P P).eval Y := by
   unfold qC q1P
@@ -795,8 +787,7 @@ theorem IsPoly.add {F G : ℂ → B} (hF : IsPoly F) (hG : IsPoly G) : IsPoly (f
   exact ⟨p + q, fun Y => by show F Y + G Y = _; rw [map_add, hp, hq]⟩
 
 theorem IsPoly.sub {F G : ℂ → B} (hF : IsPoly F) (hG : IsPoly G) : IsPoly (fun Y => F Y - G Y) := by
-  obtain ⟨p, hp⟩ := hF; obtain ⟨q, hq⟩ := hG
-  exact ⟨p - q, fun Y => by show F Y - G Y = _; rw [map_sub, hp, hq]⟩
+  exact Exists.elim (show ∃ p : B[X], ∀ Y, F Y = ev Y p from hF) fun p hp => Exists.elim (show ∃ q : B[X], ∀ Y, G Y = ev Y q from hG) fun q hq => ⟨p - q, fun Y => by show F Y - G Y = _; rw [map_sub, hp, hq]⟩
 
 theorem IsPoly.neg {F : ℂ → B} (hF : IsPoly F) : IsPoly (fun Y => -F Y) := by
   obtain ⟨p, hp⟩ := hF
@@ -1049,8 +1040,7 @@ theorem absInv (G Gi X Xi : R) (hG : G * Gi = 1) (hG' : Gi * G = 1) (hX : X * Xi
       _ = 1 := by rw [hG', hX', one_mul]
 
 theorem absTi (Gi a b : R) (c : Commute a Gi) : (Gi * a) * (Gi * b) = Gi * Gi * (a * b) := by
-  calc (Gi * a) * (Gi * b) = Gi * (a * Gi) * b := by simp only [mul_assoc]
-    _ = _ := by rw [c.eq]; simp only [mul_assoc]
+  rw [mul_assoc, ← mul_assoc a Gi b, c.eq, mul_assoc, ← mul_assoc Gi Gi (a * b)]
 
 theorem absTerm (X k Gi S : R) (h1 : Commute X k) (h2 : Commute X (Gi * S)) (c : Commute Gi k) :
     Commute X (Gi * (k * S)) := by

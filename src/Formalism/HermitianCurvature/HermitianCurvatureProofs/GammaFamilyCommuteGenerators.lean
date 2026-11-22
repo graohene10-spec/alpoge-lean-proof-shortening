@@ -65,8 +65,8 @@ theorem isRTT_Tm {p c ci : A} (h : WeylRel p c ci) : IsRTT (fun Y : ℂ => Tm Y 
 theorem isDet_Tm {p c ci : A} (h : WeylRel p c ci) : IsDet (fun Y : ℂ => Tm Y p c ci) (fun _ => 1) := by
   intro Y
   refine ⟨?_, ?_⟩
-  · rw [map_one, one_smul]
-    exact Formalism.YangianSpanCharacter.P.transposeSymplecticShift ℂ A p c ci Y h
+  · simpa only [map_one, one_smul] using
+      Formalism.YangianSpanCharacter.P.transposeSymplecticShift ℂ A p c ci Y h
   · rw [map_one, one_smul]
     obtain ⟨h1, h2, h3⟩ := h
     have hc : algebraMap ℂ A Y * c = c * algebraMap ℂ A Y := Algebra.commutes _ _
@@ -74,9 +74,7 @@ theorem isDet_Tm {p c ci : A} (h : WeylRel p c ci) : IsDet (fun Y : ℂ => Tm Y 
     fin_cases a <;> fin_cases b
     · simp [Tm, Formalism.YangianSpanCharacter.T.J, Matrix.mul_apply, Fin.sum_univ_two, add_mul, mul_add, h3, hc]
       abel
-    · simp [Tm, Formalism.YangianSpanCharacter.T.J, Matrix.mul_apply, Fin.sum_univ_two, h1]
-    · simp [Tm, Formalism.YangianSpanCharacter.T.J, Matrix.mul_apply, Fin.sum_univ_two, h2]
-    · simp [Tm, Formalism.YangianSpanCharacter.T.J, Matrix.mul_apply, Fin.sum_univ_two]
+    all_goals simp [Tm, Formalism.YangianSpanCharacter.T.J, Matrix.mul_apply, Fin.sum_univ_two, h1, h2]
 
 theorem Ts_comm (σ : Site A) (x : A) (hp : Commute x σ.p) (hc : Commute x σ.c) (hci : Commute x σ.ci)
     (Y : ℂ) (a b : Fin 2) : Commute x (Ts σ Y a b) := by
@@ -245,8 +243,7 @@ theorem star_kap (P : Par) (f : Ty P → ℂ) : star (kap P f) = kap P (star f) 
   rw [kap_eq, kap_eq, Matrix.star_eq_conjTranspose, Matrix.diagonal_conjTranspose]
   congr 1
   funext π
-  simp [algebraMap_star_comm]
-  rw [starRingEnd_apply, algebraMap_star_comm]
+  simpa using (algebraMap_star_comm (A := Pr P.r) (f π)).symm
 
 theorem kappa_sign_coordinate (P : Par) (l : ℕ) (Y : ℂ) : (kap P fun π => x0 P l π Y) = sgn P l • xA P Y := by
   have h : (fun π => x0 P l π Y) = sgn P l • (fun π => xC P π Y) := by
@@ -384,8 +381,7 @@ theorem ops_sc (P : Par) (i : Fin P.r) : ∀ x ∈ ops (siteA P i), ∃ w, x = s
 
 theorem star_ops {A : Type} [Ring A] [StarRing A] (σ : Site A) : ∀ x ∈ ops σ, star x ∈ ops σ := by
   intro x hx
-  simp only [ops, Set.mem_setOf_eq, star_star] at hx ⊢
-  exact hx.symm
+  simpa only [ops, Set.mem_setOf_eq, star_star] using (Or.symm hx)
 
 theorem isSiteA (P : Par) (i : Fin P.r) : IsSite (siteA P i) := by
   obtain ⟨L, hL⟩ := Mx2.levelExists P
@@ -458,10 +454,9 @@ theorem Ent.one : Ent C (1 : M2 A) := by
 
 theorem Ent.prod {l : List (M2 A)} (h : ∀ M ∈ l, Ent C M) : Ent C l.prod := by
   induction l with
-  | nil => rw [List.prod_nil]; exact Ent.one
+  | nil => simpa using Ent.one
   | cons M l ih =>
-    rw [List.prod_cons]
-    exact Ent.mul (h M (by simp)) (ih fun N hN => h N (by simp [hN]))
+    simpa using Ent.mul (h M (by simp)) (ih fun N hN => h N (by simp [hN]))
 
 theorem Ent.Ts {σ : Site A} (hp : σ.p ∈ C) (hc : σ.c ∈ C) (hci : σ.ci ∈ C) (Y : ℂ) : Ent C (Ts σ Y) := by
   intro a b

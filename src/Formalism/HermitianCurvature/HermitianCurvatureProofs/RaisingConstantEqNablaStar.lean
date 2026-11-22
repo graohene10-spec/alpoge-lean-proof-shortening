@@ -238,9 +238,7 @@ theorem star_half : star (1 / 2 : ℂ) = 1 / 2 := by
   simp
 
 theorem conj_two : (starRingEnd ℂ) 2 = 2 := by
-  first
-  | simp
-  | exact map_ofNat (starRingEnd ℂ) 2
+  exact map_ofNat (starRingEnd ℂ) 2
 
 theorem star_lowering_constant (Y : ℂ) : star (l0A P Y) = ggA P * m0A P (star Y) * ggiA P := by
   rw [raising_constant_eq_nabla_star, block_frame_conjugation_identity (ggA P) (ggiA P) (zA P) (nabsA P) (star Y - 1 / 2) 1 (gg_ggi P)
@@ -761,8 +759,7 @@ theorem eval_wNum (π : Ty P) (Y : ℂ) : (wNum P π).eval Y = qC P Y +
   rw [Polynomial.eval_add, eval_qP, Polynomial.eval_finset_sum]
   refine congrArg (qC P Y + ·) (Finset.sum_congr rfl fun l _ => ?_)
   unfold xEx
-  rw [Finset.sdiff_singleton_eq_erase]
-  simp only [Polynomial.eval_mul, Polynomial.eval_C, Polynomial.eval_prod, Polynomial.eval_add, Polynomial.eval_X]
+  simp only [Finset.sdiff_singleton_eq_erase, Polynomial.eval_mul, Polynomial.eval_C, Polynomial.eval_prod, Polynomial.eval_add, Polynomial.eval_X]
   rw [Finset.prod_congr rfl fun j _ => (add_assoc Y 1 (rho P π j : ℂ)).trans (by rw [add_comm 1])]
 
 theorem wC_id (hP : P.OK) (π : Ty P) (Y : ℂ) (h1 : xC P π (Y + 1) ≠ 0) :
@@ -812,16 +809,15 @@ theorem diag_term {l : ℕ} (hN : star (SS P l) * SS P l = kap P fun π => ((Nrm
     (hl : l ∈ Icc 1 (P.k - 1)) :
     (kap P fun π => xEx P {l} π Y) * star (SS P l) * ((kap P fun π => (Y + (rho P π l : ℂ))⁻¹) * SS P l) =
       kap P fun π => xEx P {l} π Y * ((Nrm P l π : ℝ) : ℂ) * (Y + (rho P π l : ℂ) + 1)⁻¹ := by
-  have hs := sss_shift P l (fun π => (Y + (rho P π l : ℂ) + 1)⁻¹) (fun π => (Y + (rho P π l : ℂ))⁻¹)
-    (fun π π' h => by
-      beta_reduce
-      rw [rho_up_same P hl h]
-      push_cast
-      ring)
-  rw [← mul_assoc, mul_assoc (kap P _) (star (SS P l)), hs, ← mul_assoc, mul_assoc _ (star (SS P l)), hN,
-    ← kap_mul, ← kap_mul]
-  refine congrArg (kap P) (funext fun π => ?_)
-  ring
+  rw [← mul_assoc, mul_assoc (kap P _) (star (SS P l)),
+    sss_shift P l (fun π => (Y + (rho P π l : ℂ) + 1)⁻¹) (fun π => (Y + (rho P π l : ℂ))⁻¹)
+      (fun π π' h => by
+        beta_reduce
+        rw [rho_up_same P hl h]
+        push_cast
+        ring),
+    ← mul_assoc, mul_assoc _ (star (SS P l)), hN, ← kap_mul, ← kap_mul]
+  exact congrArg (kap P) (funext fun π => by ring)
 
 theorem off_term (Y : ℂ) (hx : ∀ π, xC P π Y ≠ 0) {l j : ℕ}
     (hj : j ∈ Icc 1 (P.k - 1)) (hjl : j ≠ l) :
