@@ -319,8 +319,7 @@ variable {Bs : DefBase K} {Df : DefSide Bs} {Dc : DefCols Df} {Sp : SPer Dc} {N 
 theorem dQ_eq (t : Bs.Tup) : Df.dQ t = S.D := dim_of_bij _ (S.l1c.1 t)
 
 theorem Qpart_base (p : Bs.Ix) : S.Qpart Bs.μ0 p = Df.Qp Bs.μ0 p := by
-  rw [IndefData.Qpart, ← S.l1a p]
-  exact Submodule.comap_map_eq_of_injective (f := (S.ι Bs.μ0).mulVecLin) (S.l1c.1 _).1 _
+  rw [IndefData.Qpart, ← S.l1a p, Submodule.comap_map_eq_of_injective (f := (S.ι Bs.μ0).mulVecLin) (S.l1c.1 _).1 _]
 
 theorem D_pos : 0 < S.D := S.dQ_eq Bs.μ0 ▸ S.pos
 
@@ -399,8 +398,7 @@ theorem intoDual (hD : DivIntoDualShift) (hG : LatticeGlue) (wf : Df.WF) (u : Dc
     (fun w => S.ι (S.μ w) * Df.Pq (S.μ w)) (fun _ => 1) (fun w => Dc.Pt u (S.μ w))
     (fun w => S.col.ζ u (S.μ w)) (fun w => S.l1b.2.2.1 u _) (fun w => S.l1b.2.2.2 u w)
     (fun w φ F => ?_) Nu Nu' σ τ hL2 hτ hsh (fun w => ?_) φ hφ x hx
-  · rw [Matrix.one_mulVec, ← Matrix.mulVec_mulVec]
-    exact S.l1b.1 u _ φ F
+  · simpa only [Matrix.one_mulVec, ← Matrix.mulVec_mulVec] using S.l1b.1 u _ φ F
   · rw [matLat_one, matLat_mul]
     exact (S.RR_spec hG wf).2 w
 

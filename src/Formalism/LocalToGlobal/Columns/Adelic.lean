@@ -78,9 +78,8 @@ theorem ad_gram_hStd : Formalism.UG.gram (hStd E n) = 1 := by
   ext i j
   show (∑ k, star (Pi.single i (1 : E) k) * Pi.single j (1 : E) k) = (1 : Matrix (Fin n) (Fin n) E) i j
   rw [Finset.sum_eq_single i]
-  · rw [Pi.single_eq_same, star_one, one_mul, Pi.single_apply, Matrix.one_apply]
-  · intro k _ hk
-    rw [Pi.single_eq_of_ne hk, star_zero, zero_mul]
+  · simp [Pi.single_apply, Matrix.one_apply]
+  · intro k _ hk; simp [Pi.single_eq_of_ne hk]
   · intro h; exact absurd (Finset.mem_univ _) h
 
 def ratHom : URat hc n →* UF E n where
@@ -111,9 +110,7 @@ theorem ratHom_bijective : Function.Bijective (ratHom hc n) := by
   constructor
   · intro a b hab
     have h1 : Formalism.UG.glEquiv (a : GL (Fin n) E) = Formalism.UG.glEquiv (b : GL (Fin n) E) := congrArg Subtype.val hab
-    have h2 : (a : GL (Fin n) E) = b := by
-      simpa [Formalism.UG.glEquiv] using h1
-    exact Subtype.ext h2
+    exact Subtype.ext (by simpa [Formalism.UG.glEquiv] using h1)
   · intro u
     let g : GL (Fin n) E := Matrix.GeneralLinearGroup.toLin.symm
       ((LinearMap.GeneralLinearGroup.generalLinearEquiv E (Fin n → E)).symm (u : Sp E n ≃ₗ[E] Sp E n))
@@ -121,8 +118,7 @@ theorem ratHom_bijective : Function.Bijective (ratHom hc n) := by
       simp [g, Formalism.UG.glEquiv]
     have h := (Formalism.UG.Final.HermBridge E (Fin n) (hStd E n) g).2
     rw [ad_gram_hStd, hg] at h
-    have hm : g ∈ URat hc n := h u.2
-    exact ⟨⟨g, hm⟩, Subtype.ext hg⟩
+    exact ⟨⟨g, h u.2⟩, Subtype.ext hg⟩
 
 def ratEquiv : URat hc n ≃* UF E n := MulEquiv.ofBijective (ratHom hc n) (ratHom_bijective hc n)
 

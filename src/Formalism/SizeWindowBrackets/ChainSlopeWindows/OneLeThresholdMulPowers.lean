@@ -803,14 +803,9 @@ theorem side_condition_of_windows : SideConditionsOfWindows := by
   have hvpos : 0 < v := by
     have h : 0 < v * X := by rw [F.hvX]; exact F.bpos
     exact (pos_iff_pos_of_mul_pos h).2 F.Xpos
-  have hx2 : P.x ≤ P.x ^ 2 := by
-    calc P.x = P.x ^ 1 := (pow_one _).symm
-      _ ≤ P.x ^ 2 := pow_le_pow_right₀ F.x1 (by norm_num)
-  have hx4 : P.x ≤ P.x ^ 4 := by
-    calc P.x = P.x ^ 1 := (pow_one _).symm
-      _ ≤ P.x ^ 4 := pow_le_pow_right₀ F.x1 (by norm_num)
+  have hx2 : P.x ≤ P.x ^ 2 := by simpa only [pow_one] using pow_le_pow_right₀ F.x1 (show (1 : ℕ) ≤ 2 by norm_num)
+  have hx4 : P.x ≤ P.x ^ 4 := by simpa only [pow_one] using pow_le_pow_right₀ F.x1 (show (1 : ℕ) ≤ 4 by norm_num)
   have hw0 : 0 < P.wpp := by rw [F.hwpp]; exact div_pos hvpos F.npos
-  have hb1 : 1 ≤ P.b := F.sb1.trans F.sb_le_b
   have hw8 : 0 < w8 := by linarith [F.w81]
   have hbp0 : 0 ≤ P.bp := by rw [F.hbp]; exact mul_nonneg F.xpos.le F.v0
   refine ⟨hw0, F.th0, ?_, ?_, ?_, ?_, ?_, ?_, ?_, F.C0, ?_, ?_, ?_, ?_, F.lx0, F.La0, ?_, ?_, by rw [F.hXp]; exact F.hXpp⟩
@@ -826,7 +821,7 @@ theorem side_condition_of_windows : SideConditionsOfWindows := by
   · rw [F.hXpp, F.hwpp, F.ha, ← F.hvX]
     have := F.npos.ne'
     field_simp
-  · rw [F.ha]; exact one_le_mul_of_one_le_of_one_le F.x1 hb1
+  · rw [F.ha]; exact one_le_mul_of_one_le_of_one_le F.x1 (F.sb1.trans F.sb_le_b)
   · rw [F.hXp]; exact F.X1
   · have h1 : (3 : ℝ) ≤ (P.p₀ : ℝ) := by linarith [F.px]
     exact_mod_cast h1
@@ -961,10 +956,8 @@ theorem first_kind_bound : FirstKind := by
       have hi' : i ≤ ⌊Real.log X'⌋₊ := Nat.le_floor hi
       obtain ⟨c1, c2⟩ := band_root_bound X' ρ p i (by linarith) h4 (by linarith) (Nat.cast_nonneg p) b2 b3 b4
       refine ⟨i - 1, by omega, b1, ?_, ?_⟩
-      · have : i - 1 + 1 = i := Nat.sub_add_cancel b2
-        simp only [this]; exact c1
-      · have : i - 1 + 1 = i := Nat.sub_add_cancel b2
-        simp only [this]; exact c2
+      · simpa [Nat.sub_add_cancel b2] using c1
+      · simpa [Nat.sub_add_cancel b2] using c2
 
 lemma bad_le {τ : Type} (P : Par) (Ps sB : Finset ℕ) (cl : ℕ → PClass) (TT : Finset τ)
     (TTp : ℕ → Finset τ) (BAD : ℕ → τ → Prop) (m : ℝ) (hm : 0 ≤ m) (ha : 0 ≤ P.a) (hβ : 0 ≤ P.β)

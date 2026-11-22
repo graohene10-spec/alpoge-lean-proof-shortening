@@ -246,17 +246,15 @@ private lemma one_le_hook_product {N : ℕ} (nu : Fin N → ℕ) : 1 ≤ hookPro
 
 private lemma log_factorial_le_mul_log (n : ℕ) (M : ℝ) (hM : 1 ≤ M) (h : (n : ℝ) ≤ M) :
     Real.log (n.factorial : ℝ) ≤ M * Real.log M := by
-  have hlM : 0 ≤ Real.log M := Real.log_nonneg hM
   rcases Nat.eq_zero_or_pos n with rfl | hn
-  · simp; positivity
-  · have hn' : (0 : ℝ) < n := by exact_mod_cast hn
-    calc Real.log (n.factorial : ℝ) ≤ Real.log ((n : ℝ) ^ n) := by
+  · simpa only [Nat.factorial_zero, Nat.cast_one, Real.log_one] using mul_nonneg (by linarith : (0 : ℝ) ≤ M) (Real.log_nonneg hM)
+  · calc Real.log (n.factorial : ℝ) ≤ Real.log ((n : ℝ) ^ n) := by
           refine Real.log_le_log (by exact_mod_cast n.factorial_pos) ?_
           exact_mod_cast Nat.factorial_le_pow n
       _ = n * Real.log n := by rw [Real.log_pow]
       _ ≤ n * Real.log M := by
-          exact mul_le_mul_of_nonneg_left (Real.log_le_log hn' h) hn'.le
-      _ ≤ M * Real.log M := mul_le_mul_of_nonneg_right h hlM
+          exact mul_le_mul_of_nonneg_left (Real.log_le_log (by exact_mod_cast hn) h) (by exact_mod_cast hn.le)
+      _ ≤ M * Real.log M := mul_le_mul_of_nonneg_right h (Real.log_nonneg hM)
 
 theorem thin_partition_bound : ThinPlaceHookBound := by
   intro C₀ hC

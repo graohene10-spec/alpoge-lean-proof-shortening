@@ -23,9 +23,7 @@ theorem twist_mem_gen (R : Type) [CommRing R] {n : ℕ} (lt : DomWeight (n + 1))
   cases n with
   | zero =>
     have hc : sg.detShift.toNat = 0 := by unfold DomWeight.detShift; simp
-    have hf : (fun i : Fin 0 => sg.natW i + 0) = sg.natW := funext fun i => i.elim0
-    simp only [hc, hf]
-    simp [dpowR]
+    simp [hc, dpowR]
   | succ m => exact fun v hv => det_mul_mem_weyl R sg.natW _ v hv
 
 theorem weylQ_denom {r n : ℕ} (hn : n ≤ r) (ν : Fin n → ℕ) (x : MvPolynomial (Fin r × Fin n) ℚ)

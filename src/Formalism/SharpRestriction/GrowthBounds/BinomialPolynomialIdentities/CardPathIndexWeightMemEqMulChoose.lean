@@ -141,22 +141,15 @@ theorem mem_span_wordMonomialProducts (hT : RestTop) (hF : RestSplit) (k : Type)
   rw [h3]
   refine Submodule.sum_mem _ fun β hβ => ?_
   have hm := hT k n i isVec B pi (Gc β) hpi (h2 β hβ) (h4 hg β hβ)
-  have hle : Submodule.map (LinearMap.mulRight k (monomial β (1 : k)))
-      (Submodule.span k (psiFam k n i isVec B '' {x | x.1.1 i ∈ pi})) ≤
-      Submodule.span k (Set.range (pathExponentMonomial k n i N isVec B pi)) := by
-    rw [Submodule.map_span_le]
-    rintro _ ⟨x, hx, rfl⟩
-    exact Submodule.subset_span ⟨(⟨x, hx⟩, ⟨β, h1 β hβ⟩), rfl⟩
-  exact hle (Submodule.mem_map_of_mem (f := LinearMap.mulRight k (monomial β (1 : k))) hm)
+  refine (Submodule.map_span_le (LinearMap.mulRight k (monomial β (1 : k))) (psiFam k n i isVec B '' {x | x.1.1 i ∈ pi}) (Submodule.span k (Set.range (pathExponentMonomial k n i N isVec B pi)))).2 ?_ (Submodule.mem_map_of_mem (f := LinearMap.mulRight k (monomial β (1 : k))) hm)
+  rintro _ ⟨x, hx, rfl⟩
+  exact Submodule.subset_span ⟨(⟨x, hx⟩, ⟨β, h1 β hβ⟩), rfl⟩
 
 theorem restOne_of (hW : RestWord) (hT : RestTop) (hF : RestSplit) : RestOne := by
   intro k _ n N i isVec B pi G hpi hi hG hg
-  have hI : LemmaA2indep := Top.lemmaA2indep
-  have hR : PolBRank := Top.polBRank
-  have hC : CountCont := Top.countCont
   have : Finite (PathIdx n N isVec B) := Top.pathIdxFinite n N isVec B
   have : Finite (PathIdx n i isVec B) := Top.pathIdxFinite n i isVec B
-  have : Finite (ExponentSetCounting.expSet n i N B) := (ExponentSetCounting.expSet_finite hR n i N B).to_subtype
+  have : Finite (ExponentSetCounting.expSet n i N B) := (ExponentSetCounting.expSet_finite Top.polBRank n i N B).to_subtype
   let _ := Fintype.ofFinite {x : PathIdx n N isVec B // x.1.1 i ∈ pi}
   let _ := Fintype.ofFinite ({x : PathIdx n i isVec B // x.1.1 i ∈ pi} × ExponentSetCounting.expSet n i N B)
   set U := Submodule.span k (Set.range fun x : {x : PathIdx n N isVec B // x.1.1 i ∈ pi} =>
@@ -168,7 +161,7 @@ theorem restOne_of (hW : RestWord) (hT : RestTop) (hF : RestSplit) : RestOne := 
     exact mem_span_wordMonomialProducts hT hF k hi isVec B pi hpi _ (ExponentSetCounting.psiFam_mem k N isVec B x.1)
       (standardWordFamily_satisfies_condition hW k hi isVec B pi hpi x.1 x.2)
   have hli : LinearIndependent k (fun x : {x : PathIdx n N isVec B // x.1.1 i ∈ pi} =>
-      psiFam k n N isVec B x.1) := (hI k n N isVec B).comp Subtype.val Subtype.val_injective
+      psiFam k n N isVec B x.1) := (Top.lemmaA2indep k n N isVec B).comp Subtype.val Subtype.val_injective
   have dU : Module.finrank k U = Fintype.card {x : PathIdx n N isVec B // x.1.1 i ∈ pi} :=
     finrank_span_eq_card hli
   have dW : Module.finrank k W ≤
@@ -178,8 +171,8 @@ theorem restOne_of (hW : RestWord) (hT : RestTop) (hF : RestSplit) : RestOne := 
   have hEq : U = W := Submodule.eq_of_le_of_finrank_le hUW (by
     rw [dU]
     refine dW.trans ?_
-    rw [← Nat.card_eq_fintype_card, ← Nat.card_eq_fintype_card, Nat.card_prod, card_pathIndex_weight_mem_eq_mul_choose hC hi]
-    exact Nat.mul_le_mul_left _ (by rw [Nat.card_coe_set_eq]; exact ExponentSetCounting.expSet_card hR n i N B))
+    rw [← Nat.card_eq_fintype_card, ← Nat.card_eq_fintype_card, Nat.card_prod, card_pathIndex_weight_mem_eq_mul_choose Top.countCont hi]
+    exact Nat.mul_le_mul_left _ (by rw [Nat.card_coe_set_eq]; exact ExponentSetCounting.expSet_card Top.polBRank n i N B))
   have hGW : G ∈ W := mem_span_wordMonomialProducts hT hF k hi isVec B pi hpi G hG hg
   rw [← hEq, hU] at hGW
   rw [Set.image_eq_range]

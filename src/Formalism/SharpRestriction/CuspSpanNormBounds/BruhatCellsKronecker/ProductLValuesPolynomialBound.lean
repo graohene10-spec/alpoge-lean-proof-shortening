@@ -37,9 +37,7 @@ theorem lt_gap_of_consec {N : ℕ} (lam : Fin N → ℝ) (G : ℝ) (hG : 0 ≤ G
   have hb := b.2
   have hd : a.1 + (b.1 - a.1 - 1) + 1 < N := by omega
   have key := gap_of_consec lam G hG h (b.1 - a.1 - 1) a hd
-  have e : (⟨a.1 + (b.1 - a.1 - 1) + 1, hd⟩ : Fin N) = b :=
-    Fin.ext (by show a.1 + (b.1 - a.1 - 1) + 1 = b.1; omega)
-  rwa [e] at key
+  rwa [show (⟨a.1 + (b.1 - a.1 - 1) + 1, hd⟩ : Fin N) = b from Fin.ext (by show a.1 + (b.1 - a.1 - 1) + 1 = b.1; omega)] at key
 
 theorem abs_gap_of_consec {N : ℕ} (lam : Fin N → ℝ) (G : ℝ) (hG : 0 ≤ G)
     (h : ∀ (i : Fin N) (h : i.1 + 1 < N), G < lam i - lam ⟨i.1 + 1, h⟩) (a b : Fin N) (hab : a ≠ b) :

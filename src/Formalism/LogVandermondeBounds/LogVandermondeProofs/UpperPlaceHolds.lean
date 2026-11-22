@@ -217,11 +217,8 @@ lemma up_fact_mono (N P : ℕ) (h : N ≤ P) :
   | base => exact le_refl _
   | succ P _ ih =>
     rw [Finset.prod_range_succ]
-    have h0 : 1 ≤ P.factorial := Nat.factorial_pos P
-    have h1 : (1 : ℝ) ≤ ((P.factorial : ℕ) : ℝ) := by exact_mod_cast h0
-    have h2 : 0 ≤ ∏ i ∈ range P, ((i.factorial : ℕ) : ℝ) := le_of_lt (up_fact_pos P)
-    have h3 := mul_le_mul_of_nonneg_left h1 h2
-    linarith
+    have h1 : (1 : ℝ) ≤ ((P.factorial : ℕ) : ℝ) := by exact_mod_cast Nat.factorial_pos P
+    exact le_trans ih (by simpa using mul_le_mul_of_nonneg_left h1 (up_fact_pos P).le)
 
 private theorem one_le_mul_of_one_le_of_one_le' {a b : ℝ} (ha : 1 ≤ a) (hb : 1 ≤ b) : 1 ≤ a * b := by
   nlinarith
@@ -236,8 +233,7 @@ lemma up_fact_one (N : ℕ) : 1 ≤ ∏ i ∈ range N, ((i.factorial : ℕ) : �
 
 lemma up_four_le (n t : ℕ) (ht : 1 ≤ t) : (4 : ℝ) ≤ ((n : ℝ) + 2) * ((t : ℝ) + t) := by
   have h1 : (1 : ℝ) ≤ t := by exact_mod_cast ht
-  have h2 : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-  nlinarith
+  nlinarith [(Nat.cast_nonneg n : (0 : ℝ) ≤ (n : ℝ)), h1]
 
 set_option maxHeartbeats 1000000 in
 private theorem mul_le_mul_of_one_le {a b c d : ℝ} (hab : a ≤ b) (hcd : c ≤ d) (ha : 1 ≤ a) (hc : 1 ≤ c) :

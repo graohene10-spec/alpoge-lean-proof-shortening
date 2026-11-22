@@ -414,14 +414,12 @@ theorem layer_count : LayerCount := by
   intro ι _ _ N de la laM hde hla hlaM
   have hc : (0:ℝ) < Fintype.card ι := by exact_mod_cast Fintype.card_pos
   have h1 : (∏ _v : ι, 3 * de) ^ ((1 : ℝ) / Fintype.card ι) = 3*de := by
-    rw [Finset.prod_const, Finset.card_univ, ← Real.rpow_natCast, ← Real.rpow_mul (by positivity)]
-    rw [mul_one_div_cancel hc.ne', Real.rpow_one]
+    rw [Finset.prod_const, Finset.card_univ, ← Real.rpow_natCast, ← Real.rpow_mul (by positivity), mul_one_div_cancel hc.ne', Real.rpow_one]
   rw [h1]
   have hM : 0 < laM := by linarith
   apply pow_le_pow_left₀ (by positivity)
-  have : 2*(3*de)/laM ≤ 12*de/la := by
-    rw [div_le_div_iff₀ hM hla]; nlinarith
-  linarith
+  rw [add_le_add_iff_left, div_le_div_iff₀ hM hla]
+  nlinarith
 
 theorem threshold_count : ThreshCount := by
   intro n q h hh

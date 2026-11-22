@@ -328,13 +328,9 @@ theorem part_le (M : DSModel V S) (J : Set (GA D V)) (χ : GA D V → ℂ) (Sb :
 theorem mem_goodPart (M : DSModel V S) (J : Set (GA D V)) (χ : GA D V → ℂ) (e : (GA D V → ℂ) →ₗ[ℂ] (GA D V → ℂ))
     (T : MMap M) : T ∈ goodPart θ M J χ e ↔ T ∈ Mult θ M J χ ∧ ∀ v, e (T v) = T v := by
   rw [goodPart, Submodule.mem_inf, LinearMap.mem_ker]
-  refine and_congr Iff.rfl ?_
-  constructor
-  · intro h v
-    have h1 := congrArg (fun S => S v) h
-    simpa [postOn_apply, sub_eq_zero] using h1
-  · intro h
-    ext v
+  refine and_congr Iff.rfl ⟨fun h v => ?_, fun h => ?_⟩
+  · simpa [postOn_apply, sub_eq_zero] using congrArg (fun S => S v) h
+  · ext v
     simp [postOn_apply, h]
 
 theorem mem_part (M : DSModel V S) (J : Set (GA D V)) (χ : GA D V → ℂ) (Sb : Finset (HeightOneSpectrum (𝓞 D.host.F)))
@@ -346,8 +342,7 @@ theorem mem_part (M : DSModel V S) (J : Set (GA D V)) (χ : GA D V → ℂ) (Sb 
   refine forall_congr' fun P => forall_congr' fun k => forall_congr' fun R => forall_congr' fun _ => ?_
   constructor
   · intro h v
-    have h1 := congrArg (fun S => S v) h
-    simpa [heckeOn, postOn_apply, sub_eq_zero] using h1
+    simpa [heckeOn, postOn_apply, sub_eq_zero] using congrArg (fun S => S v) h
   · intro h
     ext v
     simp [heckeOn, postOn_apply, h]
@@ -361,8 +356,7 @@ theorem mem_partFull (M : DSModel V S) (J : Set (GA D V)) (χ : GA D V → ℂ)
   refine forall_congr' fun P => forall_congr' fun d => forall_congr' fun R => forall_congr' fun _ => ?_
   constructor
   · intro h v
-    have h1 := congrArg (fun S => S v) h
-    simpa [heckeOn, postOn_apply, sub_eq_zero] using h1
+    simpa [heckeOn, postOn_apply, sub_eq_zero] using congrArg (fun S => S v) h
   · intro h
     ext v
     simp [heckeOn, postOn_apply, h]

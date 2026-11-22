@@ -451,17 +451,10 @@ theorem det_szGram1 (i : ι) : (szGram1 G i).det = (Fintype.card (G i) : ℤ) :=
   have h : szGram1 G i = 1 + Matrix.vecMulVec (fun _ => (1 : ℤ)) (fun _ => 1) := by
     ext b c
     simp [szGram1, Matrix.one_apply, Matrix.vecMulVec_apply]
-  have hdet : (1 + Matrix.vecMulVec (fun _ : {g : G i // g ≠ 1} => (1 : ℤ)) (fun _ => 1)).det =
-      1 + (fun _ : {g : G i // g ≠ 1} => (1 : ℤ)) ⬝ᵥ (fun _ => 1) := by
-    first
-    | (rw [Matrix.vecMulVec_eq (ι := Unit)]
-       exact Matrix.det_one_add_replicateCol_mul_replicateRow (ι := Unit) _ _)
-    | (rw [Matrix.vecMulVec_eq Unit]
-       exact Matrix.det_one_add_replicateCol_mul_replicateRow _ _)
-    | (simp only [Matrix.vecMulVec_eq (ι := Unit)]
-       exact Matrix.det_one_add_replicateCol_mul_replicateRow (ι := Unit) _ _)
+  have hdet := Matrix.det_one_add_replicateCol_mul_replicateRow (ι := Unit)
+    (fun _ : {g : G i // g ≠ 1} => (1 : ℤ)) (fun _ => 1)
   have hpos : 1 ≤ Fintype.card (G i) := Fintype.card_pos
-  rw [h, hdet]
+  rw [h, Matrix.vecMulVec_eq (ι := Unit), hdet]
   simp [dotProduct, card_ne_one, Nat.cast_sub hpos]
 
 theorem det_szGram : (szGram G).det =
@@ -540,11 +533,9 @@ theorem kron_szVec_mem (F : SzIdx G → M) : kronMap K M (szVec G) F ∈ RamFun.
 
 theorem range_kron_szVec [FiniteDimensional K M] :
     LinearMap.range (kronMap K M (szVec G)) = RamFun.ramFun K G M := by
-  apply Submodule.eq_of_le_of_finrank_eq
-  · rintro _ ⟨F, rfl⟩
-    exact kron_szVec_mem G F
-  · rw [LinearMap.finrank_range_of_inj (kron_szVec_injective G), RamFun.finrank_ramFun, Module.finrank_pi_fintype,
-      Finset.sum_const, Finset.card_univ, card_SzIdx, smul_eq_mul, mul_comm]
+  refine Submodule.eq_of_le_of_finrank_eq (by rintro _ ⟨F, rfl⟩; exact kron_szVec_mem G F) ?_
+  rw [LinearMap.finrank_range_of_inj (kron_szVec_injective G), RamFun.finrank_ramFun, Module.finrank_pi_fintype,
+    Finset.sum_const, Finset.card_univ, card_SzIdx, smul_eq_mul, mul_comm]
 
 end Ram
 
@@ -855,9 +846,8 @@ theorem MramH_mu (hPr : Pr.Ok) (hbig : 2 * X.f * R.k < Pr.g 0 - 1) (u : Pr.Word)
   obtain ⟨σ⟩ := (colGSD W Ch u 0).exists_slice (DiaG X.E (Pr.vT u)) (colDiaFree W Ch hX hPr hbig u)
   have hcard : ∀ P : {P // P ∈ Pr.vT u}, Fintype.card (𝓞 X.E ⧸ P.1.asIdeal)ˣ = Pr.T u - 1 := fun P => by
     rw [← Nat.card_eq_fintype_card, card_resU hPr u P]
-  have hS0 := integral_delta_ne_bot W Ch hX hPr hbig u
   have key := σ.mu_ram (colRat W Ch hX u 0) (colOk W Ch hX u 0) (thl_colDel_isLattice W Ch u 0)
-    (colDel_dia W Ch u 0) hS0 (fun P => by rw [hcard P]; omega) (MramV W Ch u) (map_split_ColRamV W Ch u 0 σ)
+    (colDel_dia W Ch u 0) (integral_delta_ne_bot W Ch hX hPr hbig u) (fun P => by rw [hcard P]; omega) (MramV W Ch u) (map_split_ColRamV W Ch u 0 σ)
   rw [T2.log_det_szGram_div _ (Pr.T u) hT hcard, Fintype.card_coe, hPr.vT_card u] at key
   rw [(MramH_numbers W Ch hX u).1]
   exact key

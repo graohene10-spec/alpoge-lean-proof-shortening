@@ -340,10 +340,8 @@ lemma heisG_mul (k r' : ℕ) (y y' : Fin (2 * r' + k + 1) → ℂ) (b b' : ℂ) 
   ring
 
 lemma heisG_zero (k r' : ℕ) : heisG k r' (liftVec k 1 r' 0) 0 = 1 := by
-  apply mat_ext
-  intro w
-  rw [heis_act', lift_zero, herm_zero_right]
-  simp
+  refine mat_ext fun w => ?_
+  simpa [lift_zero, herm_zero_right] using heis_act' k r' 0 w 0
 
 lemma Hherm (k r : ℕ) : (Hpk k r)ᴴ = Hpk k r := by
   ext i j
@@ -384,9 +382,7 @@ lemma heisenberg_at_zero (k r' : ℕ) : heis0 k r' (0, 0) = 1 := by
 
 lemma heisenberg_mul_neg (k r' : ℕ) (x : HPar k r') : heis0 k r' x * heis0 k r' (-x.1, -x.2) = 1 := by
   rw [heisMul k r' x (-x.1, -x.2)]
-  have h : (herm (Hpk k r') (-x.1) x.1).im = 0 := by
-    rw [herm_neg_left, Complex.neg_im, herm_self_im, neg_zero]
-  convert heisenberg_at_zero k r' using 2 <;> simp [h]
+  convert heisenberg_at_zero k r' using 2 <;> simp [herm_neg_left, herm_self_im]
 
 theorem heisInv : HeisInv := by
   intro k r' x
@@ -546,11 +542,8 @@ lemma lev_mul (k r' : ℕ) (g h : Mat k r') : ιLev k 1 r' g * ιLev k 1 r' h = 
   apply mat_ext
   intro u
   rw [← mulVec_mulVec]
-  apply vec_ext
-  · simp only [levi_action_first_coordinate]
-  · simp only [lev_act_res]
-    rw [mulVec_mulVec]
-  · simp only [lev_act_iL]
+  apply vec_ext <;> simp only [levi_action_first_coordinate, lev_act_res, lev_act_iL]
+  rw [mulVec_mulVec]
 
 lemma lev_one (k r' : ℕ) : ιLev k 1 r' (1 : Mat k r') = 1 := by
   apply mat_ext
@@ -674,15 +667,13 @@ theorem heisHaar : HeisHaar := by
         Set.univ_nonempty) (by rw [h]; rfl)
 
 lemma normSq_det_GV {k r : ℕ} {g : Mat k r} (hg : g ∈ GV k r) : Complex.normSq g.det = 1 := by
-  have hH := isUnit_det_Hpk k r
-  have h : gᴴ * Hpk k r * g = Hpk k r := hg
-  have h2 := congrArg Matrix.det h
+  have h2 := congrArg Matrix.det (show gᴴ * Hpk k r * g = Hpk k r from hg)
   rw [Matrix.det_mul, Matrix.det_mul, Matrix.det_conjTranspose] at h2
   have h4 : (star g.det * g.det) * (Hpk k r).det = 1 * (Hpk k r).det := by
     rw [one_mul]
     nth_rewrite 2 [← h2]
     ring
-  have h3 := hH.mul_right_cancel h4
+  have h3 := (isUnit_det_Hpk k r).mul_right_cancel h4
   have h5 : ((Complex.normSq g.det : ℝ) : ℂ) = 1 := by
     rw [Complex.normSq_eq_conj_mul_self]
     exact h3

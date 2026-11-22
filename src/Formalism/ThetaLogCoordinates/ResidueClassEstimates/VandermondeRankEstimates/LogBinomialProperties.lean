@@ -11,10 +11,8 @@ open Letters
 
 theorem fT_zero (k' : ℕ) : fT k' 0 = 0 := by
   unfold fT
-  apply Finset.sum_eq_zero
-  intro j hj
-  have hj1 : (0 : ℝ) < j := by exact_mod_cast (Finset.mem_Icc.mp hj).1
-  rw [zero_add, div_self hj1.ne', Real.log_one]
+  exact Finset.sum_eq_zero fun j hj => by
+    rw [zero_add, div_self (show (0 : ℝ) < j by exact_mod_cast (Finset.mem_Icc.mp hj).1).ne', Real.log_one]
 
 theorem fT_succ (k' : ℕ) (y : ℝ) :
     fT (k' + 1) y = fT k' y + Real.log ((y + ((k' + 1 : ℕ) : ℝ)) / ((k' + 1 : ℕ) : ℝ)) := by
@@ -234,24 +232,21 @@ theorem logRankEstimate : LogRankEstimate := by
     refine ⟨D.r + 2 * D.Ns - 1, ?_, by omega⟩
     unfold Letters.k Letters.k'
     omega
-  have hk1 : 1 ≤ D.k := by unfold Letters.k; omega
   have hlog : Real.log (D.rankAA : ℝ) = ∑ i ∈ Icc 1 D.n0, fT (D.k' + d) (D.B i) := by
     unfold Letters.rankAA
     rw [Nat.cast_prod, Real.log_prod]
     · apply Finset.sum_congr rfl
       intro i _
       rw [fT_nat, ← hd]
-      have : D.B i + D.k - 1 = D.B i + (D.k - 1) := by omega
-      rw [this]
+      rw [Nat.add_sub_assoc (show 1 ≤ D.k by unfold Letters.k; omega)]
     · intro i _
       have : 0 < (D.B i + D.k - 1).choose (D.k - 1) := Nat.choose_pos (by omega)
       exact_mod_cast this.ne'
   rw [hlog, ← Finset.sum_sub_distrib]
   have hl0 : 0 ≤ Real.log (1 + A0) := Real.log_nonneg (by linarith)
   constructor
-  · apply Finset.sum_nonneg
-    intro i _
-    exact (fT_add_bounds D.k' (D.B i) (Nat.cast_nonneg _) d).1
+  · exact Finset.sum_nonneg (fun i _ =>
+      (fT_add_bounds D.k' (D.B i) (Nat.cast_nonneg _) d).1)
   · have h1 : ∑ i ∈ Icc 1 D.n0, (fT (D.k' + d) (D.B i) - fT D.k' (D.B i)) ≤
         ∑ _i ∈ Icc 1 D.n0, ((D.r : ℝ) + 2 * D.Ns) * Real.log (1 + A0) := by
       apply Finset.sum_le_sum

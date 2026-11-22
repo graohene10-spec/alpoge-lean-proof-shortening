@@ -70,10 +70,8 @@ theorem key (M : Matrix n n R) {k i : n} (hki : k ≠ i) (l j : n) :
       ((M.updateCol i (M.det • Pi.single j 1)).updateCol k (M.det • Pi.single l 1)) := by
     rw [twoCol, mul_updateCol, mul_updateCol, mul_one, mulVec_adjugate_col,
       mulVec_adjugate_col, updateCol_comm _ hki]
-  have := congrArg det hMN
-  rw [det_mul, hN, det_updateCol_smul, updateCol_comm _ (Ne.symm hki), det_updateCol_smul,
-    updateCol_comm _ hki] at this
-  rw [this, minorQ]
+  rw [← hN, ← det_mul, hMN, det_updateCol_smul, updateCol_comm _ (Ne.symm hki),
+    det_updateCol_smul, updateCol_comm _ hki, minorQ]
 
 end AdjugateJacobi
 

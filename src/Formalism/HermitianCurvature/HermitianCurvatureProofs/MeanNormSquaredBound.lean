@@ -17,11 +17,8 @@ lemma inner_sum_sum {ι κ : Type} (S : Finset ι) (S' : Finset κ) (c : ι → 
     (v : ι → E) (v' : κ → E) :
     inner ℂ (∑ j ∈ S', d j • v' j) (∑ i ∈ S, c i • v i) =
       ∑ i ∈ S, ∑ j ∈ S', c i * conj (d j) * inner ℂ (v' j) (v i) := by
-  rw [inner_sum]
-  refine Finset.sum_congr rfl fun i _ => ?_
-  rw [sum_inner]
-  refine Finset.sum_congr rfl fun j _ => ?_
-  rw [inner_smul_left, inner_smul_right]
+  simp only [inner_sum, sum_inner, inner_smul_left, inner_smul_right, Finset.mul_sum]
+  refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
   ring
 
 lemma normSq_sum {ι : Type} (S : Finset ι) (c : ι → ℂ) (v : ι → E) :
@@ -85,15 +82,12 @@ lemma abstract_bound (AB : AvgBound) {X Y : Type} (F : Finset X) (a : X → ℂ)
       refine Finset.sum_eq_zero fun h hh => Finset.sum_eq_zero fun h' hh' => ?_
       rw [horth h' hh' h hh ρ.1 ρ.2 ρ'.1 ρ'.2 b.1 b.2 b'.1 b'.2 hne', mul_zero])
   simp only [Fintype.card_coe] at key
-  have e1 : (∑ p : ↥A × ↥B, (e₁ p.1.1 * e₂ p.2.1) • w (p.1.1, p.2.1)) =
-      ∑ p ∈ A ×ˢ B, (e₁ p.1 * e₂ p.2) • w p :=
-    sum_sub_prod A B (fun p => (e₁ p.1 * e₂ p.2) • w p)
   have e2 : (∑ ρ : ↥A, ‖(B.card : ℂ)⁻¹ • ∑ b : ↥B, e₂ b.1 • w (ρ.1, b.1)‖ ^ 2) =
       ∑ ρ ∈ A, ‖(B.card : ℂ)⁻¹ • ∑ b ∈ B, e₂ b • w (ρ, b)‖ ^ 2 := by
     rw [← Finset.sum_coe_sort A]
     refine Finset.sum_congr rfl fun ρ _ => ?_
     rw [← Finset.sum_coe_sort B]
-  rw [e1, e2] at key
+  rw [(sum_sub_prod A B (fun p => (e₁ p.1 * e₂ p.2) • w p)), e2] at key
   refine ⟨_, _, key, ?_, ?_⟩
   · exact normSq_mean T _ (by simp) (A ×ˢ B) (fun p => e₁ p.1 * e₂ p.2) F a u
   · have h3 : ∀ ρ, ((‖(B.card : ℂ)⁻¹ • ∑ b ∈ B, e₂ b • w (ρ, b)‖ ^ 2 : ℝ) : ℂ) =

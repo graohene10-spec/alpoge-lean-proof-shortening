@@ -521,9 +521,7 @@ theorem inS_add {r s : ℚ} (hr : InS p r) (hs : InS p s) : InS p (r + s) := by
 theorem inS_neg {r : ℚ} (hr : InS p r) : InS p (-r) := by
   obtain ⟨k, b, hk⟩ := hr
   refine ⟨k, -b, ?_⟩
-  push_cast
-  rw [← hk]
-  ring
+  rw [mul_neg, Int.cast_neg, ← hk]
 
 theorem inS_int {r : ℚ} (hr : InS p r) (hn : ‖(r : ℚ_[p])‖ ≤ 1) : ∃ z : ℤ, r = z := by
   obtain ⟨k, b, hk⟩ := hr

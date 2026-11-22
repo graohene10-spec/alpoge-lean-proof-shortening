@@ -15,9 +15,7 @@ theorem cartan_eigC (LL : Letters N) (j : ℕ) (Cs : Finset (Fin r)) (μ : Fin r
   rw [coeff_cartan, coeff_smul, smul_eq_mul]
   by_cases h : coeff m x = 0
   · simp [h]
-  · have hm := hx (Finset.mem_coe.mpr (mem_support_iff.mpr h))
-    rw [Set.mem_setOf_eq] at hm
-    rw [hm c hc]
+  · rw [(Set.mem_ofPred_eq.mp (hx (Finset.mem_coe.mpr (mem_support_iff.mpr h)))) c hc]
 
 theorem comm_wtspC (LL : Letters N) (j : ℕ) (Cs : Finset (Fin r))
     (Q : MvPolynomial (Fin N × Fin r) ℚ_[p] →ₗ[ℚ_[p]] MvPolynomial (Fin N × Fin r) ℚ_[p])

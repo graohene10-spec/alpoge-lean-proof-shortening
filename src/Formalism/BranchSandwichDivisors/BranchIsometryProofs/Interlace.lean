@@ -40,8 +40,7 @@ theorem interlaceIdentities : InterlaceIdent := by
 
 theorem interlaceTelescope_statement : InterlaceTelescope := by
   intro n lam sg h p q hpq
-  have hpq' := Fin.le_iff_val_le_val.mp hpq
-  obtain ⟨k, hk⟩ : ∃ k, q.val = p.val + k := ⟨q.val - p.val, by omega⟩
+  obtain ⟨k, hk⟩ := Nat.exists_eq_add_of_le (Fin.le_iff_val_le_val.mp hpq)
   induction k generalizing q with
   | zero =>
     have : q = p := Fin.ext (by omega)
@@ -50,7 +49,7 @@ theorem interlaceTelescope_statement : InterlaceTelescope := by
   | succ k ih =>
     have hlt : p.val + k < n := by omega
     have hq1 : p ≤ (⟨p.val + k, hlt⟩ : Fin n) := Fin.le_iff_val_le_val.mpr (by simp)
-    have ih' := ih ⟨p.val + k, hlt⟩ hq1 (by simp) rfl
+    have ih' := ih ⟨p.val + k, hlt⟩ hq1 rfl
     have hIcc : Finset.Icc p q = insert q (Finset.Icc p ⟨p.val + k, hlt⟩) := by
       ext x
       simp only [Finset.mem_Icc, Finset.mem_insert, Fin.le_iff_val_le_val, Fin.ext_iff]

@@ -29,8 +29,7 @@ theorem dvd_discr_of_mem_sq (E : Type) [Field E] [NumberField E] {p : ℕ} (hp :
     rw [hmap, Ideal.span_le]; simpa using hv
   rw [← Ideal.ramificationIdx'_eq_ramificationIdx (span {(p : ℤ)}) P hb] at he
   refine (Ideal.ramificationIdx'_ne_one_iff hle).2 ?_ he
-  rw [hmap, Ideal.span_le]
-  simpa using h P hP hv
+  exact (le_of_eq hmap).trans (Ideal.span_le.2 (by simpa using h P hP hv))
 
 theorem dvd_discr_of_sqrt (E : Type) [Field E] [NumberField E] {p : ℕ} (hp : p.Prime) {a : E} (ha : a ^ 2 = -(p : E)) :
     (p : ℤ) ∣ discr E := by

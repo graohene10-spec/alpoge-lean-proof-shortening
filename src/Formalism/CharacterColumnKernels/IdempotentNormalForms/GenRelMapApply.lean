@@ -51,8 +51,7 @@ lemma gen_key {M G : Type} [Fintype M] [DecidableEq M] [Fintype G] [DecidableEq 
         Finset.mem_univ, if_true]
       rw [← Matrix.mul_apply, hWU]
       simp [Matrix.one_apply, snf.f.injective.eq_iff]
-    rw [hZ, Matrix.det_one]
-    exact isUnit_one
+    simp [hZ]
   · intro C' hC
     set Y : Matrix M G O := W * A with hYdef
     have hAY : A = U * Y := by rw [hYdef, ← Matrix.mul_assoc, hUW, Matrix.one_mul]

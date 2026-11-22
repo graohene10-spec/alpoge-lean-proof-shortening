@@ -40,9 +40,7 @@ theorem eq_sum_indicator (r : Setoid X) (f : X → E)
   rw [Finset.sum_ite_eq]
   split_ifs with h
   · exact hx
-  · rw [hx]
-    by_contra hne
-    exact h (ht hne)
+  · exact hx.trans (Classical.byContradiction fun hne => h (ht hne))
 
 theorem integral_eq_finsum (r : Setoid X) (hr : ∀ q, IsOpen (cls r q)) (μ : Measure X)
     (f : X → E) (hf : ∀ x y, Quotient.mk r x = Quotient.mk r y → f x = f y)
@@ -147,8 +145,7 @@ theorem doubleCoset_eq_preimage (K₀ : Subgroup G) (g : G) :
 theorem dcMap_eq_iff (K₀ : Subgroup G) (g : G) (k k' : K₀) :
     dcMap K₀ g k = dcMap K₀ g k' ↔
       k⁻¹ * k' ∈ (K₀.map (MulAut.conj g).toMonoidHom).subgroupOf K₀ := by
-  rw [Subgroup.mem_subgroupOf, Subgroup.mem_map_equiv, MulAut.conj_symm_apply]
-  simp only [dcMap, QuotientGroup.eq]
+  simp only [dcMap, QuotientGroup.eq, Subgroup.mem_subgroupOf, Subgroup.mem_map_equiv, MulAut.conj_symm_apply]
   simp [mul_assoc]
 
 theorem card_range_dcMap (K₀ : Subgroup G) (g : G) :

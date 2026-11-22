@@ -159,7 +159,6 @@ structure CharacterChoiceData' (D : D7) (nch : NChoice D) where
 
 theorem HChar.ValuesIn.qb {D : D7} (T : HostTied D) {χ : HChar D.host.E} {s : ℝ} (h : χ.ValuesIn s D.what₂.embLL)
     (v : HeightOneSpectrum (𝓞 D.host.E)) (hv : χ.UnrAt v) : ∃ y : D.what₂.LL, T.fr.ι (T.jLL y) = χ.valTw s v := by
-  obtain ⟨y, hy⟩ := h v hv
-  exact ⟨y, by rw [T.embLL, hy]⟩
+  simpa only [T.embLL] using h v hv
 
 end Formalism.L2.Host

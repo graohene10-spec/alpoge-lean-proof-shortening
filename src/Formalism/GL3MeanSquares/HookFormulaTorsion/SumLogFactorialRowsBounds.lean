@@ -307,9 +307,7 @@ private lemma sum_log_factorial_rows_bounds (k : ℕ) (g : Fin k → ℕ) (x : �
       ∑ i, Real.log ((g i).factorial : ℝ) ≤ k * (x * Real.log x) := by
   constructor
   · exact Finset.sum_nonneg fun i _ => Real.log_nonneg (by exact_mod_cast Nat.factorial_pos _)
-  · calc ∑ i, Real.log ((g i).factorial : ℝ) ≤ ∑ _i : Fin k, x * Real.log x :=
-          Finset.sum_le_sum fun i _ => log_factorial_row_bound _ _ hx (h i)
-      _ = k * (x * Real.log x) := by simp
+  · simpa using Finset.sum_le_sum (s := (Finset.univ : Finset (Fin k))) fun i _ => log_factorial_row_bound _ _ hx (h i)
 
 private lemma log_factorial_shift_bound (n k : ℕ) (x : ℝ) (h : ((n + k : ℕ) : ℝ) ≤ x) :
     Real.log ((n + k).factorial : ℝ) ≤ Real.log (n.factorial : ℝ) + k * Real.log x := by
@@ -346,8 +344,7 @@ private lemma sum_rows_bounds (k : ℕ) (g : Fin k → ℕ) (x : ℝ) (h : ∀ i
     0 ≤ ∑ i, (g i : ℝ) ∧ ∑ i, (g i : ℝ) ≤ k * x := by
   constructor
   · exact Finset.sum_nonneg fun i _ => Nat.cast_nonneg _
-  · calc ∑ i, (g i : ℝ) ≤ ∑ _i : Fin k, x := Finset.sum_le_sum fun i _ => h i
-      _ = k * x := by simp
+  · simpa using Finset.sum_le_sum (s := Finset.univ) (fun i _ => h i)
 
 set_option maxHeartbeats 800000 in
 theorem second_zeta_top_bound : LargestPlaceHookBound := by

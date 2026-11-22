@@ -75,11 +75,9 @@ lemma aeval_mem_sub {τ : Type} (Sg : Subalgebra O (MvPolynomial τ (KK O))) (φ
   classical
   rw [F.as_sum, map_sum]
   refine Subalgebra.sum_mem _ (fun m _ => ?_)
-  rw [MvPolynomial.aeval_monomial]
   obtain ⟨c, hc⟩ := hF m
-  rw [hc, MvPolynomial.algebraMap_eq]
-  refine Subalgebra.mul_mem _ (C_mem_sub Sg c) ?_
-  exact Subalgebra.prod_mem _ (fun i _ => Subalgebra.pow_mem _ (hφ i) _)
+  rw [MvPolynomial.aeval_monomial, hc, MvPolynomial.algebraMap_eq]
+  exact Subalgebra.mul_mem _ (C_mem_sub Sg c) (Subalgebra.prod_mem _ (fun i _ => Subalgebra.pow_mem _ (hφ i) _))
 
 end Good
 
@@ -396,9 +394,7 @@ lemma mem_intSub {σ : Type} (P : MvPolynomial σ (KK O)) : P ∈ intSub O σ �
 lemma Theta_int {ι : Type} (A : ι → Fin k → Fin k → O) (P : MvPolynomial (ι × Fin k) (KK O)) (hP : InA P) :
     InA (Theta O A P) := by
   rw [← mem_intSub]
-  refine aeval_mem_sub (intSub O _) _ (fun v => ?_) P hP
-  refine Subalgebra.sum_mem _ (fun c _ => Subalgebra.mul_mem _ ?_ (C_mem_sub _ _))
-  exact X_mem_goodSub _ (by rfl)
+  refine aeval_mem_sub (intSub O (ι × Fin k)) (fun v : ι × Fin k => ∑ c : Fin k, X (v.1, c) * C (algebraMap O (KK O) (A v.1 c v.2))) (fun v => Subalgebra.sum_mem _ (fun c _ => Subalgebra.mul_mem _ (X_mem_goodSub _ (by rfl)) (C_mem_sub _ _))) P hP
 
 theorem lift_region_plane_invariant {ι : Type} (S : UniformizedDVR p O) (LL : LiftLetters ι) (r : ℕ)
     (g g' : Matrix (Fin k) (Fin k) (WF p f)) (hg : IsGLW g) (hg' : IsGLW g')

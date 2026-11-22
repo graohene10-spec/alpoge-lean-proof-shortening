@@ -49,8 +49,7 @@ theorem vars_actX {L : Type*} [CommRing L] [Nontrivial L] {n : ℕ} (isVec : ℕ
   split_ifs at hy <;>
   · obtain ⟨b, -, hb⟩ := Finset.mem_biUnion.mp (MvPolynomial.vars_sum_subset _ _ hy)
     have h' := MvPolynomial.vars_mul _ _ hb
-    rw [Finset.mem_union, vars_X, vars_C] at h'
-    simp only [Finset.mem_singleton, Finset.notMem_empty, or_false] at h'
+    simp [vars_X, vars_C] at h'
     rw [h']
 
 theorem vars_act {L : Type*} [CommRing L] [Nontrivial L] {n N : ℕ} (isVec : ℕ → Bool)

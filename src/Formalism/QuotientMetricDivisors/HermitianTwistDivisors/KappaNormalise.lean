@@ -97,8 +97,7 @@ theorem passage_size : PassageSize := by
 
 theorem passage_lambda : PassageLam := by
   intro lam0 f r g Cg L b hf h1 h2
-  have hfr : 0 ≤ f * r ^ 2 := mul_nonneg hf (sq_nonneg r)
-  have h3 : f * r ^ 2 * Real.log g ≤ f * r ^ 2 * (Cg * L) := mul_le_mul_of_nonneg_left h2 hfr
+  have h3 : f * r ^ 2 * Real.log g ≤ f * r ^ 2 * (Cg * L) := mul_le_mul_of_nonneg_left h2 (mul_nonneg hf (sq_nonneg r))
   exact ⟨by linarith, by linarith, fun hb => by linarith⟩
 
 theorem passage_chain : PassageChain := by
@@ -294,9 +293,8 @@ theorem lattice_fg_ne_bot {K : Type} [Field K] [NumberField K] [StarRing K] [IsT
   refine ⟨hR.fg, ?_⟩
   rintro rfl
   haveI : Nonempty (Fin D) := ⟨⟨0, hD⟩⟩
-  have h := hR.span_eq_top
-  rw [Submodule.bot_coe, Submodule.span_zero_singleton] at h
-  exact bot_ne_top h
+  exact bot_ne_top (by
+    simpa only [Submodule.bot_coe, Submodule.span_zero_singleton] using hR.span_eq_top)
 
 theorem kappa_invariance : KappaInvariance := by
   intro K _ _ _ _ D hD XE hXE t ht

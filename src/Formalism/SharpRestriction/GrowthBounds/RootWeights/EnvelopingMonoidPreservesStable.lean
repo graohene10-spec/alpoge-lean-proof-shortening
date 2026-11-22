@@ -23,8 +23,7 @@ theorem gl_operator_commutator {E : GLOps n K V}
   have hx : E a b (E c d x) - E c d (E a b x) = (if b = c then E a d x else 0) - (if d = a then E c b x else 0) := by
     have h1 := LinearMap.congr_fun (hrel a b c d) x
     split_ifs at h1 ⊢ <;> simpa using h1
-  rw [← hx]
-  abel
+  exact sub_eq_iff_eq_add'.mp hx
 
 theorem operator_shifts_weight_by_root {E : GLOps n K V}
     (hrel : ∀ a b c d, E a b * E c d - E c d * E a b = (if b = c then E a d else 0) - (if d = a then E c b else 0))
@@ -47,8 +46,7 @@ def loweringSpan (E : GLOps n K V) (h : V) : Submodule K V := Submodule.span K {
 
 private theorem c14D_Low_mem_lemma {E : GLOps n K V} {h : V} {k : ℕ} {x : V}
     (hx : LoweringWordAlt E h k x) : x ∈ loweringSpan E h := by
-  unfold loweringSpan
-  exact Submodule.subset_span ⟨k, hx⟩
+  simpa [loweringSpan] using (Submodule.subset_span (s := {y | ∃ k, LoweringWordAlt E h k y}) ⟨k, hx⟩)
 
 theorem lowering_span_stable_lowering (E : GLOps n K V) (h : V) {a b : Fin n} (hab : b < a) (z : V) (hz : z ∈ loweringSpan E h) :
     E a b z ∈ loweringSpan E h := by
@@ -119,8 +117,7 @@ theorem generated_le_lowering_span {E : GLOps n K V}
     (lam : Fin n → ℤ) (h : V) (hh : h ∈ highestWeightVectors E lam) : generatedSubrep E h ≤ loweringSpan E h := by
   refine Submodule.span_le.mpr ?_
   rintro y ⟨u, hu, rfl⟩
-  exact enveloping_monoid_preserves_stable E (loweringSpan E h) (fun a b z hz => lowering_span_stable_all hrel lam h hh a b z hz) u hu h
-    (c14D_Low_mem_lemma LoweringWordAlt.zero)
+  exact enveloping_monoid_preserves_stable E (loweringSpan E h) (lowering_span_stable_all hrel lam h hh) u hu h (c14D_Low_mem_lemma LoweringWordAlt.zero)
 
 def weightHeightSum (mu : Fin n → ℤ) : ℤ := ∑ a : Fin n, (a.val : ℤ) * mu a
 
@@ -140,8 +137,7 @@ theorem lowering_word_weight_and_monoid {E : GLOps n K V}
   | @succ k y a b hab hk ih =>
     obtain ⟨⟨mu, hmu, hht⟩, ⟨u, hu, hyu⟩, -⟩ := ih
     have hE : E a b ∈ Umon E := by
-      unfold Umon
-      exact Submonoid.subset_closure ⟨(a, b), rfl⟩
+      simpa [Umon] using Submonoid.subset_closure (show E a b ∈ Set.range (fun p : Fin n × Fin n => E p.1 p.2) from ⟨(a, b), rfl⟩)
     refine ⟨⟨mu + rootW a b, operator_shifts_weight_by_root hrel a b mu y hmu, ?_⟩, ⟨E a b * u, mul_mem hE hu, ?_⟩,
       fun h0 => absurd h0 (Nat.succ_ne_zero k)⟩
     · rw [heightSum_add_root]
@@ -155,13 +151,12 @@ end
 
 theorem hwv_generated_multiple_of_hwv : GeneratedMultipleOfHWV := by
   intro K V _ _ _ n E hE lam h hh
-  have hrel := hE.1
-  refine le_trans (generated_le_lowering_span hrel lam h hh) ?_
+  refine le_trans (generated_le_lowering_span hE.1 lam h hh) ?_
   refine Submodule.span_le.mpr ?_
   rintro x ⟨k, hk⟩
   rw [SetLike.mem_coe]
   obtain ⟨⟨mu, hmu, hht⟩, ⟨u, hu, hxu⟩, h0⟩ :=
-    lowering_word_weight_and_monoid hrel lam h ((mem_highestWeight_iff E lam h).1 hh).1 k x hk
+    lowering_word_weight_and_monoid hE.1 lam h ((mem_highestWeight_iff E lam h).1 hh).1 k x hk
   rcases Nat.eq_zero_or_pos k with hk0 | hkpos
   · rw [h0 hk0]
     exact Submodule.mem_sup_left (Submodule.mem_span_singleton_self h)

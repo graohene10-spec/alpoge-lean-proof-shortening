@@ -20,15 +20,12 @@ theorem _root_.Formalism.MainNotions.ZetaZeroFreeRegion.column_lemma_one_family 
     (h : ∀ ε h0 h1, UnusedSlot33.ConclusionOnFamily (Fm ε h0 h1) C₄ C₅) : ZetaZeroFreeRegion.FamilyLemmaOneOne Fm ε0 := by
   intro ε h0 h1 _
   refine ⟨max 2 ((Fm ε h0 h1).x1 + 1), Formalism.MainNotions.GlobalTheoryTheory.jntF_one_lt _, ?_⟩
-  intro x hx i
-  exact ZetaZeroFreeRegion.first_hypothesis_of_lifting _ (h ε h0 h1 x (Formalism.MainNotions.GlobalTheoryTheory.jntF_lt hx) i).1
+  exact fun x hx i => ZetaZeroFreeRegion.first_hypothesis_of_lifting _ (h ε h0 h1 x (Formalism.MainNotions.GlobalTheoryTheory.jntF_lt hx) i).1
 
 theorem _root_.Formalism.MainNotions.ZetaZeroFreeRegion.column_lemma_two_family (Fm : DFamP) (ε0 C₄ C₅ : ℝ)
     (h : ∀ ε h0 h1, UnusedSlot33.ConclusionOnFamily (Fm ε h0 h1) C₄ C₅) : ZetaZeroFreeRegion.FamilyLemmaOneTwo Fm ε0 := by
   intro ε h0 h1 _
-  refine ⟨max 2 ((Fm ε h0 h1).x1 + 1), Formalism.MainNotions.GlobalTheoryTheory.jntF_one_lt _, ?_⟩
-  intro x hx i
-  exact ZetaZeroFreeRegion.second_hypothesis_of_lifting _ (h ε h0 h1 x (Formalism.MainNotions.GlobalTheoryTheory.jntF_lt hx) i).2.1
+  exact ⟨max 2 ((Fm ε h0 h1).x1 + 1), Formalism.MainNotions.GlobalTheoryTheory.jntF_one_lt _, fun x hx i => ZetaZeroFreeRegion.second_hypothesis_of_lifting _ (h ε h0 h1 x (Formalism.MainNotions.GlobalTheoryTheory.jntF_lt hx) i).2.1⟩
 
 theorem _root_.Formalism.MainNotions.ZetaZeroFreeRegion.facts_after_lemma_family_holds (Fm : DFamP) (ε0 : ℝ) : ZetaZeroFreeRegion.FamilyFactsAfterLemmaOneTwo Fm ε0 := by
   exact fun ε h0 h1 _ => ⟨2, one_lt_two, fun x _ i => ZetaZeroFreeRegion.subgroup_admissible_holds _⟩
@@ -92,10 +89,8 @@ theorem _root_.Formalism.MainNotions.flipTwoThree.theta_norm_family_of_linked {e
   refine ⟨Cn + 4, 0, ?_⟩
   intro x _ _ i
   obtain ⟨δ, hδ, hl'⟩ := hl x i
-  have hcc : TaylorLogMetric.IsCurveIdeal (Fm.D x i) (Fm.D x i).host.ccK := by
-    refine ⟨(Fm.D x i).host.ccK_ne_bot, Nat.Coprime.mul_right ?_ ?_⟩
-    · exact (Fm.D x i).host.ccK_coprime 2 (by simp)
-    · exact (Fm.D x i).host.ccK_coprime _ (by simp)
+  have hcc : TaylorLogMetric.IsCurveIdeal (Fm.D x i) (Fm.D x i).host.ccK :=
+    ⟨(Fm.D x i).host.ccK_ne_bot, Nat.Coprime.mul_right ((Fm.D x i).host.ccK_coprime 2 (by simp)) ((Fm.D x i).host.ccK_coprime _ (by simp))⟩
   exact flipTwoThree.first_hypothesis_of_lifting _ Cn x _ ((h x i) _ hcc δ hδ).1 hl'
 
 theorem _root_.Formalism.MainNotions.flipTwoThree.theta_condition_family_of_linked {eps : ℝ} (Fm : FamP eps) (C : ℝ)
@@ -124,19 +119,15 @@ theorem _root_.Formalism.MainNotions.flipTwoThree.injectivity_family_of_theorem 
     (hS : SettingEventually Fm) : flipTwoThree.admF4 Fm := by
   obtain ⟨xa, ha⟩ := h
   obtain ⟨xb, hb⟩ := hS
-  refine ⟨max xa xb, ?_⟩
-  intro x hx hx1 i
-  exact flipTwoThree.fourth_hypothesis_of_lifting _ (fun u => (ha x (le_trans (le_max_left _ _) hx) i u
-    (hb x (le_trans (le_max_right _ _) hx) hx1 i u)).2.2.2.2.2.1)
+  exact ⟨max xa xb, fun x hx hx1 i =>
+    flipTwoThree.fourth_hypothesis_of_lifting _ (fun u => (ha x (le_trans (le_max_left _ _) hx) i u (hb x (le_trans (le_max_right _ _) hx) hx1 i u)).2.2.2.2.2.1)⟩
 
 theorem _root_.Formalism.MainNotions.flipTwoThree.norm_bound_family_of_theorem {eps : ℝ} (Fm : FamP eps) (C : ℝ) (h : product_first_zeroth_parts.ConclusionOnFamily Fm C)
     (hS : SettingEventually Fm) : flipTwoThree.admF6 Fm := by
   obtain ⟨xa, ha⟩ := h
   obtain ⟨xb, hb⟩ := hS
-  refine ⟨max xa xb, ?_⟩
-  intro x hx hx1 i
-  exact flipTwoThree.restriction_dimension_of_division _ (fun u => (ha x (le_trans (le_max_left _ _) hx) i u
-    (hb x (le_trans (le_max_right _ _) hx) hx1 i u)).2.2.2.2.2.1)
+  exact ⟨max xa xb, fun x hx hx1 i => flipTwoThree.restriction_dimension_of_division _ (fun u =>
+    (ha x (le_trans (le_max_left _ _) hx) i u (hb x (le_trans (le_max_right _ _) hx) hx1 i u)).2.2.2.2.2.1)⟩
 
 theorem _root_.Formalism.MainNotions.TaylorLogMetric.AdmF_of {eps : ℝ} (Fm : FamP eps)
     (h : ∀ x (i : Fm.Ix x), UnusedSlot33.Conclusion1 (Fm.D x i)) : TaylorLogMetric.AdmF Fm := by

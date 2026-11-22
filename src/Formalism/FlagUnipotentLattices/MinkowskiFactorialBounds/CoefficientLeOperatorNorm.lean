@@ -71,9 +71,7 @@ theorem trace_diagonal_bis : TraceDiag := by
     rw [Complex.star_def, Complex.conj_mul']; push_cast; rfl
   have h1 : ∀ w, (∫ x, ((‖F w x‖^2 : ℝ) : ℂ) ∂μ) = 1 := by
     intro w
-    have := h w w
-    simp only [e, if_true] at this
-    exact this
+    simpa only [e, if_true] using h w w
   have hint : ∀ w, Integrable (fun x => ‖F w x‖^2) μ := by
     intro w
     by_contra hn
@@ -119,27 +117,21 @@ theorem diagonal_splitting : DiagSplit := by
   rw [← integral_add_compl hM hK]
   congr 1
   have hR : IntegrableOn Rm Mod μ := by
-    have : IntegrableOn (fun x => K x - k0) Mod μ := hK.integrableOn.sub (integrable_const _)
-    refine this.congr_fun (fun x hx => ?_) hM
-    simp only
-    rw [hKR x hx]; ring
+    refine (hK.integrableOn.sub (integrable_const k0)).congr_fun (fun x hx => ?_) hM
+    change K x - k0 = Rm x; rw [hKR x hx]; ring
   rw [setIntegral_congr_fun hM hKR, integral_add (integrable_const _) hR]
   simp [mul_comm, Measure.real]
 
 theorem rank_one_case : RankOne := by
   intro G H _ _ U P m hP hPU v hv hcyc v' hv'
-  have h1 : ∀ g, P (U g v) = m g • v := by
-    intro g
-    have h1 := congrArg (fun T : H →L[ℂ] H => T v) (hPU g)
-    simpa [hv] using h1
+  have h1 : ∀ g, P (U g v) = m g • v := fun g => by
+    simpa [hv] using congrArg (fun T : H →L[ℂ] H => T v) (hPU g)
   have hle : Submodule.span ℂ (Set.range fun g => U g v) ≤ (Submodule.span ℂ {v}).comap (P : H →ₗ[ℂ] H) := by
     rw [Submodule.span_le]
     rintro _ ⟨g, rfl⟩
     simp only [SetLike.mem_coe, Submodule.mem_comap, ContinuousLinearMap.coe_coe, h1]
     exact Submodule.smul_mem _ _ (Submodule.mem_span_singleton_self v)
-  have hclosed : IsClosed (((Submodule.span ℂ {v}).comap (P : H →ₗ[ℂ] H) : Submodule ℂ H) : Set H) := by
-    have : IsClosed ((Submodule.span ℂ {v} : Submodule ℂ H) : Set H) := Submodule.closed_of_finiteDimensional _
-    exact this.preimage P.continuous
+  have hclosed : IsClosed (((Submodule.span ℂ {v}).comap (P : H →ₗ[ℂ] H) : Submodule ℂ H) : Set H) := (Submodule.closed_of_finiteDimensional (Submodule.span ℂ {v})).preimage P.continuous
   have htop := Submodule.topologicalClosure_minimal _ hle hclosed
   rw [hcyc] at htop
   have : v' ∈ (Submodule.span ℂ {v}).comap (P : H →ₗ[ℂ] H) := htop trivial
@@ -155,16 +147,11 @@ theorem threshold_head_region : ThreshHead := by
   have hn' : (1:ℝ) ≤ n := by exact_mod_cast hn
   have hf' : (1:ℝ) ≤ f := by exact_mod_cast hf
   have hqn : (q:ℝ)^2 ≤ n := by exact_mod_cast hq
-  have hq0 : (0:ℝ) ≤ q := Nat.cast_nonneg _
-  have hqn1 : (q:ℝ) ≤ n := by
-    have : q ≤ n := le_trans (Nat.le_self_pow (by norm_num) q) hq
-    exact_mod_cast this
+  have hqn1 : (q:ℝ) ≤ n := by exact_mod_cast le_trans (Nat.le_self_pow (by norm_num) q) hq
   have hlog : Real.log 2 ≤ Real.log (b * rd) := Real.log_le_log (by norm_num) (by nlinarith)
-  have h19 : 0 < (n:ℝ)^19 := by positivity
   have hK : (120 + |C₂|) * (n:ℝ)^19 ≤ h := by
     refine le_trans ?_ hh
     have h1 : (1:ℝ) ≤ (f:ℝ)^5 := one_le_pow₀ hf'
-    have hA : 0 ≤ 120 + |C₂| := by positivity
     calc (120 + |C₂|) * (n:ℝ)^19 = (120 + |C₂|) / Real.log 2 * (n:ℝ)^19 * 1 * Real.log 2 := by
           field_simp
       _ ≤ (120 + |C₂|) / Real.log 2 * (n:ℝ)^19 * (f:ℝ)^5 * Real.log (b*rd) := by gcongr
@@ -188,10 +175,10 @@ theorem threshold_head_region : ThreshHead := by
           exact le_abs_self _
       _ = |C₂| * (n:ℝ)^3 := by ring
       _ ≤ |C₂| * (n:ℝ)^19 := by gcongr
-      _ ≤ h := by linarith
+      _ ≤ h := by nlinarith [hK, (show (0:ℝ) ≤ 120 * (n:ℝ)^19 by positivity)]
   · calc 32 * (n:ℝ) * q ≤ 32 * (n:ℝ) * n := by gcongr
       _ = 32 * (n:ℝ)^2 := by ring
-      _ < h := by linarith
+      _ < h := by nlinarith [hK, hp2, (show (0:ℝ) ≤ 120 * (n:ℝ)^19 by positivity), (show (0:ℝ) < (n:ℝ)^2 by positivity)]
 
 theorem delta_small : DeltaSmall := by
   intro n q f c hn hf hq hc hc9
@@ -243,11 +230,8 @@ theorem covering_arithmetic : CoverArith := by
   have hN' : (N:ℝ) ≤ 2 * (n:ℝ)^2 * f := by exact_mod_cast hN
   have hs0 : 0 < Real.sqrt (f:ℝ) := Real.sqrt_pos.mpr (by linarith)
   have hss : Real.sqrt (f:ℝ) * Real.sqrt (f:ℝ) = f := Real.mul_self_sqrt (by linarith)
-  have hs1 : 1 ≤ Real.sqrt (f:ℝ) := Real.one_le_sqrt.mpr hf'
   have h52 : (f:ℝ)^((5:ℝ)/2) = (f:ℝ)^2 * Real.sqrt f := by
     rw [Real.sqrt_eq_rpow, ← Real.rpow_natCast, ← Real.rpow_add (by linarith)]; norm_num
-  have hN0 : (0:ℝ) ≤ N := Nat.cast_nonneg _
-  have hn0 : (0:ℝ) ≤ n := Nat.cast_nonneg _
   rw [h52]
   generalize Real.sqrt (f:ℝ) = s at *
   have hfs : (f:ℝ) = s * s := hss.symm
@@ -280,32 +264,27 @@ theorem gap_pigeonhole : GapPigeonhole := by
   intro a q τ ha haq hτ hlast h1
   by_contra hcon
   push Not at hcon
-  have hq0 : q ≠ 0 := by omega
   have hx0 : 0 < (2 * τ 1) ^ ((1:ℝ) / q) := Real.rpow_pos_of_pos (by have := hτ 1; linarith) _
   have hx1 : (2 * τ 1) ^ ((1:ℝ) / q) ≤ 1 :=
     Real.rpow_le_one (by have := hτ 1; linarith) (by linarith) (by positivity)
   have hxq : ((2 * τ 1) ^ ((1:ℝ) / q)) ^ q = 2 * τ 1 := by
     rw [one_div]
-    exact Real.rpow_inv_natCast_pow (by have := hτ 1; linarith) hq0
+    exact Real.rpow_inv_natCast_pow (by have := hτ 1; linarith) (by omega)
   generalize (2 * τ 1) ^ ((1:ℝ) / q) = x at *
   have key : ∀ k, 1 ≤ k → k ≤ a → x ^ k * τ (k + 1) < τ 1 := by
     intro k hk
     induction k, hk using Nat.le_induction with
     | base =>
       intro _
-      have := hcon 1 le_rfl ha
-      rw [lt_div_iff₀ (hτ _)] at this
-      simpa using this
+      simpa using (lt_div_iff₀ (hτ (1 + 1))).mp (hcon 1 le_rfl ha)
     | succ k hk ih =>
       intro hka
-      have h2 := hcon (k + 1) (by omega) hka
-      rw [lt_div_iff₀ (hτ _)] at h2
+      have h2 := (lt_div_iff₀ (hτ (k + 1 + 1))).mp (hcon (k + 1) (by omega) hka)
       have h3 := ih (by omega)
       calc x ^ (k + 1) * τ (k + 1 + 1) = x ^ k * (x * τ (k + 1 + 1)) := by ring
         _ ≤ x ^ k * τ (k + 1) := by gcongr
         _ < τ 1 := h3
-  have h4 := key a ha le_rfl
-  rw [hlast] at h4
+  have h4 : x ^ a * (1 / 2) < τ 1 := by simpa [hlast] using key a ha le_rfl
   have h5 : x ^ q ≤ x ^ a := pow_le_pow_of_le_one hx0.le hx1 haq
   linarith
 
@@ -800,29 +779,22 @@ theorem threshold_far_region : ThreshFar := by
   refine ⟨C' * (Cg + 6) / c ^ 2, by positivity, ?_⟩
   intro n q f rd g b h hn hf hq hlf hb hrd hg hgb hh
   have hn' : (1:ℝ) ≤ n := by exact_mod_cast hn
-  have hf' : (1:ℝ) ≤ f := by exact_mod_cast hf
   have hqn : (q:ℝ)^2 ≤ n := by exact_mod_cast hq
   have hq0 : (0:ℝ) ≤ q := Nat.cast_nonneg _
-  have hs1 : 1 ≤ Real.sqrt (n:ℝ) := Real.one_le_sqrt.mpr hn'
   have hss : Real.sqrt (n:ℝ) * Real.sqrt (n:ℝ) = n := Real.mul_self_sqrt (by linarith)
   have hqs : (q:ℝ) ≤ Real.sqrt n := Real.le_sqrt_of_sq_le hqn
   have hlogn : Real.log n ≤ 2 * Real.sqrt n := by
     have h1 : Real.log n = 2 * Real.log (Real.sqrt n) := by
       rw [Real.log_sqrt (by linarith)]; ring
-    have h2 := Real.log_le_sub_one_of_pos (show 0 < Real.sqrt (n:ℝ) by linarith)
-    linarith
-  have hlb : Real.log 2 ≤ Real.log b := Real.log_le_log (by norm_num) hb
-  have hl2 := Real.log_two_gt_d9
+    linarith [Real.log_le_sub_one_of_pos (Real.sqrt_pos.2 (show (0:ℝ) < n by linarith))]
   have hlrd : 0 ≤ Real.log rd := Real.log_nonneg hrd
-  have hlbr : Real.log (b * rd) = Real.log b + Real.log rd :=
-    Real.log_mul (by positivity) (by positivity)
+  rw [Real.log_mul (by positivity) (by positivity)] at hh
   have hlg : Real.log g ≤ Cg * Real.log b := by
     have := Real.log_le_log (by linarith) hgb
     rwa [Real.log_rpow (by linarith)] at this
-  rw [hlbr] at hh
   have hY := log_ydat hn hf hrd hg hb
   set ℓ := Real.log b + Real.log rd with hℓ
-  have hℓ0 : 0.69 ≤ ℓ := by linarith
+  have hℓ0 : 0.69 ≤ ℓ := by linarith [Real.log_two_gt_d9, Real.log_le_log (by norm_num) hb]
   have hlY : Real.log (Ydat n f rd g b) ≤ 3 * Real.sqrt n + (Cg + 1) * ℓ := by
     rw [hY]
     have : Cg * Real.log b ≤ Cg * ℓ := by

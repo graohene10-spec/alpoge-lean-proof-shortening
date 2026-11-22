@@ -314,32 +314,22 @@ lemma le_exp_mul_of_near_bound (N D A δ c : ℝ) (hNA : N ≤ A) (hD : A - δ �
     (h2 : 2 * δ ≤ A) : N ≤ Real.exp (2 * δ / c) * D := by
   have hA : 0 < A := lt_of_lt_of_le hc hcA
   have hAd : 0 < A - δ := by linarith
-  have hA0 : A ≠ 0 := hA.ne'
-  have hc0 : c ≠ 0 := hc.ne'
-  have he : 1 + 2 * δ / c ≤ Real.exp (2 * δ / c) := by linarith [Real.add_one_le_exp (2 * δ / c)]
+  have he : 1 + 2 * δ / c ≤ Real.exp (2 * δ / c) := by
+    linarith [Real.add_one_le_exp (2 * δ / c)]
   have hdiv : 2 * δ / A ≤ 2 * δ / c := by
-    have e : 2 * δ / c - 2 * δ / A = 2 * δ * (A - c) / (c * A) := by
-      first
-      | (field_simp; ring)
-      | field_simp
-    have : 0 ≤ 2 * δ * (A - c) / (c * A) :=
-      div_nonneg (mul_nonneg (by linarith) (by linarith)) (mul_pos hc hA).le
-    linarith
+    gcongr
   have h3 : A ≤ (1 + 2 * δ / A) * (A - δ) := by
     have e : (1 + 2 * δ / A) * (A - δ) = A + δ - 2 * δ ^ 2 / A := by
-      first
-      | (field_simp; ring)
-      | field_simp
+      field_simp; ring
     rw [e]
     have : 2 * δ ^ 2 / A ≤ δ := by
       rw [div_le_iff₀ hA]
       nlinarith [mul_nonneg hδ (sub_nonneg.mpr h2)]
     linarith
-  have hexpos : 0 ≤ Real.exp (2 * δ / c) := (Real.exp_pos _).le
   calc N ≤ A := hNA
     _ ≤ (1 + 2 * δ / A) * (A - δ) := h3
     _ ≤ Real.exp (2 * δ / c) * (A - δ) := mul_le_mul_of_nonneg_right (by linarith) hAd.le
-    _ ≤ Real.exp (2 * δ / c) * D := mul_le_mul_of_nonneg_left hD hexpos
+    _ ≤ Real.exp (2 * δ / c) * D := mul_le_mul_of_nonneg_left hD (Real.exp_pos _).le
 
 lemma paired_sum_exp_bound {ι κ : Type} [DecidableEq ι] [DecidableEq κ] (I I' : Finset ι) (J : Finset κ) (N : ι → ℝ)
     (D t : κ → ℝ) (φ : ι → κ) (B : ℝ) (c : ℕ) (hsub : I' ⊆ I) (hφ : ∀ i ∈ I', φ i ∈ J)

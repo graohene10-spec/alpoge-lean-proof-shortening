@@ -87,17 +87,16 @@ def translatesSpanCanonical (mu : Fin n → ℤ) : Submodule ℚ (MvPolynomial (
 
 lemma qd_W_closed (mu : Fin n → ℤ) : RowDivClosed (translatesSpanCanonical mu) := by
   intro a b k f hf
-  have : translatesSpanCanonical mu ≤ (translatesSpanCanonical mu).comap (rowDivL ℚ a b k) := by
+  have h : translatesSpanCanonical mu ≤ (translatesSpanCanonical mu).comap (rowDivL ℚ a b k) := by
     unfold translatesSpanCanonical
-    rw [Submodule.span_le]
-    rintro _ ⟨g, hg, rfl⟩
-    rw [SetLike.mem_coe, Submodule.mem_comap, rowDivL_apply]
-    apply qd_vander
-    intro t
-    rw [qd_eval_rowGen, ← AlgHom.comp_apply, rowActMul]
-    apply Submodule.subset_span
-    exact ⟨_, by rw [Matrix.det_mul]; exact hg.mul (qd_det_E a b t), rfl⟩
-  exact this hf
+    exact Submodule.span_le.2 fun _ ⟨g, hg, hx⟩ => by
+      rw [hx, SetLike.mem_coe, Submodule.mem_comap, rowDivL_apply]
+      apply qd_vander
+      intro t
+      rw [qd_eval_rowGen, ← AlgHom.comp_apply, rowActMul]
+      apply Submodule.subset_span
+      exact ⟨_, by rw [Matrix.det_mul]; exact hg.mul (qd_det_E a b t), rfl⟩
+  exact h hf
 
 lemma qd_W_eq (mu : Fin n → ℤ) : translatesSpanCanonical mu = dualWeyl ℚ n n (qd_nu mu) := by
   have hcan : qd_P mu (canT mu) ∈ translatesSpanCanonical mu := by
@@ -110,9 +109,8 @@ lemma qd_W_eq (mu : Fin n → ℤ) : translatesSpanCanonical mu = dualWeyl ℚ n
     rw [this]
     exact Submodule.smul_mem _ _ hcan
   · unfold translatesSpanCanonical
-    rw [Submodule.span_le]
-    rintro _ ⟨g, _, rfl⟩
-    exact dualWeylRowStable ℚ n n _ g _ (tableauBideterminant_mem_dualWeyl' mu _)
+    exact Submodule.span_le.2 fun x ⟨g, _, h⟩ =>
+      h.symm ▸ dualWeylRowStable ℚ n n _ g _ (tableauBideterminant_mem_dualWeyl' mu _)
 
 omit [NeZero n] in
 lemma qd_evGL_map {R' : Type} [CommRing R'] [Algebra ℚ R'] (γ : GL (Fin n) ℚ) (z : GLCoord ℤ n) :
@@ -193,8 +191,7 @@ lemma qd_translate (mu : Fin n → ℤ) (γ : GL (Fin n) ℚ) :
   apply qd_L_inj mu
   rw [← qd_ev_L_mul, qd_L_P, qd_evGLR_mapCoord, brk, qc_TMat_mul, map_sum, map_sum]
   refine Finset.sum_congr rfl fun K _ => ?_
-  rw [map_smul, qd_L_P, Algebra.smul_def, map_mul, qd_evGLR_mapCoord, qd_evGL_map, mul_comm]
-  rw [qd_ev_algebraMap]
+  rw [map_smul, qd_L_P, Algebra.smul_def, map_mul, qd_evGLR_mapCoord, qd_evGL_map, mul_comm, qd_ev_algebraMap]
   rfl
 
 theorem qd_gen (mu : Fin n → ℤ) (w : TIdx mu → ℚ) :

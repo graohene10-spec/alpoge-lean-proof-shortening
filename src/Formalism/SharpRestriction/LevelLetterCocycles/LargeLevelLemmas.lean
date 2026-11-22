@@ -169,9 +169,8 @@ theorem positive_case_of_general (h : Formalism.MainNotions.TruncatedSeriesCount
 
 theorem zgoodSubsetZ (i : D.nd.Loc) : D.nd.Zgood i ⊆ D.nd.Z i := by
   intro x hx
-  rw [D.Z_tie]
   rw [D.Zgood_tie] at hx
-  exact hx.1
+  simpa [D.Z_tie] using hx.1
 
 theorem endomorphism_bound_at_good_points (h : Formalism.MainNotions.TruncatedSeriesCountingIdentities.HodgeTateFromSandwich D) : HodgeTateFromSandwich D :=
   fun i α A hA hc h1 h0 => h i (D.nd.Zgood i) (zgoodSubsetZ i) α A hA hc h1 h0

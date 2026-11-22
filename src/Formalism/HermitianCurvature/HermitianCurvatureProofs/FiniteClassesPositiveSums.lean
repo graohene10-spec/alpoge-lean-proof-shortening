@@ -36,8 +36,7 @@ theorem psd_sum {ι : Type} {F : Finset α} (s : Finset ι) (k : ι → α → �
   induction s using Finset.induction_on with
   | empty => simpa using psd_zero F
   | insert i s hi ih =>
-    have := psd_add (h i (mem_insert_self i s)) (ih fun j hj => h j (mem_insert_of_mem hj))
-    exact psd_congr this fun x _ y _ => by rw [sum_insert hi]
+    simpa only [sum_insert hi] using psd_add (h i (mem_insert_self i s)) (ih fun j hj => h j (mem_insert_of_mem hj))
 
 end gen
 
@@ -58,8 +57,7 @@ theorem finite_classes [TopologicalSpace K] [IsTopologicalRing K] (hR : IsOpen (
     (Lc : Set K) (hLc : IsCompact Lc) :
     {y : K ⧸ R.toAddSubgroup | (Quotient.out y : K) ∈ Lc}.Finite := by
   have : DiscreteTopology (K ⧸ R.toAddSubgroup) := QuotientAddGroup.discreteTopology hR
-  have h := (hLc.image (QuotientAddGroup.continuous_mk (N := R.toAddSubgroup))).finite_of_discrete
-  refine h.subset ?_
+  refine (hLc.image (QuotientAddGroup.continuous_mk (N := R.toAddSubgroup))).finite_of_discrete.subset ?_
   intro y hy
   exact ⟨Quotient.out y, hy, Quotient.out_eq' y⟩
 

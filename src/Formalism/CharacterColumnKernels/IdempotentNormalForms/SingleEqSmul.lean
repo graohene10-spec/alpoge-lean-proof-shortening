@@ -26,9 +26,7 @@ theorem combo_single (v : g → M) (j : g) (x : R) : combo v (Pi.single j x) = x
 
 theorem single_eq_smul (j : g) (x : R) : (Pi.single j x : g → R) = x • Pi.single j 1 := by
   ext i
-  by_cases h : i = j
-  · subst h; simp
-  · simp [h]
+  by_cases h : i = j <;> simp [h]
 
 theorem sum_row (Θ : Matrix m g R) (i : m) :
     ∑ j, Θ i j • (Pi.single j (1 : R) : g → R) = Θ i := by

@@ -51,8 +51,7 @@ theorem gramFac_of_isomEmb (S S' : HSpace E) (ι : S.V →ₗ[E] S'.V) (hι : HS
 
 theorem norm_eq_re_of_nonneg {z : ℂ} (h : 0 ≤ z) : ‖z‖ = z.re := by
   obtain ⟨h1, h2⟩ := Complex.nonneg_iff.1 h
-  have hz : z = (z.re : ℂ) := Complex.ext (by simp) (by simp [← h2])
-  conv_lhs => rw [hz]
+  conv_lhs => rw [show z = (z.re : ℂ) from Complex.ext (by simp) (by simp [← h2])]
   exact Complex.norm_of_nonneg h1
 
 theorem had_gram (S : HSpace E) (hF : GramFac S) (φ : E →+* ℂ) {k : ℕ} (x : Fin k → S.V)

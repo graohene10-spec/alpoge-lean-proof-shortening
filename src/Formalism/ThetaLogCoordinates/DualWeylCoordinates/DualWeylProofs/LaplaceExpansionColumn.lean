@@ -79,17 +79,15 @@ lemma ql_w_single (M I : Finset (Fin n)) (k : Fin n) :
   · subst hM
     rw [if_pos rfl]
     by_cases hk : k ∈ I
-    · have : I.erase k ∪ {k} = I := by
-        rw [union_comm, ← insert_eq, insert_erase hk]
-      rw [if_pos hk, ql_w, if_pos this, wedgeSign, if_pos (by simp), ql_sr_single]
+    · rw [if_pos hk, ql_w, if_pos (by simpa [union_comm, ← insert_eq] using insert_erase hk),
+        wedgeSign, if_pos (by simp), ql_sr_single]
     · rw [if_neg hk, ql_w, if_neg]
-      intro h; exact hk (h ▸ mem_union_right _ (mem_singleton_self k))
+      exact fun h => hk (by rw [← h]; exact mem_union_right _ (mem_singleton_self k))
   · rw [if_neg hM, ql_w]
     split_ifs with h
     · rw [wedgeSign, if_neg]
       intro hd
-      apply hM
-      rw [← h, union_comm, ← insert_eq, erase_insert (by simpa using hd)]
+      exact hM (by rw [← h, union_comm, ← insert_eq, erase_insert (by simpa using hd)])
     · rfl
 
 lemma sum_four_comm_form {α β γ δ : Type*} [Fintype α] [Fintype β] [Fintype γ] [Fintype δ] (F : α → β → γ → δ → R) :
@@ -125,8 +123,7 @@ lemma ql_s_empty (A : Finset (Fin n)) : wedgeSign R A ∅ = 1 := by simp [wedgeS
 
 lemma ql_s_max {K : Finset (Fin n)} {m : Fin n} (h : ∀ x ∈ K, x < m) : wedgeSign R K {m} = 1 := by
   rw [wedgeSign, if_pos (by simpa using fun hm => lt_irrefl _ (h m hm)), ql_sr]
-  refine prod_eq_one fun a ha => ?_
-  rw [prod_singleton, if_neg (not_lt.2 (h a ha).le)]
+  exact prod_eq_one fun a ha => by rw [prod_singleton, if_neg (not_lt.2 (h a ha).le)]
 
 theorem ql_lap (A K I : Finset (Fin n)) :
     ∑ A', ∑ K', qs_mn g A' A * qs_mn g K' K * ql_w R A' K' I = wedgeSign R A K * qs_mn g I (A ∪ K) := by

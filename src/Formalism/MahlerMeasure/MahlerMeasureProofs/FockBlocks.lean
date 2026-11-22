@@ -441,8 +441,7 @@ theorem pos_ne_succ (hB : D.BlockOK) (i i' : Fin D.T.t) : D.T.pos i ≠ D.T.pos 
   obtain ⟨h2, -, hv2⟩ := hB.1.2.1 i'
   have e : (⟨D.T.pos i, by omega⟩ : Fin N) = ⟨D.T.pos i' + 1, h2⟩ := Fin.ext h
   rw [e] at hv1
-  rw [hv1] at hv2
-  exact Bool.noConfusion hv2
+  simp [hv1] at hv2
 
 theorem letterAt_val {k : ℕ} (h : k ≤ N - 1) : (D.letterAt k : ℕ) = k := by
   simp [BlockData.letterAt, h]
@@ -635,15 +634,13 @@ theorem goodA [NeZero r] (hB : D.BlockOK) (j : Fin D.T.t → ℕ) (jp : ℕ) (y 
       intro m hm
       obtain ⟨m1, hm1, m2, hm2, h1, -, -⟩ := key m hm
       show ∑ c, m (chainEmb N r D.T.t (D.uPos, c)) = _
-      simp only [h1]
-      rw [hyP m1 hm1, degU hB]
+      simp only [h1, hyP m1 hm1, degU hB]
       rfl
     · apply ProjS.eulL_of_support
       intro m hm
       obtain ⟨m1, hm1, m2, hm2, -, h1, -⟩ := key m hm
       show ∑ c, m (xiVar N r D.T.t c) = _
-      simp only [h1]
-      rw [(hgP m2 hm2).2]
+      simp only [h1, (hgP m2 hm2).2]
       rfl
   · have hi := hB.2.1 i
     have e0 : finPos N (D.T.pos i) = Fin.castSucc (D.letterAt (D.T.pos i)) := by
@@ -659,8 +656,7 @@ theorem goodA [NeZero r] (hB : D.BlockOK) (j : Fin D.T.t → ℕ) (jp : ℕ) (y 
       show ∑ c, m (Sum.inl (finPos N (D.T.pos i), c)) = _
       rw [e0]
       show ∑ c, m (chainEmb N r D.T.t (D.letterAt (D.T.pos i), c)) = _
-      simp only [h1]
-      rw [hyP m1 hm1]
+      simp only [h1, hyP m1 hm1]
       rfl
     · apply ProjS.eulL_of_support
       intro m hm
@@ -668,8 +664,7 @@ theorem goodA [NeZero r] (hB : D.BlockOK) (j : Fin D.T.t → ℕ) (jp : ℕ) (y 
       show ∑ c, m (Sum.inl (finPos N (D.T.pos i + 1), c)) = _
       rw [e1]
       show ∑ c, m (chainEmb N r D.T.t (D.letterAt (D.T.pos i + 1), c)) = _
-      simp only [h1]
-      rw [hyP m1 hm1]
+      simp only [h1, hyP m1 hm1]
       rfl
 
 end Block3

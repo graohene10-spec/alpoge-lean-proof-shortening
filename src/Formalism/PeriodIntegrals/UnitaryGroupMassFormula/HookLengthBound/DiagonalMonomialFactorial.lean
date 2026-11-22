@@ -101,8 +101,7 @@ theorem weight_rowW_apply {N : ℕ} (m : Fin N × Fin N →₀ ℕ) (a : Fin N) 
 theorem diagonal_monomial_apply {N : ℕ} (ν : Fin N → ℕ) (hν : Antitone ν) (a : Fin N) : M0 ν (a, a) = ν a := by
   classical
   have hmem : coeff (M0 ν) (hw ℚ le_rfl ν) ≠ 0 := by rw [coeff_diagonal_monomial_hw]; exact one_ne_zero
-  have hw8 := hwRowWeight ℚ N N le_rfl ν hν hmem
-  have h1 := congrFun hw8 a
+  have h1 := congrFun (hwRowWeight ℚ N N le_rfl ν hν hmem) a
   rw [weight_rowW_apply, Finset.sum_eq_single a] at h1
   · rw [h1]
     simp [rowNu]
@@ -120,8 +119,7 @@ theorem diagonal_monomial_factorial {N : ℕ} (ν : Fin N → ℕ) (hν : Antito
   rw [Finset.prod_eq_single a]
   · rw [diagonal_monomial_apply ν hν a]
   · intro b _ hb
-    rw [isDiag_diagonal_monomial ν (a, b) (Ne.symm hb)]
-    rfl
+    simp [isDiag_diagonal_monomial ν (a, b) (Ne.symm hb)]
   · simp
 
 theorem fockQ_hw_ge {N : ℕ} (ν : Fin N → ℕ) (hν : Antitone ν) :

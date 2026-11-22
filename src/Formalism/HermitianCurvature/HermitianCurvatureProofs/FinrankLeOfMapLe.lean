@@ -219,9 +219,7 @@ theorem finrank_sup (N₁ N₂ : Submodule ℤ E) [Module.Finite ℤ N₁] [Modu
     · simp
     · simpa using h
   have := LinearMap.finrank_range_of_inj hinj
-  rw [LinearMap.range_coprod, Submodule.range_subtype, Submodule.range_subtype,
-    Module.finrank_prod] at this
-  exact this
+  rwa [LinearMap.range_coprod, Submodule.range_subtype, Submodule.range_subtype, Module.finrank_prod] at this
 
 theorem exists_delta : ∃ δ : 𝓞 E, (δ : E) ≠ 0 ∧ complexConj E δ = -(δ : E) := by
   by_contra h

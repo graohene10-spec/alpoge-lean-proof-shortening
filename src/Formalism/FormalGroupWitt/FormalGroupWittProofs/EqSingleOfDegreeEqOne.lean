@@ -59,9 +59,8 @@ theorem Good.mul {N k l : ℕ} {x x' y y' : MvPowerSeries τ R} (hx : Good N k x
 
 theorem Good.pow {N k : ℕ} {x x' : MvPowerSeries τ R} (hx : Good N k x x') (n : ℕ) :
     Good N (k * n) (x ^ n) (x' ^ n) := by
-  induction n with
-  | zero => simpa using good_one N
-  | succ n ih => rw [pow_succ, pow_succ, Nat.mul_succ]; exact ih.mul hx
+  refine Nat.rec (motive := fun m => Good N (k * m) (x ^ m) (x' ^ m)) (by simpa using good_one N) ?_ n
+  exact fun m ih => by simpa [pow_succ, Nat.mul_succ] using ih.mul hx
 
 theorem good_prod {N : ℕ} {ι : Type*} (s : Finset ι) (k : ι → ℕ)
     (x x' : ι → MvPowerSeries τ R) (h : ∀ i ∈ s, Good N (k i) (x i) (x' i)) :
@@ -70,9 +69,7 @@ theorem good_prod {N : ℕ} {ι : Type*} (s : Finset ι) (k : ι → ℕ)
   induction s using Finset.induction_on with
   | empty => simpa using good_one N
   | insert i s hi ih =>
-    rw [Finset.sum_insert hi, Finset.prod_insert hi, Finset.prod_insert hi]
-    exact (h i (Finset.mem_insert_self i s)).mul
-      (ih fun j hj => h j (Finset.mem_insert_of_mem hj))
+    simpa [Finset.sum_insert hi, Finset.prod_insert hi] using (h i (Finset.mem_insert_self i s)).mul (ih fun j hj => h j (Finset.mem_insert_of_mem hj))
 
 theorem eq_single_of_degree_eq_one {ι : Type*} [Fintype ι] (e : ι →₀ ℕ)
     (he : e.degree = 1) : ∃ i, e = Finsupp.single i 1 := by

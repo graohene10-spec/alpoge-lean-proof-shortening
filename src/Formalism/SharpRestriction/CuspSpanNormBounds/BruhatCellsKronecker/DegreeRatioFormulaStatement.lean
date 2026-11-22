@@ -27,11 +27,9 @@ theorem sza_finrank_host (D : D7) : Module.finrank ℚ D.host.E = 2 * D.R.f := b
   ring
 
 theorem sza_fDeg_host (D : D7) : Formalism.HermitianLatticesTheory.fDeg D.host.E = D.R.f := by
-  have : IsTotallyComplex D.host.E := D.sp.cm.cmUnram.1
   have h1 := NumberField.InfinitePlace.card_eq_nrRealPlaces_add_nrComplexPlaces (K := D.host.E)
   have h2 := NumberField.InfinitePlace.card_add_two_mul_card_eq_rank D.host.E
-  have h3 : NumberField.InfinitePlace.nrRealPlaces D.host.E = 0 := by
-    rw [NumberField.nrRealPlaces_eq_zero_iff]; infer_instance
+  have h3 : NumberField.InfinitePlace.nrRealPlaces D.host.E = 0 := NumberField.nrRealPlaces_eq_zero_iff.mpr D.sp.cm.cmUnram.1
   have h4 := sza_finrank_host D
   unfold Formalism.HermitianLatticesTheory.fDeg
   omega
@@ -76,8 +74,7 @@ def szaData (D : D7) (u : D.what₂.Word) : Formalism.FourierDecayAlt.Sz.SizeDat
   du := (D.duS u : ℝ)
 
 theorem szaData_f (D : D7) (u : D.what₂.Word) : (szaData D u).f = D.R.f := by
-  show Fintype.card D.what₂.Tau = D.R.f
-  exact sza_card_Tau D
+  simpa only [szaData, Formalism.FourierDecayAlt.Sz.SizeData.f] using sza_card_Tau D
 theorem szaData_n (D : D7) (u : D.what₂.Word) : (szaData D u).n = D.R.r := by
   have h := sza_m_eq D
   show D.R.k + (2 * D.R.rS + 2) - 1 = D.R.r
@@ -130,8 +127,7 @@ theorem szaData_LBound (D : D7) (u : D.what₂.Word) : (szaData D u).LBound := b
 theorem szaData_MassRatios (D : D7) (u : D.what₂.Word) (hM : LocalBesselAndTopKernel.FamilySchurFormalDegree D) : (szaData D u).MassRatios := by
   intro M hk _
   have hk' : D.R.k < M := hk
-  have h3 := D.R.m_add_three_le_k
-  have h := hM M (by omega) (Fin M → D.host.E) (Fin (M - 1) → D.host.E)
+  have h := hM M (by have := D.R.m_add_three_le_k; omega) (Fin M → D.host.E) (Fin (M - 1) → D.host.E)
     (Formalism.HermitianLatticesTheory.massTelescope_form D.host.E M) (Formalism.HermitianLatticesTheory.massTelescope_form D.host.E (M - 1))
     (Formalism.HermitianLatticesTheory.massTelescope_lat D.host.E M) (Formalism.HermitianLatticesTheory.massTelescope_lat D.host.E (M - 1))
     (Formalism.HermitianLatticesTheory.massTelescope_symm D.host.E M) (Formalism.HermitianLatticesTheory.massTelescope_symm D.host.E (M - 1))
@@ -144,8 +140,7 @@ theorem szaData_MassRatios (D : D7) (u : D.what₂.Word) (hM : LocalBesselAndTop
   rw [sza_vInv_host, sza_fDeg_host, szaData_f]
   show _ = (((M - 1).factorial : ℝ) * (D.host.v / Real.pi) ^ M) ^ D.R.f *
       ((2 * D.host.v) ^ D.R.f) ^ (-(1 / 2 : ℝ)) * Formalism.HermitianLatticesTheory.lValEta D.host.E M * szaMass D (M - 1)
-  have hp : (0 : ℝ) ≤ (2 * D.host.v) ^ D.R.f := by have := sza_v_pos D; positivity
-  rw [Real.rpow_neg hp, ← Real.sqrt_eq_rpow]
+  rw [Real.rpow_neg (by have := sza_v_pos D; positivity), ← Real.sqrt_eq_rpow]
   ring
 
 def SzaSpl (D : D7) : Prop :=
@@ -324,8 +319,7 @@ theorem sza_spl_of_data {D : D7} {C0 : ℝ} (h : StandingNumericalData D C0) : S
 
 theorem sza_b_ge_one {D : D7} (large₂ : SizeData₂ D) : 1 ≤ large₂.sc.b := by
   unfold Formalism.BasicNotions.Scale.b Formalism.BasicNotions.Scale.L
-  have hx : 0 < large₂.sc.x := lt_trans zero_lt_one large₂.sc.one_lt_alt
-  exact Real.one_le_exp (Real.rpow_pos_of_pos hx _).le
+  exact Real.one_le_exp (Real.rpow_pos_of_pos (lt_trans zero_lt_one large₂.sc.one_lt_alt) _).le
 
 theorem sza_g_ge {D : D7} {large₂ : SizeData₂ D} {C' Cl Cg cb Cu cT CT : ℝ} (h : StandingHypotheses D large₂ C' Cl Cg cb Cu cT CT) :
     ∀ i, 4 ≤ D.host.g i := by

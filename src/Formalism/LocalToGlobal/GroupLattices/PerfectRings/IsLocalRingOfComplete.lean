@@ -221,11 +221,9 @@ theorem complete (hC : IsAdicComplete (maximalIdeal A) A) :
   have := isDVR A K L hC
   have := dedekind A K L
   have hcm := complete_map A K L hC
-  have h6 : ∀ J : Ideal (integralClosure A L), J ≠ ⊥ →
-      ∃ n : ℕ, J = maximalIdeal (integralClosure A L) ^ n :=
+  obtain ⟨n, hn⟩ := (show ∀ J : Ideal (integralClosure A L), J ≠ ⊥ → ∃ n : ℕ, J = maximalIdeal (integralClosure A L) ^ n from
     ((IsDiscreteValuationRing.TFAE (integralClosure A L) (not_isField A K L)).out 0 6).mp
-      (isDVR A K L hC)
-  obtain ⟨n, hn⟩ := h6 _ (map_ne_bot A K L)
+      (isDVR A K L hC)) _ (map_ne_bot A K L)
   rcases Nat.eq_zero_or_pos n with h0 | hpos
   · rw [hn, h0, pow_zero, Ideal.one_eq_top] at hcm
     exact absurd hcm.subsingleton (not_subsingleton _)

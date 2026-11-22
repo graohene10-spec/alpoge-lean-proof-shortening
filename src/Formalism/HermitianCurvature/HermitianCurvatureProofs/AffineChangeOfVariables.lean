@@ -8,10 +8,8 @@ namespace Formalism.FourierDecayAlt.P.G3
 theorem map_mul_vol (α : ℂ) (hα : α ≠ 0) :
     Measure.map (fun ρ : ℂ => α * ρ) (volume : Measure ℂ) = ENNReal.ofReal ((‖α‖ ^ 2)⁻¹) • volume := by
   have hdet : LinearMap.det (LinearMap.mulLeft ℝ α) = ‖α‖ ^ 2 := by
-    have h1 := Algebra.norm_complex_apply α
-    rw [Algebra.norm_apply] at h1
-    rw [← Complex.normSq_eq_norm_sq, ← h1]
-    rfl
+    change LinearMap.det (Algebra.lmul ℝ ℂ α) = ‖α‖ ^ 2
+    rw [← Algebra.norm_apply, Algebra.norm_complex_apply, Complex.normSq_eq_norm_sq]
   have h := Measure.map_linearMap_addHaar_eq_smul_addHaar (volume : Measure ℂ)
     (f := LinearMap.mulLeft ℝ α) (by rw [hdet]; positivity)
   rw [hdet, abs_of_nonneg (by positivity)] at h
@@ -223,13 +221,12 @@ theorem germ_of_rate : Formalism.FourierDecayAlt.G.GermOfRate := by
   have hs : (1 : ℝ) ≤ (m : ℝ) + 2 := by
     have : (0 : ℝ) ≤ m := Nat.cast_nonneg m
     linarith
-  have hmax1 : (C₁ : ℝ) ≤ ((max C₁ C₂ : ℕ) : ℝ) := by exact_mod_cast le_max_left _ _
   have hC1nn : (0 : ℝ) ≤ (C₁ : ℝ) := Nat.cast_nonneg _
   have hA1 : (C₁ : ℝ) * ((m : ℝ) + 2) ^ 2 ≤ A := by
     refine le_trans ?_ hA
     have h2 : ((m : ℝ) + 2) ^ 2 ≤ ((m : ℝ) + 2) ^ 3 := pow_le_pow_right₀ hs (by norm_num)
     have h3 : (0 : ℝ) ≤ ((m : ℝ) + 2) ^ 2 := by positivity
-    nlinarith
+    nlinarith [show (C₁ : ℝ) ≤ ((max C₁ C₂ : ℕ) : ℝ) by exact_mod_cast le_max_left _ _]
   have hA0 : 0 ≤ A := le_trans (by positivity) hA1
   set Mx : ℝ := max 1 (r0 ^ (-A)) with hMx
   have hMx0 : 0 < Mx := lt_of_lt_of_le one_pos (le_max_left _ _)
@@ -250,7 +247,6 @@ theorem germ_of_rate : Formalism.FourierDecayAlt.G.GermOfRate := by
   have := hC V Φ A (|K| * Mx) (max C₁ C₂ * (m + 2) ^ 2) hA1
     (Nat.mul_le_mul_right _ (le_max_right _ _)) hb t c ht hD
   refine this.trans ?_
-  have hq : 0 ≤ |Cst| * (|K| * Mx) := by positivity
   have h5 : Cst * (|K| * Mx) * ‖t‖ ≤ |Cst| * (|K| * Mx) * ‖t‖ := by
     have : Cst * (|K| * Mx) ≤ |Cst| * (|K| * Mx) :=
       mul_le_mul_of_nonneg_right (le_abs_self _) (by positivity)

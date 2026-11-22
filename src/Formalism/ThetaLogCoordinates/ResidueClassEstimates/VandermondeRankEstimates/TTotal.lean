@@ -56,8 +56,7 @@ theorem extW_star {n : ℕ} (la : Fin n → ℤ) {m : ℕ} (hm : m < n) :
 
 theorem star_star {n : ℕ} (la : Fin n → ℤ) : star (star la) = la := by
   refine extW_inj fun m hm => ?_
-  rw [extW_star _ hm, extW_star _ (by omega), neg_neg]
-  congr 1; omega
+  rw [extW_star _ hm, extW_star _ (by omega), neg_neg, show n - 1 - (n - 1 - m) = m by omega]
 
 theorem hstrip_star {n : ℕ} {a b : Fin n → ℤ} (h : HStrip n (extW a) (extW b)) :
     HStrip n (extW (star b)) (extW (star a)) := by

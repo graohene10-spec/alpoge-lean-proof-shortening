@@ -213,7 +213,6 @@ theorem density_explicit_form : NN0Formula := by
   intro P _ B hP hV hL hM hO hT hI
   obtain ⟨_, hLP⟩ := local_ratio_product P B hP hO hT hI
   have hμK := pos_μK hP
-  have hMM := pos_MM hP
   have hU := unit_level_volume_pos hP
   have hS := pos_μS hP
   have hS' := pos_μS' hP
@@ -227,7 +226,7 @@ theorem density_explicit_form : NN0Formula := by
     unfold MassData.μKnat MassData.μK
     have : ∏ p, B.μKnatp p = ∏ p, (B.μKp p * (B.glk p * B.nn p / B.gg p)) :=
       prod_congr rfl fun p _ => by
-        obtain ⟨qg, qglk, quk, qnn, qgg, qKp, qKn, qKpp, qSp, qSp', qSpp, qSpp', qMp, qU⟩ := hp p
+        obtain ⟨_, _, _, _, _, qKp, _⟩ := hp p
         have h := (hI p).2
         rw [div_eq_iff qKp.ne'] at h
         rw [h]; ring

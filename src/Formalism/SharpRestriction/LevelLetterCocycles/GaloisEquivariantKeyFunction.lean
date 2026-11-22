@@ -159,8 +159,7 @@ theorem PerI.prod {ι : Type} [CommMonoid V] {I : Ideal (𝓞 E)} (s : Finset ι
   fun x y hy => Finset.prod_congr rfl fun i hi => h i hi x y hy
 
 theorem isCoprime_of_ne {P P' : HeightOneSpectrum (𝓞 E)} (h : P ≠ P') : IsCoprime P.asIdeal P'.asIdeal := by
-  rw [Ideal.isCoprime_iff_sup_eq]
-  exact Ideal.IsMaximal.coprime_of_ne P.isMaximal P'.isMaximal fun e => h (HeightOneSpectrum.ext e)
+  exact (Ideal.isCoprime_iff_sup_eq).2 (Ideal.IsMaximal.coprime_of_ne P.isMaximal P'.isMaximal fun e => h (HeightOneSpectrum.ext e))
 
 end
 
@@ -404,8 +403,7 @@ theorem Ball_fg (i : D.ntw.Tw) (j : ℕ) (b : Bool) : (BallS i j b).FG := by
     exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨t, rfl⟩)
 
 theorem Bsup_le_BallS (i : D.ntw.Tw) (j : ℕ) (b : Bool) : D.nexp.Bsup i j b ≤ BallS i j b := by
-  rw [D.nth.Bsup_def, Submodule.span_le]
-  exact fun f hf => hf.2
+  simpa only [D.nth.Bsup_def, Submodule.span_le, Set.subset_def] using fun f hf => hf.2
 
 theorem Bsup_fg (D : Formalism.BasicNotions.D7) (i : D.ntw.Tw) (j : ℕ) (b : Bool) : (D.nexp.Bsup i j b).FG := by
   have : IsNoetherian (D.ntw.O i) ↥(BallS i j b) := isNoetherian_of_fg_of_noetherian _ (Ball_fg i j b)

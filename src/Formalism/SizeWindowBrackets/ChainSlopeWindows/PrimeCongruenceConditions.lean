@@ -248,14 +248,12 @@ lemma compD_one (ψ : AddChar (E0 × HA e) ℂ) (h1 : ψ ((1, 0), 0) = 1) (u : (
 lemma compQ_neg (ψ : AddChar (E0 × HA e) ℂ) (h1 : ψ ((0, 1), 0) = -1) (u : (ZMod (hostN e q d))ˣ) :
     changeLevel (q_dvd_hostN e q d) (qc q) (u : ZMod _)
       = ψ ((0, sQ q (ZMod.unitsMap (q_dvd_hostN e q d) u)), 0) := by
-  rw [qcLift_apply]
-  exact (comp_neg ψ (fun a => ((0, a), 0)) rfl h1 _).symm
+  simpa only [qcLift_apply, sQ] using (comp_neg ψ (fun a => ((0, a), 0)) rfl h1 _).symm
 
 lemma compD_neg (ψ : AddChar (E0 × HA e) ℂ) (h1 : ψ ((1, 0), 0) = -1) (u : (ZMod (hostN e q d))ˣ) :
     changeLevel (d_dvd_hostN e q d) (qc d) (u : ZMod _)
       = ψ ((sQ d (ZMod.unitsMap (d_dvd_hostN e q d) u), 0), 0) := by
-  rw [qcLift_apply]
-  exact (comp_neg ψ (fun a => ((a, 0), 0)) rfl h1 _).symm
+  simpa only [qcLift_apply, sQ] using (comp_neg ψ (fun a => ((a, 0), 0)) rfl h1 _).symm
 
 lemma component_two_one (ψ : AddChar (E0 × HA e) ℂ) (h1 : ∀ t : HA e, ψ ((0, 0), t) = 1) (u : (ZMod (hostN e q d))ˣ) :
     (1 : DirichletCharacter ℂ (hostN e q d)) (u : ZMod _)
@@ -787,19 +785,14 @@ theorem smooth_weight_general : SmoothGen := by
   have hs0 : 0 < s := by rw [hsdef]; exact Real.sqrt_pos.mpr hv0
   have hlq : 0 ≤ Real.log q := Real.log_nonneg hq1
   obtain ⟨M, hM⟩ : ∃ M : ℝ, M = Real.log q + 2 + s := ⟨_, rfl⟩
-  have hM2 : 2 ≤ M := by rw [hM]; linarith
   have hMs : s ≤ M := by rw [hM]; linarith
-  have hM0 : 0 < M := by linarith
+  have hM0 : 0 < M := by rw [hM]; linarith
   obtain ⟨τ, hτ⟩ : ∃ τ : ℝ, τ = c₁ / 16 * v / M := ⟨_, rfl⟩
   have hτ0 : 0 ≤ τ := by rw [hτ]; positivity
-  have hτM : τ * M = c₁ / 16 * v := by rw [hτ]; field_simp
   have hτs : τ ≤ s := by
-    have h1 : τ * M ≤ s * M := by
-      rw [hτM, hvs]
-      have : c₁ / 16 * s ^ 2 ≤ 1 * s ^ 2 := mul_le_mul_of_nonneg_right (by linarith) (sq_nonneg s)
-      have : s * s ≤ s * M := mul_le_mul_of_nonneg_left hMs hs0.le
-      nlinarith
-    exact le_of_mul_le_mul_right h1 hM0
+    rw [hτ, div_le_iff₀ hM0, hvs]
+    have h : s * s ≤ s * M := mul_le_mul_of_nonneg_left hMs hs0.le
+    nlinarith [h, mul_le_mul_of_nonneg_right (by linarith : c₁ / 16 ≤ 1) (sq_nonneg s)]
   obtain ⟨T, hTdef⟩ : ∃ T : ℝ, T = Real.exp τ := ⟨_, rfl⟩
   obtain ⟨X, hXdef⟩ : ∃ X : ℝ, X = Real.exp (-τ) := ⟨_, rfl⟩
   have hT1 : 1 ≤ T := by rw [hTdef]; exact Real.one_le_exp hτ0

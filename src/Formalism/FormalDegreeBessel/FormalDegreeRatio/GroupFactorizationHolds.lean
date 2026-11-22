@@ -201,9 +201,6 @@ theorem diagonal_inverse_holds : DInv := by
   have hH : sᴴ * Hpk k r * s = Hpk k r := Sset_UH hs
   have hFs : (Fm k r z)ᴴ * sᴴ = Uᴴ * (Fm k r z)ᴴ := by
     rw [← conjTranspose_mul, hsF, conjTranspose_mul]
-  have hL0 : ∀ i j : Fin (r + 1), i < j → Uᴴ i j = 0 := fun i j hij => by
-    simp [conjTranspose_apply, hU0 j i hij]
-  have hL1 : ∀ i, Uᴴ i i = 1 := fun i => by simp [conjTranspose_apply, hU1 i]
   have hmul : Uᴴ * Zhat k r z z' (s * g * s') = Zhat k r z z' g * U' := by
     rw [Zhat_eq, Zhat_eq]
     calc Uᴴ * ((Fm k r z)ᴴ * Hpk k r * (s * g * s') * Fm k r z')
@@ -215,7 +212,8 @@ theorem diagonal_inverse_holds : DInv := by
       _ = (Fm k r z)ᴴ * Hpk k r * g * Fm k r z' * U' := by
           rw [hH, hsF']
           simp only [Matrix.mul_assoc]
-  exact minor_eq_of_mul Uᴴ U' _ _ hL0 hL1 hU0' hU1' hmul l.val _
+  exact minor_eq_of_mul Uᴴ U' _ _ (fun i j hij => by simp [conjTranspose_apply, hU0 j i hij])
+    (fun i => by simp [conjTranspose_apply, hU1 i]) hU0' hU1' hmul l.val _
 
 theorem group_inverse_holds : GInv := by
   intro k r z z' hz hz' s hs s' hs' g

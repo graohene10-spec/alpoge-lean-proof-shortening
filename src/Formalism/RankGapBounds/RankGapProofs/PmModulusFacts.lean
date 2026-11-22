@@ -19,10 +19,7 @@ lemma pm_cover (M N : ℕ) (hM : 2 ≤ M) (s : Finset ℕ)
     have hd : M ∣ l - 1 := dvd_of_natCast_zmod_eq_zero
       (by rw [Nat.cast_sub (by omega), Nat.cast_one, h, sub_self])
     obtain ⟨q, hq⟩ := hd
-    have hq0 : 0 < q := by
-      rcases Nat.eq_zero_or_pos q with h0 | h0
-      · rw [h0, mul_zero] at hq; omega
-      · exact h0
+    have hq0 : 0 < q := Nat.pos_of_mul_pos_right (show 0 < q * M by rw [mul_comm q M, ← hq]; omega)
     have hqM : q ≤ M * q := by nlinarith
     refine ⟨q - 1, by omega, ?_⟩
     rw [Nat.sub_add_cancel hq0, mul_comm]
@@ -30,10 +27,7 @@ lemma pm_cover (M N : ℕ) (hM : 2 ≤ M) (s : Finset ℕ)
   · right
     have hd : M ∣ l + 1 := dvd_of_natCast_zmod_eq_zero (by push_cast; rw [h]; ring)
     obtain ⟨q, hq⟩ := hd
-    have hq0 : 0 < q := by
-      rcases Nat.eq_zero_or_pos q with h0 | h0
-      · rw [h0, mul_zero] at hq; omega
-      · exact h0
+    have hq0 : 0 < q := Nat.pos_of_mul_pos_right (show 0 < q * M by rw [mul_comm q M, ← hq]; omega)
     have h2q : 2 * q ≤ M * q := by nlinarith
     refine ⟨q - 1, by omega, ?_⟩
     rw [Nat.sub_add_cancel hq0, mul_comm]
@@ -47,18 +41,14 @@ lemma pm_sum_cover (f : ℕ → ℝ) (hf : ∀ l, 0 ≤ f l) (M N : ℕ) (hM : 2
   have hsub := pm_cover M N hM s hs
   have hinj1 : Set.InjOn (fun k : ℕ => (k + 1) * M + 1) ((range N : Finset ℕ) : Set ℕ) := by
     intro a _ b _ hab
-    have hab' : (a + 1) * M + 1 = (b + 1) * M + 1 := hab
-    have h' : (a + 1) * M = (b + 1) * M := by omega
-    have := Nat.eq_of_mul_eq_mul_right hMpos h'
-    omega
+    exact Nat.add_right_cancel (Nat.eq_of_mul_eq_mul_right hMpos (Nat.add_right_cancel hab))
   have hinj2 : Set.InjOn (fun k : ℕ => (k + 1) * M - 1) ((range N : Finset ℕ) : Set ℕ) := by
     intro a _ b _ hab
     have hab' : (a + 1) * M - 1 = (b + 1) * M - 1 := hab
     have ha : 0 < (a + 1) * M := Nat.mul_pos (Nat.succ_pos a) hMpos
     have hb : 0 < (b + 1) * M := Nat.mul_pos (Nat.succ_pos b) hMpos
     have h' : (a + 1) * M = (b + 1) * M := by omega
-    have := Nat.eq_of_mul_eq_mul_right hMpos h'
-    omega
+    exact Nat.add_right_cancel (Nat.eq_of_mul_eq_mul_right hMpos h')
   set A := (range N).image (fun k => (k + 1) * M + 1) with hA
   set B := (range N).image (fun k => (k + 1) * M - 1) with hB
   have hU : ∑ x ∈ A ∪ B, f x + ∑ x ∈ A ∩ B, f x = ∑ x ∈ A, f x + ∑ x ∈ B, f x :=

@@ -183,8 +183,7 @@ private lemma neg_log_one_sub_inv_pow_nonneg (M : ℕ) (hM : 1 ≤ M) (p : ℕ) 
   have h := inv_prime_pow_lt_one M hM p hp
   have h0 : 0 ≤ ((p : ℝ)⁻¹) ^ M := by positivity
   unfold negLogOneSubInvPow
-  have : Real.log (1 - ((p : ℝ)⁻¹) ^ M) ≤ 0 := Real.log_nonpos (by linarith) (by linarith)
-  linarith
+  exact neg_nonneg.mpr (Real.log_nonpos (by linarith) (by linarith))
 
 private lemma sum_neg_log_le_log_zeta (M : ℕ) (hM : 2 ≤ M) (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) :
     ∑ p ∈ S, negLogOneSubInvPow M p ≤ Real.log (zetaR M) := by

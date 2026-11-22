@@ -10,10 +10,8 @@ private lemma vthp_nonneg_of_ok (c : Cfg) (h : c.Ok) : 0 ≤ c.vthp := by
   unfold Cfg.vthp
   split_ifs with ht
   · obtain ⟨h1, _⟩ := h.htop ht
-    have hb1 : (1:ℝ) ≤ c.b 1 := h.hb1
     have hbp : 0 < c.bp := by linarith
-    have hD : (1:ℝ) ≤ c.Del := h.hDel
-    exact div_nonneg (mul_nonneg (mul_nonneg (by norm_num) (Nat.cast_nonneg _)) (by linarith)) hbp.le
+    exact div_nonneg (mul_nonneg (mul_nonneg (by norm_num) (Nat.cast_nonneg _)) (by linarith [h.hDel])) hbp.le
   · exact le_refl _
 
 private lemma vthp_le_one_tenth_of_small (c : Cfg) (h : c.Ok) (bb : ℝ) (hs : c.Small bb) : c.vthp ≤ 1 / 10 := by
@@ -23,13 +21,11 @@ private lemma vthp_le_one_tenth_of_small (c : Cfg) (h : c.Ok) (bb : ℝ) (hs : c
     have hb1 : (1:ℝ) ≤ c.b 1 := h.hb1
     have hbp : 0 < c.bp := by linarith
     have hm : (2:ℝ) ≤ c.m := by exact_mod_cast h.hm
-    have hk : (0:ℝ) ≤ c.k := Nat.cast_nonneg _
-    have hD : (1:ℝ) ≤ c.Del := h.hDel
     have hv := hs.hvth
     unfold Cfg.vth at hv
     rw [div_le_iff₀ (by linarith)] at hv
     rw [div_le_iff₀ hbp]
-    have hkD : 0 ≤ (c.k:ℝ) * c.Del := mul_nonneg hk (by linarith)
+    have hkD : 0 ≤ (c.k:ℝ) * c.Del := mul_nonneg (Nat.cast_nonneg _) (by linarith [h.hDel])
     nlinarith [mul_le_mul_of_nonneg_left hm hkD]
   · norm_num
 
@@ -39,8 +35,7 @@ theorem aZeroBound : AZeroBound := by
   have hv1 := vthp_le_one_tenth_of_small c h bb hs
   have hW : 0 < 1 + c.vthp := by linarith
   have hE2 : (9:ℝ) / 10 ≤ Real.exp (-(2 * c.m * Real.log bb / c.k)) := by
-    have := Real.add_one_le_exp (-(2 * c.m * Real.log bb / c.k))
-    linarith [hs.hmu]
+    linarith [Real.add_one_le_exp (-(2 * c.m * Real.log bb / c.k)), hs.hmu]
   have hE1 : Real.exp c.vth ≤ 10 / 9 := by
     have h1 := Real.add_one_le_exp (-c.vth)
     have h2 : Real.exp c.vth * Real.exp (-c.vth) = 1 := by rw [← Real.exp_add]; simp
@@ -57,10 +52,7 @@ theorem aZeroBound : AZeroBound := by
   have hcLow : 0.38 * (9 / 10) / (11 / 10) ≤ cOne c bb := by
     unfold cOne
     rw [le_div_iff₀ hW]
-    have : 0.38 * (9 / 10) / (11 / 10) * (1 + c.vthp) ≤ 0.38 * (9 / 10) := by
-      have : (1 + c.vthp) ≤ 11 / 10 := by linarith
-      nlinarith
-    linarith
+    nlinarith [hE2, hv1]
   refine ⟨?_, ?_⟩
   · unfold AZero
     exact div_pos (by positivity) hcOne
@@ -82,17 +74,14 @@ lemma rho_nonneg (c : Cfg) (de de' : ℕ → ℝ) (Y : ℝ) (l i : ℕ) (h : c.O
   · exact div_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
 
 private lemma one_le_b_of_ok (c : Cfg) (h : c.Ok) : ∀ j : ℕ, 1 ≤ j → j ≤ c.m → 1 ≤ c.b j := by
-  intro j
-  induction j with
-  | zero => intro h1; omega
-  | succ n ih =>
-    intro h1 h2
-    rcases Nat.eq_zero_or_pos n with hn | hn
-    · subst hn
-      simpa using h.hb1
-    · have e1 := ih hn (by omega)
-      have e2 := h.hgap n hn (by omega)
-      linarith
+  intro j hj
+  induction j, hj using Nat.le_induction with
+  | base => intro _; exact h.hb1
+  | succ n hn ih =>
+    intro hm
+    have e1 := ih (by omega)
+    have e2 := h.hgap n (by omega) (by omega)
+    linarith
 
 lemma prodb_pos (c : Cfg) (h : c.Ok) : 0 < c.prodb := by
   unfold Cfg.prodb
@@ -103,7 +92,7 @@ lemma prodb_pos (c : Cfg) (h : c.Ok) : 0 < c.prodb := by
 lemma edge_bound (c : Cfg) (de de' : ℕ → ℝ) (Y : ℝ) (l : ℕ) (h : c.Ok) (hw : IsWord c.k de)
     (hw' : IsWord c.k de') (hl : 1 ≤ l) (hlk : l + 2 ≤ c.k) (hY : Y ∈ c.cutI l) :
     0 < c.aeff ∧ c.U1 (-Y) * c.rho de de' (-Y) (c.k - 1) ≤ 8 / c.aeff := by
-  obtain ⟨hU0, hU1, hU2⟩ := edgeFactorBound c Y l h hl hlk hY
+  obtain ⟨_, hU1, hU2⟩ := edgeFactorBound c Y l h hl hlk hY
   have hr0 := rho_nonneg c de de' Y l (c.k - 1) h hlk hY
   have hD : (1:ℝ) ≤ c.Del := h.hDel
   have hkR : (4:ℝ) ≤ c.k := by exact_mod_cast h.hk
@@ -116,8 +105,7 @@ lemma edge_bound (c : Cfg) (de de' : ℕ → ℝ) (Y : ℝ) (l : ℕ) (h : c.Ok)
   have hapos : 0 < c.a - c.v 1 := by linarith
   have hapos' : 0 < c.a := by linarith
   cases htop : c.top
-  · have haeff : c.aeff = c.a - c.v 1 := by simp [Cfg.aeff, htop]
-    rw [haeff]
+  · rw [show c.aeff = c.a - c.v 1 by simp [Cfg.aeff, htop]]
     refine ⟨hapos, ?_⟩
     have hr1 := positionAfter c de de' Y l (c.k - 1) h hw hw' hl (by omega) (by omega)
       (Or.inr htop) hY
@@ -127,13 +115,11 @@ lemma edge_bound (c : Cfg) (de de' : ℕ → ℝ) (Y : ℝ) (l : ℕ) (h : c.Ok)
           mul_le_mul hU1 hr1 hr0 hx.le
       _ ≤ 8 / (c.a - c.v 1) := by rw [e]; linarith
   · obtain ⟨hbp1, _⟩ := h.htop htop
-    have hb1 : (1:ℝ) ≤ c.b 1 := h.hb1
-    have hbp : 0 < c.bp := by linarith
+    have hbp : 0 < c.bp := by linarith [h.hb1, hbp1]
     have hk0 : (c.k:ℝ) ≠ 0 := (by linarith : (0:ℝ) < c.k).ne'
     have hD0 : c.Del ≠ 0 := (by linarith : (0:ℝ) < c.Del).ne'
     have hkD : 0 < (c.k:ℝ) * c.Del := mul_pos (by linarith) (by linarith)
-    have haeff : c.aeff = c.a * c.bp / (c.k * c.Del) := by simp [Cfg.aeff, htop]
-    rw [haeff]
+    rw [show c.aeff = c.a * c.bp / (c.k * c.Del) by simp [Cfg.aeff, htop]]
     refine ⟨div_pos (mul_pos hapos' hbp) hkD, ?_⟩
     have hr1 := positionTop c de de' Y l h htop hl hlk hY
     have ha0 := hapos'.ne'

@@ -40,9 +40,8 @@ lemma lift_KKc (w : O) (LL : LiftLetters (Fin N)) (g : Matrix (Fin (r + K)) (Fin
       MvPolynomial.map (algebraMap O (KK O)) (ZZ p (yO w LL) LL.pos mu c N z J) := by
   rw [KKc_eq (O := O) p f LL g z mu c]
   have h1 := ZZ_map (liftSubst p f O w r LL g).toRingHom p (letG p f (O := O) LL g) LL.pos mu c N le_rfl z J
-  have h2 := ZZ_map (MvPolynomial.map (algebraMap O (KK O))) p (yO w LL) LL.pos mu c N le_rfl z J
   simp only [AlgHom.toRingHom_eq_coe, RingHom.coe_coe] at h1
-  rw [h1, h2]
+  rw [h1, ZZ_map (MvPolynomial.map (algebraMap O (KK O))) p (yO w LL) LL.pos mu c N le_rfl z J]
   congr 1
   funext i b
   exact lift_letG p f w LL g hg i b

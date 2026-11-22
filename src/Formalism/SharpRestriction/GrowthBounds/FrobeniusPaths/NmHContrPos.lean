@@ -18,20 +18,17 @@ lemma NmH_wedge_pos {c : ℤ} (hc : 1 ≤ c) {hP hN : ℕ} (hN' : hN = hP + 1) {
     (hm : m ∈ J) (hmr : r ≤ m.val ↔ r ≤ hP) (H : NmH c hP (J.erase m)) : NmH c hN J := by
   classical
   obtain ⟨hcard, hA, hB⟩ := H.1 hc
-  have hcJ : J.card = hN := by
-    rw [Finset.card_erase_of_mem hm] at hcard
-    have := Finset.card_pos.mpr ⟨m, hm⟩; omega
-  have hsub : hP < r → ∀ a ∈ J, a.val < r := by
+  have hcJ : J.card = hN := by rw [← Finset.card_erase_add_one hm, hcard, hN']
+  have hsub : hN ≤ r → ∀ a ∈ J, a.val < r := by
     intro hlt a ha
     by_cases ham : a = m
     · subst ham; by_contra hh; have := hmr.mp (by omega); omega
     · exact hB (by omega) a (Finset.mem_erase.mpr ⟨ham, ha⟩)
-  refine ⟨fun _ => ⟨hcJ, fun hr a ha => ?_, fun hr => hsub (by omega)⟩, fun hc' => absurd hc hc'⟩
+  refine ⟨fun _ => ⟨hcJ, fun hr a ha => ?_, hsub⟩, fun hc' => absurd hc hc'⟩
   by_cases hr' : r ≤ hP
   · exact Finset.mem_of_mem_erase (hA hr' a ha)
-  · have hs := hsub (by omega)
-    have : J = univ.filter fun a : Fin (r + K) => a.val < r := by
-      refine Finset.eq_of_subset_of_card_le (fun a ha => by simpa using hs a ha) ?_
+  · have : J = univ.filter fun a : Fin (r + K) => a.val < r := by
+      refine Finset.eq_of_subset_of_card_le (fun b hb => by simpa using hsub (by omega) b hb) ?_
       rw [plane_card]; omega
     rw [this]; simpa using ha
 
@@ -79,14 +76,10 @@ lemma colStep_dvd (D : A) (c : ℤ) (hP hN : ℕ) (hne : hP ≠ hN) (y : Fin k �
     D ∣ colStep c hP hN y V J := by
   unfold colStep wedgeR contrR
   split_ifs with h1 h2 h3 h4
-  · exact Finset.dvd_sum fun m hm => by
-      rw [mul_assoc]; exact Dvd.dvd.mul_left ((H m).1 (Or.inl ⟨h1, h2⟩) hm) _
-  · exact Finset.dvd_sum fun m hm => by
-      rw [mul_assoc]; exact Dvd.dvd.mul_left ((H m).2 (Or.inl ⟨h1, h2⟩) (by simpa using hm)) _
-  · exact Finset.dvd_sum fun m hm => by
-      rw [mul_assoc]; exact Dvd.dvd.mul_left ((H m).2 (Or.inr ⟨h3, h4⟩) (by simpa using hm)) _
-  · exact Finset.dvd_sum fun m hm => by
-      rw [mul_assoc]; exact Dvd.dvd.mul_left ((H m).1 (Or.inr ⟨h3, h4⟩) hm) _
+  · exact Finset.dvd_sum fun m hm => by simpa only [mul_assoc] using Dvd.dvd.mul_left ((H m).1 (Or.inl ⟨h1, h2⟩) hm) _
+  · exact Finset.dvd_sum fun m hm => by simpa only [mul_assoc] using Dvd.dvd.mul_left ((H m).2 (Or.inl ⟨h1, h2⟩) (by simpa using hm)) _
+  · exact Finset.dvd_sum fun m hm => by simpa only [mul_assoc] using Dvd.dvd.mul_left ((H m).2 (Or.inr ⟨h3, h4⟩) (by simpa using hm)) _
+  · exact Finset.dvd_sum fun m hm => by simpa only [mul_assoc] using Dvd.dvd.mul_left ((H m).1 (Or.inr ⟨h3, h4⟩) hm) _
   · omega
 
 end Dvd

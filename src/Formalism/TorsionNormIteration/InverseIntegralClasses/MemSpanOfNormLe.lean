@@ -56,15 +56,12 @@ theorem natCast_nonunit {p : ℕ} (hp : ‖(p : K)‖ < 1) :
   intro hu
   obtain ⟨u, hu'⟩ := hu.exists_left_inv
   have h2 : (u : K) * (p : K) = 1 := by
-    have h0 := congrArg Subtype.val hu'
     rw [← natCast_coe p]
-    exact h0
-  have hu1 : ‖(u : K)‖ ≤ 1 := u.2
-  have h3 := congrArg norm h2
-  rw [norm_mul, norm_one] at h3
+    exact congrArg Subtype.val hu'
+  have h3 : ‖(u : K)‖ * ‖(p : K)‖ = 1 := by
+    simpa [norm_mul] using congrArg norm h2
   have h4 : ‖(u : K)‖ * ‖(p : K)‖ ≤ ‖(p : K)‖ := by
-    calc ‖(u : K)‖ * ‖(p : K)‖ ≤ 1 * ‖(p : K)‖ := mul_le_mul_of_nonneg_right hu1 (norm_nonneg _)
-      _ = ‖(p : K)‖ := one_mul _
+    simpa using mul_le_mul_of_nonneg_right u.2 (norm_nonneg (p : K))
   linarith
 
 def liftO {ι : Type v} (A : MvPowerSeries ι K) (hA : IntegralMv A) :

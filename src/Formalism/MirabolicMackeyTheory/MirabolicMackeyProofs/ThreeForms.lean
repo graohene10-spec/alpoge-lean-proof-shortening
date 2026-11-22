@@ -132,9 +132,7 @@ theorem mem_sc_inv {a : K} (ha : a ≠ 0) (X : Submodule (𝓞 K) Z) (x : Z) :
 
 theorem sc_sc_inv {a : K} (ha : a ≠ 0) (X : Submodule (𝓞 K) Z) : sc a (sc a⁻¹ X) = X := by
   ext x
-  have := mem_sc_inv (inv_ne_zero ha) (sc a⁻¹ X) x
-  rw [inv_inv] at this
-  rw [this, mem_sc_inv ha, smul_smul, mul_inv_cancel₀ ha, one_smul]
+  rw [(show x ∈ sc a (sc a⁻¹ X) ↔ a⁻¹ • x ∈ sc a⁻¹ X by simpa only [inv_inv] using mem_sc_inv (inv_ne_zero ha) (sc a⁻¹ X) x), mem_sc_inv ha, smul_smul, mul_inv_cancel₀ ha, one_smul]
 
 theorem localization_sc (p : Ideal (𝓞 K)) [p.IsPrime] {a : K} (ha : a ≠ 0) (X : Submodule (𝓞 K) Z) :
     localization₂ p (sc a X) = sc a (localization₂ p X) := by

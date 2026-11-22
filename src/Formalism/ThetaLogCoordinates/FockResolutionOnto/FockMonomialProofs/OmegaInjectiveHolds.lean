@@ -34,10 +34,9 @@ theorem compL_mem (Pr : (σ →₀ ℕ) → Prop) (x : MvPolynomial σ k) :
   classical
   rw [mem_restrictSupport_iff]
   intro m hm
-  rw [Finset.mem_coe, mem_support_iff, coeff_compL] at hm
-  split_ifs at hm with h
-  · exact h
-  · exact absurd rfl hm
+  by_contra h
+  rw [Finset.mem_coe, mem_support_iff, coeff_compL, if_neg (by simpa using h)] at hm
+  exact hm rfl
 
 theorem compL_of_mem (Pr : (σ →₀ ℕ) → Prop) (x : MvPolynomial σ k) (hx : x ∈ restrictSupport k {m | Pr m}) :
     compL k Pr x = x := by
@@ -659,10 +658,8 @@ theorem glAct_free {N : ℕ} (LL : Letters N) (j : ℕ) (s t : Fin r) (v : Fin N
 
 theorem typesLE_glStable {N : ℕ} [NeZero r] (LL : Letters N) (j : ℕ) (Cs : Finset (Fin r)) (M : WithTop ℤ) (s t : Fin r)
     (hs : s ∈ Cs) (ht : t ∈ Cs) : ∀ z ∈ TypesLE p LL j Cs M, glAct p LL j s t z ∈ TypesLE p LL j Cs M := by
-  have : TypesLE p LL j Cs M ≤ (TypesLE p LL j Cs M).comap (glAct p LL j s t) :=
-    iSup_le fun la => iSup_le fun hla => fun z hz =>
-      Submodule.mem_iSup_of_mem la (Submodule.mem_iSup_of_mem hla (isoC_glStableC LL j Cs la s hs t ht z hz))
-  exact fun z hz => this hz
+  exact (show TypesLE p LL j Cs M ≤ (TypesLE p LL j Cs M).comap (glAct p LL j s t) from iSup_le fun la => iSup_le fun hla => fun z hz =>
+    Submodule.mem_iSup_of_mem la (Submodule.mem_iSup_of_mem hla (isoC_glStableC LL j Cs la s hs t ht z hz)))
 
 end Final
 

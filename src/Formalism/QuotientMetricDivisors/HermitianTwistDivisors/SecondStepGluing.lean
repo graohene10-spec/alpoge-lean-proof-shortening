@@ -228,11 +228,9 @@ theorem matLat_lattice' {n D : ℕ} (P : Matrix (Fin D) (Fin n) K)
     (hP : Function.Surjective P.mulVec) (M : Submodule (𝓞 K) (Fin n → K))
     (hM : Submodule.IsLattice K M) : Submodule.IsLattice K (matLat P M) := by
   refine ⟨(Submodule.IsLattice.fg (self := hM)).map _, ?_⟩
-  have : ((matLat P M : Submodule (𝓞 K) (Fin D → K)) : Set (Fin D → K)) =
-      (Matrix.mulVecLin P) '' (M : Set (Fin n → K)) := by
-    rw [matLat, Submodule.map_coe]
-    rfl
-  rw [this, Submodule.span_image, Submodule.IsLattice.span_eq_top (self := hM), Submodule.map_top,
+  rw [matLat, Submodule.map_coe]
+  change Submodule.span K ((Matrix.mulVecLin P) '' (M : Set (Fin n → K))) = ⊤
+  rw [Submodule.span_image, Submodule.IsLattice.span_eq_top (self := hM), Submodule.map_top,
     LinearMap.range_eq_top]
   exact hP
 
@@ -299,8 +297,7 @@ theorem lattice_gluing_semilocal : LatticeGlueSemi := by
       rw [loc_eq]
       refine le_inf (iInf_le _ w) ?_
       have h := iInf_le (fun w : HeightOneSpectrum (𝓞 K) => localization₂ w.asIdeal (L w)) (conjPl w)
-      rw [hc w] at h
-      exact h
+      exact hc w ▸ h
     · refine le_iInf (fun w => le_trans (iInf_le _ w) ?_)
       rw [loc_eq]
       exact inf_le_left

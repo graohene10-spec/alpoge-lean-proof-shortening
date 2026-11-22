@@ -49,9 +49,7 @@ theorem map_conjTranspose' {K : Type} [Field K] [StarRing K] (σ : K →+* ℂ) 
     (E : Matrix (Fin n) (Fin d) K) (hE : ∀ i a, σ (star (E i a)) = starRingEnd ℂ (σ (E i a))) :
     (Eᴴ).map σ = (E.map σ)ᴴ := by
   ext a i
-  simp only [Matrix.map_apply, Matrix.conjTranspose_apply]
-  rw [hE i a]
-  rfl
+  simpa only [Matrix.map_apply, Matrix.conjTranspose_apply, starRingEnd_apply] using hE i a
 
 theorem majAt_eq {K : Type} [Field K] [NumberField K] {n : ℕ}
     (X : InfinitePlace K → Matrix (Fin n) (Fin n) ℂ) (v : InfinitePlace K) (x y : Fin n → K) :
@@ -73,15 +71,13 @@ end SlopeTestRemainingChoices
 
 theorem frameOfSpec : FrameOfSpec := by
   intro n A hA
-  have h0 : (0 : Matrix (Fin n) (Fin n) ℂ) ≤ A := hA.posSemidef.nonneg
-  have hs : CFC.sqrt A * CFC.sqrt A = A := CFC.sqrt_mul_sqrt_self A h0
+  have hs : CFC.sqrt A * CFC.sqrt A = A := CFC.sqrt_mul_sqrt_self A hA.posSemidef.nonneg
   have hdet : IsUnit (CFC.sqrt A).det := by
     have h1 : A.det ≠ 0 := hA.det_pos.ne'
     rw [← hs, Matrix.det_mul] at h1
     exact isUnit_iff_ne_zero.mpr (right_ne_zero_of_mul h1)
   have hH : (CFC.sqrt A)ᴴ = CFC.sqrt A := by
-    have := (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg A)).star_eq
-    rwa [Matrix.star_eq_conjTranspose] at this
+    simpa [Matrix.star_eq_conjTranspose] using (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg A)).star_eq
   refine ⟨Matrix.isUnit_nonsing_inv_det _ hdet, ?_⟩
   rw [metOf, frameOf, Matrix.nonsing_inv_nonsing_inv _ hdet, hH, hs]
 
@@ -136,10 +132,9 @@ theorem restrFrameSpec : RestrFrameSpec := by
   intro K _ _ _ n d H h2 E hE v
   have hs := frameOfSpec d _ ((quotRestrPosDef n d _ (h2 v)).2 _ (map_inj v.embedding E hE))
   refine ⟨hs.1, hs.2, fun x y => ?_⟩
-  have hm1 : metOf (restrFrame E H v) = restrMetC (E.map v.embedding) (H.map v.embedding) := hs.2
-  have hm2 : metOf (stdFrame H v) = H.map v.embedding := (frameOfSpec n _ (h2 v)).2
-  rw [majAt_eq, majAt_eq, hm1, hm2, emb_mulVec, emb_mulVec, restrMetC, Matrix.star_mulVec,
-    ← Matrix.dotProduct_mulVec, Matrix.mulVec_mulVec, Matrix.mulVec_mulVec]
+  unfold restrFrame stdFrame
+  rw [majAt_eq, majAt_eq, hs.2, (frameOfSpec n _ (h2 v)).2, emb_mulVec, emb_mulVec, restrMetC,
+    Matrix.star_mulVec, ← Matrix.dotProduct_mulVec, Matrix.mulVec_mulVec, Matrix.mulVec_mulVec]
 
 theorem map_restr {K : Type} [Field K] [StarRing K] (σ : K →+* ℂ) {n d : ℕ}
     (H : Matrix (Fin n) (Fin n) K) (E : Matrix (Fin n) (Fin d) K)
@@ -258,8 +253,7 @@ theorem weightFrameSpec : WeightFrameSpec := by
   intro K _ _ _ n Ix _ pr t X hX ht hsum v
   have hs := frameOfSpec n _ (weightMet_posDef pr t X hX ht hsum v)
   refine ⟨hs.1, hs.2, fun x y => ?_⟩
-  have hm : metOf (weightFrame pr t X v) = weightMet pr t X v := hs.2
-  rw [majAt_eq, hm, weightMet_form]
+  rw [majAt_eq, (show metOf (weightFrame pr t X v) = weightMet pr t X v from hs.2), weightMet_form]
   refine Finset.sum_congr rfl fun p _ => ?_
   rw [majAt_eq, emb_mulVec, emb_mulVec]
 

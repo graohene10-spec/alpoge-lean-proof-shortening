@@ -43,12 +43,10 @@ lemma qh_le_last [NeZero n] (a : Fin n) : a ≤ lastIdx n := by
 
 lemma qh_count [NeZero n] {mu : Fin n → ℤ} (hmu : Dominant mu) (t : Fin n) :
     ((TCols mu).filter (fun c => t.val < colH mu c)).card = (mu t - mu (lastIdx n)).toNat := by
-  have h0 : mu t ≤ mu 0 := hmu (by first | exact Fin.zero_le _ | (rw [Fin.le_iff_val_le_val]; simp))
-  have hset : (TCols mu).filter (fun c => t.val < colH mu c) =
-      Finset.Ioc (mu (lastIdx n)) (mu t) := by
-    ext c
-    simp only [Finset.mem_filter, qh_lt_colH_iff hmu, TCols, Finset.mem_Ioc]
-    exact ⟨fun hh => ⟨hh.1.1, hh.2⟩, fun hh => ⟨⟨hh.1, hh.2.trans h0⟩, hh.2⟩⟩
+  have hset : (TCols mu).filter (fun c => t.val < colH mu c) = Finset.Ioc (mu (lastIdx n)) (mu t) :=
+    Finset.ext fun c => by
+      simp only [Finset.mem_filter, qh_lt_colH_iff hmu, TCols, Finset.mem_Ioc]
+      exact ⟨fun hh => ⟨hh.1.1, hh.2⟩, fun hh => ⟨⟨hh.1, hh.2.trans (hmu (Fin.zero_le _))⟩, hh.2⟩⟩
   rw [hset, Int.card_Ioc]
 
 lemma qh_weight_sum [NeZero n] {mu : Fin n → ℤ} (hmu : Dominant mu) :
@@ -113,14 +111,12 @@ lemma qh_mapCoord_brk [NeZero n] (mu : Fin n → ℤ) (I : TIdx mu) :
 lemma qh_brk_mem [NeZero n] {mu : Fin n → ℤ} (hmu : Dominant mu) (I : TIdx mu) :
     mapCoord R (brk mu I) ∈ inducedSections R mu := by
   rw [qh_mapCoord_brk]
-  have h := qh_mul_mem (qh_det_zpow_mem (R := R) (n := n) (mu (lastIdx n)))
-    (qh_prod_mem (R := R) (Finset.univ : Finset ↥(TCols mu))
-      (fun c => qhN R (colH mu c) (colH_le mu c) (fun q => (I c).1.orderEmbOfFin (I c).2 q))
-      (fun c => fun a : Fin n => if a.val < colH mu c then (1 : ℤ) else 0)
-      (fun c _ => qh_N_mem (R := R) (colH mu c) (colH_le mu c) _))
-  first
-    | (rw [qh_weight_sum hmu] at h; exact h)
-    | (convert h using 2; exact (qh_weight_sum hmu).symm)
+  simpa only [qh_weight_sum hmu] using
+    qh_mul_mem (qh_det_zpow_mem (R := R) (n := n) (mu (lastIdx n)))
+      (qh_prod_mem (R := R) (Finset.univ : Finset ↥(TCols mu))
+        (fun c => qhN R (colH mu c) (colH_le mu c) (fun q => (I c).1.orderEmbOfFin (I c).2 q))
+        (fun c => fun a : Fin n => if a.val < colH mu c then (1 : ℤ) else 0)
+        (fun c _ => qh_N_mem (R := R) (colH mu c) (colH_le mu c) _))
 
 lemma qh_equiv_of_count {α β : Type} [Fintype α] [Fintype β] (f : α → ℕ) (g : β → ℕ)
     (hf : ∀ a, 0 < f a) (hg : ∀ b, 0 < g b)

@@ -584,8 +584,7 @@ theorem exists_smul_mem_of_mem_span (Lat : Submodule A V) (v : V)
 include b in
 theorem cmp_expand (hs : ∀ a x, cmp (a • x) = φ a • cmp x) (x : V) :
     cmp x = ∑ a, φ (b.repr x a) • cmp (b a) := by
-  conv_lhs => rw [← b.sum_repr x]
-  rw [map_sum]
+  conv_lhs => rw [← b.sum_repr x, map_sum]
   exact Finset.sum_congr rfl fun a _ => hs _ _
 
 theorem cmp_inj (hs : ∀ a x, cmp (a • x) = φ a • cmp x) (hli : LinearIndependent Kf (fun a => cmp (b a))) :
@@ -607,15 +606,12 @@ theorem descent (hφ : ∀ x : K, w.valuation K x ≤ 1 ↔ φ x ∈ Set.range (
 end Descent
 
 theorem level_primes_not_class_zero (P : ParameterChoice' D L) : LevelPrimesNotClassZero D := by
-  intro p hp hc
-  have h := P.level_split p hp
-  rw [hc] at h
-  exact absurd h (by simp)
+  intro p hp
+  simp [IsResidueClassZero, P.level_split p hp]
 
 theorem frobNe (D : D7) : FrobNe D := by
   intro p hp hc0 hev P _ _ σ hσ
-  rw [(UpperTheory.galE_arithFrob_eq_iota_hP D p hp hc0 P σ hσ).2]
-  exact hev
+  rwa [(UpperTheory.galE_arithFrob_eq_iota_hP D p hp hc0 P σ hσ).2]
 
 theorem val_le_one_iff (D : D7) (w : D.what₂.places.Pl) (x : D.what₂.LL) :
     (D.plEq w).valuation D.what₂.LL x ≤ 1 ↔ (0 : WithTop ℤ) ≤ D.what₂.places.val w x := by
@@ -1256,8 +1252,7 @@ theorem first_theorem_uniform_thresholds (h70 : ExtremalProjectorTools) (h : Loc
     ∃ T0 : ℝ, 0 < T0 ∧ ∀ C₀ : ℝ, T0 ≤ C₀ → ∃ T2 C : ℝ, 0 < T2 ∧ 0 < C ∧ ∀ CH : ℝ, T2 ≤ CH →
       ∀ D : D7, flipOneThree.Conclusion2 D C₀ CH C := by
   by_cases hne : Nonempty D7
-  · obtain ⟨D0⟩ := hne
-    obtain ⟨T0, hT0, hp⟩ := first_theorem_with_constants h70 h D0
+  · obtain ⟨T0, hT0, hp⟩ := first_theorem_with_constants h70 h (Classical.choice hne)
     refine ⟨T0, hT0, fun C₀ hC0 => ?_⟩
     obtain ⟨T2, C, hT2, hC, hp⟩ := hp C₀ hC0
     exact ⟨T2, C, hT2, hC, fun CH hCH _ => hp CH hCH⟩
@@ -1266,10 +1261,9 @@ theorem first_theorem_uniform_thresholds (h70 : ExtremalProjectorTools) (h : Loc
 theorem first_theorem_threshold_functions (h70 : ExtremalProjectorTools) (h : Loc8All) :
     ∃ (T0 : ℝ) (T2 C : ℝ → ℝ), 0 < T0 ∧ ∀ C₀ : ℝ, T0 ≤ C₀ → 0 < T2 C₀ ∧ 0 < C C₀ ∧ ∀ CH : ℝ, T2 C₀ ≤ CH →
       ∀ D : D7, flipOneThree.Conclusion2 D C₀ CH (C C₀) := by
-  classical
   obtain ⟨T0, hT0, hp⟩ := first_theorem_uniform_thresholds h70 h
   choose! T2 C hTC using hp
-  exact ⟨T0, T2, C, hT0, fun C₀ hC0 => hTC C₀ hC0⟩
+  exact ⟨T0, T2, C, hT0, hTC⟩
 
 structure Loc8 : Prop where
 
@@ -1639,11 +1633,8 @@ theorem windows_of (K : Consts) (P : ParameterChoice' D L) (hLa : La K L.sc = L.
   have hb : wPos D p t0 (bL L) s = L.bT ⟨_, hT⟩ := by unfold wPos bL; rw [dif_pos hT]
   rw [ha, hb]
   obtain ⟨a1, a2⟩ := L.aT_win ⟨_, hT⟩
-  have b1 := L.bT_ge ⟨_, hT⟩
   have b2 := P.bT_le ⟨_, hT⟩
-  refine ⟨Finset.mem_Icc.2 ⟨Int.ceil_le.2 a1, Int.le_floor.2 a2⟩, Finset.mem_Icc.2 ⟨Int.ceil_le.2 b1, Int.le_floor.2 ?_⟩⟩
-  rw [hLa]
-  exact b2
+  refine ⟨Finset.mem_Icc.2 ⟨Int.ceil_le.2 a1, Int.le_floor.2 a2⟩, Finset.mem_Icc.2 ⟨Int.ceil_le.2 (L.bT_ge ⟨_, hT⟩), Int.le_floor.2 (by rw [hLa]; exact b2)⟩⟩
 
 theorem La_nonneg {K : Consts} (h : 0 ≤ K.La) (s : Scale) : 0 ≤ La K s := by
   unfold La
@@ -1846,8 +1837,7 @@ theorem cb_closed (𝒞 : FamClass) : Closed 𝒞 fun Fm _ => Ev Fm fun x i => C
     exact absurd ⟨Fm.D 0 i0⟩ hD
 
 theorem ones_closed (𝒞 : FamClass) : Closed 𝒞 fun Fm _ => 1 ≤ Fm.GK.Pr1 ∧ 1 ≤ Fm.GK.CN ∧ 1 ≤ Fm.cX.Ce := by
-  refine ⟨1, one_pos, fun eps _ _ => ⟨⟨0, fun _ => 0, fun _ => 0, fun _ => 1⟩, fun Fm CH _ hL => ?_⟩⟩
-  exact ⟨Fm.fixed.1.ge, hL.2.2.2 _ (by simp [FamP.cLast]), Fm.fixed.2.2.2.1.ge⟩
+  exact ⟨1, one_pos, fun eps _ _ => ⟨⟨0, fun _ => 0, fun _ => 0, fun _ => 1⟩, fun Fm CH _ hL => ⟨Fm.fixed.1.ge, hL.2.2.2 _ (by simp [FamP.cLast]), Fm.fixed.2.2.2.1.ge⟩⟩⟩
 
 theorem link_of_closed_families (𝒞 : FamClass) (h70 : ExtremalProjectorTools) (h6 : Loc6) (h8 : Loc8) (hN : FormalGroupSystem.NumericalComparisonUniform)
     (h69 : Closed 𝒞 fun Fm _ => AuxBlock8.KudlaFamilyStatement Fm) (hf : Closed 𝒞 fun Fm _ => Fam1 Fm)

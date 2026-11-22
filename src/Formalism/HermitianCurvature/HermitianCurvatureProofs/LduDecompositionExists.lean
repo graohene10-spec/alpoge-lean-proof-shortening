@@ -371,8 +371,7 @@ theorem eq_zero_of_mul {n m : Type} [Fintype n] [DecidableEq n] {f : Matrix n n 
 
 theorem cm_map {B : Type} [CommRing B] (f : A →+* B) (X : Matrix (Fin r) (Fin r) A) (l : ℕ)
     (hl : l ≤ r) : f (cm X l hl) = cm (X.map f) l hl := by
-  unfold cm
-  rw [RingHom.map_det]
+  simp [cm, RingHom.map_det]
   rfl
 
 theorem cm_neg (X : Matrix (Fin r) (Fin r) A) (l : ℕ) (hl : l ≤ r) :
@@ -460,8 +459,7 @@ theorem ldu_decomposition_exists : Formalism.FourierDecayAlt.S3.LDUExists := by
   exact ⟨L, U, d, hL, hU, e, fun l hl => by simpa [e] using lead_ldu_succ d hL hU l hl⟩
 
 theorem ldu_decomposition_unique : Formalism.FourierDecayAlt.S3.LDUUnique := by
-  intro A _ r L U L' U' d d' hL hU hL' hU' _ hd e
-  exact ldu_unique hL hU hL' hU' hd e
+  exact fun A _ r L U L' U' d d' hL hU hL' hU' _ hd e => ldu_unique hL hU hL' hU' hd e
 
 theorem lead_invariant_bis : Formalism.FourierDecayAlt.S3.LeadInvariant := by
   exact fun A _ r L M U hL hU l hl => lead_invariant hL hU l hl

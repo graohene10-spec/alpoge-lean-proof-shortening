@@ -171,12 +171,10 @@ theorem pullW_bar_bijective (hX : X.Ok) (hPr : Pr.Ok) (u : Pr.Word) (w : HeightO
       (⟨conjPrime₂ (pullW τ w), (conjP_pullW_mem_vT_iff hPr u τ w).2 (h τ)⟩ : {P // P ∈ Pr.vT u}) := by
   rw [Fintype.bijective_iff_injective_and_card]
   refine ⟨fun τ τ' e => ?_, ?_⟩
-  · have e1 : conjPrime₂ (pullW τ w) = conjPrime₂ (pullW τ' w) := congrArg Subtype.val e
-    refine pullW_injective hX hPr u w (h.T_mem hX hPr) ?_
-    show pullW τ w = pullW τ' w
+  · refine pullW_injective hX hPr u w (h.T_mem hX hPr) ?_
     apply HeightOneSpectrum.ext
     ext x
-    have := congrArg (fun Q : HeightOneSpectrum (𝓞 X.E) => cO X.E x ∈ Q.asIdeal) e1
+    have := congrArg (fun Q : HeightOneSpectrum (𝓞 X.E) => cO X.E x ∈ Q.asIdeal) (congrArg Subtype.val e)
     simpa only [mem_conjP, cO_cO, eq_iff_iff] using this
   · rw [Fintype.card_coe, hPr.vT_card u]
     rfl
@@ -204,14 +202,12 @@ theorem existsUnique_sees (hX : X.Ok) (hPr : Pr.Ok) (u : Pr.Word) (w : HeightOne
     (hw : (Pr.T u : 𝓞 X.K) ∈ w.asIdeal) (P : {P // P ∈ Pr.vT u}) : ∃! τ : X.Tau, SeesP w τ P.1 ∨ SeesPbar w τ P.1 := by
   rcases seenC_or_seenBarC hX hPr u w hw with hs | hs
   · obtain ⟨τ, hτ⟩ := (pullW_bijective hX hPr u w hs).2 P
-    have hτ' : pullW τ w = P.1 := congrArg Subtype.val hτ
-    refine ⟨τ, Or.inl hτ', ?_⟩
+    refine ⟨τ, Or.inl (congrArg Subtype.val hτ), ?_⟩
     rintro τ' (h' | h')
-    · exact pullW_injective hX hPr u w hw ((show pullW τ' w = P.1 from h').trans hτ'.symm)
+    · exact pullW_injective hX hPr u w hw ((show pullW τ' w = P.1 from h').trans (congrArg Subtype.val hτ).symm)
     · exact absurd h' (hs.not_bar hPr τ' P)
   · obtain ⟨τ, hτ⟩ := (pullW_bar_bijective hX hPr u w hs).2 P
-    have hτ' : conjPrime₂ (pullW τ w) = P.1 := congrArg Subtype.val hτ
-    have hτ'' : pullW τ w = conjPrime₂ P.1 := by rw [← hτ', conjP_conjP'₂]
+    have hτ'' : pullW τ w = conjPrime₂ P.1 := by rw [← congrArg Subtype.val hτ, conjP_conjP'₂]
     refine ⟨τ, Or.inr hτ'', ?_⟩
     rintro τ' (h' | h')
     · exact absurd h' (hs.not_P hPr τ' P)
@@ -241,16 +237,14 @@ theorem tauOfC_bijective (hX : X.Ok) (hPr : Pr.Ok) (u : Pr.Word) (w : HeightOneS
     (hw : (Pr.T u : 𝓞 X.K) ∈ w.asIdeal) : Function.Bijective fun P : {P // P ∈ Pr.vT u} => tauOfC w P.1 := by
   rw [Fintype.bijective_iff_injective_and_card]
   refine ⟨fun P P' e => ?_, ?_⟩
-  · have e' : tauOfC w P.1 = tauOfC w P'.1 := e
-    have h1 := tauOfC_spec hX hPr u w hw P
+  · have h1 := tauOfC_spec hX hPr u w hw P
     have h2 := tauOfC_spec hX hPr u w hw P'
-    rw [← e'] at h2
+    rw [show tauOfC w P'.1 = tauOfC w P.1 from e.symm] at h2
     apply Subtype.ext
     rcases seenC_or_seenBarC hX hPr u w hw with hs | hs
     · exact (h1.resolve_right (hs.not_bar hPr _ P)).symm.trans (h2.resolve_right (hs.not_bar hPr _ P'))
-    · have a1 : pullW (tauOfC w P.1) w = conjPrime₂ P.1 := h1.resolve_left (hs.not_P hPr _ P)
-      have a2 : pullW (tauOfC w P.1) w = conjPrime₂ P'.1 := h2.resolve_left (hs.not_P hPr _ P')
-      rw [← conjP_conjP'₂ P.1, ← a1, a2, conjP_conjP'₂]
+    · rw [← conjP_conjP'₂ P.1, ← h1.resolve_left (hs.not_P hPr _ P),
+        h2.resolve_left (hs.not_P hPr _ P'), conjP_conjP'₂]
   · rw [Fintype.card_coe, hPr.vT_card u]
     rfl
 
@@ -353,15 +347,12 @@ theorem exists_seenC (hX : X.Ok) (hPr : Pr.Ok) (u : Pr.Word) : ∃ w : HeightOne
 
 theorem exists_seenBarC (hX : X.Ok) (hPr : Pr.Ok) (u : Pr.Word) : ∃ w : HeightOneSpectrum (𝓞 X.K), seenBarC Pr u w := by
   obtain ⟨τ⟩ := hX.nonempty_Tau
-  obtain ⟨P, hP⟩ : (Pr.vT u).Nonempty := by
-    rw [← Finset.card_pos, hPr.vT_card u]
-    exact hX.f_pos
+  obtain ⟨P, hP⟩ : (Pr.vT u).Nonempty := Finset.card_pos.1 (by rw [hPr.vT_card u]; exact hX.f_pos)
   have hmem : Pr.piT u ∈ P.asIdeal := (mem_divs (hPr.piT_ne_zero u) P).1 hP
   have hmem' : X.conjO (Pr.piT u) ∈ (conjPrime₂ P).asIdeal := by
     rw [mem_conjP]
     show cO X.E (cO X.E (Pr.piT u)) ∈ P.asIdeal
-    rw [cO_cO]
-    exact hmem
+    rwa [cO_cO]
   have h0 : X.conjO (Pr.piT u) ≠ 0 := by
     intro h
     apply hPr.piT_ne_zero u

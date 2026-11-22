@@ -244,8 +244,7 @@ theorem nrmOf_top : nrmOf la ⊤ = 0 := by simp [nrmOf]
 theorem nrmOf_anti {v w : EReal} (hv : v ≠ ⊥) (h : v ≤ w) : nrmOf la w ≤ nrmOf la v := by
   by_cases hw : w = ⊤
   · rw [hw, nrmOf_top]; exact nrmOf_nonneg la v
-  have hv' : v ≠ ⊤ := fun h' => hw (top_le_iff.1 (h' ▸ h))
-  simp only [nrmOf, if_neg hw, if_neg hv']
+  simp only [nrmOf, if_neg hw, if_neg (ne_top_of_le_ne_top hw h)]
   exact Real.rpow_le_rpow_of_exponent_le (one_lt_absNorm_real la).le (neg_le_neg (EReal.toReal_le_toReal h hv hw))
 
 end Nrm
@@ -485,13 +484,12 @@ def FormsExist : Prop := Nonempty (FWTie T (topN T R κ v₀ R.nW) κ v₀)
 def FormsExistTop : Prop := Nonempty (FWTie T (topR T R κ v₀) κ v₀)
 
 theorem isKsForm_formsN {i : Fin D.R.m} {m : ℕ} (hb : HasB T.Q.c.F (Cu T κ i) m) : (formsN T R κ v₀ i m).IsKsForm := by
-  have e : crdOr T.Q.c.F D.what₂.LL (Cu T κ i) m = crd D.what₂.LL hb.some := crdOr_eq hb
   have e1 : (fun k => crd D.what₂.LL hb.some (hb.some k)) = Pi.basisFun D.what₂.LL (Fin m) :=
     funext fun k => (crd_basis _ k).trans (Pi.basisFun_apply _ _ k).symm
-  refine ⟨m, fun k => crd D.what₂.LL hb.some (hb.some k), fun k => ⟨hb.some k, by rw [e]⟩, ?_, ?_, ?_, ?_⟩
+  refine ⟨m, fun k => crd D.what₂.LL hb.some (hb.some k), fun k => ⟨hb.some k, by rw [crdOr_eq hb]⟩, ?_, ?_, ?_, ?_⟩
   · exact hb.some.linearIndependent.map' _ (LinearMap.ker_eq_bot.2 (crd_injective _))
   · show Submodule.span T.Q.c.F (Set.range (crd D.what₂.LL hb.some ∘ hb.some)) = LinearMap.range (crdOr _ _ _ m)
-    rw [e, Set.range_comp, Submodule.span_image, hb.some.span_eq, Submodule.map_top]
+    rw [crdOr_eq hb, Set.range_comp, Submodule.span_image, hb.some.span_eq, Submodule.map_top]
   · rw [e1]; exact (Pi.basisFun _ _).linearIndependent
   · rw [e1]; exact (Pi.basisFun _ _).span_eq
 
@@ -632,8 +630,7 @@ theorem FWTie.jEvExists (t : FWTie T R κ v₀) (h : t.Evaluates) : JEvExists T 
 theorem FWTie.evaluates (t : FWTie T R κ v₀) (hj : JEvExists T R κ v₀) : t.Evaluates := by
   intro i σ hσ hV
   obtain ⟨jK, hjK⟩ := hj i σ hσ hV
-  obtain ⟨j', hj'⟩ := exists_ext_of_isKsForm (R.FW i) (t.ks i) (t.e i) σ jK
-  exact t.ev i σ hσ hV ⟨j', fun f => (congrArg (evAt R i σ (v₀ i σ)) (hj' f)).trans (hjK f)⟩
+  exact t.ev i σ hσ hV (Exists.elim (exists_ext_of_isKsForm (R.FW i) (t.ks i) (t.e i) σ jK) fun j' hj' => ⟨j', fun f => (congrArg (evAt R i σ (v₀ i σ)) (hj' f)).trans (hjK f)⟩)
 
 theorem FWTie.mem_MK (t : FWTie T R κ v₀) (i : Fin D.R.m) (f : Cu T κ i) :
     ((t.e i f : (R.FW i).WK) : Fin (R.nW i) → D.what₂.LL) ∈ (R.FW i).MK ↔
@@ -778,10 +775,9 @@ theorem FWTie.dimMatch {T : CoreJ D} [Algebra T.Q.c.F D.what₂.LL] {R : RealDat
   (finrank_of_isKsForm (R.FW i) (t.ks i)).trans (t.e i).finrank_eq.symm
 
 theorem tie_of_fwEq (h : TieIn T R κ v₀) (hd : DimMatch T R κ) (hf : FWEq T R κ v₀) : Nonempty (FWTie T R κ v₀) := by
-  have h1 : ∀ FW, FW = (fun i => formsN T R κ v₀ i (R.nW i)) → Nonempty (FWTie T (updFW R R.nW FW) κ v₀) := by
-    rintro _ rfl
-    exact formsExist_of T R κ v₀ h hd
-  exact h1 R.FW (funext hf)
+  change Nonempty (FWTie T (updFW R R.nW R.FW) κ v₀)
+  rw [show R.FW = (fun i => formsN T R κ v₀ i (R.nW i)) from funext hf]
+  exact formsExist_of T R κ v₀ h hd
 
 end Rows
 

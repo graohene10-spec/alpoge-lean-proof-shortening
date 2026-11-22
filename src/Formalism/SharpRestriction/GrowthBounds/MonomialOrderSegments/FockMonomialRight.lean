@@ -164,8 +164,7 @@ theorem fock_eq_sum_right (F G : MvPolynomial σ K) :
 
 theorem dg_eq_sum_f (f : (σ →₀ ℕ) → K) (F : MvPolynomial σ K) :
     dg f F = ∑ α ∈ F.support, monomial α (f α * F.coeff α) := by
-  conv_lhs => rw [← support_sum_monomial_coeff F]
-  rw [map_sum]
+  conv_lhs => rw [← support_sum_monomial_coeff F, map_sum]
   exact Finset.sum_congr rfl fun α _ => dg_monomial f α _
 
 theorem support_dg_subset (f : (σ →₀ ℕ) → K) (F : MvPolynomial σ K) :
@@ -189,8 +188,7 @@ theorem vge_sub_iff (a w : ℝ) (x : K) :
   unfold vge
   cases vR v x with
   | top => simp
-  | coe y =>
-    rw [← WithTop.coe_add, WithTop.coe_le_coe, WithTop.coe_le_coe, sub_le_iff_le_add]
+  | coe y => simp only [← WithTop.coe_add, WithTop.coe_le_coe, sub_le_iff_le_add, iff_self]
 
 theorem bge_iff (a : ℝ) (F : MvPolynomial σ K) :
     bge v a F ↔ ((a : ℝ) : WithTop ℝ) ≤ vBB v F := by

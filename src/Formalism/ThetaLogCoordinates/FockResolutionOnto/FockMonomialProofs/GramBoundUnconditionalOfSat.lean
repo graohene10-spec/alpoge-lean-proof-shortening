@@ -314,8 +314,7 @@ theorem theoremMFree_of (hR : ResSatLThm) : TheoremMFree := by
   intro n hn i
   refine gram_bound_exponent_of_sat hR p (T.pos i) r _ T.J (T.thrUpTo i) ρ a κ hr hρ (takeD_vec_last LL T hadm n i)
     (takeD_total_le LL T hadm a Yl n₀ dd hS hdeg n (grid_le T Yl n₀ dd n hn) i) ?_
-  have := pos_num LL T hadm p a r i
-  linarith
+  linarith [pos_num LL T hadm p a r i]
 
 theorem divModP_zero {p : ℕ} [Fact p.Prime] {K r : ℕ} [NeZero r] (LL : Letters (K + 1)) {q : ℕ} (J : Fin q → ℕ)
     (M : Fin q → WithTop ℤ) (ρ : Fin r) (h0 : LL.deg (Fin.last K) = 0) : DivModP p LL J M ρ := by

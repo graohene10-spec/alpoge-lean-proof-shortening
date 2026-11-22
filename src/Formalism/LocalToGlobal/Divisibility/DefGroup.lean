@@ -471,14 +471,9 @@ theorem mem_parah {β : GL (Fin n) (E ⊗[F] Af F)} {PP : Pl E} {b : Fin n → �
     x ∈ parah β PP b ↔ x ∈ St β ∧ redFn β PP x ∈ blockTri b := by
   constructor
   · rintro ⟨y, hy, rfl⟩
-    refine ⟨y.2, ?_⟩
-    show ext1 (St β) (redAt β PP) y.1 ∈ _
-    rw [extendOne_of_mem _ y.2]
-    exact hy
+    exact ⟨y.2, by simpa [redFn, extendOne_of_mem _ y.2, Subgroup.mem_comap] using hy⟩
   · rintro ⟨h1, h2⟩
-    unfold redFn at h2
-    rw [extendOne_of_mem _ h1] at h2
-    exact ⟨⟨x, h1⟩, h2, rfl⟩
+    exact ⟨⟨x, h1⟩, by simpa [redFn, extendOne_of_mem _ h1] using h2, rfl⟩
 
 def princAt (β : GL (Fin n) (E ⊗[F] Af F)) (PP : Pl E) : Subgroup (GL (Fin n) (E ⊗[F] Af F)) :=
   ((redAt β PP).ker).map (St β).subtype
@@ -487,10 +482,7 @@ theorem mem_princAt {β : GL (Fin n) (E ⊗[F] Af F)} {PP : Pl E} {x : GL (Fin n
     x ∈ princAt β PP ↔ x ∈ St β ∧ redFn β PP x = 1 := by
   constructor
   · rintro ⟨y, hy, rfl⟩
-    refine ⟨y.2, ?_⟩
-    show ext1 (St β) (redAt β PP) y.1 = 1
-    rw [extendOne_of_mem _ y.2]
-    exact hy
+    exact ⟨y.2, by simpa [redFn, extendOne_of_mem _ y.2] using hy⟩
   · rintro ⟨h1, h2⟩
     unfold redFn at h2
     rw [extendOne_of_mem _ h1] at h2
@@ -508,10 +500,9 @@ def stdSpace (n : ℕ) (neg : Bool) : HSpace E :=
 theorem stdSpace_gram (n : ℕ) (neg : Bool) :
     (stdSpace (E := E) n neg).gram = Matrix.diagonal (fun _ => (Formalism.BasicNotions.Examples₂.sgn neg : E)) := by
   ext i j
-  have h := Formalism.BasicNotions.Examples₂.stdSpace_gram_apply (E := E) Formalism.BasicNotions.Examples₂.star_isIntegral n (fun _ => neg)
-    (if neg then 0 else n) (if neg then n else 0) i j
   rw [Matrix.diagonal_apply]
-  exact h
+  exact Formalism.BasicNotions.Examples₂.stdSpace_gram_apply (E := E) Formalism.BasicNotions.Examples₂.star_isIntegral n (fun _ => neg)
+    (if neg then 0 else n) (if neg then n else 0) i j
 
 structure IsDefUnimod (hc : CMData F E) (J : Matrix (Fin n) (Fin n) E) (L : Submodule (𝓞 E) (Fin n → E)) : Prop where
   herm : IsHerm (hc.sig : E →+* E) J

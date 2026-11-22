@@ -81,8 +81,7 @@ theorem vw_one (w : HeightOneSpectrum (𝓞 K)) : vw w (1 : K) = 0 := by
 theorem vw_int (w : HeightOneSpectrum (𝓞 K)) (x : 𝓞 K) :
     vw w (x : K) = FractionalIdeal.count K w
       ((Ideal.span {x} : Ideal (𝓞 K)) : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) := by
-  rw [FractionalIdeal.coeIdeal_span_singleton]
-  rfl
+  simp only [vw, FractionalIdeal.coeIdeal_span_singleton]
 
 theorem vw_int_nonneg (w : HeightOneSpectrum (𝓞 K)) (x : 𝓞 K) : 0 ≤ vw w (x : K) := by
   rw [vw_int]

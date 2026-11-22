@@ -20,12 +20,10 @@ private lemma re_natCast_div_nonneg (k : ℕ) {w : ℂ} (hw : 0 ≤ w.re) : 0 �
 private lemma re_ge_and_norm_zeta_le_of_near_eleven_tenths {t : ℝ} (ht : 2 < |t|) {z : ℂ}
     (hz : ‖z - (((11 / 10 : ℝ) : ℂ) + t * I)‖ ≤ 3 / 5) :
     1 / 2 ≤ z.re ∧ z ≠ 1 ∧ ‖riemannZeta z‖ ≤ 6 * (|t| + 2) := by
-  have h1 := Complex.abs_re_le_norm (z - (((11 / 10 : ℝ) : ℂ) + t * I))
-  have h2 := Complex.abs_im_le_norm (z - (((11 / 10 : ℝ) : ℂ) + t * I))
-  have er : (z - (((11 / 10 : ℝ) : ℂ) + t * I)).re = z.re - 11 / 10 := by simp
-  have ei : (z - (((11 / 10 : ℝ) : ℂ) + t * I)).im = z.im - t := by simp
-  rw [er] at h1
-  rw [ei] at h2
+  have h1 : |z.re - 11 / 10| ≤ ‖z - (((11 / 10 : ℝ) : ℂ) + t * I)‖ := by
+    simpa using Complex.abs_re_le_norm (z - (((11 / 10 : ℝ) : ℂ) + t * I))
+  have h2 : |z.im - t| ≤ ‖z - (((11 / 10 : ℝ) : ℂ) + t * I)‖ := by
+    simpa using Complex.abs_im_le_norm (z - (((11 / 10 : ℝ) : ℂ) + t * I))
   have hre := abs_le.mp (h1.trans hz)
   have h2' := h2.trans hz
   have him1 : |t| - |z.im| ≤ |z.im - t| := by rw [abs_sub_comm]; exact abs_sub_abs_le_abs_sub t z.im

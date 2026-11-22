@@ -67,9 +67,8 @@ theorem lin_injective {E : Type} [AddCommGroup E] [Module ℂ E] {n : ℕ} {v : 
 theorem li_of_lin_injective {E : Type} [AddCommGroup E] [Module ℂ E] {n : ℕ} {v : Fin n → E}
     (h : Function.Injective (lin v)) : LinearIndependent ℂ v := by
   refine Fintype.linearIndependent_iff.2 fun g hg i => ?_
-  have h1 : lin v g = lin v 0 := by
-    simp [lin, Fintype.linearCombination_apply, hg]
-  exact congrFun (h h1) i
+  exact congrFun (h (show lin v g = lin v 0 by
+    simpa [lin, Fintype.linearCombination_apply] using hg)) i
 
 theorem solve_spec {E : Type} [AddCommGroup E] [Module ℂ E] {n : ℕ} (f : (Fin n → ℂ) →ₗ[ℂ] E) {e : E}
     (h : e ∈ LinearMap.range f) : f (solve f e) = e := by
@@ -203,10 +202,7 @@ theorem majAt_sum_right {n : ℕ} (X : InfinitePlace K → Matrix (Fin n) (Fin n
     have hv : Formalism.HermitianLatticesTheory.vecAt (Pi.basisFun K (Fin n)) v 0 = 0 := by
       funext i
       simp [Formalism.HermitianLatticesTheory.vecAt]
-    simp only [Finset.sum_empty]
-    unfold Formalism.HermitianLatticesTheory.majAt Formalism.HermitianLatticesTheory.fcoord
-    rw [hv, Matrix.mulVec_zero]
-    simp
+    simp [Formalism.HermitianLatticesTheory.majAt, Formalism.HermitianLatticesTheory.fcoord, hv, Matrix.mulVec_zero]
   | insert a s ha ih =>
     rw [Finset.sum_insert ha, Finset.sum_insert ha, majAt_add_right, ih]
 

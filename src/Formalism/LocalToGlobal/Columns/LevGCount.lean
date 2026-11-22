@@ -287,10 +287,8 @@ theorem card_lt_pairs (k : ℕ) : Nat.card {p : Fin k × Fin k // p.1 < p.2} = k
       invFun := fun q => ⟨(⟨q.2.val, lt_trans q.2.2 q.1.2⟩, q.1), q.2.2⟩
       left_inv := fun p => rfl
       right_inv := fun q => rfl }
-  rw [Nat.card_eq_fintype_card, Fintype.card_congr e, Fintype.card_sigma]
-  simp only [Fintype.card_fin]
-  have h2 : ∑ j : Fin k, (j : ℕ) = ∑ i ∈ Finset.range k, i := Fin.sum_univ_eq_sum_range (fun i => i) k
-  rw [h2, Finset.sum_range_id]
+  simp only [Nat.card_eq_fintype_card, Fintype.card_congr e, Fintype.card_sigma, Fintype.card_fin]
+  rw [Fin.sum_univ_eq_sum_range (fun i => i) k, Finset.sum_range_id]
 
 theorem card_HU (κ : Type) [CommRing κ] (k : ℕ) : Nat.card ↥(HU κ k) = Nat.card κ ^ (k * (k - 1) / 2) := by
   have h1 : Nat.card ↥(HU κ k) = Nat.card ↥(uSet κ (fun i j : Fin k => i < j)) := by
@@ -744,10 +742,8 @@ theorem lamGen_diagEmb (ψ : AddChar κ K) (χ : ℕ → κˣ →* Kˣ) {s a : �
     rw [MonoidHom.finset_prod_apply, MonoidHom.finset_prod_apply]
     apply Finset.prod_congr rfl
     intro c hc
-    rw [MonoidHom.comp_apply, MonoidHom.comp_apply]
-    congr 1
     have hcl := Finset.mem_range.mp hc
-    exact blkDet_diagEmb h (coarse a bl) (c + 1) (fun i hi => by have := hs i hi; omega) g.1 _ _
+    rw [MonoidHom.comp_apply, MonoidHom.comp_apply, blkDet_diagEmb h (coarse a bl) (c + 1) (fun i hi => by have := hs i hi; omega) g.1 _ _]
 
 theorem lamXm_diagEmb (ψ : AddChar κ K) (χ : ℕ → κˣ →* Kˣ) (r t m : ℕ) (g : ↥(HJ κ (r + m * t) r t m)) :
     lamXm ψ χ (r + m * t + 1) r t m

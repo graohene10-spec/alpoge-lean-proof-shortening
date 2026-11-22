@@ -33,9 +33,8 @@ theorem revNeg_of_pos {a : Fin n} (h : ε a = true) : revNeg ε a = a :=
 
 theorem eps_revNeg (a : Fin n) : ε (revNeg ε a) = ε a := by
   by_cases h : a ∈ negS ε
-  · have h1 : revNeg ε a = (revOn ε ⟨a, h⟩ : Fin n) := Equiv.Perm.ofSubtype_apply_of_mem _ h
-    have h2 := (revOn ε ⟨a, h⟩).2
-    rw [h1]
+  · have h2 := (revOn ε ⟨a, h⟩).2
+    rw [show revNeg ε a = (revOn ε ⟨a, h⟩ : Fin n) from Equiv.Perm.ofSubtype_apply_of_mem _ h]
     simp only [negS, Finset.mem_filter, Finset.mem_univ, true_and] at h h2
     exact h2.trans h.symm
   · rw [show revNeg ε a = a from Equiv.Perm.ofSubtype_apply_of_not_mem _ h]
@@ -122,8 +121,7 @@ theorem extWt_arr (τ : D.what₂.Tau) {p : ℕ} (hp : p ≤ V.rank) (h : ∀ a,
     (ha : (a : ℕ) = if (c : ℕ) < V.rank - p then p + c else c - (V.rank - p)) :
     extWt M τ (arr (nNeg (M.ε τ)) c) = Formalism.QuantumDeterminants.lowK (M.ε τ) (M.lam τ) a := by
   unfold extWt
-  congr 1
-  exact Fin.ext ((revNeg_arr hp h c).trans ha.symm)
+  exact congrArg (fun b => Formalism.QuantumDeterminants.lowK (M.ε τ) (M.lam τ) b) (Fin.ext ((revNeg_arr hp h c).trans ha.symm))
 
 end Ext
 
@@ -145,9 +143,7 @@ theorem pM_mem (π : Equiv.Perm (Fin n)) (h : ∀ a, ε (π a) = ε a) : pM π �
     have := Matrix.submatrix_mul_equiv (1 : Matrix (Fin n) (Fin n) ℂ) (1 : Matrix (Fin n) (Fin n) ℂ) π (Equiv.refl (Fin n)) π
     simp only [Equiv.coe_refl, Matrix.mul_one] at this
     rw [this, submatrix_one_equiv]
-  · have := diag_pM π (fun a => if ε a then (1 : ℂ) else -1)
-    simp only [h] at this
-    exact this.symm
+  · simpa only [Formalism.REAL.Jm, h] using (diag_pM π (fun a => if ε a then (1 : ℂ) else -1)).symm
 
 theorem kset_uj {g : Matrix (Fin n) (Fin n) ℂ} (hg : g ∈ Formalism.REAL.Kset ε) : g ∈ UJset ε := by
   show gᴴ * Formalism.REAL.Jm ε * g = Formalism.REAL.Jm ε
@@ -164,9 +160,7 @@ theorem diag_mem (θ : Fin n → ℝ) : diagonal (fun a => Complex.exp ((θ a : 
     simp
   · unfold Formalism.REAL.Jm
     rw [diagonal_mul_diagonal, diagonal_mul_diagonal]
-    congr 1
-    funext a
-    exact mul_comm _ _
+    exact congrArg diagonal (funext fun a => mul_comm _ _)
 
 theorem isWtOn_perm (hσ : IsURepOn (UJset ε) σ) (π : Equiv.Perm (Fin n)) (h : ∀ a, ε (π a) = ε a) {μ : Fin n → ℝ} {w : H}
     (hw : IsWtOn (Formalism.REAL.Kset ε) σ μ w) : IsWtOn (Formalism.REAL.Kset ε) σ (fun a => μ (π a)) (σ (pM π) w) := by
@@ -232,8 +226,7 @@ theorem IsModelBaseFrameFamily.mul {V : HSp D} {S : D.what₂.Tau → SPar} {M :
     (g : Matrix (Fin V.rank) (Fin V.rank) ℂ) :
     Matrix.reindex (finCongr hr) (finCongr hr) g * x₀ (tauE D ρ) =
       Matrix.reindex (finCongr hr) (finCongr hr) (g * x0Mat M ρ) := by
-  rw [h ρ]
-  exact Matrix.submatrix_mul_equiv g (x0Mat M ρ) _ (finCongr hr).symm _
+  simp [h ρ]
 
 def castDict {Y : Type} {V W : HSp D} (hV : V = W) (dict : GA D V → Y) : GA D W → Y :=
   fun g => dict (cast (congrArg (GA D) hV.symm) g)

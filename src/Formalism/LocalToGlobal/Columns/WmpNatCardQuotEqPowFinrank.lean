@@ -40,7 +40,6 @@ theorem wmp_relIndex_dual {L M : Submodule (𝓞 E) (Sp E n)} (hLM : L ≤ M) (h
 
 theorem wmp_card_quot (B N : Submodule (𝓞 E) (Sp E n)) :
     Nat.card (N ⧸ B.comap N.subtype) = B.toAddSubgroup.relIndex N.toAddSubgroup := by
-  rw [AddSubgroup.relIndex, AddSubgroup.index_eq_card]
   rfl
 
 theorem wmp_relIndex_inf_eq {N N₁ : Submodule (𝓞 E) (Sp E n)} (hN : Submodule.IsLattice E N)
@@ -52,16 +51,14 @@ theorem wmp_relIndex_inf_eq {N N₁ : Submodule (𝓞 E) (Sp E n)} (hN : Submodu
         ((N ⊓ N₁).toAddSubgroup.relIndex M.toAddSubgroup) ^ 2 := by
     intro M hM huM hBM
     have hMD : M ≤ dual (hStd E n) (N ⊓ N₁) := by
-      have := dual_anti hBM
-      rwa [huM] at this
+      rw [← huM]
+      exact dual_anti hBM
     rw [← AddSubgroup.relIndex_mul_relIndex _ M.toAddSubgroup _ hBM hMD, sq]
     congr 1
     have e := wmp_relIndex_dual hBM hM.fg hB.span_eq_top
-    rw [huM] at e
-    exact e
-  have e1 := key N hN hu inf_le_left
+    rwa [huM] at e
   have e2 := key N₁ hN₁ hu₁ inf_le_right
-  rw [e1] at e2
+  rw [key N hN hu inf_le_left] at e2
   exact Nat.pow_left_injective (by norm_num : (2 : ℕ) ≠ 0) e2
 
 theorem wmp_quot_equiv_of_card (Q : HeightOneSpectrum (𝓞 E)) (M : Type) [AddCommGroup M] [Module (𝓞 E) M]

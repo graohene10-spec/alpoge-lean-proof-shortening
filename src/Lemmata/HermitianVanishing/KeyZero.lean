@@ -33,8 +33,7 @@ private lemma herm_of {K : Type} [Field K] [StarRing K] (φ : K →+* ℂ)
     (hH : (H.map φ).PosDef) : H.conjTranspose = H := by
   ext i j
   apply φ.injective
-  rw [Matrix.conjTranspose_apply, hφ, starRingEnd_apply]
-  simpa using hH.isHermitian.apply i j
+  simpa only [Matrix.conjTranspose_apply, Matrix.map_apply, hφ, starRingEnd_apply] using hH.isHermitian.apply i j
 
 theorem goal1 :
   Formalism.DivisionValues.OrthProjExists := by

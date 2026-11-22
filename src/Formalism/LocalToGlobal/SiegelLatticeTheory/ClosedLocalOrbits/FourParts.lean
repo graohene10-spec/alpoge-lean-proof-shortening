@@ -135,8 +135,7 @@ theorem isInS_mk (hI : InSFun Λ F P) (x : Carrier P) : IsInS Λ F P (mk Λ F P 
 
 theorem gt_eq_zero_of_isInS (hG : GFun Λ F P) (hT : star T = T) {t : TermQ Λ F P} (h : IsInS Λ F P t) :
     Gt Λ F P t = 0 := by
-  obtain ⟨F', ⟨hP, hmk⟩, hin⟩ := h
-  subst hmk
+  obtain ⟨F', ⟨-, rfl⟩, hin⟩ := h
   rw [Gt_mk hG]
   exact gval_eq_zero_of_inSF hT hin
 

@@ -11,16 +11,14 @@ lemma exists_reps (L : AddSubgroup E) (S : Finset E) :
     ∃ R : Finset E, (∀ t ∈ S, ∃ t₀ ∈ R, t - t₀ ∈ L) ∧
       (∀ t₀ ∈ R, ∀ t₀' ∈ R, t₀ - t₀' ∈ L → t₀ = t₀') := by
   classical
-  have hout : ∀ t : E, (((t : E ⧸ L).out : E) : E ⧸ L) = (t : E ⧸ L) :=
-    fun t => QuotientAddGroup.out_eq' _
   refine ⟨S.image (fun t : E => (QuotientAddGroup.mk t : E ⧸ L).out), ?_, ?_⟩
   · intro t ht
     refine ⟨_, Finset.mem_image_of_mem _ ht, ?_⟩
-    rw [← QuotientAddGroup.eq_zero_iff, QuotientAddGroup.mk_sub, hout, sub_self]
+    rw [← QuotientAddGroup.eq_zero_iff, QuotientAddGroup.mk_sub, QuotientAddGroup.out_eq', sub_self]
   · intro a ha b hb hab
     obtain ⟨t, _, rfl⟩ := Finset.mem_image.1 ha
     obtain ⟨t', _, rfl⟩ := Finset.mem_image.1 hb
-    rw [← QuotientAddGroup.eq_zero_iff, QuotientAddGroup.mk_sub, hout, hout, sub_eq_zero] at hab
+    rw [← QuotientAddGroup.eq_zero_iff, QuotientAddGroup.mk_sub, QuotientAddGroup.out_eq', QuotientAddGroup.out_eq', sub_eq_zero] at hab
     simp only [hab]
 
 lemma budget_step (K r i s c m : ℕ) (hsi : s ≤ i) (hi : i ≤ r + 1)

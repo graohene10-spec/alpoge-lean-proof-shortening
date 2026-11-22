@@ -57,8 +57,7 @@ lemma herm_mulVec (g : Matrix (Fin m) (Fin m) ℂ) (u w : Fin m → ℂ) :
 lemma mem_UH_of_herm (g : Matrix (Fin m) (Fin m) ℂ)
     (h : ∀ u w, herm H (g *ᵥ u) (g *ᵥ w) = herm H u w) : g ∈ UH H := by
   show gᴴ * H * g = H
-  ext i j
-  rw [← herm_bvec (gᴴ * H * g), ← herm_mulVec, h, herm_bvec]
+  exact Matrix.ext fun i j => by simpa only [herm_mulVec, herm_bvec] using h (bvec j) (bvec i)
 
 lemma heis_isom (hH : Hᴴ = H) (e v : Fin m → ℂ) (b : ℂ) (hee : herm H e e = 0) (hve : herm H v e = 0)
     (hb : b + star b + herm H v v = 0) (u w : Fin m → ℂ) :
@@ -227,9 +226,8 @@ theorem weyl_haar_from_compact : Formalism.FourierDecayAlt.B2.HaarWFromCompact :
 
 theorem conjugation_invariance_of_parts : Formalism.FourierDecayAlt.B2.AssembleConjInv := by
   intro hCC hN hW hK hU
-  have raw : ConjInvRaw := by
-    intro k r z μN hz hT hμ h hh
-    exact hCC k r (Nset k r) (UWset k r z) μN (hN k r) (hW k r z) (hK k r z hz hT)
+  have raw : ConjInvRaw := fun k r z μN hz hT hμ h hh =>
+    hCC k r (Nset k r) (UWset k r z) μN (hN k r) (hW k r z) (hK k r z hz hT)
       (fun a ha u hu => (hU k r z hz a ha u hu).1) hμ h hh
   refine ⟨raw, ?_⟩
   intro k r Wp Wq _ _ _ _ D h₀ hh

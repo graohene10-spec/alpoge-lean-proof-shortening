@@ -26,9 +26,7 @@ lemma domLE_first {n : ℕ} [NeZero n] {la mu : Fin n → ℤ} (h : DomLE la mu)
       have h2 : b.val ≤ (0 : Fin n).val := hb
       exact Fin.ext (by simpa using h2)
     · rintro rfl; exact le_refl _
-  have := h.1 0
-  rw [e] at this
-  simpa using this
+  simpa only [e, Finset.sum_singleton] using h.1 0
 
 lemma domLE_last {n : ℕ} [NeZero n] {la mu : Fin n → ℤ} (h : DomLE la mu) : mu (lastIdx n) ≤ la (lastIdx n) := by
   have key : ∀ f : Fin n → ℤ, ∑ b, f b = ∑ b ∈ univ.filter (· ≠ lastIdx n), f b + f (lastIdx n) := by
@@ -63,10 +61,8 @@ lemma domLE_refl {n : ℕ} (mu : Fin n → ℤ) : DomLE mu mu := ⟨fun _ => le_
 lemma size_of_path {n N : ℕ} {LL : Letters (Fin N)} {b : Fin N → ℕ} (P : PPath n N LL b) (i : Fin N) :
     (b i : ℤ) = if LL.vec i then ∑ a, P.mu i.succ a - ∑ a, P.mu i.castSucc a
       else ∑ a, P.mu i.castSucc a - ∑ a, P.mu i.succ a := by
-  have := P.step i
-  split_ifs at this ⊢ with hv
-  · rw [← this.2.2, Finset.sum_sub_distrib]
-  · rw [← this.2.2, Finset.sum_sub_distrib]
+  have this := P.step i
+  split_ifs at this ⊢ with hv <;> rw [← this.2.2, Finset.sum_sub_distrib]
 
 lemma sizes_eq {n N : ℕ} {LL : Letters (Fin N)} {b b' : Fin N → ℕ} (P : PPath n N LL b) (P' : PPath n N LL b')
     (h : ∀ i, ∑ a, P.mu i a = ∑ a, P'.mu i a) : b = b' := by

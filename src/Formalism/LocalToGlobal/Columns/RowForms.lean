@@ -185,8 +185,7 @@ theorem rank_X'_eq (R : Ranks) : R.N R.m - 1 = R.r + R.m * R.t := by
   omega
 
 theorem r_le_X' (R : Ranks) : R.r ≤ R.N R.m - 1 := by
-  rw [rank_X'_eq R]
-  exact Nat.le_add_right _ _
+  simp [rank_X'_eq R]
 
 theorem r_le_nV (R : Ranks) : R.r ≤ R.nV := Nat.le_add_right _ _
 

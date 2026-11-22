@@ -26,17 +26,15 @@ lemma emb_out_col (μ : Matrix (Fin (k + 1)) (Fin (k + 1)) ℂ) (q j : Fin (2 * 
     embWb k r μ q j = if q = j then 1 else 0 := by
   unfold embWb
   rw [dif_neg (fun h => hj h.2)]
-  by_cases h : q = j
-  · subst h; rw [if_pos ⟨rfl, hj⟩, if_pos rfl]
-  · rw [if_neg (fun h' => h h'.1), if_neg h]
+  have hj' : ¬ (r ≤ j.val ∧ j.val ≤ r + k) := hj
+  by_cases h : q = j <;> simp [h, hj']
 
 lemma emb_out_row (μ : Matrix (Fin (k + 1)) (Fin (k + 1)) ℂ) (q j : Fin (2 * r + k + 1)) (hq : ¬ mid k r q) :
     embWb k r μ q j = if q = j then 1 else 0 := by
   unfold embWb
   rw [dif_neg (fun h => hq h.1)]
-  by_cases h : q = j
-  · rw [if_pos ⟨h, hq⟩, if_pos h]
-  · rw [if_neg (fun h' => h h'.1), if_neg h]
+  change (if q = j ∧ ¬ mid k r q then 1 else 0) = if q = j then 1 else 0
+  simp [hq]
 
 lemma emb_mid (μ : Matrix (Fin (k + 1)) (Fin (k + 1)) ℂ) (q j : Fin (2 * r + k + 1)) (hq : mid k r q) (hj : mid k r j) :
     embWb k r μ q j = μ ⟨q.val - r, by have := hq; omega⟩ ⟨j.val - r, by have := hj; omega⟩ := by
@@ -340,13 +338,11 @@ lemma emb_conjTranspose (μ : Matrix (Fin (k + 1)) (Fin (k + 1)) ℂ) : (embWb k
       obtain ⟨y, rfl⟩ := mid_exists hj
       rw [emb_wI, emb_wI, Matrix.conjTranspose_apply]
     · rw [emb_out_row _ _ _ hj, emb_out_col _ _ _ hj]
-      by_cases h : i = j
-      · rw [if_pos h.symm, if_pos h, star_one]
-      · rw [if_neg (fun h' => h h'.symm), if_neg h, star_zero]
+      simp only [show i = j ↔ j = i from eq_comm]
+      by_cases h : j = i <;> simp [h]
   · rw [emb_out_col _ _ _ hi, emb_out_row _ _ _ hi]
-    by_cases h : i = j
-    · rw [if_pos h.symm, if_pos h, star_one]
-    · rw [if_neg (fun h' => h h'.symm), if_neg h, star_zero]
+    simp only [show i = j ↔ j = i from eq_comm]
+    by_cases h : j = i <;> simp [h]
 
 lemma emb_form_mid (μ : Matrix (Fin (k + 1)) (Fin (k + 1)) ℂ) (a b : Fin (k + 1)) :
     ((embWb k r μ)ᴴ * Hpk k r * embWb k r μ) (wI k r a) (wI k r b) = (μᴴ * Hb k * μ) a b := by
@@ -488,12 +484,7 @@ theorem uWbFacts : UWbFacts := by
   intro k r
   refine ⟨?_, ?_, ?_⟩
   · ext g
-    rw [UWb_iff]
-    constructor
-    · rintro ⟨μ, hμ, rfl⟩
-      exact ⟨μ, hμ, rfl⟩
-    · rintro ⟨μ, hμ, rfl⟩
-      exact ⟨μ, hμ, rfl⟩
+    simpa only [Set.mem_image, UH, eq_comm] using UWb_iff g
   · rintro z g ⟨hg, hfix, _⟩
     exact ⟨hg, hfix⟩
   · intro c m hm
@@ -560,13 +551,11 @@ def qrefl {m : ℕ} (H : Matrix (Fin m) (Fin m) ℂ) (d : Fin m → ℂ) (c : �
 lemma qrefl_mulVec {m : ℕ} (H : Matrix (Fin m) (Fin m) ℂ) (d : Fin m → ℂ) (c : ℂ) (x : Fin m → ℂ) :
     qrefl H d c *ᵥ x = x + (c * herm H x d) • d := by
   have h1 : Matrix.vecMulVec d (star d ᵥ* H) *ᵥ x = herm H x d • d := by
+    rw [Matrix.vecMulVec_mulVec]
     unfold herm
     rw [Matrix.dotProduct_mulVec]
     ext i
-    simp only [Matrix.vecMulVec_apply, Matrix.mulVec, dotProduct, Pi.smul_apply, smul_eq_mul, Finset.sum_mul]
-    apply Finset.sum_congr rfl
-    intro j _
-    ring
+    simp [mul_comm]
   unfold qrefl
   rw [Matrix.add_mulVec, Matrix.one_mulVec, Matrix.smul_mulVec, h1, smul_smul]
 
@@ -1179,8 +1168,7 @@ def σb (k : ℕ) (T' : ℝ) : Measure (Fin (k + 1) → ℂ) := ((volume : Measu
 
 lemma scl_meas (T' : ℝ) : Measurable (scl k T') := by
   unfold scl
-  have h : Measurable (Nq k) := Nq_cont.measurable
-  exact (Complex.measurable_ofReal.comp ((measurable_const.div h).sqrt)).smul measurable_id
+  exact (Complex.measurable_ofReal.comp ((measurable_const.div Nq_cont.measurable).sqrt)).smul measurable_id
 
 lemma shell_meas (T' : ℝ) : MeasurableSet (shell k T') :=
   (measurableSet_lt measurable_const Nq_cont.measurable).inter (measurableSet_le Nq_cont.measurable measurable_const)
@@ -1242,9 +1230,8 @@ lemma σb_push (hk : 1 ≤ k) {T T' : ℝ} (hT : 0 < T) (hT' : 0 < T') (zb : Fin
   have hgi := UHb_inv hg
   have hf : (fun u => herm (Hb k) u zb) = (fun u => herm (Hb k) u z₀) ∘ (fun u => g⁻¹ *ᵥ u) := by
     funext u
-    have := herm_UH hg (g⁻¹ *ᵥ u) z₀
-    rw [hgz, Matrix.mulVec_mulVec, Matrix.mul_nonsing_inv _ hgi.1, Matrix.one_mulVec] at this
-    exact this
+    simpa [hgz, Matrix.mulVec_mulVec, Matrix.mul_nonsing_inv _ hgi.1, Matrix.one_mulVec] using
+      herm_UH hg (g⁻¹ *ᵥ u) z₀
   have hm0 : Measurable (fun u : Fin (k + 1) → ℂ => herm (Hb k) u z₀) := by
     simp only [herm_Hb]
     fun_prop
@@ -1272,9 +1259,7 @@ variable {k r : ℕ}
 lemma jV_meas : Measurable (jV k r) := by
   refine measurable_pi_iff.2 fun i => ?_
   unfold jV
-  by_cases h : r ≤ i.val ∧ i.val ≤ r + k
-  · simp only [dif_pos h]; exact measurable_pi_apply _
-  · simp only [dif_neg h]; exact measurable_const
+  split_ifs <;> (first | exact measurable_pi_apply _ | exact measurable_const)
 
 def adjF (x : Mt k r) : Mt k r := (Matrix.of x : Mat k r).adjugate
 
@@ -1374,17 +1359,15 @@ lemma avg_orbit {z : Fin (2 * r + k + 1) → ℂ} {μW : Measure (Mt k r)}
     (hW : IsHaarOn (UWset k r z) μW) {F : (Fin (2 * r + k + 1) → ℂ) → ℝ≥0∞} (hF : Measurable F)
     {h₁ : Mat k r} (hh₁ : h₁ ∈ UWset k r z) (v : Fin (2 * r + k + 1) → ℂ) :
     ∫⁻ h, F (act h v) ∂μW = ∫⁻ h, F (act h (h₁ *ᵥ v)) ∂μW := by
-  have hunit := GV_unit hh₁.1
   have hF2 : Measurable (fun y : Mt k r => F (act y (h₁ *ᵥ v))) :=
     hF.comp (act_meas_left _)
   have hlc : Continuous (lmulM h₁ : Mt k r → Mt k r) := by
     unfold lmulM
     exact (continuous_const (y := h₁)).matrix_mul (continuous_id (X := Mat k r))
-  have hlm : Measurable (lmulM h₁ : Mt k r → Mt k r) := hlc.measurable
   conv_rhs => rw [← hW.left h₁ hh₁]
-  rw [lintegral_map hF2 hlm]
+  rw [lintegral_map hF2 hlc.measurable]
   refine lintegral_congr fun h => ?_
-  rw [act_lmul hunit]
+  rw [act_lmul (GV_unit hh₁.1)]
 
 lemma herm_Hb_meas (zb : Fin (k + 1) → ℂ) : Measurable (fun u : Fin (k + 1) → ℂ => herm (Hb k) u zb) := by
   simp only [herm_Hb]

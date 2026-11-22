@@ -16,10 +16,9 @@ def keyOf (S : HSpace E) (b : Module.Basis (Fin S.rank) E S.V) (L : Submodule (�
 
 theorem equivFun_equiv (S : HSpace E) (b b' : Module.Basis (Fin S.rank) E S.V) (x : S.V) :
     b'.equivFun (b.equiv b' (Equiv.refl _) x) = b.equivFun x := by
-  have h : (b'.equivFun.toLinearMap ∘ₗ (b.equiv b' (Equiv.refl _)).toLinearMap) = b.equivFun.toLinearMap := by
-    refine b.ext fun i => ?_
-    simp [Module.Basis.equiv_apply]
-  exact LinearMap.congr_fun h x
+  refine LinearMap.congr_fun (f := (b'.equivFun.toLinearMap ∘ₗ (b.equiv b' (Equiv.refl _)).toLinearMap)) (g := b.equivFun.toLinearMap) ?_ x
+  refine b.ext fun i => ?_
+  simp [Module.Basis.equiv_apply]
 
 theorem isoLat_of_key (S : HSpace E) (b b' : Module.Basis (Fin S.rank) E S.V) (L L' : Submodule (𝓞 E) S.V)
     (h : keyOf S b L = keyOf S b' L') : IsoLat S L L' := by

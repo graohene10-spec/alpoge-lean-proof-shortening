@@ -38,14 +38,12 @@ lemma log_three_le : Real.log 3 ≤ (19 * Real.log 2 + 7153 / 524288) / 12 := by
 
 lemma log_five_le : Real.log 5 ≤ (7 * Real.log 2 - 3 / 128) / 3 := by
   have h := logp ((5 : ℝ) ^ 3) 7 0 0 0 (-3 / 128) (by positivity) (by norm_num)
-  rw [Real.log_pow] at h
-  push_cast at h
+  simp only [Real.log_pow, Nat.cast_ofNat, Nat.cast_zero, zero_mul, add_zero] at h
   linarith
 
 lemma place_sum_over_primes : Real.log 7 ≤ (4 * Real.log 2 + Real.log 3 + 1 / 48) / 2 := by
   have h := logp ((7 : ℝ) ^ 2) 4 1 0 0 (1 / 48) (by positivity) (by norm_num)
   rw [Real.log_pow] at h
-  push_cast at h
   linarith
 
 lemma head_num :
@@ -326,8 +324,7 @@ lemma lw_nonneg (w : HeightOneSpectrum (𝓞 K)) : 0 ≤ lw w :=
 lemma vw_int (w : HeightOneSpectrum (𝓞 K)) (x : 𝓞 K) :
     vw w (x : K) = FractionalIdeal.count K w
       ((Ideal.span {x} : Ideal (𝓞 K)) : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) := by
-  unfold vw
-  rw [FractionalIdeal.coeIdeal_span_singleton]
+  simp only [vw, FractionalIdeal.coeIdeal_span_singleton]
 
 lemma vw_nat_nonneg (w : HeightOneSpectrum (𝓞 K)) (n : ℕ) : 0 ≤ vw w (n : K) := by
   rw [← map_natCast (algebraMap (𝓞 K) K) n, vw_int]

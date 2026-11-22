@@ -24,8 +24,7 @@ theorem mk_eq_iff (S : Subgroup G) (a b : G) :
 theorem K'_split (x : G) (hx : x ∈ K') : (X.j (X.pr x))⁻¹ * x ∈ K := by
   rw [X.K_iff]
   refine ⟨K'.mul_mem (K'.inv_mem (X.j_mem _)) hx, ?_⟩
-  rw [map_mul, map_inv, X.pr_j, inv_mul_cancel]
-  exact Kp.one_mem
+  simp [map_mul, map_inv, X.pr_j]
 
 variable (y : ClassSet H K' → G) (hy : ∀ i, mkC H K' (y i) = i) (hp : ∀ i, X.pr (y i) = 1)
 

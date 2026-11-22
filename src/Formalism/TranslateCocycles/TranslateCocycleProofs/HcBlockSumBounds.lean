@@ -18,8 +18,7 @@ private lemma hc_sumIcc1 (f : ℕ → ℚ) (n : ℕ) :
 private lemma hc_sumIco1 (f : ℕ → ℚ) (n : ℕ) :
     ∑ i ∈ Ico 1 (n + 1), f i = ∑ i ∈ range n, f (i + 1) := by
   rw [Finset.sum_Ico_eq_sum_range]
-  simp only [Nat.add_sub_cancel]
-  exact Finset.sum_congr rfl (fun i _ => by rw [Nat.add_comm])
+  simp only [Nat.add_sub_cancel, Nat.add_comm 1]
 
 private lemma hc_sumIoc (f : ℕ → ℚ) (a n : ℕ) :
     ∑ i ∈ Ioc a (a + n), f i = ∑ i ∈ range n, f (a + 1 + i) := by

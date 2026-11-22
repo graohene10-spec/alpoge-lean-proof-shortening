@@ -117,16 +117,14 @@ theorem multidegreeProj_glOperatorsEmbedded_comm (d : Fin N → ℕ) (a b : Fin 
     by_cases h : ∀ i, multideg mm i = d i
     · rw [if_pos h, glOperatorsEmbedded_apply]
       refine Finset.sum_congr rfl fun l _ => ?_
-      split_ifs
+      split_ifs <;> try rw [map_zero]
       · rw [polProj_step, if_pos h]
       · rw [map_neg, polProj_step, if_pos h]
-      · rw [map_zero]
     · rw [if_neg h, map_zero]
       refine Finset.sum_eq_zero fun l _ => ?_
-      split_ifs
+      split_ifs <;> try rw [map_zero]
       · rw [polProj_step, if_neg h]
       · rw [map_neg, polProj_step, if_neg h, neg_zero]
-      · rw [map_zero]
   | add p q hp hq => rw [map_add, map_add, map_add, map_add, hp, hq]
 
 theorem glOperatorsEmbedded_mem_multidegree (d : Fin N → ℕ) (a b : Fin m) (G : MvPolynomial (Fin N × Fin k) F) (hG : G ∈ Pol F k d) :
@@ -206,12 +204,9 @@ theorem partialInverseOfEmbedding_apply_self {m k : ℕ} (e : Fin m → Fin k) (
 theorem eq_of_partialInverseOfEmbedding_eq_some {m k : ℕ} (e : Fin m → Fin k) (c : Fin k) (a : Fin m) (h : partialInverseOfEmbedding e c = some a) : c = e a := by
   classical
   unfold partialInverseOfEmbedding at h
-  by_cases h1 : ∃ a, e a = c
-  · rw [dif_pos h1] at h
-    rw [← Option.some.inj h]
+  split_ifs at h with h1
+  · rw [← Option.some.inj h]
     exact (Classical.choose_spec h1).symm
-  · rw [dif_neg h1] at h
-    exact absurd h (by simp)
 
 section types
 

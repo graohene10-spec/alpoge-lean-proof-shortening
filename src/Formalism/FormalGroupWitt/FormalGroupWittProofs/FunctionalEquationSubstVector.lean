@@ -64,8 +64,7 @@ lemma bd_subst_sub {ι : Type v} {τ : Type w} (φ : MvPowerSeries ι K)
   rw [map_sub, MvPowerSeries.coeff_subst hA, MvPowerSeries.coeff_subst hB,
     ← finsum_sub_distrib (MvPowerSeries.coeff_subst_finite hA φ d)
       (MvPowerSeries.coeff_subst_finite hB φ d)]
-  apply norm_finsum_le hc
-  intro n
+  refine norm_finsum_le hc fun n => ?_
   rw [← smul_sub, ← map_sub, smul_eq_mul, norm_mul]
   exact H n d
 

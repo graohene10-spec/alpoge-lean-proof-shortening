@@ -87,8 +87,7 @@ theorem std_gapAll (H : Cnt.Hyp0 D large₂ C' Cl Cg cb Cu cT CT C0) (τ : D.wha
     ∀ a b : Fin (2 * D.R.rS + D.R.k + 1), a < b →
       Cl * D.R.k * (D.R.m : ℝ) ^ 4 + (D.R.r : ℝ) * (D.R.m : ℝ) ^ 10 < lamD D τ a - lamD D τ b := by
   obtain ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, hgap, _, _, hCl⟩ := H.1
-  refine std_drop _ _ (by positivity) (fun s hs => ?_)
-  exact hgap τ ⟨s, by have := dimS_eq D.R; omega⟩ (by have := dimS_eq D.R; simp only; omega)
+  exact std_drop _ _ (by positivity) (fun s hs => hgap τ ⟨s, by have := dimS_eq D.R; omega⟩ (by have := dimS_eq D.R; simp only; omega))
 
 theorem std_anti (H : Cnt.Hyp0 D large₂ C' Cl Cg cb Cu cT CT C0) (τ : D.what₂.Tau) : StrictAnti (lamD D τ) := by
   obtain ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, hCl⟩ := H.1
@@ -121,8 +120,7 @@ theorem std_isHC (H : Cnt.Hyp0 D large₂ C' Cl Cg cb Cu cT CT C0) (τ : D.what�
 
 theorem std_interlace (H : Cnt.Hyp0 D large₂ C' Cl Cg cb Cu cT CT C0) (w : D.what₂.Word) (τ : D.what₂.Tau) :
     InterlaceS (by omega) (uS D w τ) (lamD D τ) := by
-  obtain ⟨_, _, _, _, _, _, hI, _⟩ := H.2.1
-  exact ⟨fun i hi => (hI w τ).1 i hi, fun h0 => (hI w τ).2 h0⟩
+  exact H.2.1.2.2.2.2.2.2.1 w τ
 
 end Rec
 

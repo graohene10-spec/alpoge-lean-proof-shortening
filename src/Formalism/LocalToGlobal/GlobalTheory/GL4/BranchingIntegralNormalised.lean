@@ -9,8 +9,7 @@ open Formalism.REAL (fockF)
 
 theorem sgNat_anti {n : ℕ} (lt : DomWeight (n + 1)) (sg : DomWeight n) (h0 : lt.w (Fin.last n) = 0)
     (hI : Interlace lt sg) : Antitone (sgNat sg) := by
-  rw [sgNat_eq lt sg h0 hI]
-  exact fun a b h => Nat.add_le_add_right (natW_anti sg h) _
+  simpa only [sgNat_eq lt sg h0 hI] using (show Antitone (fun i => sg.natW i + sg.detShift.toNat) from fun a b h => Nat.add_le_add_right (natW_anti sg h) _)
 
 theorem lamNat_anti {n : ℕ} (lt : DomWeight (n + 1)) : Antitone (lamNat lt) :=
   fun _ _ h => natW_anti lt (Fin.castSucc_le_castSucc_iff.mpr h)

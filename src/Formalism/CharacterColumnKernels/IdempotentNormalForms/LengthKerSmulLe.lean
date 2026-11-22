@@ -190,9 +190,8 @@ theorem kerCount : StatKerCount := by
   refine (Module.length_le_of_injective f hf).trans ?_
   rw [Module.length_pi_of_fintype,
     Finset.sum_coe_sort cols (fun w => Module.length O (ColData O ℓ δ (e' w) (j w) (Xw w) d))]
-  refine (Finset.sum_le_sum fun w _ =>
-    KernelLengthBounds.length_colData_le ℓ δ (e' w) (j w) (Xw w) d (h0 w) (hX w)).trans (le_of_eq ?_)
-  simp only [Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul, mul_assoc]
+  simpa only [Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul, mul_assoc] using
+    (Finset.sum_le_sum fun w _ => KernelLengthBounds.length_colData_le ℓ δ (e' w) (j w) (Xw w) d (h0 w) (hX w))
 
 theorem blockRhoCount : StatBlockRhoCount := by
   intro O _ _ _ G _ d _ ρM H _ _ Ψ δ hδ ι _ what₂ cols D F lenRow Q s ℓ e' j h0

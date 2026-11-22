@@ -40,8 +40,7 @@ theorem placeBound (r : ℕ) (ν sv : Fin r → ℝ) (Q : ℝ) (hν : ∀ i, 0 �
   set N := ∑ i, ν i with hN
   have hN0 : 0 ≤ N := Finset.sum_nonneg fun i _ => hν i
   set a : ℝ := 1 - 1 / (N + 1) with ha
-  have hinv : 1 / (N + 1) ≤ 1 := by rw [div_le_one (by linarith)]; linarith
-  have ha0 : 0 ≤ a := by rw [ha]; linarith
+  have ha0 : 0 ≤ a := by rw [ha, sub_nonneg, div_le_one (by linarith)]; linarith
   have hsplit : (∏ i, sv i ^ ν i) * Real.exp (-Q / 2) =
       (∏ i, (sv i ^ ν i * Real.exp (-(a * sv i ^ 2) / 2))) * Real.exp (-(1 / (N + 1)) * Q / 2) := by
     rw [Finset.prod_mul_distrib, ← Real.exp_sum, mul_assoc, ← Real.exp_add]
@@ -58,8 +57,7 @@ theorem placeBound (r : ℕ) (ν sv : Fin r → ℝ) (Q : ℝ) (hν : ∀ i, 0 �
     · right
       have hNi : ν i ≤ N := Finset.single_le_sum (fun j _ => hν j) (Finset.mem_univ i)
       have hNp : 0 < N := lt_of_lt_of_le h hNi
-      rw [ha]
-      have : 1 / (N + 1) < 1 := by rw [div_lt_one (by linarith)]; linarith
+      rw [ha, sub_pos, div_lt_one (by linarith)]
       linarith
   have hT : ∏ i, (sv i ^ ν i * Real.exp (-(a * sv i ^ 2) / 2)) ≤
       Real.exp ((∑ i, ph (ν i)) / 2) * Real.exp (-(N * Real.log a) / 2) := by
@@ -73,7 +71,6 @@ theorem placeBound (r : ℕ) (ν sv : Fin r → ℝ) (Q : ℝ) (hν : ∀ i, 0 �
     rcases hN0.eq_or_lt with h0 | h0
     · rw [← h0]; simp
     · have hN1 : N + 1 ≠ 0 := (by linarith : (0:ℝ) < N + 1).ne'
-      have hNne : N ≠ 0 := h0.ne'
       have haeq : a = N / (N + 1) := by
         rw [ha, eq_div_iff hN1, sub_mul, one_div, inv_mul_cancel₀ hN1]; ring
       have hapos : 0 < a := by rw [haeq]; positivity

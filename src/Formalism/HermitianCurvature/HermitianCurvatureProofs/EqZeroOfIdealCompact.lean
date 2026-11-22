@@ -82,15 +82,11 @@ variable {R : Subring K} {ψ : AddChar K ℂ}
 theorem eq_zero_of_forall_pow (hD : LocalDatum K R ψ) (hn : ∀ n : ℕ, n ≠ 0 → IsUnit (n : K))
     (ϖ : Kˣ) (hϖ : ∀ x : K, ∃ m : ℕ, (ϖ : K) ^ m * x ∈ R) (x : K)
     (hx : ∀ N : ℕ, ∃ r ∈ R, x = (ϖ : K) ^ N * r) : x = 0 := by
-  have := hD.t2
-  have := hD.red
-  refine eq_zero_of_ideal_compact hn (R : Set K) hD.isCompact x ?_
-  intro a
+  refine @eq_zero_of_ideal_compact K _ _ _ hD.t2 hD.red hn (R : Set K) hD.isCompact x ?_
+  rintro a
   obtain ⟨m, hm⟩ := hϖ a
   obtain ⟨r, hr, hxr⟩ := hx m
-  have : a * x = (ϖ : K) ^ m * a * r := by rw [hxr]; ring
-  rw [this]
-  exact R.mul_mem hm hr
+  simpa [hxr, mul_assoc, mul_comm, mul_left_comm] using R.mul_mem hm hr
 
 theorem pow_small (hD : LocalDatum K R ψ) (hn : ∀ n : ℕ, n ≠ 0 → IsUnit (n : K))
     (ϖ : Kˣ) (hϖR : (ϖ : K) ∈ R) (hϖ : ∀ x : K, ∃ m : ℕ, (ϖ : K) ^ m * x ∈ R)
@@ -171,10 +167,9 @@ theorem image_pow_eq_preimage (ϖ : Kˣ) (N : ℕ) (S : Set K) :
   ext x
   constructor
   · rintro ⟨r, hr, rfl⟩
-    change ((ϖ⁻¹ : Kˣ) : K) ^ N * ((ϖ : K) ^ N * r) ∈ S
-    rwa [← mul_assoc, h1, one_mul]
+    simpa [← mul_assoc, h1] using hr
   · intro hx
-    refine ⟨_, hx, ?_⟩
+    refine ⟨((ϖ⁻¹ : Kˣ) : K) ^ N * x, hx, ?_⟩
     change (ϖ : K) ^ N * (((ϖ⁻¹ : Kˣ) : K) ^ N * x) = x
     rw [← mul_assoc, mul_comm ((ϖ : K) ^ N), h1, one_mul]
 

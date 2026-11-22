@@ -53,7 +53,6 @@ theorem lowUni_mulVec_eLast {M : Matrix (Fin n) (Fin n) K} (h : IsLowUni M) :
     unfold eLast
     split_ifs <;> simp
   funext i
-  rw [hw i]
   simp only [Matrix.mulVec, dotProduct, hw, mul_ite, mul_one, mul_zero]
   by_cases hi : i.val + 1 = n
   · rw [if_pos hi, Finset.sum_eq_single i]
@@ -62,8 +61,7 @@ theorem lowUni_mulVec_eLast {M : Matrix (Fin n) (Fin n) K} (h : IsLowUni M) :
       rw [if_neg]
       intro hj'
       exact hj (Fin.ext (by omega))
-    · intro hi'
-      exact absurd (Finset.mem_univ i) hi'
+    · simp
   · rw [if_neg hi]
     apply Finset.sum_eq_zero
     intro j _
@@ -88,10 +86,8 @@ theorem lastCoord_upUni {M : Matrix (Fin n) (Fin n) K} (h : IsUpUni M) (w : Fin 
     · rw [h.2 j, one_mul]
     · intro k _ hk
       have hne : k.val ≠ j.val := fun e => hk (Fin.ext e)
-      have hkj : k < j := Fin.lt_def.mpr (by have := k.isLt; omega)
-      rw [h.1 hkj, zero_mul]
-    · intro hj'
-      exact absurd (Finset.mem_univ j) hj'
+      rw [h.1 (show k < j from Fin.lt_def.mpr (by have := k.isLt; omega)), zero_mul]
+    · simp
   · rfl
 
 theorem lamLin_apply (Z : Matrix (Fin n) (Fin n) K) (v : Fin n → R) :
@@ -168,9 +164,8 @@ theorem lamLin_mul (A B : Matrix (Fin n) (Fin n) R) (Z : Matrix (Fin n) (Fin n) 
     lamLin R (A.map R.subtype * Z * B.map R.subtype) (A *ᵥ v) = lamLin R Z v := by
   have hAinv : (A.map R.subtype)⁻¹ * A.map R.subtype = 1 :=
     Matrix.nonsing_inv_mul _ (by rw [hA]; exact isUnit_one)
-  have hBd : (B.map R.subtype).det = 1 := by
-    rw [Matrix.det_of_upperTriangular hup.1]
-    exact Finset.prod_eq_one (fun i _ => hup.2 i)
+  have hBd : (B.map R.subtype).det = 1 :=
+    (Matrix.det_of_upperTriangular hup.1).trans (Finset.prod_eq_one (fun i _ => hup.2 i))
   have hBinv : B.map R.subtype * (B.map R.subtype)⁻¹ = 1 :=
     Matrix.mul_nonsing_inv _ (by rw [hBd]; exact isUnit_one)
   have hlast : ∀ w : Fin n → K, lastCoord R ((B.map R.subtype)⁻¹ *ᵥ w) = lastCoord R w := by

@@ -113,9 +113,7 @@ theorem sum_shift {ι : Type} (T : Finset ι) (f g : ι → ℝ) (e Nr : ℝ) (h
   calc ∑ y ∈ T, f y ≤ ∑ y ∈ T, (g y + e) := Finset.sum_le_sum h
     _ = ∑ y ∈ T, g y + T.card * e := by
         rw [Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul]
-    _ ≤ ∑ y ∈ T, g y + Nr * e := by
-        have := mul_le_mul_of_nonneg_right hT he
-        linarith
+    _ ≤ ∑ y ∈ T, g y + Nr * e := add_le_add_right (mul_le_mul_of_nonneg_right hT he) _
 
 end IntervalBounds
 

@@ -58,12 +58,8 @@ theorem vge_sum {ι : Type*} {a : ℝ} (s : Finset ι) (f : ι → K) (h : ∀ i
 theorem vR_mul (x y : K) : vR v (x * y) = vR v x + vR v y := by
   unfold vR
   rw [AddValuation.map_mul]
-  cases h1 : v x <;> cases h2 : v y
-  · simp
-  · simp
-  · simp
-  · rw [← WithTop.coe_add, WithTop.map_coe, WithTop.map_coe, WithTop.map_coe, Rat.cast_add,
-      WithTop.coe_add]
+  cases h1 : v x <;> cases h2 : v y <;> simp
+  rw [← WithTop.coe_add, WithTop.map_coe, Rat.cast_add, WithTop.coe_add]
 
 theorem vge_mul {a b : ℝ} {x y : K} (hx : vge v a x) (hy : vge v b y) : vge v (a + b) (x * y) := by
   unfold vge at *

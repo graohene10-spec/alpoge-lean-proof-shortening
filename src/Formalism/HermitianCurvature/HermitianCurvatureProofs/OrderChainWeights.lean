@@ -53,8 +53,7 @@ open scoped ENNReal
 theorem order_unit_group : Formalism.FourierDecayAlt.S3.ROrderUnits := by
   intro o _ _
   refine ⟨fun x => ⟨fun hx => ?_, fun hx => ?_⟩, fun k => ?_⟩
-  · have h1 : IsUnit ((x : o × o).1) := (hx.map (ROrd o).subtype).map (RingHom.fst o o)
-    exact (IsLocalRing.residue_ne_zero_iff_isUnit _).mpr h1
+  · exact (IsLocalRing.residue_ne_zero_iff_isUnit _).mpr ((hx.map (ROrd o).subtype).map (RingHom.fst o o))
   · have hm := (mem_ROrd (x : o × o)).mp x.2
     obtain ⟨a, ha⟩ := (IsLocalRing.residue_ne_zero_iff_isUnit _).mp hx
     obtain ⟨b, hb⟩ := (IsLocalRing.residue_ne_zero_iff_isUnit _).mp (hm ▸ hx)
@@ -64,12 +63,8 @@ theorem order_unit_group : Formalism.FourierDecayAlt.S3.ROrderUnits := by
     refine isUnit_iff_exists_inv.mpr ⟨⟨_, hinv⟩, ?_⟩
     apply Subtype.ext
     apply Prod.ext
-    · show (x : o × o).1 * ↑a⁻¹ = 1
-      rw [← ha]
-      exact a.mul_inv
-    · show (x : o × o).2 * ↑b⁻¹ = 1
-      rw [← hb]
-      exact b.mul_inv
+    · simp [← ha]
+    · simp [← hb]
   · obtain ⟨a, ha⟩ := IsLocalRing.residue_surjective k
     exact ⟨⟨(a, a), (mem_ROrd _).mpr rfl⟩, ha⟩
 

@@ -37,8 +37,7 @@ lemma norm_nat (p : ℕ) [hp : Fact p.Prime] (n : ℕ) (hn : n ≠ 0) :
 
 lemma neglog_zpow (p : ℕ) [hp : Fact p.Prime] (z : ℤ) : -Real.logb p ((p : ℝ) ^ (-z)) = z := by
   have hp1 : (1 : ℝ) < p := by exact_mod_cast hp.out.one_lt
-  have hp0 : (0 : ℝ) < p := by linarith
-  rw [← Real.rpow_intCast, Real.logb_rpow hp0 hp1.ne']
+  rw [← Real.rpow_intCast, Real.logb_rpow (by linarith) hp1.ne']
   simp
 
 lemma neglog_nat (p : ℕ) [hp : Fact p.Prime] (n : ℕ) (hn : n ≠ 0) :
@@ -189,14 +188,12 @@ lemma nlog_le (p x B : ℕ) (hx : x ≤ B) : (Nat.log p x : ℝ) ≤ Real.logb p
   rcases Nat.lt_or_ge p 2 with hp | hp
   · rw [Nat.log_of_left_le_one (by omega) x]
     interval_cases p <;> simp [Real.logb]
-  · rcases Nat.eq_zero_or_pos x with rfl | hx0
-    · rcases Nat.eq_zero_or_pos B with rfl | hB
-      · simp
-      · simp only [Nat.log_zero_right, Nat.cast_zero]
-        exact Real.logb_nonneg (by exact_mod_cast hp) (by exact_mod_cast hB)
-    · rw [Real.le_logb_iff_rpow_le (by exact_mod_cast hp)
-        (by exact_mod_cast (lt_of_lt_of_le hx0 hx)), Real.rpow_natCast]
-      exact_mod_cast (Nat.pow_log_le_self p hx0.ne').trans hx
+  · rcases Nat.eq_zero_or_pos B with rfl | hB
+    · rw [show x = 0 by omega, Nat.log_zero_right]; simp [Real.logb]
+    · rcases Nat.eq_zero_or_pos x with rfl | hx0
+      · simpa [Nat.log_zero_right] using Real.logb_nonneg (by exact_mod_cast hp) (by exact_mod_cast hB)
+      · rw [Real.le_logb_iff_rpow_le (by exact_mod_cast hp) (by exact_mod_cast hB), Real.rpow_natCast]
+        exact_mod_cast (Nat.pow_log_le_self p hx0.ne').trans hx
 
 lemma legendre' (p : ℕ) [hp : Fact p.Prime] (n : ℕ) :
     (n : ℝ) / ((p : ℝ) - 1) - (padicValNat p n.factorial : ℝ) ≤ (Nat.log p n : ℝ) + 1 := by
@@ -235,8 +232,7 @@ lemma vchoose_le (p : ℕ) [hp : Fact p.Prime] (n k : ℕ) :
 
 lemma neg_logb_zpow_self (p : ℕ) [hp : Fact p.Prime] (z : ℤ) : -Real.logb p ((p : ℝ) ^ z) = -z := by
   have hp1 : (1 : ℝ) < p := by exact_mod_cast hp.out.one_lt
-  have hp0 : (0 : ℝ) < p := by linarith
-  rw [← Real.rpow_intCast, Real.logb_rpow hp0 hp1.ne']
+  rw [← Real.rpow_intCast, Real.logb_rpow (by exact_mod_cast hp.out.pos) hp1.ne']
 
 lemma negLog_beta (p : ℕ) [hp : Fact p.Prime] (M e z o S : ℕ) :
     -Real.logb p ‖(p : ℚ_[p]) ^ M * ((e.factorial * (z + e).choose e : ℕ) : ℚ_[p]) /
@@ -265,9 +261,7 @@ lemma per_row (p : ℕ) [hp : Fact p.Prime] (a r S o z e cI : ℕ) (κ C : ℝ)
   rw [negLog_beta]
   have hp1r : (1 : ℝ) < p := by exact_mod_cast hp.out.one_lt
   have hpm : (0 : ℝ) < (p : ℝ) - 1 := by linarith
-  have hr1 : (1 : ℝ) ≤ r := by exact_mod_cast hr
-  have ha0 : (0 : ℝ) ≤ a := Nat.cast_nonneg a
-  have L0 : 0 ≤ Real.logb p (8 * a + r) := Real.logb_nonneg hp1r (by linarith)
+  have L0 : 0 ≤ Real.logb p (8 * a + r) := Real.logb_nonneg hp1r (by linarith [(Nat.cast_nonneg a : (0 : ℝ) ≤ a), show (1 : ℝ) ≤ r by exact_mod_cast hr])
   have hκ0 : 0 ≤ κ := by linarith
   have hzl : (Nat.log p (z + e) : ℝ) ≤ Real.logb p (8 * a + r) := by
     have := nlog_le p (z + e) (8 * a + r) (by omega)
@@ -292,9 +286,7 @@ lemma per_row (p : ℕ) [hp : Fact p.Prime] (a r S o z e cI : ℕ) (κ C : ℝ)
     ring
   have hsplit : (e : ℝ) / ((p : ℝ) - 1) + ((S : ℝ) + o - e) / ((p : ℝ) - 1) =
       (S : ℝ) / ((p : ℝ) - 1) + (o : ℝ) / ((p : ℝ) - 1) := by
-    rw [← add_div, ← add_div]
-    congr 1
-    ring
+    ring_nf
   rw [hSoe]
   push_cast
   linarith
@@ -317,11 +309,10 @@ lemma poly_eq_of_eval (p : ℕ) [Fact p.Prime] (Q P : ℚ_[p][X]) (S : ℕ) (a :
   apply Polynomial.eq_of_infinite_eval_eq
   refine Set.infinite_of_injective_forall_mem (f := fun n : ℕ => ((n + S : ℕ) : ℚ_[p])) ?_ ?_
   · intro x y hxy
-    have := Nat.cast_injective hxy
+    have h : x + S = y + S := Nat.cast_inj.mp hxy
     omega
   · intro n
-    simp only [Set.mem_setOf_eq, eval_mul, eval_C]
-    exact h _ (by omega)
+    simpa only [Set.mem_setOf_eq, eval_mul, eval_C] using h _ (by omega)
 
 lemma entry_deg (hDeg : GamDeg) {p : ℕ} [Fact p.Prime] {K r : ℕ} (LLw : Letters (K + 1)) (ρ : Fin r)
     (z e e' : ℕ) (f f' : MvPolynomial (Fin (K + 1) × Fin r) ℚ_[p]) (hr : 1 ≤ r)

@@ -107,10 +107,8 @@ theorem WmSchw.insert {S : Finset (HeightOneSpectrum (𝓞 E))} {Φ : (Sp E a �
     fun Q => if Q = P then N else A Q, fun Q => if Q = P then N else B Q, ?_, ?_, ?_⟩
   · intro Q hQ
     by_cases e : Q = P
-    · simp only [if_pos e]
-      exact ⟨hN', hN, hN', hN⟩
-    · simp only [if_neg e]
-      exact hl Q ((Finset.mem_insert.1 hQ).resolve_left e)
+    · simpa only [if_pos e] using ⟨hN', hN, hN', hN⟩
+    · simpa only [if_neg e] using hl Q ((Finset.mem_insert.1 hQ).resolve_left e)
   · intro x y hy
     have hyP : wmIntAt P N' N y := by simpa using hy P (Finset.mem_insert_self P S)
     have hyS : ∀ Q ∈ S, wmIntAt Q (A' Q) (A Q) y := by
@@ -120,11 +118,9 @@ theorem WmSchw.insert {S : Finset (HeightOneSpectrum (𝓞 E))} {Φ : (Sp E a �
     have hiff : wmIntAt P N' N (x + y) ↔ wmIntAt P N' N x := by
       constructor
       · intro h z hz
-        have := Submodule.sub_mem _ (h z hz) (hyP z hz)
-        simpa using this
+        simpa using Submodule.sub_mem _ (h z hz) (hyP z hz)
       · intro h z hz
-        rw [LinearMap.add_apply]
-        exact Submodule.add_mem _ (h z hz) (hyP z hz)
+        simpa only [LinearMap.add_apply] using Submodule.add_mem _ (h z hz) (hyP z hz)
     simp only [hiff, hper x y hyS]
   · intro x hx Q hQ
     by_cases hint : wmIntAt P N' N x
@@ -132,8 +128,7 @@ theorem WmSchw.insert {S : Finset (HeightOneSpectrum (𝓞 E))} {Φ : (Sp E a �
       by_cases e : Q = P
       · simp only [if_pos e]
         exact e ▸ hint
-      · simp only [if_neg e]
-        exact hsupp x hx' Q ((Finset.mem_insert.1 hQ).resolve_left e)
+      · simpa only [if_neg e] using hsupp x hx' Q ((Finset.mem_insert.1 hQ).resolve_left e)
     · exact absurd (by simp [hint]) hx
 
 end PhiLem

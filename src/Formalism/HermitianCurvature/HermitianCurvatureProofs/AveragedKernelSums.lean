@@ -199,12 +199,8 @@ section Sum
 variable {K : Type} [CommRing K] {R : Subring K} {ψ : AddChar K ℂ}
 
 theorem out_sub_mem (z : K) : Quotient.out ((z : K) : K ⧸ R.toAddSubgroup) - z ∈ R := by
-  have h1 : ((Quotient.out ((z : K) : K ⧸ R.toAddSubgroup) : K) : K ⧸ R.toAddSubgroup) =
-      (z : K ⧸ R.toAddSubgroup) := QuotientAddGroup.out_eq' _
-  have h3 := R.toAddSubgroup.neg_mem (QuotientAddGroup.eq.mp h1)
-  have e : -(-(Quotient.out ((z : K) : K ⧸ R.toAddSubgroup)) + z) =
-      Quotient.out ((z : K) : K ⧸ R.toAddSubgroup) - z := by ring
-  rw [e] at h3; exact h3
+  simpa [sub_eq_add_neg, add_comm] using
+    R.toAddSubgroup.neg_mem (QuotientAddGroup.eq.mp (QuotientAddGroup.out_eq' ((z : K) : K ⧸ R.toAddSubgroup)))
 
 theorem psi_out (hψ : ∀ r ∈ R, ψ r = 1) {c : K} (hc : c ∈ R) (z : K) :
     ψ (Quotient.out ((z : K) : K ⧸ R.toAddSubgroup) * c) = ψ (z * c) := by

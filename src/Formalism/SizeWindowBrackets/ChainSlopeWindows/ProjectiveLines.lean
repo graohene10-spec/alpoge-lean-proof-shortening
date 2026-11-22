@@ -190,8 +190,7 @@ variable (K : Type) [Field K] [NumberField K] [StarRing K] [IsTotallyComplex K]
 theorem line_map_ne_zero (i : Option (ZMod p) × ZMod p) : lineMap K p i ≠ 0 := by
   intro h0
   have h1 : lineMap K p i (Pi.basisFun K (ZMod p) 0) (linePt p i 0) = 0 := by rw [h0]; rfl
-  unfold lineMap at h1
-  rw [Matrix.toLin_self] at h1
+  simp only [lineMap, Matrix.toLin_self] at h1
   simp [Finset.sum_apply, ite_apply] at h1
 
 theorem projective_lines_geometry (v : InfinitePlace K) :

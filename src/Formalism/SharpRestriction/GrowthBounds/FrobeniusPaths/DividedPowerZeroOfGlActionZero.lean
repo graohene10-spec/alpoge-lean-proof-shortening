@@ -411,8 +411,7 @@ theorem map_divided_power_monomial {R R' : Type*} [CommRing R] [CommRing R'] (φ
   refine Finset.sum_congr rfl fun f _ => ?_
   rw [MvPolynomial.map_monomial, map_prod]
   congr 1
-  refine Finset.prod_congr rfl fun l _ => ?_
-  split_ifs <;> simp
+  exact Finset.prod_congr rfl fun l _ => by split_ifs <;> simp
 
 theorem map_divided_power {R R' : Type*} [CommRing R] [CommRing R'] (φ : R →+* R') {ι : Type*} [Fintype ι] {n : ℕ}
     (LL : Letters ι) (S : Set ι) (a b : Fin n) (k : ℕ) (G : MvPolynomial (ι × Fin n) R) :
@@ -796,10 +795,8 @@ theorem gl_action_canonical_Psi_eq_zero {B : Fin N → ℕ} (Pa : PPath n N LL B
     glAct R LL Set.univ a b (Psi R Pa.mu (Ican Pa.mu)) = 0 := by
   unfold Psi
   induction colRange Pa.mu using Finset.induction_on with
-  | empty => rw [Finset.prod_empty]; exact gl_action_one LL _ a b
-  | insert c s hc ih =>
-    rw [Finset.prod_insert hc, gl_action_mul, ih, gl_action_column_kernel, column_operator_canonical_eq_zero hab]
-    simp
+  | empty => simpa using gl_action_one LL _ a b
+  | insert c s hc ih => simp [Finset.prod_insert hc, gl_action_mul, ih, gl_action_column_kernel, column_operator_canonical_eq_zero hab]
 
 end der
 
@@ -810,11 +807,9 @@ variable {N n : ℕ} (LL : Letters (Fin N))
 theorem X_mul_pderiv_monomial_bis {R σ : Type*} [CommRing R] (v : σ) (m : σ →₀ ℕ) (c : R) :
     X v * pderiv v (monomial m c) = monomial m ((m v : R) * c) := by
   classical
-  rw [pderiv_monomial]
   by_cases h : m v = 0
-  · simp [h]
-  · have hle : Finsupp.single v 1 ≤ m := Finsupp.single_le_iff.2 (Nat.one_le_iff_ne_zero.2 h)
-    rw [X, monomial_mul, one_mul, add_tsub_cancel_of_le hle, mul_comm]
+  · simp [pderiv_monomial, X, h]
+  · rw [pderiv_monomial, X, monomial_mul, one_mul, add_tsub_cancel_of_le (Finsupp.single_le_iff.2 (Nat.one_le_iff_ne_zero.2 h)), mul_comm]
 
 theorem gl_action_diag_monomial (S : Set (Fin N)) (a : Fin n) (m : Fin N × Fin n →₀ ℕ) (c : ℤ) :
     glAct ℤ LL S a a (monomial m c) = monomial m (wtS LL S m a * c) := by
@@ -832,9 +827,7 @@ theorem coeff_gl_action_diag (S : Set (Fin N)) (a : Fin n) (m : Fin N × Fin n �
   induction G using MvPolynomial.induction_on' with
   | monomial m' c =>
     rw [gl_action_diag_monomial, coeff_monomial, coeff_monomial]
-    split_ifs with h
-    · rw [h]
-    · rw [mul_zero]
+    by_cases h : m' = m <;> simp [h]
   | add p q hp hq => rw [map_add, coeff_add, coeff_add, hp, hq, mul_add]
 
 theorem weight_eq_of_eigen (S : Set (Fin N)) (a : Fin n) (G : MvPolynomial (Fin N × Fin n) ℤ) (lam : ℤ)
@@ -887,9 +880,8 @@ theorem gl_action_diag_column_product {B : Fin N → ℕ} (Pa : PPath n N LL B) 
 theorem weight_of_canonical_Psi_support {B : Fin N → ℕ} (Pa : PPath n N LL B) (R : Type*) [CommRing R]
     (m : Fin N × Fin n →₀ ℕ) (hm : m ∈ (Psi R Pa.mu (Ican Pa.mu)).support) : wtS LL Set.univ m = pEnd Pa.mu := by
   rw [← map_Psi' (Int.castRingHom R)] at hm
-  have hm' := MvPolynomial.support_map_subset _ _ hm
   funext a
-  refine weight_eq_of_eigen LL Set.univ a _ _ ?_ m hm'
+  refine weight_eq_of_eigen LL Set.univ a _ _ ?_ m (MvPolynomial.support_map_subset _ _ hm)
   have h := gl_action_diag_column_product LL Pa a (Ican Pa.mu) (colRange Pa.mu)
   have hd : Dominant (pEnd Pa.mu) := Pa.dom _
   have hs : (∑ c ∈ colRange Pa.mu, (if 1 ≤ c then (if a ∈ Ican Pa.mu c then (1 : ℤ) else 0)
@@ -901,8 +893,7 @@ theorem weight_of_canonical_Psi_support {B : Fin N → ℕ} (Pa : PPath n N LL B
     by_cases hc : 1 ≤ c
     · rw [if_pos hc, if_pos hc, canonical_column_positive hd hc]; simp
     · rw [if_neg hc, if_neg hc, canonical_column_nonpositive hd hc]; simp
-  rw [hs] at h
-  exact h
+  simpa [Psi, hs] using h
 
 end wt
 
@@ -912,7 +903,6 @@ theorem automorphicSideConclusion_of_pathBasis (D : Formalism.BasicNotions.D7) (
   rintro P rfl
   refine ⟨canonical_Psi_ne_zero_of_path_basis D h17 O P, fun m hm => weight_of_canonical_Psi_support LL P O m hm, ?_⟩
   intro a b hab k hk
-  rw [← map_Psi' (Int.castRingHom O)]
-  exact divided_power_zero_of_gl_action_zero LL Set.univ a b hab.ne _ (gl_action_canonical_Psi_eq_zero LL P a b hab) O k hk
+  simpa [map_Psi' (Int.castRingHom O)] using divided_power_zero_of_gl_action_zero LL Set.univ a b hab.ne (Psi ℤ P.mu (Ican P.mu)) (gl_action_canonical_Psi_eq_zero LL P a b hab) O k hk
 
 end Formalism.MainNotions.LemmaBAlt

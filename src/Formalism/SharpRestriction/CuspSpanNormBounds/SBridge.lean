@@ -221,7 +221,7 @@ theorem normSq_leadMinor_ZhatO (k r : ℕ) (z z' : Fin (2 * r + k + 1) → ℂ) 
   simp [map_prod, map_pow, Complex.normSq_neg, Complex.normSq_one]
 
 theorem gfOfRelPt (D : D7) : GfOfRelPt D := by
-  unfold GfOfRelPt
+  unfold GfOfRelPt Gf Gpt
   intro z z' γ p hp
   obtain ⟨-, ⟨L, U, hL, hU, hZ⟩, -⟩ := hp
   have hm : ∀ (l : ℕ) (hl : l ≤ D.R.rS + 1),
@@ -229,7 +229,6 @@ theorem gfOfRelPt (D : D7) : GfOfRelPt D := by
         Complex.normSq (leadMinor (ptMat p) l hl) := by
     intro l hl
     rw [← normSq_leadMinor_ZhatO, hZ, leadMinor_cell L (ptMat p) U hL hU]
-  unfold Gf Gpt
   rw [← hm, ← hm]
   rfl
 

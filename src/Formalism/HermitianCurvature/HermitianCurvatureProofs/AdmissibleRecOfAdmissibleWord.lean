@@ -285,9 +285,7 @@ lemma ins_sc (a : S) (φ : ℂ) :
   have h1 : (φ • (1 : SlopeTestRemainingChoices S A)) = Matrix.diagonal (fun _ => algebraMap ℂ A φ) := by
     rw [← Matrix.diagonal_one, ← Matrix.diagonal_smul]; congr 1; funext _
     simp [Algebra.algebraMap_eq_smul_one]
-  have h2 : (1 : SlopeTestRemainingChoices S A) = Matrix.diagonal (fun _ => (1 : A)) := Matrix.diagonal_one.symm
-  rw [h1]; conv_lhs => rw [h2]
-  exact ins_diag a _ _
+  rw [h1, ← Matrix.diagonal_one]; exact ins_diag a _ _
 end
 
 theorem cDiag : CDiag := by
@@ -567,11 +565,10 @@ theorem cPosCut : CPosCut := by
   have hx : ∀ e : ℝ, e ∈ ({-1, 0, 1} : Finset ℝ) →
       Pos ((-1 : ℂ) ^ (k - l) * ∏ i ∈ Finset.Icc 1 (k - 1), (((y + e : ℝ) : ℂ) + (ρ i : ℂ))) := by
     intro e he
-    have := hI k u u' ρ l y hl1 hlk hint hcut' e he
     have c : ((-1 : ℂ) ^ (k - l) * ∏ i ∈ Finset.Icc 1 (k - 1), (((y + e : ℝ) : ℂ) + (ρ i : ℂ))) =
         (((-1 : ℝ) ^ (k - l) * xpoly k ρ (y + e) : ℝ) : ℂ) := by
       unfold xpoly; push_cast; ring
-    rw [c]; exact pos_ofReal this
+    rw [c]; exact pos_ofReal (hI k u u' ρ l y hl1 hlk hint hcut' e he)
   have hq : ∀ z : ℝ, 0 < qpoly k T T' u u' z →
       Pos (-((T : ℂ) * T') * ∏ i ∈ Finset.Icc 1 k, (((z : ℝ) : ℂ) + 1 / 2 + (u i : ℂ)) * (((z : ℝ) : ℂ) + 1 / 2 + (u' i : ℂ))) := by
     intro z hz

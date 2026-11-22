@@ -76,9 +76,7 @@ theorem hw_rename (R : Type) [CommRing R] {n : ℕ} (ν : Fin (n + 1) → ℕ) (
 
 theorem natW_last {n : ℕ} (lam : DomWeight (n + 1)) : lam.natW (Fin.last n) = 0 := by
   unfold DomWeight.natW DomWeight.detShift
-  rw [dif_pos (Nat.succ_pos n)]
-  have : (⟨n + 1 - 1, by omega⟩ : Fin (n + 1)) = Fin.last n := Fin.ext (by simp)
-  rw [this]
+  rw [dif_pos (Nat.succ_pos n), show (⟨n + 1 - 1, by omega⟩ : Fin (n + 1)) = Fin.last n from Fin.ext (by simp)]
   simp
 
 theorem delSq_eq_map (R : Type) [CommRing R] {n : ℕ} (lam : DomWeight (n + 1)) :
@@ -115,9 +113,7 @@ theorem blockMat_eq_extM {n : ℕ} (g : Matrix (Fin n) (Fin n) ℂ) : blockMat g
   · simp [Matrix.reindex_apply]
 
 theorem blockMat_transpose {n : ℕ} (g : Matrix (Fin n) (Fin n) ℂ) : (blockMat g).transpose = blockMat g.transpose := by
-  unfold blockMat
-  rw [Matrix.transpose_reindex, Matrix.fromBlocks_transpose]
-  simp
+  simp [blockMat, Matrix.fromBlocks_transpose]
 
 theorem sqAct_of_last_zero (R : Type) [CommRing R] {n : ℕ} (lt : DomWeight (n + 1))
     (h0 : lt.w (Fin.last n) = 0) (H : GL (Fin (n + 1)) R) (f : MvPolynomial (Fin (n + 1) × Fin (n + 1)) R) :
@@ -152,8 +148,7 @@ theorem colAddGen_last_rename (R : Type) [CommRing R] {r n : ℕ} (l : Fin (n + 
       (rename some).comp (rename (colEmb r n)) := by
     apply MvPolynomial.algHom_ext
     intro v
-    have hv : (colEmb r n v).2 ≠ Fin.last n := Fin.castSucc_ne_last v.2
-    simp [colAddGen, hv]
+    simp [colAddGen, colEmb, Fin.castSucc_ne_last]
   exact congrArg (fun φ => φ f) h
 
 theorem colAddGen_castSucc_rename (R : Type) [CommRing R] {r n : ℕ} (l j : Fin n)
@@ -221,8 +216,7 @@ theorem rename_mem_dualWeyl (R : Type) [CommRing R] {n : ℕ} (ν : Fin (n + 1) 
 theorem scaleMat_eq_zScale (n : ℕ) (T : ℝ) : scaleMat n T = Formalism.BranchingDeterminantCap.zScale n (Real.sqrt T) := rfl
 
 theorem scaleMat_transpose (n : ℕ) (T : ℝ) : (scaleMat n T).transpose = scaleMat n T := by
-  unfold scaleMat
-  exact Matrix.diagonal_transpose _
+  simp [scaleMat]
 
 end Formalism.L2.GlobalTheoryTheory.TraceIntegrality
 

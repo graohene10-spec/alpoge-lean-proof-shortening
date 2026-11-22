@@ -52,9 +52,7 @@ noncomputable def qlist (S : Finset (Fin r → ℤ)) (c : ℤ) : List ℤ := ((S
 
 theorem qlist_ne (S : Finset (Fin r → ℤ)) (c : ℤ) : ∀ x ∈ qlist S c, x ≠ c := by
   intro x hx
-  unfold qlist at hx
-  rw [Finset.mem_toList] at hx
-  exact Finset.ne_of_mem_erase hx
+  exact Finset.ne_of_mem_erase (by simpa only [qlist, Finset.mem_toList] using hx)
 
 theorem mem_qlist {S : Finset (Fin r → ℤ)} {c : ℤ} {ν : Fin r → ℤ} (hν : ν ∈ S) (hne : GlW.casI ν ≠ c) :
     GlW.casI ν ∈ qlist S c := by
@@ -80,9 +78,7 @@ theorem cprod_mod {U : Submodule K V} (hU : G.Stable U) {μ : Fin r → ℤ} {v 
 
 theorem iSup_stable {ι : Sort*} {U : ι → Submodule K V} (hU : ∀ i, G.Stable (U i)) : G.Stable (⨆ i, U i) := by
   intro a b x hx
-  have hle : (⨆ i, U i) ≤ (⨆ i, U i).comap (G.E a b) :=
-    iSup_le fun i y hy => Submodule.mem_iSup_of_mem i (hU i a b y hy)
-  exact hle hx
+  exact (iSup_le (fun i y hy => Submodule.mem_iSup_of_mem i (hU i a b y hy)) : (⨆ i, U i) ≤ (⨆ i, U i).comap (G.E a b)) hx
 
 theorem inf_stable {U U' : Submodule K V} (hU : G.Stable U) (hU' : G.Stable U') : G.Stable (U ⊓ U') := by
   exact fun a b x hx => ⟨hU a b x hx.1, hU' a b x hx.2⟩
@@ -242,9 +238,8 @@ theorem E_Lv (v : V) (a b : Fin r) (c : List (Fin r × Fin r) →₀ K) :
   rfl
 
 theorem range_Lv (v : V) : LinearMap.range (Lv G v) = G.gS {v} := by
-  have hv : v ∈ G.gS {v} := Submodule.mem_sInf.mpr fun U hU => hU.1 (Set.mem_singleton v)
-  have hst : G.Stable (G.gS {v}) := fun a b x hx =>
-    Submodule.mem_sInf.mpr fun U hU => hU.2 a b x (Submodule.mem_sInf.mp hx U hU)
+  have hv : v ∈ G.gS {v} := G.subset_gS {v} (Set.mem_singleton v)
+  have hst : G.Stable (G.gS {v}) := G.gS_stable {v}
   apply le_antisymm
   · rintro _ ⟨c, rfl⟩
     unfold Lv
@@ -254,12 +249,11 @@ theorem range_Lv (v : V) : LinearMap.range (Lv G v) = G.gS {v} := by
       obtain ⟨c, rfl⟩ := hx
       rw [E_Lv]
       exact LinearMap.mem_range_self _ _
-    have hvR : v ∈ LinearMap.range (Lv G v) := ⟨Finsupp.single [] 1, by
-      unfold Lv
-      rw [Finsupp.linearCombination_single, one_smul]
-      rfl⟩
     exact sInf_le (show LinearMap.range (Lv G v) ∈ {U : Submodule K V | {v} ⊆ (U : Set V) ∧ G.Stable U} from
-      ⟨Set.singleton_subset_iff.mpr hvR, hR⟩)
+      ⟨Set.singleton_subset_iff.mpr ⟨Finsupp.single [] 1, by
+        unfold Lv
+        rw [Finsupp.linearCombination_single, one_smul]
+        rfl⟩, hR⟩)
 
 theorem Lv_add (v v' : V) (c : List (Fin r × Fin r) →₀ K) : Lv G (v + v') c = Lv G v c + Lv G v' c := by
   simp only [Lv, Finsupp.linearCombination_apply, map_add, smul_add, Finsupp.sum_add]
@@ -1009,11 +1003,9 @@ theorem C_stable [NeZero r] (L : Letters N) (j0 : ℕ) {q : ℕ} (J : Fin q → 
   intro c d x hx
   obtain ⟨hxP, hxY⟩ := Submodule.mem_inf.mp hx
   refine Submodule.mem_inf.mpr ⟨pol_stable L (Lz L j0) j0 c d x hxP, (Submodule.mem_iInf _).mpr fun k => ?_⟩
-  have h1 := (Submodule.mem_iInf _).mp hxY k
   by_cases hk : J k < j0
-  · rw [Mup, if_pos hk] at h1 ⊢
-    exact ycond_glAct_le L (le_of_lt hk) (M k) c d h1
-  · rw [Mup, if_neg hk, ycond_top]; exact Submodule.mem_top
+  · exact ycond_glAct_le L (le_of_lt hk) (Mup J M j0 k) c d ((Submodule.mem_iInf _).mp hxY k)
+  · simp [Mup, hk, ycond_top]
 
 theorem polynomial_finite_weights (L : Letters N) (j0 : ℕ) : (GA p L j0).FinW (Pol p r (Lz L j0)) :=
   pol_finW (Lz L j0) j0

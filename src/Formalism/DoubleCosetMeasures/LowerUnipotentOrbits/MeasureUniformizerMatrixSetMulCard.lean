@@ -163,14 +163,10 @@ theorem meas_ii (O : Subring F) (hO : IsOpen (O : Set F)) (ϖ : F) (hϖ0 : ϖ �
 theorem meas_add (n a : ℕ) (x : Matrix (Fin n) (Fin a) F) :
     Measurable (fun y : Matrix (Fin n) (Fin a) F => x + y) := by
   exact measurable_pi_lambda _ fun i => measurable_pi_lambda _ fun j =>
-    ((continuous_const.add continuous_id).measurable (f := fun t : F => x i j + t)).comp
-      ((measurable_pi_apply j).comp (measurable_pi_apply i))
+    (continuous_const.add continuous_id).measurable.comp ((measurable_pi_apply j).comp (measurable_pi_apply i))
 
 theorem measurableAdd_mat (n a : ℕ) : MeasurableAdd (Matrix (Fin n) (Fin a) F) := by
-  refine ⟨fun x => meas_add n a x, fun x => ?_⟩
-  exact measurable_pi_lambda _ fun i => measurable_pi_lambda _ fun j =>
-    ((continuous_id.add continuous_const).measurable (f := fun t : F => t + x i j)).comp
-      ((measurable_pi_apply j).comp (measurable_pi_apply i))
+  exact ⟨meas_add n a, fun x => by simpa only [add_comm] using meas_add n a x⟩
 
 theorem meas_piece (O : Subring F) (hO : IsOpen (O : Set F)) (ϖ : F) (hϖ0 : ϖ ≠ 0) {n a : ℕ}
     (r : Matrix (Fin n) (Fin a) F) : MeasurableSet (piece O ϖ r) :=
@@ -180,8 +176,7 @@ theorem measure_piece {n a : ℕ} (ν : Measure (Matrix (Fin n) (Fin a) F)) [ν.
     (O : Subring F) (ϖ : F) (r : Matrix (Fin n) (Fin a) F) :
     ν (piece O ϖ r) = ν (IIset O ϖ) := by
   haveI := measurableAdd_mat (F := F) n a
-  unfold piece
-  exact measure_preimage_add ν (-r) _
+  simp only [piece, measure_preimage_add]
 
 def repM (O : Subring F) (ϖ : F) (hϖ : ϖ ∈ O) {n a : ℕ} (c : Fin n → Fin a → kF O ϖ hϖ) :
     Matrix (Fin n) (Fin a) F :=

@@ -46,16 +46,11 @@ theorem weak_core {D : ZMod d → ℝ} {x : ZMod d → ℕ → ℝ} {sig : ZMod 
 
 theorem coord_le_load (hl : 1 ≤ l) {x : ZMod d → ℕ → ℝ} (hx : ∀ s i, 0 ≤ x s i) (s : ZMod d)
     {i : ℕ} (hi : i ∈ oddLevels d) : x s i ≤ dpLoad l d x s := by
-  have hl' : (1 : ℝ) ≤ (l : ℝ) ^ i := by
-    have h : (1 : ℝ) ≤ (l : ℝ) := by exact_mod_cast hl
-    exact one_le_pow₀ h
-  have h1 : x s i ≤ (l : ℝ) ^ i * x s i := le_mul_of_one_le_left (hx s i) hl'
-  have h2 : (l : ℝ) ^ i * x s i ≤ ∑ j ∈ oddLevels d, (l : ℝ) ^ j * x s j :=
-    Finset.single_le_sum (f := fun j => (l : ℝ) ^ j * x s j)
-      (fun j _ => mul_nonneg (by positivity) (hx s j)) hi
-  have h3 : 0 ≤ ∑ j ∈ oddLevels d, x (s - (j : ZMod d)) j := Finset.sum_nonneg fun j _ => hx _ _
+  have h1 : x s i ≤ ∑ j ∈ oddLevels d, (l : ℝ) ^ j * x s j :=
+    (le_mul_of_one_le_left (hx s i) (one_le_pow₀ (show (1 : ℝ) ≤ (l : ℝ) by exact_mod_cast hl))).trans
+      (Finset.single_le_sum (fun j _ => mul_nonneg (by positivity) (hx s j)) hi)
   unfold dpLoad
-  linarith
+  exact h1.trans (le_add_of_nonneg_right (Finset.sum_nonneg fun j _ => hx _ _))
 
 theorem continuous_load (s : ZMod d) : Continuous fun x : ZMod d → ℕ → ℝ => dpLoad l d x s := by
   unfold dpLoad
@@ -156,10 +151,7 @@ theorem load_comb (x y : ZMod d → ℕ → ℝ) (a b : ℝ) (s : ZMod d) :
 
 theorem flowVal_comb (x y : ZMod d → ℕ → ℝ) (a b : ℝ) :
     flowVal d (fun s i => a * x s i + b * y s i) = a * flowVal d x + b * flowVal d y := by
-  calc Formalism.IncomingBounds.flowVal d (fun s i => a * x s i + b * y s i)
-        = ∑ s, (a * ∑ i ∈ oddLevels d, x s i + b * ∑ i ∈ oddLevels d, y s i) :=
-          Finset.sum_congr rfl fun s _ => sum_comb' _ _ _ _ _
-    _ = a * Formalism.IncomingBounds.flowVal d x + b * Formalism.IncomingBounds.flowVal d y := sum_comb' _ _ _ _ _
+  simp only [Formalism.IncomingBounds.flowVal, sum_comb']
 
 def Kset (l d : ℕ) [NeZero d] : Set ((ZMod d → ℝ) × ℝ) :=
   {q | ∃ x : ZMod d → ℕ → ℝ, (∀ s i, 0 ≤ x s i) ∧ (∀ s, dpLoad l d x s ≤ q.1 s) ∧

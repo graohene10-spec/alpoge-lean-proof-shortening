@@ -28,8 +28,7 @@ lemma qd_phQ_eq {M : GLMod n} (CF : ColFam M) (j : CF.J) (w : TIdx (CF.mu j) →
 lemma qd_phQ_single {M : GLMod n} (CF : ColFam M) (j : CF.J) (I : TIdx (CF.mu j)) :
     qd_phQ CF j (Pi.single I 1) = fun i => (CF.vec j I i : ℚ) := by
   classical
-  rw [qd_phQ_eq]
-  simp [Pi.single_apply, ite_smul]
+  simp [qd_phQ_eq, Pi.single_apply, ite_smul]
 
 lemma qd_A_can {M : GLMod n} (CF : ColFam M) (j : CF.J) (g : GL (Fin n) ℚ) :
     Matrix.mulVec (M.A.map (evGL g)) (fun i => (CF.vec j (canT (CF.mu j)) i : ℚ)) =

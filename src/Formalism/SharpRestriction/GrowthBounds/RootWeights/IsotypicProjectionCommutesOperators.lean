@@ -220,14 +220,12 @@ theorem weight_type_of_isotypic_projections [NeZero n] (hCR : StableSubspaceComp
   have hfe : ∀ mu, e mu x = f mu := fun mu => by
     rw [← hsum]
     exact isotypic_projection_of_sum _ e he f hf mu
-
   have hker : ∀ mu, e mu G = 0 → e mu x = 0 := by
     intro mu h0
     have hle : generatedSubmodule (glOps R n LL S) G ≤ LinearMap.ker (e mu) := by
       rw [generatedSubmodule, Submodule.span_le]
       rintro _ ⟨u, hu, rfl⟩
-      change e mu (u G) = 0
-      rw [isotypic_projection_commutes_monoid _ htop e he mu hu, h0, map_zero]
+      simpa [h0, LinearMap.mem_ker] using isotypic_projection_commutes_monoid _ htop e he mu hu G
     exact hle hx
   have hiso : ∀ mu, cond mu → isoSub (glOps R n LL S) mu ≤
       MvPolynomial.restrictSupport R {m | cond (wtS LL S m)} := by
@@ -251,9 +249,9 @@ theorem weight_type_of_isotypic_projections [NeZero n] (hCR : StableSubspaceComp
     have hG : e mu G ≠ 0 := fun h0 => hne (by rw [← hfe mu]; exact hker mu h0)
     exact hiso mu (h mu hG) (hf mu)
   obtain ⟨m, hm⟩ := MvPolynomial.support_nonempty.2 hx0
-  have h2 := (MvPolynomial.mem_restrictSupport_iff R).1 hxZ (by simpa using hm : m ∈ (x.support : Set _))
-  have h3 : cond (wtS LL S m) := h2
-  rwa [hxν m hm] at h3
+  have h2 : cond (wtS LL S m) :=
+    (MvPolynomial.mem_restrictSupport_iff R).1 hxZ (by simpa using hm : m ∈ (x.support : Set _))
+  rwa [hxν m hm] at h2
 
 end concrete
 

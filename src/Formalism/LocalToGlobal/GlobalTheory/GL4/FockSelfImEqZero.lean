@@ -16,8 +16,7 @@ theorem fock_eq_sum_coeff {σ : Type} (f g : MvPolynomial σ ℂ) (t : Finset (�
   unfold fockF
   apply Finset.sum_subset ht
   intro m _ hm
-  have h0 : f.coeff m = 0 := by simpa [MvPolynomial.mem_support_iff] using hm
-  rw [h0, zero_mul, zero_mul]
+  rw [show f.coeff m = 0 by simpa [MvPolynomial.mem_support_iff] using hm, zero_mul, zero_mul]
 
 theorem fockF_add_left_g_l4 {σ : Type} (f f' g : MvPolynomial σ ℂ) :
     fockF (f + f') g = fockF f g + fockF f' g := by
@@ -111,11 +110,9 @@ theorem fockSp_inner {σ : Type} (f g : FockSp σ) :
     (inner ℂ f g : ℂ) = fockF (show MvPolynomial σ ℂ from g) (show MvPolynomial σ ℂ from f) := rfl
 
 theorem fock_cauchy_schwarz {σ : Type} (f g : MvPolynomial σ ℂ) : ‖fockF f g‖ ^ 2 ≤ (fockF f f).re * (fockF g g).re := by
-  have h := inner_mul_inner_self_le (𝕜 := ℂ) (show FockSp σ from f) (show FockSp σ from g)
-  have h' : ‖fockF g f‖ * ‖fockF f g‖ ≤ (fockF f f).re * (fockF g g).re := h
-  rw [fock_conj_symm f g, norm_star] at h'
-  rw [sq]
-  exact h'
+  have h : ‖fockF g f‖ * ‖fockF f g‖ ≤ (fockF f f).re * (fockF g g).re := inner_mul_inner_self_le (𝕜 := ℂ) (show FockSp σ from f) (show FockSp σ from g)
+  rw [fock_conj_symm f g, norm_star] at h
+  simpa only [sq] using h
 
 theorem fock_adjoint_bound {κ ι : Type} (p : MvPolynomial κ ℂ) (Y J : MvPolynomial ι ℂ) (K : ℝ) (hK : 0 ≤ K)
     (h1 : fockF p p = fockF Y J) (h2 : (fockF J J).re ≤ K * (fockF p p).re) :

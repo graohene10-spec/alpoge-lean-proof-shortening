@@ -40,15 +40,13 @@ theorem ph_Arow_shift (hV : F.Valid L₁ N₁) (hn : Even n') (hr : 1 ≤ r) (x 
   have h2 := window_holds_even_tops n' r F L₁ N₁ hV hn hr x l hl
   have g1 := ge_Arow F L₁ N₁ hV hn hr (x + n' * t) l hl
   have g2 := ge_Arow F L₁ N₁ hV hn hr x l hl
-  have hev : Even ((n' : ℤ) * t) := by
-    have : Even (n' : ℤ) := by exact_mod_cast hn
-    exact this.mul_right t
-  have e : Arow F (x + n' * t) l = (Arow F (x + n' * t) l - n' * t) + n' * t := by ring
   have g3 : geN F x (Arow F (x + n' * t) l - n' * t) = l := by
-    rw [← ph_geN_shift F hn x _ t, ← e]; exact g1
+    rw [← ph_geN_shift F hn x (Arow F (x + n' * t) l - n' * t) t, sub_add_cancel]
+    exact g1
   have hT : posOf n' (Arow F (x + n' * t) l - n' * t) ∈ F.TT := by
-    rw [← posOf_add_mul_alt _ t, ← e]; exact h1.2.1
-  have := ge_N_inj F (by linarith [h1.2.2]) h2.2.2 hT (h1.1.sub hev) h2.2.1 h2.1 (g3.trans g2.symm)
+    rw [← posOf_add_mul_alt _ t, sub_add_cancel]
+    exact h1.2.1
+  have := ge_N_inj F (by linarith [h1.2.2]) h2.2.2 hT (h1.1.sub ((by exact_mod_cast hn : Even (n' : ℤ)).mul_right t)) h2.2.1 h2.1 (g3.trans g2.symm)
   linarith
 
 theorem ph_z_step (hV : F.Valid L₁ N₁) (hr : 1 ≤ r) (j : ℤ) : F.fr j (r - 1) < F.fr (j + 1) (r - 1) :=
@@ -59,11 +57,8 @@ theorem ph_z_mono (hV : F.Valid L₁ N₁) (hr : 1 ≤ r) {j j' : ℤ} (h : j �
   induction t with
   | zero => simp
   | succ t ih =>
-    have := ph_z_step F hV hr (j + t)
-    have e : j + ((t + 1 : ℕ) : ℤ) = j + t + 1 := by push_cast; ring
-    rw [e]
-    have := ih (by omega)
-    omega
+    rw [show j + ((t + 1 : ℕ) : ℤ) = j + t + 1 by push_cast; ring]
+    exact le_trans (ih (by omega)) (le_of_lt (ph_z_step F hV hr (j + t)))
 
 theorem ph_mem_nonW (hV : F.Valid L₁ N₁) (hr : 1 ≤ r) (j x : ℤ) :
     x ∈ nonW F j ↔ F.fr (j - 1) (r - 1) < x ∧ x ≤ F.fr j (r - 1) ∧ posOf n' x ∈ F.TT := by

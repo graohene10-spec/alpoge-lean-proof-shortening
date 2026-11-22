@@ -485,9 +485,7 @@ theorem Sz6.positionsBefore_of (H1 : PositionBefore) (H2 : ProdOneAddTwoDivLeSqr
       simp only [Nat.cast_sub hi.2.le]; exact this
   have step2 := Finset.prod_Ico_reflect (fun j : ℕ => (1 + 2 / (4 * (j : ℝ) - 1))) 1 (m := l) (n := l) (by omega)
   rw [step2] at step1
-  have a1 : l + 1 - l = 1 := by omega
-  have a2 : l + 1 - 1 = l := by omega
-  rw [a1, a2] at step1
+  rw [Nat.add_sub_cancel, Nat.add_sub_cancel_left] at step1
   refine step1.trans ?_
   obtain ⟨p, rfl⟩ : ∃ p, l = p + 1 := ⟨l - 1, by omega⟩
   rcases Nat.eq_zero_or_pos p with rfl | hp

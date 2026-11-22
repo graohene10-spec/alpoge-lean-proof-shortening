@@ -189,8 +189,7 @@ theorem raising_keeps_last_letter : UKeepsLast := by
     YCond p LL (K + 1) ((c : ℤ) : WithTop ℤ) with hYc
   have hYs : ∀ F ∈ Yc, F ∈ restrictSupport ℚ_[p] {m : Fin (K + 1) × Fin r →₀ ℕ | wt LL (K + 1) 0 m ≤ c} := by
     intro F hF
-    rw [← supp_coe]
-    exact ycond_le_supp LL (K + 1) _ hF
+    simpa only [← supp_coe] using ycond_le_supp LL (K + 1) _ hF
   have hsupp : ∀ (a : Fin r), ∀ F ∈ Yc, Uop p LL c univ a F ∈
       restrictSupport ℚ_[p] {m : Fin (K + 1) × Fin r →₀ ℕ | wt LL (K + 1) 0 m ≤ c} := by
     intro a F hF
@@ -201,10 +200,7 @@ theorem raising_keeps_last_letter : UKeepsLast := by
         (ycond_glStable LL (K + 1) _ 0 0) F hF c
       have h0 : glAct p LL (K + 1) 0 0 G = ((c : ℤ) : ℚ_[p]) • G := by
         ext m
-        rw [coeff_cartan, coeff_smul, smul_eq_mul, hG, coeff_compP]
-        split_ifs with h
-        · rw [h]
-        · simp
+        by_cases h : wt LL (K + 1) 0 m = c <;> simp [coeff_cartan, coeff_smul, smul_eq_mul, hG, coeff_compP, h]
       have hb : ∀ b : Fin r, b ≠ 0 → glAct p LL (K + 1) 0 b G = 0 := by
         intro b hb
         by_contra hne
@@ -243,9 +239,7 @@ theorem raising_keeps_last_letter : UKeepsLast := by
       have := Uop_supp LL hv c (c - 1) univ 0 (F - G) hR
       rw [if_pos rfl, sub_add_cancel] at this
       exact this
-    · have := Uop_supp LL hv c c univ a F (hYs F hF)
-      rw [if_neg ha, add_zero] at this
-      exact this
+    · simpa only [if_neg ha, add_zero] using Uop_supp LL hv c c univ a F (hYs F hF)
   set B : Submodule ℚ_[p] (MvPolynomial (Fin (K + 1) × Fin r) ℚ_[p]) :=
     ⨆ a : Fin r, Yc.map (Uop p LL c univ a) with hB
   have hmem : ∀ (a : Fin r), ∀ x ∈ Yc, Uop p LL c univ a x ∈ B := fun a x hx =>

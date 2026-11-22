@@ -337,16 +337,15 @@ open ExponentialDerivativeInverse in
 
 theorem exponential_derivative_inverse : ExpDeInv.{u} := by
   intro K _ _ l d _ hl hd _ K0 ζ hζ be hK0 htor hcc D hD
-  have hN : l ^ d - 1 ≠ 0 := by
+  have hcb := congW_of_torus (by
     have h2 : 2 ≤ l ^ d := le_trans hl.two_le (Nat.le_self_pow (by omega) l)
-    omega
-  have hcb := congW_of_torus hN hζ htor
+    omega) hζ htor
   have hD' : Good K0 ((l ^ d - 1 : ℕ) : ℤ) (fun x : V2 d => lw l x.2) D := by
     rcases hD with rfl | rfl
     · exact good_sub (good_sub (good_subst hK0 hcc hcb oddIndicator_alt_series_family) (good_subst hK0 hcc hcb zero_series_family))
         (good_subst hK0 hcc hcb swappedParity_series_family)
     · exact good_sub (good_sub (good_subst hK0 hcc hcb oddIndicator_series_family) (good_subst hK0 hcc hcb zero_series_family))
         (good_subst hK0 hcc hcb parityIndicator_series_family)
-  exact ⟨inSub_mvExp hD'.1 hD'.2.1, fun n hn => congW_mvExp hD'.1 hD'.2.2 n hn⟩
+  exact ⟨inSub_mvExp hD'.1 hD'.2.1, congW_mvExp hD'.1 hD'.2.2⟩
 
 end Formalism.DworkPowerSeriesWeights

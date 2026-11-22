@@ -14,7 +14,6 @@ variable {H : Type} [AddCommGroup H] [Fintype H] [DecidableEq H]
 
 theorem node_sizes_of_windows : NodeSizesOfWindows (H := H) := by
   intro m TT T2 x b b' η κ w'' off bt w ⟨hb, hb', hη, hκ, hx, hoff0, hoff, hw0, hw'', hbt, hsum⟩ ⟨hthick, htop, hthin⟩
-  have hκb : 0 ≤ κ * b' := by positivity
   refine ⟨?_, ?_, ?_⟩
   · intro u0 j ρ hρ
     by_cases h1 : IsThickAt T2 u0 ρ
@@ -25,11 +24,10 @@ theorem node_sizes_of_windows : NodeSizesOfWindows (H := H) := by
     obtain ⟨t, ht, rfl⟩ := h2
     linarith [(htop u0 j t ht).1, (hbt t ht).1]
   · intro u0 j ρ h1
-    have := hthick u0 j ρ h1
-    exact ⟨this.1, by linarith [this.2]⟩
+    exact ⟨(hthick u0 j ρ h1).1, by linarith [(hthick u0 j ρ h1).2]⟩
   · intro u0 j ρ hρ h1
     by_cases h2 : ∀ t ∈ TT, ρ ≠ topPl t
-    · linarith [(hthin u0 j ρ hρ h1 h2).2]
+    · linarith [(hthin u0 j ρ hρ h1 h2).2, mul_nonneg hκ hb'.le]
     push Not at h2
     obtain ⟨t, ht, rfl⟩ := h2
     linarith [(htop u0 j t ht).2, (hbt t ht).2]
@@ -109,8 +107,7 @@ lemma odd_iff_cop (e m : ℕ) : Odd m ↔ m.Coprime (2 ^ (e + 2)) := by
   rw [Nat.coprime_pow_right_iff (by omega), Nat.coprime_two_right]
 
 lemma hOf_one (e : ℕ) : hOf e 1 = 0 := by
-  rw [hOf_of_coprime (Nat.coprime_one_left _), unitOfCoprime_one]
-  rfl
+  simp [hOf_of_coprime, unitOfCoprime_one, hcl]
 
 lemma hOf_mul (e : ℕ) {a b : ℕ} (ha : Odd a) (hb : Odd b) : hOf e (a * b) = hOf e a + hOf e b := by
   have ca := (odd_iff_cop e a).1 ha
@@ -118,15 +115,13 @@ lemma hOf_mul (e : ℕ) {a b : ℕ} (ha : Odd a) (hb : Odd b) : hOf e (a * b) = 
   rw [hOf_of_coprime ca, hOf_of_coprime cb, hOf_of_coprime (Nat.Coprime.mul_left ca cb)]
   have : ZMod.unitOfCoprime (a * b) (Nat.Coprime.mul_left ca cb) = ZMod.unitOfCoprime a ca * ZMod.unitOfCoprime b cb := by
     ext; simp
-  rw [this]
-  rfl
+  exact congrArg (fun x => Additive.ofMul (hcl e x)) this
 
 lemma omV_one (e : ℕ) (ψ : AddChar (E0 × HA e) ℂ) : omV e ψ 1 = 1 := by
   unfold omV
-  split_ifs with h1 h2
-  · rfl
-  · rw [hOf_one]; exact AddChar.map_zero_eq_one ψ
-  · exact absurd odd_one h2
+  by_cases h1 : ∀ t : HA e, ψ ((0, 0), t) = 1
+  · exact if_pos h1
+  · rw [if_neg h1, if_pos odd_one, hOf_one]; exact AddChar.map_zero_eq_one ψ
 
 lemma omV_mul (e : ℕ) (ψ : AddChar (E0 × HA e) ℂ) (a b : ℕ) : omV e ψ (a * b) = omV e ψ a * omV e ψ b := by
   unfold omV

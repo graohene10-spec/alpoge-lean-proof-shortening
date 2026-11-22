@@ -189,9 +189,8 @@ theorem lattice_numerics (u0 : U0) {K Wd κ κ₁ : Type} [Field K] [NumberField
   have hle : ∀ i, muMaxDef (b i) (X i) (N i) - D.h u0 i ≤
       Finset.univ.sup' Finset.univ_nonempty (fun u : W u0 => D.muMaxN u0 u - D.h u0 u) := by
     intro i
-    have := Finset.le_sup' (fun u : W u0 => D.muMaxN u0 u - D.h u0 u) (Finset.mem_univ i)
     rw [← hmuMax i]
-    exact this
+    exact Finset.le_sup' (fun u : W u0 => D.muMaxN u0 u - D.h u0 u) (Finset.mem_univ i)
   refine ⟨?_, ?_, ?_, ?_, s7.le⟩
   · rw [hs, div_mul_cancel₀ _ hpos.ne']
   · unfold Data.uF
@@ -206,9 +205,7 @@ theorem lattice_numerics (u0 : U0) {K Wd κ κ₁ : Type} [Field K] [NumberField
       have h2 := hle i
       linarith
   · intro i
-    have h2 := hle i
-    unfold Data.uF
-    linarith
+    simpa [Data.uF] using hle i
   · rw [← hmin]; exact s6
 
 theorem function_slope_transfer : BridgeFS D := by

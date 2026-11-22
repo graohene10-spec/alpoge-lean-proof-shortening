@@ -25,9 +25,7 @@ theorem budget_numeric : BudgetNum := by
   unfold BudgetNum
   intro dK δq D B hδ hD hB hq
   rw [div_le_iff₀ (mul_pos hδ hD)]
-  have h1 : dK ≤ 3 * D * δq := (div_le_iff₀ hδ).mp hq
-  have h2 : dK * B ≤ 3 * D * δq * B := mul_le_mul_of_nonneg_right h1 hB
-  linarith
+  nlinarith [mul_le_mul_of_nonneg_right ((div_le_iff₀ hδ).mp hq) hB]
 
 theorem share_numeric : ShareNum := by
   unfold ShareNum

@@ -510,8 +510,7 @@ theorem val_int_nonneg (w : D.what₂.places.Pl) (z : ℤ) : (0 : WithTop ℤ) �
   cases z with
   | ofNat n => simpa using val_nat_nonneg w n
   | negSucc n =>
-    rw [Int.cast_negSucc, AddValuation.map_neg]
-    exact val_nat_nonneg w (n + 1)
+    simpa only [Int.cast_negSucc, AddValuation.map_neg, Nat.cast_succ] using val_nat_nonneg w (n + 1)
 
 theorem val_coprime (w : D.what₂.places.Pl) (n : ℕ) (h : Nat.Coprime n (D.what₂.places.resChar w)) :
     D.what₂.places.val w (n : D.what₂.LL) = 0 := by
@@ -663,28 +662,22 @@ theorem kform_of (E : Ent D) (Dx : DivX D) (T : TwForms D) (V : Vals D Dx T) (hE
   refine ⟨fun hμ => ?_, fun hμ => ?_⟩
   · subst hμ
     have hE' := hE.1 u w hL i hi B hB
-    rcases key0 with h | ⟨h0, h1, hS⟩
+    rcases key0 with h | ⟨rfl, h1, hS⟩
     · rw [h]
       exact classSum (V.v0 u w hL) hi (D.mem u).C.DGam_pos.ne' (fun c => (D.mem u).C.dvd_DGam i hi.le c) (hK.1 u i hi) hE'
-    · subst h0
-      have := classSum (V.v0 u w hL) hi one_ne_zero (fun c => by rw [hS.1 u c]) (hK.1 u 0 hi) hE'
-      have e : B - (if (0 : ℕ) = 0 then 1 - sp else 1) * vDG D u w =
-          B - (padicValNat (D.what₂.places.resChar w) 1 : ℝ) := by simp [h1]
-      rw [e]
-      exact this
+    · rw [show B - (if (0 : ℕ) = 0 then 1 - sp else 1) * vDG D u w =
+          B - (padicValNat (D.what₂.places.resChar w) 1 : ℝ) by simp [h1]]
+      exact classSum (V.v0 u w hL) hi one_ne_zero (fun c => by rw [hS.1 u c]) (hK.1 u 0 hi) hE'
   · have hE' := hE.2 u μ hUs hμ w hL i hi B hB
-    rcases key0 with h | ⟨h0, h1, hS⟩
+    rcases key0 with h | ⟨rfl, h1, hS⟩
     · rw [h]
       have := classSum (V.vT u μ w hL) hi (D.chTw u μ).DGam_pos.ne' (fun c => (D.chTw u μ).dvd_DGam i hi.le c) (hK.2 u μ hUs i hi)
         hE'
       rw [hG.one u u μ] at this
       exact this
-    · subst h0
-      have := classSum (V.vT u μ w hL) hi one_ne_zero (fun c => by rw [hS.2 u μ hUs c]) (hK.2 u μ hUs 0 hi) hE'
-      have e : B - (if (0 : ℕ) = 0 then 1 - sp else 1) * vDG D u w =
-          B - (padicValNat (D.what₂.places.resChar w) 1 : ℝ) := by simp [h1]
-      rw [e]
-      exact this
+    · rw [show B - (if (0 : ℕ) = 0 then 1 - sp else 1) * vDG D u w =
+          B - (padicValNat (D.what₂.places.resChar w) 1 : ℝ) by simp [h1]]
+      exact classSum (V.vT u μ w hL) hi one_ne_zero (fun c => by rw [hS.2 u μ hUs c]) (hK.2 u μ hUs 0 hi) hE'
 
 theorem mem_intW (w : D.what₂.places.Pl) {a : D.what₂.LL} (ha : a ≠ 0) (h : 0 ≤ vAdd (D.plEq w) a) :
     a ∈ intW D.what₂.places w := by
@@ -781,9 +774,8 @@ theorem chain_ge (s : ℕ → ℝ) (n : ℕ) (h : ∀ i < n, KG M w i (s (i + 1)
   | succ n ih =>
     obtain ⟨y, e, v⟩ := ih (fun i hi => h i (Nat.lt_succ_of_lt hi))
     obtain ⟨y', e', v'⟩ := (h n (Nat.lt_succ_self n)).step M w y v
-    refine ⟨y', ?_, ?_⟩
-    · rw [e', e]; rfl
-    · rw [Finset.sum_Icc_succ_top (Nat.le_add_left 1 n)]; exact v'
+    refine ⟨y', (by rw [e', e]; rfl), ?_⟩
+    rw [Finset.sum_Icc_succ_top (Nat.le_add_left 1 n)]; exact v'
 
 end Chain
 
@@ -916,15 +908,13 @@ theorem noOp_of {X : Inst D L} {K : Consts} {Dx : DivX D} {T : TwForms D} {lev :
   intro hF hE u w hT hI hX hX2 μ hUs hQ x hx
   have h := hc u μ w (fun j => WeilJacquetShalikaLaw.g0S X K (D.what₂.places.resChar w) j + (L.F j w - ES L Xe K ce u j w) +
         (if j = 1 then sp else 0) * vDG D u w) (fun i hi => by
-          have := hl hF hE u w hT hI hX hX2 μ hUs hQ i hi
-          simpa using this) x hx.1
+          simpa using hl hF hE u w hT hI hX hX2 μ hUs hQ i hi) x hx.1
   have e : (∑ j ∈ SizeData₂.lifts D, (WeilJacquetShalikaLaw.g0S X K (D.what₂.places.resChar w) j + (L.F j w - ES L Xe K ce u j w) +
         (if j = 1 then sp else 0) * vDG D u w)) = (∑ j ∈ SizeData₂.lifts D, WeilJacquetShalikaLaw.g0S X K (D.what₂.places.resChar w) j) + lowS L Xe K ce sp u w := by
     unfold lowS
     rw [Finset.sum_add_distrib, Finset.sum_add_distrib, ← Finset.sum_mul, sum_ite_one]
     ring
-  rw [e] at h
-  exact h
+  simpa only [e] using h
 
 theorem int_of {E : Ent D} {Dx : DivX D} {T : TwForms D} {sp : ℝ} (hk : KForm E Dx T sp) (hi : JetIntegralityBis E Dx) :
     LiftIntegrality D Dx T sp := by
@@ -1315,13 +1305,12 @@ theorem lift_bounds_of_kernelForm {X : Inst D L} {K : Consts} {Dx : DivX D} {T :
   obtain ⟨ho, hgd, hb, hbc, hall, ha', hint, _, hS, _⟩ := hA
   obtain ⟨c2, c3, c4, c5, c6, c7, c9, c10⟩ := hC
   have c1 := compose D T
-  have c8 := sumI X K ce
   have eI := entI_of (isReps_repsPl X) ho hb c2 c6 ha'
   have eC := entC_of ho hbc c3 hall hS
-  have lI : OneLiftInertBound D L X K Dx T lev Xe ce sp := liftI_of hk eI c8 ho hbc c10
+  have lI : OneLiftInertBound D L X K Dx T lev Xe ce sp := liftI_of hk eI (sumI X K ce) ho hbc c10
   have lC : OneLiftAtC D L K Dx T lev Xe ce sp := liftC_of hk ho eC c9
   have lD : OneLiftAtDiscriminant D L K Dx T lev Xe ce sp := liftD_of hk hgd c7
-  exact ⟨c1, c2, c3, c4, c5, c6, eI, eC, c7, c8, c9, lI, lC, lD, noOp_of c1 lI, c_of c1 lC, atD_of c1 lD, int_of hk hint⟩
+  exact ⟨c1, c2, c3, c4, c5, c6, eI, eC, c7, sumI X K ce, c9, lI, lC, lD, noOp_of c1 lI, c_of c1 lC, atD_of c1 lD, int_of hk hint⟩
 
 theorem lift_bounds_of_essential {X : Inst D L} {K : Consts} {Dx : DivX D} {T : TwForms D} {E : Ent D} {lev : LevelData D}
     {Xe : ErrX D} {ce : ErrC} {sp C6 C : ℝ} (hA : admitted D L X K Dx T E ce sp C6 C) (hC : Core D L X K Dx E ce C) :
@@ -1596,8 +1585,7 @@ theorem kernelValuation_of_twisted (T : TwForms D) (u : D.what₂.Word) (w : D.w
     eMu0_symm_loc T u w (i + 1) hi z' hz', by rw [map_smul], ha⟩
   have h1 := T.eMu0_emb u (i + 1) hi ((T.eMu0 u (i + 1) hi).symm (a • z'))
   rw [LinearEquiv.apply_symm_apply] at h1
-  have h3 := K_heq (D.memberColumns_twistedChain_base u) i (T.eMu0_emb u i hi.le x)
-  exact eq_of_heq (h1.symm.trans ((heq_of_eq e').trans h3))
+  exact eq_of_heq (h1.symm.trans ((heq_of_eq e').trans (K_heq (D.memberColumns_twistedChain_base u) i (T.eMu0_emb u i hi.le x))))
 
 def SB (E : KerEnt D Dx T) : Prop :=
   ∀ u μ (w : D.what₂.places.Pl) (i : ℕ) c c' (B : ℝ),
@@ -1607,11 +1595,8 @@ def SB (E : KerEnt D Dx T) : Prop :=
 theorem kform_of_ker (E : KerEnt D Dx T) (Ee : Ent D) (hν : ∀ u i, Ee.nu u i = nuD D u i) (hTh : Ee.Th = E.Th)
     (hSB : SB E) (hU : E.UnUnit) (hR : KmapRat E) (hK : KFi D T) {sp : ℝ} (hsp : SupSpansPsiPart D sp) : KForm Ee Dx T sp := by
   intro hG u μ w hUs hL i hi B hB
-  have hEK : EntK E u μ w i B := by
-    intro c c'
-    have := hB c c'
-    rw [hν u i, hTh] at this
-    exact hSB u μ w i c c' B this
+  have hEK : EntK E u μ w i B := fun c c' =>
+    hSB u μ w i c c' B (by simpa [hν u i, hTh] using hB c c')
   have key : KGeTw T u μ w i (B - (if i = 0 then 1 - sp else 1) * vDG D u w) := by
     by_cases h0 : i = 0 ∧ sp = 1
     · obtain ⟨h0, h1⟩ := h0
@@ -1621,10 +1606,7 @@ theorem kform_of_ker (E : KerEnt D Dx T) (Ee : Ent D) (hν : ∀ u i, Ee.nu u i 
         · exact h.2
       subst h0
       have := kgeTw_of E hU hR hUs hL hi hEK one_ne_zero (fun c => by rw [hS.2 u μ hUs c]) (hK.2 u μ hUs 0 hi)
-      have e : B - (if (0 : ℕ) = 0 then 1 - sp else 1) * vDG D u w =
-          B - (padicValNat (D.what₂.places.resChar w) 1 : ℝ) := by simp [h1]
-      rw [e]
-      exact this
+      simpa [h1] using this
     · have e : B - (if i = 0 then 1 - sp else 1) * vDG D u w = B - vDG D u w := by
         by_cases hi0 : i = 0
         · have hs0 : sp = 0 := by

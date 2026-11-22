@@ -538,8 +538,8 @@ theorem jn_nonneg {E W : Type} [Field E] (D : TB.Data E W) (jn : ℝ) (hG : D.Gr
     0 ≤ jn := by
   have hmem : D.emp ∈ D.Wb D.Ntop := by
     unfold TB.Data.Wb
-    rw [Finset.mem_filter]
-    exact ⟨D.emp_mem, by rw [D.cnt_emp]; exact Nat.zero_le _⟩
+    rw [Finset.mem_filter, D.cnt_emp]
+    exact ⟨D.emp_mem, Nat.zero_le _⟩
   have ht := hE D.emp hmem
   refine ge_of_tendsto ht ?_
   refine eventually_nhdsWithin_of_forall ?_
@@ -547,10 +547,8 @@ theorem jn_nonneg {E W : Type} [Field E] (D : TB.Data E W) (jn : ℝ) (hG : D.Gr
   have hp := hG ε hε 0 D.emp {([] : TB.Pt E)}
   unfold TB.PSDOn at hp
   have hd := hp.diag_nonneg (i := ⟨[], by simp⟩)
-  have hre : 0 ≤ (D.gram ε 0 D.emp [] []).re := by
-    have := (Complex.le_def.1 hd).1
-    simpa using this
-  rw [D.wt_emp, div_one]; exact hre
+  rw [D.wt_emp, div_one]
+  simpa using (Complex.le_def.1 hd).1
 
 theorem t_MainJoint : MainJoint := by
   intro hA hS C₁ C₄ Cthr h1 h4

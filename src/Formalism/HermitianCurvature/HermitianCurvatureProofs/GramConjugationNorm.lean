@@ -114,8 +114,7 @@ theorem avg_le {ι : Type} (R : Finset ι) (len : W → ℕ) (B : ℕ) (th : W �
     (hdom : ∀ w', ∑ t0 ∈ R, g t0 w' ≤ c * S w') :
     ∑ t0 ∈ R, ∑ w', th w' * g t0 w' ≤ c * wsup len B S := by
   calc ∑ t0 ∈ R, ∑ w', th w' * g t0 w' = ∑ w', th w' * ∑ t0 ∈ R, g t0 w' := by
-        rw [Finset.sum_comm]
-        exact Finset.sum_congr rfl fun w' _ => (Finset.mul_sum _ _ _).symm
+        rw [Finset.sum_comm]; simp_rw [Finset.mul_sum]
     _ ≤ ∑ w', th w' * (c * S w') :=
         Finset.sum_le_sum fun w' _ => mul_le_mul_of_nonneg_left (hdom w') (hth.1 w')
     _ = c * ∑ w', th w' * S w' := by

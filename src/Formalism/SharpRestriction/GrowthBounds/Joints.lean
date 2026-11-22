@@ -404,8 +404,7 @@ theorem LPprime_mono_kappa {W Qq O Kf : Type*} [CommRing W] [Field Qq] [Algebra 
   refine ⟨h1, fun L hL => ?_⟩
   obtain ⟨M, e, F, he, hF, hsc, n, hn, hg⟩ := h2 L hL
   refine ⟨M, e, F, he, hF, hsc, n, ?_, hg⟩
-  have h0 : (0 : ℝ) ≤ (dimV Kf lam0 : ℝ) := Nat.cast_nonneg _
-  nlinarith
+  nlinarith [show (0 : ℝ) ≤ (dimV Kf lam0 : ℝ) from Nat.cast_nonneg _]
 
 theorem LPprime_min_one {W Qq O Kf : Type*} [CommRing W] [Field Qq] [Algebra W Qq] [CommRing O] [Field Kf]
     [Algebra O Kf] {p n' : ℕ} {ι : Qq →+* Kf} {σ : Qq ≃+* Qq} {w : O} {m r : ℕ} {lam0 : Fin n' → Fin (m + 1) → ℤ}
@@ -417,8 +416,7 @@ theorem LPprime_min_one {W Qq O Kf : Type*} [CommRing W] [Field Qq] [Algebra W Q
     refine ⟨h1, fun L hL => ?_⟩
     obtain ⟨M, e, F, he, hF, hsc, n, _, hg⟩ := h2 L hL
     refine ⟨M, e, F, he, hF, hsc, n, ?_, hg⟩
-    rw [min_eq_left hk, sub_self, zero_mul]
-    exact Nat.cast_nonneg _
+    simp [min_eq_left hk]
 
 theorem type_two_hypothesis_of_counts (D : D7) (L : SizeData₂ D) (K : Consts) (C : ℝ) (hC0 : 0 ≤ C)
     (hCk : C ≤ K.kII) (hCt : C ≤ K.tII) (hCL : C ≤ K.La) (hCD : C ≤ K.DII) (hCs : C ≤ K.szII)
@@ -854,7 +852,6 @@ theorem bad_share_of_extension_proposition (D : Formalism.BasicNotions.D7) (C₀
     Formalism.MainNotions.flipOneThree.admB2 D C₀ CH CA CE1 CE2 Cm Ckap Ct Cc := by
   refine depth_bound_of_extension D C₀ CH CA CE1 CE2 Cm Ckap Ct Cc h ?_
   intro X _ O _ _ _ hX j
-  have hY := hX.1.1
   have hkp := hX.1.2.1
   have hm : 1 ≤ X.m := Nat.one_le_iff_ne_zero.mpr (NeZero.ne X.m)
   have hp : 1 < X.p := by
@@ -862,7 +859,7 @@ theorem bad_share_of_extension_proposition (D : Formalism.BasicNotions.D7) (C₀
       unfold Formalism.MainNotions.ColumnSystems.Loc.k; have : (1 : ℝ) ≤ (X.m : ℝ) := by exact_mod_cast hm
       linarith
     have hk2 : (4 : ℝ) ≤ X.k ^ 2 := by nlinarith
-    have hY2 : (1 : ℝ) ≤ X.Y ^ 2 := by nlinarith
+    have hY2 : (1 : ℝ) ≤ X.Y ^ 2 := by nlinarith [hX.1.1, hX.1.2.1]
     have : (4 : ℝ) ≤ (X.p : ℝ) := by
       have := mul_le_mul hk2 hY2 (by norm_num) (by positivity)
       linarith
@@ -1001,26 +998,23 @@ def OrbitSegs (D : D7) (L : SizeData₂ D) : Prop :=
     (∃ x ∈ TT, IsTypeV x) ∧ 2 ≤ numSeg TT ∧ Formalism.MainNotions.flipOneThree.EvenGapHyp TT (Gp L.sc) (N1 L.sc)
 
 theorem scale_facts (s : Scale) : 1 < s.a ∧ 0 < s.b' ∧ 0 < s.X' ∧ s.a / s.b' = s.X' := by
-  have hx : 1 < s.x := s.one_lt_alt
   have hL : 0 < s.L := by
     unfold Scale.L
-    exact Real.rpow_pos_of_pos (by linarith) _
+    exact Real.rpow_pos_of_pos (by linarith [s.one_lt_alt]) _
   have hb : 1 < s.b := by
-    unfold Scale.b
-    rw [show (1 : ℝ) = Real.exp 0 from Real.exp_zero.symm]
-    exact Real.exp_lt_exp.mpr hL
+    simpa [Scale.b] using Real.exp_lt_exp.mpr hL
   have ha : 1 < s.a := by
     unfold Scale.a
-    nlinarith
+    nlinarith [s.one_lt_alt]
   have hX : 0 < s.X' := by
     unfold Scale.X'
     exact Real.exp_pos _
   have hb' : 0 < s.b' := by
     unfold Scale.b'
     exact div_pos (by linarith) hX
-  refine ⟨ha, hb', hX, ?_⟩
-  unfold Scale.b'
-  field_simp
+  exact ⟨ha, hb', hX, by
+    unfold Scale.b'
+    field_simp⟩
 
 set_option maxHeartbeats 2000000 in
 
@@ -1342,8 +1336,7 @@ theorem padicValNat_lt_of_lt_pow {p : ℕ} [hp : Fact p.Prime] {y t : ℕ} (hy :
     padicValNat p y ≤ t := by
   by_contra hc
   push_neg at hc
-  have h1 : p ^ (t + 1) ∣ y := (pow_dvd_pow p (Nat.succ_le_of_lt hc)).trans pow_padicValNat_dvd
-  have h2 := Nat.le_of_dvd hy h1
+  have hle : p ^ (t + 1) ≤ y := Nat.le_of_dvd hy ((pow_dvd_pow p (Nat.succ_le_of_lt hc)).trans pow_padicValNat_dvd)
   omega
 
 theorem logVal_clause1 (p : ℕ) (hp : p.Prime) (t s : ℕ) :
@@ -1465,17 +1458,15 @@ theorem fk_logb_ge_one (D : D7) (L : SizeData₂ D) (p : ℕ) (hp : p.Prime) (hp
     1 ≤ (D.R.f : ℝ) * (D.R.k : ℝ) ^ 2 * Real.logb p L.sc.a := by
   have hp1 : (1 : ℝ) < p := by exact_mod_cast hp.one_lt
   have hlog : 1 ≤ Real.logb p L.sc.a := by
-    rw [Real.le_logb_iff_rpow_le hp1 (by linarith), Real.rpow_one]; exact hpa
+    rwa [Real.le_logb_iff_rpow_le hp1 (by linarith), Real.rpow_one]
   have hf : (1 : ℝ) ≤ (D.R.f : ℝ) := by
-    have h1 := D.R.one_le_n
-    have : 1 ≤ D.R.f := by unfold Formalism.BasicNotions.Ranks.f; omega
-    exact_mod_cast this
+    exact_mod_cast (by have h1 := D.R.one_le_n; unfold Formalism.BasicNotions.Ranks.f; omega : 1 ≤ D.R.f)
   have hk : (1 : ℝ) ≤ (D.R.k : ℝ) ^ 2 := by
-    have h5 := D.R.five_le_k
-    have : (1 : ℝ) ≤ (D.R.k : ℝ) := by exact_mod_cast (by omega : 1 ≤ D.R.k)
+    have hk1 : (1 : ℝ) ≤ (D.R.k : ℝ) := by
+      have h5 := D.R.five_le_k
+      exact_mod_cast (by omega : 1 ≤ D.R.k)
     nlinarith
-  calc (1 : ℝ) = 1 * 1 * 1 := by ring
-    _ ≤ _ := mul_le_mul (mul_le_mul hf hk zero_le_one (by linarith)) hlog zero_le_one (by positivity)
+  simpa using mul_le_mul (mul_le_mul hf hk zero_le_one (by linarith)) hlog zero_le_one (by positivity)
 
 theorem weyl_sandwich_of_factors (D : D7) (L : SizeData₂ D) (X : Inst D L) (Ce : ℝ) (hCe : 0 ≤ Ce) (hEp : EpDef X Ce)
     (hW : WeylSandwichG D) (hE : ExpBoundG D X) : Formalism.MainNotions.AuxBlock8.adm9 D L X Ce := by
@@ -1976,8 +1967,7 @@ theorem Nv_eq_card {D : D7} {L : SizeData₂ D} (X : Inst D L) {p : ℕ} (hc : I
 theorem inBand_of_inBand0 {D : D7} {K : Consts} {s : Scale} {p : ℕ} (h : rho D K s ≤ rhoB D K s)
     (h0 : InBand0 D K s p) : InBand D K s p := by
   obtain ⟨hp0, hX, d, hd, h1, h2⟩ := h0
-  have hX0 : 0 < s.X' := by unfold Scale.X'; exact Real.exp_pos _
-  refine ⟨hp0, hX, d, hd, le_trans ?_ h1, h2.trans ?_⟩ <;> nlinarith
+  exact ⟨hp0, hX, d, hd, by nlinarith [show (0 : ℝ) < s.X' by unfold Scale.X'; exact Real.exp_pos _], by nlinarith [show (0 : ℝ) < s.X' by unfold Scale.X'; exact Real.exp_pos _]⟩
 
 def StdSubAt (D : D7) : Prop :=
   ∀ (u : D.what₂.Word) (w : D.what₂.places.Pl) (hg : GIdx D.host (D.mem u).A.T (D.what₂.places.resChar w))

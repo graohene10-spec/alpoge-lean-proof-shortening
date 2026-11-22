@@ -11,10 +11,8 @@ variable {p : ℕ} [hp : Fact p.Prime]
 
 theorem norm_natCast_inv_le (n : ℕ) (hn : n ≠ 0) :
     ‖((n : ℚ_[p]))⁻¹‖ ≤ (p : ℝ) ^ (n.factorization p) := by
-
-  have hp1 : p.Prime := Fact.out
   rw [norm_inv, show ((n : ℚ_[p])) = ((n : ℚ) : ℚ_[p]) by push_cast; rfl, Padic.eq_padicNorm,
-    padicNorm.eq_zpow_of_nonzero (by exact_mod_cast hn), padicValRat.of_nat, Nat.factorization_def n hp1]
+    padicNorm.eq_zpow_of_nonzero (by exact_mod_cast hn), padicValRat.of_nat, Nat.factorization_def n (Fact.out : p.Prime)]
   push_cast
   simp [padicValRat.of_nat]
 
@@ -43,10 +41,8 @@ theorem bnd_sum {ι : Type} (s : Finset ι) (f : ι → MvPolynomial σ ℚ_[p])
 
 theorem bnd_smul {B : ℝ} (a : ℚ_[p]) {u : MvPolynomial σ ℚ_[p]} (h : Bnd B u) :
     Bnd (‖a‖ * B) (a • u) := by
-
   intro m
-  rw [MvPolynomial.coeff_smul, smul_eq_mul, norm_mul]
-  exact mul_le_mul_of_nonneg_left (h m) (norm_nonneg _)
+  simpa [MvPolynomial.coeff_smul, smul_eq_mul, norm_mul] using mul_le_mul_of_nonneg_left (h m) (norm_nonneg a)
 
 theorem bnd_mono {B B' : ℝ} {u : MvPolynomial σ ℚ_[p]} (h : Bnd B u) (hB : B ≤ B') : Bnd B' u := fun m => (h m).trans hB
 
@@ -178,9 +174,7 @@ variable {p : ℕ} [hp : Fact p.Prime] {σ : Type}
 private theorem contr_finset_sum {ι : Type} {C : ℝ} (hC : 0 ≤ C) (s : Finset ι)
     (T : ι → (MvPolynomial σ ℚ_[p] →ₗ[ℚ_[p]] MvPolynomial σ ℚ_[p]))
     (h : ∀ i ∈ s, Contr C (T i)) : Contr C (∑ i ∈ s, T i) := by
-  intro B hB u hu
-  rw [LinearMap.sum_apply]
-  exact bnd_sum _ _ (mul_nonneg hB hC) fun i hi => h i hi B hB u hu
+  exact fun B hB u hu => by simpa [LinearMap.sum_apply] using bnd_sum _ _ (mul_nonneg hB hC) fun i hi => h i hi B hB u hu
 
 private theorem contr_smul_mahler_measure {C : ℝ} (a : ℚ_[p])
     {T : MvPolynomial σ ℚ_[p] →ₗ[ℚ_[p]] MvPolynomial σ ℚ_[p]} (h : Contr C T) :

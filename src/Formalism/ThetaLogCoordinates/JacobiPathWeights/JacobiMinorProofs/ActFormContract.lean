@@ -12,11 +12,8 @@ variable {R : Type*} [CommRing R] {n : ℕ}
 
 theorem minorMap : MinorMap := by
   intro R R' _ _ φ n m I J
-  unfold minorF
-  split_ifs with h
-  · rw [RingHom.map_det]
-    rfl
-  · exact map_zero φ
+  by_cases h : J.card = I.card <;> simp [minorF, h, RingHom.map_det]
+  rfl
 
 lemma sg_mul_self (I : Finset (Fin n)) (m : Fin n) : sg I m * sg I m = 1 := by
   rw [sg, ← mul_pow, neg_one_mul, neg_neg, one_pow]

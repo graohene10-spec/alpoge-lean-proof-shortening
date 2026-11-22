@@ -29,11 +29,8 @@ theorem wtsp_mono (LL : Letters N) (j : ℕ) (Cs : Finset (Fin r)) (w : Fin r �
     WtSpC p LL j univ w ≤ WtSpC p LL j Cs w := by
   intro x hx
   simp only [WtSpC, MvPolynomial.mem_restrictSupport_iff] at hx ⊢
-  intro m hm
-  have hm' := hx hm
-  simp only [Set.mem_setOf_eq] at hm' ⊢
-  intro c _
-  exact hm' c (Finset.mem_univ c)
+  intro m hm c _
+  exact hx hm c (Finset.mem_univ c)
 
 theorem eproj_mem (LL : Letters N) (j : ℕ) (ρ : Fin r) (w : Fin r → ℤ)
     (PE : MvPolynomial (Fin N × Fin r) ℚ_[p] →ₗ[ℚ_[p]] MvPolynomial (Fin N × Fin r) ℚ_[p])

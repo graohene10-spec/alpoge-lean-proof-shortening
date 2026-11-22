@@ -569,7 +569,6 @@ open leadingTermLemmas in
 theorem path_basis_lemma : LemmaA := by
   intro k _ n C
   refine linearIndependent_of_Lead key_inj _ (fun T => tabDiag T.1) ?_ (fun T => Lead_tab k T.1)
-  intro T T' h
-  exact Subtype.ext (tab_inj T.2 T'.2 h)
+  exact fun T T' h => Subtype.ext (tab_inj T.2 T'.2 h)
 
 end Formalism.InvariantFactorPaths.GelfandTsetlinBases

@@ -80,7 +80,7 @@ theorem sum_SOf (g : D.what₂.places.Pl → ℝ) (hg : ∀ w, w ∉ L.supp → 
   classical
   have h1 : ∑ w ∈ L.supp, g w = ∑ z ∈ L.supp.image (plF D), g (plB D z) := by
     rw [Finset.sum_image (fun a _ b _ h => plF_injective D h)]
-    exact Finset.sum_congr rfl (fun w _ => by rw [plB_plF])
+    simp_rw [plB_plF]
   rw [h1]
   symm
   apply Finset.sum_subset
@@ -88,15 +88,10 @@ theorem sum_SOf (g : D.what₂.places.Pl → ℝ) (hg : ∀ w, w ∉ L.supp → 
     obtain ⟨w, hw, rfl⟩ := Finset.mem_image.1 hz
     exact plF_mem_of_supp L hw
   · intro z _ hz
-    apply hg
-    intro h
-    exact hz (Finset.mem_image.2 ⟨plB D z, h, plF_plB D z⟩)
+    exact hg _ (fun h => hz (Finset.mem_image.2 ⟨plB D z, h, plF_plB D z⟩))
 
 theorem gainD_off (j : ℕ) {w : D.what₂.places.Pl} (hw : w ∉ L.supp) : L.gainD j w = 0 := by
-  unfold SizeData₂.gainD
-  split_ifs
-  · rfl
-  · exact L.gain_supp j w hw
+  simp [SizeData₂.gainD, L.gain_supp j w hw]
 
 theorem sg_off (u : D.what₂.Word) {w : D.what₂.places.Pl} (hw : w ∉ L.supp) : L.sg u w = 0 := by
   unfold SizeData₂.sg
@@ -340,10 +335,8 @@ theorem good_pow (w a : slopeLatticeData.FinPl K) (k : ℕ) : Good V w (a.1 ^ k)
     rw [pow_succ]
     by_cases h : a = w
     · subst h
-      have := good_mul a ih (good_self (V := V) a)
-      simpa using this
-    · have := good_mul w ih (good_ne (V := V) w a h)
-      simpa [h] using this
+      simpa using good_mul a ih (good_self (V := V) a)
+    · simpa [h] using good_mul w ih (good_ne (V := V) w a h)
 
 theorem good_prod (w : slopeLatticeData.FinPl K) (n : slopeLatticeData.FinPl K → ℕ) (s : Finset (slopeLatticeData.FinPl K)) :
     Good V w (∏ a ∈ s, a.1 ^ n a) (∑ a ∈ s, if a = w then n a else 0) := by
@@ -489,10 +482,7 @@ theorem lattice_hypotheses_small : LatticeHypothesisOfColumnFacts := by
 theorem hsSq_submatrix {m n m' n' : Type} [Fintype m] [Fintype n] [Fintype m'] [Fintype n'] (M : Matrix m n ℂ)
     (e : m' ≃ m) (e' : n' ≃ n) : HilbertSchmidtNormSquare.hsSq (M.submatrix e e') = HilbertSchmidtNormSquare.hsSq M := by
   unfold HilbertSchmidtNormSquare.hsSq
-  rw [← Equiv.sum_comp e]
-  refine Finset.sum_congr rfl (fun i _ => ?_)
-  rw [← Equiv.sum_comp e']
-  rfl
+  simp only [← Equiv.sum_comp e, ← Equiv.sum_comp e', Matrix.submatrix_apply]
 
 theorem matRec_of_fin (D : D7) (η0 η1 e0 : ℝ) (v : InfinitePlace D.what₂.LL)
     (Y : ∀ u, Matrix (D.div.Nu u).ι (D.div.Nu u).ι ℂ) (Y' : Matrix D.div.RR.ι D.div.RR.ι ℂ)
@@ -721,9 +711,7 @@ theorem locLe_zero' {K : Type} [Field K] [NumberField K] {V : Type} [AddCommGrou
     {w : HeightOneSpectrum (𝓞 K)} {A B : Submodule (𝓞 K) V} (h : DV.LocLe w 0 A B) :
     ∀ x ∈ A, ∃ s : 𝓞 K, s ∉ w.asIdeal ∧ s • x ∈ B := by
   intro x hx
-  obtain ⟨s, hs, hsx⟩ := h x hx
-  rw [pow_zero, Ideal.one_eq_top, Submodule.top_smul] at hsx
-  exact ⟨s, hs, hsx⟩
+  simpa [pow_zero, Ideal.one_eq_top, Submodule.top_smul] using h x hx
 
 theorem exists_pl_over (K : Type) [Field K] [NumberField K] (p : ℕ) (hp : p.Prime) :
     ∃ z : slopeLatticeData.FinPl K, LChain2.prBelow z = p := by
@@ -817,12 +805,10 @@ theorem ta_eq (hτ : TauNat L) :
 theorem sgw_eq (hm : D.R.m = m) (u : D.what₂.Word) (z : slopeLatticeData.FinPl D.what₂.LL) :
     (famOf L m A).sgw u z = L.sg u (plB D z) := by
   show ∑ j : Fin m, (L.gainD (j.val + 1) (plB D z) + L.F (j.val + 1) (plB D z) - L.E u (j.val + 1) (plB D z)) = _
-  unfold SizeData₂.sg
-  rw [Lnk.sum_lifts D m hm (fun j => L.gainD j (plB D z) + L.F j (plB D z) - L.E u j (plB D z))]
+  simpa only [SizeData₂.sg] using (Lnk.sum_lifts D m hm (fun j => L.gainD j (plB D z) + L.F j (plB D z) - L.E u j (plB D z))).symm
 
 theorem tauZ_off {z : slopeLatticeData.FinPl D.what₂.LL} (hz : z ∉ SOf L) : tauZ L z = 0 := by
-  show (if z ∈ SOf L then ⌊DV.ur D (plB D z) (L.tau (plB D z))⌋ else 0) = 0
-  rw [if_neg hz]
+  simp [tauZ, hz]
 
 theorem sgZ_off (u : D.what₂.Word) {z : slopeLatticeData.FinPl D.what₂.LL} (hz : z ∉ SOf L) : sgZ L u z = 0 := by
   show (if z ∈ SOf L then ⌊DV.ur D (plB D z) (L.sg u (plB D z))⌋ else 0) = 0

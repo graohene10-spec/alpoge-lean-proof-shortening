@@ -393,9 +393,8 @@ theorem scal_only0D (s : Fin 2 → ℝ) (hs : 0 < s 0) (v : InfinitePlace K) (a 
   rw [Fin.forall_fin_two]
   refine ⟨fun x _ y => ?_, fun x hx y => ?_⟩
   · exact scal_diag2 (fun _ : Fin 1 => s 0) (fun _ => hs) v (fun _ => a 0) 0 x (mem_line_one x) y
-  · have h0 : x = 0 := by simpa [only0] using hx
-    subst h0
-    rw [Matrix.mulVec_zero, maj_zero, maj_zero, mul_zero]
+  · obtain rfl : x = 0 := by simpa [only0] using hx
+    simp [Matrix.mulVec_zero, maj_zero]
 
 theorem map_only0 (A : Matrix (Fin 1) (Fin 1) K) (h : Function.Bijective A.mulVec) (p : Fin 2) :
     Submodule.map A.mulVecLin (only0 (K := K) (Fin 1 → K) p) = only0 (K := K) (Fin 1 → K) p := by
@@ -551,11 +550,10 @@ theorem scal_eq (t : Bool) (p : Fin 2) (v : InfinitePlace K) :
 
 theorem norm_inner_fF_le_half_sq_add_integral (j p : Fin 2) (v : InfinitePlace K) :
     min (Real.log (l j 0)) (Real.log (l j 1)) ≤ Real.log (l j p * ‖v.embedding (bT K b false j p)‖ ^ 2) := by
-  have h1 : l j p * ‖v.embedding (bT K b false j p)‖ ^ 2 = l j p := by simp [bT]
-  rw [h1]
-  revert p
-  rw [Fin.forall_fin_two]
-  exact ⟨fun _ => min_le_left _ _, fun _ => min_le_right _ _⟩
+  rw [show l j p * ‖v.embedding (bT K b false j p)‖ ^ 2 = l j p by simp [bT]]
+  fin_cases p
+  · exact min_le_left _ _
+  · exact min_le_right _ _
 
 variable (S) in
 theorem h0 (hS : ∀ w, conjPl w ∈ S ↔ w ∈ S) : (dat0 K v0 S b kap l).H0 :=

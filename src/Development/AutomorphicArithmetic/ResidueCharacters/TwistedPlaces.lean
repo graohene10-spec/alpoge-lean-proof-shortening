@@ -278,8 +278,7 @@ theorem admissibleMeanCondition_holds (L : SizeData₂ D) : TwistedWeightMeanBou
   rw [RingOfIntegers.rank] at hsum
   have hsum' : ∑ q ∈ ((Ideal.span {(l : ℤ)}).primesOver (𝓞 D.what₂.LL)).toFinset,
       q.ramificationIdx ℤ * q.inertiaDeg ℤ = Module.finrank ℚ D.what₂.LL := by
-    rw [← hsum]
-    exact (Finset.sum_set_coe (f := fun q : Ideal (𝓞 D.what₂.LL) => q.ramificationIdx ℤ * q.inertiaDeg ℤ) _).symm
+    simpa only [← hsum] using (Finset.sum_set_coe (f := fun q : Ideal (𝓞 D.what₂.LL) => q.ramificationIdx ℤ * q.inertiaDeg ℤ) _).symm
   have hn : (0 : ℝ) < (Module.finrank ℚ D.what₂.LL : ℝ) := by exact_mod_cast Module.finrank_pos
   have hlog : 0 ≤ Real.log (l : ℝ) := Real.log_natCast_nonneg l
   set G : Ideal (𝓞 D.what₂.LL) → ℝ := fun q =>
@@ -288,7 +287,6 @@ theorem admissibleMeanCondition_holds (L : SizeData₂ D) : TwistedWeightMeanBou
   have hterm : ∀ w ∈ S, SizeData₂.lwP w * (D.what₂.places.ramIdx w : ℝ) = G (D.plEq w).asIdeal := by
     intro w hw
     have hwl : D.what₂.places.resChar w = l := (mem_twAt.1 hw).2.2
-    have := (D.plEq w).isPrime
     have : (D.plEq w).asIdeal.LiesOver (Ideal.span {(l : ℤ)}) := hwl ▸ liesOver_resChar D w
     have hN := Ideal.pow_inertiaDeg l (D.plEq w).asIdeal
     simp only [hG, SizeData₂.lwP, lw, D.ram_eq w, eWL, ← hN]

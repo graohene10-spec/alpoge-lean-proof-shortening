@@ -13,9 +13,8 @@ theorem fock_mult_fact_le {α : Type*} (p : ℕ) (f : α → ℕ) (s : Finset α
   rw [Nat.multinomial_insert ha, Nat.factorization_mul (Nat.choose_pos (Nat.le_add_right _ _)).ne'
     (Nat.multinomial_pos _ _).ne', Finsupp.add_apply, Finset.card_insert_of_notMem ha, Finset.sum_insert ha]
   have h1 := Nat.factorization_choose_le_log (p := p) (n := f a + ∑ i ∈ s, f i) (k := f a)
-  have h2 : Nat.log p (∑ i ∈ s, f i) ≤ Nat.log p (f a + ∑ i ∈ s, f i) :=
-    Nat.log_mono_right (Nat.le_add_left _ _)
-  have h3 := Nat.mul_le_mul_left s.card h2
+  have h3 : s.card * Nat.log p (∑ i ∈ s, f i) ≤ s.card * Nat.log p (f a + ∑ i ∈ s, f i) :=
+    Nat.mul_le_mul_left s.card (Nat.log_mono_right (Nat.le_add_left (∑ i ∈ s, f i) (f a)))
   rw [add_one_mul]
   omega
 
@@ -46,19 +45,17 @@ theorem fock_L_nonneg (p : ℕ) [hp : Fact p.Prime] (k : ℕ) (a : ℝ) (ha : 0 
 
 theorem fock_log_le (p : ℕ) [hp : Fact p.Prime] (k D : ℕ) (a : ℝ) (ha : 0 ≤ a) (hk : 1 ≤ k)
     (hD : (D : ℝ) ≤ 2 * a) : (Nat.log p D : ℝ) ≤ Real.logb p (2 * a + k) + 1 := by
-  have h0 := fock_L_nonneg p k a ha hk
   rcases Nat.eq_zero_or_pos D with hD0 | hD0
-  · subst hD0; simpa using h0
+  · subst hD0; simpa using fock_L_nonneg p k a ha hk
   have hp1 : (1 : ℝ) < p := by exact_mod_cast hp.out.one_lt
-  have hkR : (1 : ℝ) ≤ k := by exact_mod_cast hk
-  have hpos : (0 : ℝ) < 2 * a + k := by linarith
+  have hpos : (0 : ℝ) < 2 * a + k := by linarith [show (1 : ℝ) ≤ k by exact_mod_cast hk]
   have hle : (Nat.log p D : ℝ) ≤ Real.logb p (2 * a + k) := by
     rw [Real.le_logb_iff_rpow_le hp1 hpos, Real.rpow_natCast]
-    have : p ^ Nat.log p D ≤ D := Nat.pow_log_le_self p hD0.ne'
-    have : ((p ^ Nat.log p D : ℕ) : ℝ) ≤ D := by exact_mod_cast this
-    push_cast at this
+    have h : ((p ^ Nat.log p D : ℕ) : ℝ) ≤ D := by
+      exact_mod_cast Nat.pow_log_le_self p hD0.ne'
+    push_cast at h
     linarith
-  linarith
+  linarith [fock_L_nonneg p k a ha hk]
 
 theorem factProd_ne_zero {σ : Type} [Fintype σ] (α : σ →₀ ℕ) : factProd α ≠ 0 := Finset.prod_ne_zero_iff.mpr fun i _ => Nat.factorial_ne_zero _
 
@@ -121,16 +118,13 @@ theorem fock_core (p : ℕ) [Fact p.Prime] {σ Z : Type} [Fintype σ] [Fintype Z
 
 theorem frame_val (p : ℕ) [Fact p.Prime] (D : ℕ) {r : ℕ} (m : Fin r → ℕ) (hm : ∑ i, m i ≤ D) :
     padicValNat p (D.choose (∑ i, m i) * Nat.multinomial univ m) ≤ (r + 1) * Nat.log p D := by
-  have hc : D.choose (∑ i, m i) ≠ 0 := (Nat.choose_pos hm).ne'
-  have hm0 : Nat.multinomial univ m ≠ 0 := (Nat.multinomial_pos _ _).ne'
-  rw [padicValNat.mul hc hm0]
+  rw [padicValNat.mul (Nat.choose_pos hm).ne' (Nat.multinomial_pos _ _).ne']
   have h1 : padicValNat p (D.choose (∑ i, m i)) ≤ Nat.log p D := by
     rw [← Nat.factorization_def _ (Fact.out : p.Prime)]
     exact Nat.factorization_choose_le_log
   have h2 := fock_mult_val_le p m univ
   rw [Finset.card_univ, Fintype.card_fin] at h2
-  have h3 : Nat.log p (∑ i, m i) ≤ Nat.log p D := Nat.log_mono_right hm
-  have h4 := Nat.mul_le_mul_left r h3
+  have h4 := Nat.mul_le_mul_left r (Nat.log_mono_right (b := p) hm)
   rw [add_mul, one_mul]
   omega
 

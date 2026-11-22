@@ -76,13 +76,11 @@ theorem ord_eq_order_sub_of_fraction (x : KK O) (a b : O) (ha : a ≠ 0) (hb : b
   exact congrArg _ (by omega)
 
 theorem ramification_index_ne_zero {p : ℕ} (S : UniformizedDVR p O) : ramE p O ≠ 0 := by
-  obtain ⟨w, hw, hpm, hp0, _⟩ := S
   unfold ramE
-  have hnu : ¬ IsUnit (p : O) := (IsLocalRing.mem_maximalIdeal _).1 hpm
   have h0 : IsDiscreteValuationRing.addVal O (p : O) ≠ 0 :=
-    fun h => hnu (IsDiscreteValuationRing.addVal_eq_zero_iff.1 h)
-  have htop : IsDiscreteValuationRing.addVal O (p : O) ≠ ⊤ := by
-    rwa [Ne, IsDiscreteValuationRing.addVal_eq_top_iff]
+    fun hz => (IsLocalRing.mem_maximalIdeal _).1 S.p_mem (IsDiscreteValuationRing.addVal_eq_zero_iff.1 hz)
+  have htop : IsDiscreteValuationRing.addVal O (p : O) ≠ ⊤ :=
+    fun hz => S.p_ne ((IsDiscreteValuationRing.addVal_eq_top_iff).1 hz)
   intro h
   apply h0
   rw [← ENat.coe_toNat htop, h]
@@ -185,10 +183,7 @@ theorem natCast_isUnit_of_coprime {p : ℕ} (hp : p.Prime) (S : UniformizedDVR p
   have hn' : (n : O) ∈ IsLocalRing.maximalIdeal O := (IsLocalRing.mem_maximalIdeal _).2 hnu
   have hcop : Nat.Coprime p n := (Nat.Prime.coprime_iff_not_dvd hp).2 hn
   obtain ⟨u, v, huv⟩ := Nat.isCoprime_iff_coprime.2 hcop
-  have h1 : (u : O) * (p : O) + (v : O) * (n : O) = 1 := by
-    have := congrArg (Int.cast : ℤ → O) huv
-    push_cast at this
-    exact this
+  have h1 : (u : O) * (p : O) + (v : O) * (n : O) = 1 := by simpa using congrArg (Int.cast : ℤ → O) huv
   have h1m : (1 : O) ∈ IsLocalRing.maximalIdeal O := by
     rw [← h1]
     exact Ideal.add_mem _ (Ideal.mul_mem_left _ _ hpm) (Ideal.mul_mem_left _ _ hn')

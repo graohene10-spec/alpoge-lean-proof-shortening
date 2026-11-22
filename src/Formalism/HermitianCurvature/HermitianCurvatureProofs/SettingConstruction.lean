@@ -63,8 +63,7 @@ lemma herm_single (i j : ι) : herm H (Pi.single j 1) (Pi.single i 1) = H i j :=
 
 lemma unitary_of_form (g : Matrix ι ι ℂ) (h : ∀ x y, herm H (g *ᵥ x) (g *ᵥ y) = herm H x y) : gᴴ * H * g = H := by
   ext i j
-  have := h (Pi.single j 1) (Pi.single i 1)
-  rwa [herm_mulVec, herm_single, herm_single] at this
+  simpa only [herm_mulVec, herm_single] using h (Pi.single j 1) (Pi.single i 1)
 
 lemma form_of_unitary {g : Matrix ι ι ℂ} (h : gᴴ * H * g = H) (x y : ι → ℂ) : herm H (g *ᵥ x) (g *ᵥ y) = herm H x y := by
   rw [herm_mulVec, h]

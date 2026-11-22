@@ -537,19 +537,15 @@ theorem core {R : Subring K} {s : ℕ} {Cut : Set K} {τ : Kˣ} {F : Kˣ → ℂ
           · simp only [if_pos hz]; exact hC _ hc z hz
           · simp only [if_neg hz]; simp
         · intro ε _
-          refine (hfin2 (τ * cr x)).subset ?_
-          intro z hz
-          by_contra hne
-          exact hz (if_neg hne)
+          exact (hfin2 (τ * cr x)).subset fun z hz => by
+            by_contra hne
+            exact hz (if_neg hne)
       · simp only [if_neg hc]; simp
     · intro ε _
-      refine hfin1.subset ?_
-      intro x hx
-      by_contra hne
-      exact hx (if_neg hne)
-  rcases mul_eq_zero.1 hsum with h0 | h0
-  · exact absurd (by exact_mod_cast h0) hcard
-  · exact h0
+      exact hfin1.subset fun x hx => by
+        by_contra hne
+        exact hx (if_neg hne)
+  exact (mul_eq_zero.1 hsum).resolve_left fun h0 => hcard (by exact_mod_cast h0)
 
 end Core
 

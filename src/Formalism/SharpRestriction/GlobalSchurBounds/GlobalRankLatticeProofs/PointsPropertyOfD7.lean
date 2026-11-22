@@ -191,8 +191,7 @@ end SlopeTestRemainingChoices
 
 theorem inertPart_holds (D : D7) : InertPart D := by
   intro φ₀ _ h p hp hram hfr 𝔭 h𝔭 hlies
-  rw [SlopeTestRemainingChoices.inert_iff_mem_zpowers D p hp hram 𝔭 h𝔭 hlies, hfr]
-  exact cc_mem_zpowers_gOf D φ₀ h
+  simpa [SlopeTestRemainingChoices.inert_iff_mem_zpowers D p hp hram 𝔭 h𝔭 hlies, hfr] using cc_mem_zpowers_gOf D φ₀ h
 
 theorem points_property_of_d7 (D : D7) : PointsLemma D := lemma_one_three_of_inert D (inertPart_holds D)
 

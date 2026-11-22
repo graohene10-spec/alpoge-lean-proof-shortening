@@ -30,9 +30,7 @@ theorem setTies_deg_eta (LL : Letters N) (T : TieData) (hT : StrictMono T.pos) (
   unfold Letters.setTies
   have hex : ∃ j, T.pos j + 1 = ((⟨T.pos i + 1, h⟩ : Fin N) : ℕ) := ⟨i, rfl⟩
   simp only [dif_pos hex]
-  congr 1
-  have := Classical.choose_spec hex
-  exact hT.injective (by simpa using this)
+  exact congrArg n (hT.injective (by simpa using Classical.choose_spec hex))
 
 theorem setTies_deg_mono (LL : Letters N) (T : TieData) (n n' : Fin T.t → ℕ) (hn : ∀ i, n i ≤ n' i) (a : Fin N) :
     (LL.setTies T n).deg a ≤ (LL.setTies T n').deg a := by
@@ -145,13 +143,11 @@ theorem mmw_ne_bot_box {K r : ℕ} [NeZero r] (LLw : Letters K) {q : ℕ} (J : F
     (ρ : Fin r) (w : Fin r → ℤ) (h : MMw p LLw J M ρ w ≠ ⊥) :
     w ∈ Fintype.piFinset (fun _ : Fin r => Icc (-(LLw.total : ℤ)) LLw.total) := by
   obtain ⟨x, hx, hx0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot h
-  obtain ⟨m, hm⟩ : ∃ m, m ∈ x.support := by
-    by_contra hc; push Not at hc
-    exact hx0 (MvPolynomial.support_eq_empty.mp (Finset.eq_empty_of_forall_notMem hc))
+  obtain ⟨m, hm⟩ : ∃ m, m ∈ x.support :=
+    Finset.nonempty_iff_ne_empty.mpr fun hsupp => hx0 (MvPolynomial.support_eq_empty.mp hsupp)
   unfold MMw at hx
-  have hY := (Submodule.mem_inf.mp (Submodule.mem_inf.mp hx).1).1
   have hW := (Submodule.mem_inf.mp hx).2
-  have hP : x ∈ Pol p r LLw := (Submodule.mem_inf.mp hY).1
+  have hP : x ∈ Pol p r LLw := (Submodule.mem_inf.mp (Submodule.mem_inf.mp (Submodule.mem_inf.mp hx).1).1).1
   rw [Pol, mem_restrictSupport_iff] at hP
   rw [WtSpC, mem_restrictSupport_iff] at hW
   have hmd : MultiDeg LLw m := hP (Finset.mem_coe.mpr hm)
@@ -885,10 +881,9 @@ theorem pointM_of_partner (hBad : BadCrit) (hPart : PartnerM) : PointM := by
   intro C hC p _ N r _ _ LL T a E κ n ρ h2p hr hρ hadm hE hS hdeg hz hκ hHP hHW hL4 nb f U V dg fw h1 h2 h3
   obtain ⟨L₁, hle, hsat, hpart, hrank⟩ :=
     hP C hC p N r LL T a E κ n ρ h2p hr hρ hadm hE hS hdeg hz hκ hHP hHW hL4 nb f U V dg fw h1 h2 h3
-  haveI hfin : Module.Finite ℤ_[p] (YZ p (r := r) (LL.setTies T n) T.J T.thr) :=
-    Module.Finite.iff_fg.mpr (yZ_fg _ _ _)
   have hb := hBad p (MvPolynomial (Fin N × Fin r) ℚ_[p]) (fockBil (LL.setTies T n) (T.phis p (LL.setTies T n)))
-    (YZ p (r := r) (LL.setTies T n) T.J T.thr) L₁ ⌊(T.t : ℝ) * (E + C * κ) + C * κ⌋ hfin hle hsat
+    (YZ p (r := r) (LL.setTies T n) T.J T.thr) L₁ ⌊(T.t : ℝ) * (E + C * κ) + C * κ⌋
+    (Module.Finite.iff_fg.mpr (yZ_fg _ _ _) : Module.Finite ℤ_[p] (YZ p (r := r) (LL.setTies T n) T.J T.thr)) hle hsat
     (fun u hu hprim => by
       obtain ⟨u', hu', h⟩ := hpart u hu hprim
       exact ⟨u', hu', by rw [fockBil_apply]; exact h⟩)

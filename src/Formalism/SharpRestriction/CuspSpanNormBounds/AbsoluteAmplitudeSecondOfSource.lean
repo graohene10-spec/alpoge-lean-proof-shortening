@@ -37,16 +37,14 @@ theorem hT_zero_of_mem_X (F : Formalism.MainNotions.S.FlagG S r T) {v : S.V} (hv
 
 theorem hT_zero_of_mem_Xplus (F : Formalism.MainNotions.S.FlagG S r T) {v : S.V} (hv : ∀ a, S.hT (F.e a) v = 0)
     (hz : S.hT F.z v = 0) : ∀ x ∈ F.Xplus, S.hT x v = 0 := by
-  have h : F.Xplus ≤ LinearMap.ker (S.hT.flip v) := by
-    refine sup_le (Submodule.span_le.2 ?_) (Submodule.span_le.2 ?_)
-    · rintro _ ⟨a, rfl⟩
-      simpa using hv a
-    · intro y hy
-      rw [Set.mem_singleton_iff] at hy
-      subst hy
-      simpa using hz
-  intro x hx
-  simpa using h hx
+  change F.Xplus ≤ LinearMap.ker (S.hT.flip v)
+  refine sup_le (Submodule.span_le.2 ?_) (Submodule.span_le.2 ?_)
+  · rintro _ ⟨a, rfl⟩
+    simpa using hv a
+  · intro y hy
+    rw [Set.mem_singleton_iff] at hy
+    subst hy
+    simpa using hz
 
 theorem fvec_mem_Xplus (F : Formalism.MainNotions.S.FlagG S r T) (a : Fin (r + 1)) : F.fvec a ∈ F.Xplus := by
   refine Fin.lastCases ?_ (fun i => ?_) a
@@ -102,9 +100,7 @@ theorem finrank_orth_Xplus (F : Formalism.MainNotions.S.FlagG S r T) (hT : T ≠
 theorem X_le_orth_Xplus (F : Formalism.MainNotions.S.FlagG S r T) : F.X ≤ orth S F.Xplus := by
   intro x hx
   rw [mem_orth_iff]
-  refine hT_zero_of_mem_Xplus F (fun a => ?_) ?_
-  · exact hT_swap_zero (hT_zero_of_mem_X F (fun b => F.e_iso b a) x hx)
-  · exact hT_swap_zero (hT_zero_of_mem_X F F.z_orth x hx)
+  exact hT_zero_of_mem_Xplus F (fun a => hT_swap_zero (hT_zero_of_mem_X F (fun b => F.e_iso b a) x hx)) (hT_swap_zero (hT_zero_of_mem_X F F.z_orth x hx))
 
 theorem finrank_X (F : Formalism.MainNotions.S.FlagG S r T) : finrank E F.X = r := by
   unfold Formalism.MainNotions.S.FlagG.X
@@ -243,9 +239,7 @@ def epsT (D : D7) : ℝ := Real.exp ((D.R.f : ℝ) * (2 : ℝ) ^ ((3 : ℝ) - D.
 theorem tprod_of_27 (D : D7) (h : LocalBesselAndTopKernel.projection_sandwich_lattice D) (w : D.what₂.Word) :
     |D.what₂.Dstar / (D.duS w : ℝ) - ∏ τ, (Formalism.MainNotions.S.Tcrit D w τ / Formalism.MainNotions.S.Tr D w) ^ D.R.k| ≤
       epsT D * ∏ τ, (Formalism.MainNotions.S.Tcrit D w τ / Formalism.MainNotions.S.Tr D w) ^ D.R.k := by
-  obtain ⟨h1, h2⟩ := h w
-  refine abs_sub_le_of_two_sided (Real.one_le_exp (by positivity)) ?_ h1 h2
-  rw [← Real.exp_add]; simp
+  exact abs_sub_le_of_two_sided (Real.one_le_exp (by positivity)) (by rw [← Real.exp_add]; simp) (h w).1 (h w).2
 
 section Tprod
 variable (D : D7) (large₂ : SizeData₂ D) (C' Cl Cg cb Cu cT CT C0 : ℝ)
@@ -647,13 +641,11 @@ theorem AuxiliaryNormPrimes.degree_ratio_unit_bound_of_formal_degree_ratio (D : 
 theorem one_le_b_of_StdHyp {Ch Cg : ℝ} {k r : ℕ} {ε : Fin (2 * r + k + 1) → Bool} {lam : Fin (2 * r + k + 1) → ℝ}
     {u u' : Fin k → ℝ} {T T' ka b : ℝ} (hCh : 0 < Ch) (h : StdHyp Ch Cg k r ε lam u u' T T' ka b) : 1 ≤ b := by
   obtain ⟨_, _, _, hka, h1, h2, _, _, _, _, hl, _⟩ := h
-  have hb0 : 0 ≤ b := le_trans (abs_nonneg _) (hl ⟨0, by omega⟩)
   have h3 : 1 ≤ b ^ Ch := by
     rcases le_total 1 ka with h | h
-    · exact le_trans h h1
-    · exact le_trans ((one_le_inv₀ hka).2 h) h2
-  by_contra hb
-  exact absurd h3 (not_le.2 (Real.rpow_lt_one hb0 (not_le.1 hb) hCh))
+    · exact h.trans h1
+    · exact ((one_le_inv₀ hka).2 h).trans h2
+  exact not_lt.1 (fun hb => not_le.2 (Real.rpow_lt_one (le_trans (abs_nonneg _) (hl ⟨0, by omega⟩)) hb hCh) h3)
 
 theorem BpIneq_mono (D : D7) {Cb Cb' : ℝ} (L : LocBessel D.R.k D.R.rS) (f : Mx D.R.k D.R.rS → (L.Wq →L[ℂ] L.Wp))
     (μsec : ℂ → Matrix (Fin (D.R.k + 1)) (Fin (D.R.k + 1)) ℂ) {b : ℝ} (γ : Point ℂ (D.R.rS + 1)) (hb : 1 ≤ b)
@@ -811,8 +803,7 @@ theorem AuxiliaryNormPrimes.AdmF_of
       hTl Cg cb Cu cT CT C0, hPT Cg cb Cu cT CT C0, hSum Cg cb Cu cT CT C0, hDl Cg cb Cu cT CT C0, hJ90 Cg cb Cu cT CT C0, hJ90p Cg cb Cu cT CT C0, hMOM Cg cb Cu cT CT C0, hc1 Cg cb Cu cT CT C0, hVol Cg cb Cu cT CT C0 A⟩⟩
 
 theorem VanishingOnXAndXPlusBranching.familyMass_of_massCount (Cg cb Cu cT CT C0 A C1' : ℝ) (h : VanishingOnXAndXPlusBranching.FamilyTargetsAtConstants Fm Cg cb Cu cT CT C0 A C1') : VanishingOnXAndXPlusBranching.ConclusionF1 Fm Cg cb Cu cT CT C0 C1' := by
-  obtain ⟨C, C2, Ch, hC⟩ := h
-  exact ⟨C, Formalism.MainNotions.S.OwnEv.mono (fun _ _ _ _ H => H.1) (hC 0 1 one_pos)⟩
+  exact match h with | ⟨C, _, _, hC⟩ => ⟨C, Formalism.MainNotions.S.OwnEv.mono (fun _ _ _ _ H => H.1) (hC 0 1 one_pos)⟩
 
 theorem S5.family_statements_all (c : ℝ)
     (Sa : VanishingOnXAndXPlusGlobal.KudlaFamilyStatement Fm) (S48 : VanishingOnXAndXPlusGluing.KudlaFamilyStatement Fm) (Sc : ∀ C1', VanishingOnXAndXPlusBranching.KudlaFamilyStatement Fm C1') (Sb : VanishingOnXAndXPlusMass.KudlaFamilyStatement Fm)

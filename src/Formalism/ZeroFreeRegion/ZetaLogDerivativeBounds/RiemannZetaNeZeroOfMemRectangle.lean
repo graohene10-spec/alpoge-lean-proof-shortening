@@ -24,8 +24,7 @@ theorem riemannZeta_ne_zero_of_mem_rectangle (c₀ : ℝ)
     (c T σ₀ : ℝ) (hc : 0 < c) (hcc : c ≤ c₀) (hT : 0 ≤ T) :
     ∀ w : ℂ, 1 - c / Real.log (T + 2) ≤ w.re → w.re ≤ σ₀ → |w.im| ≤ T → w ≠ 1 →
       riemannZeta w ≠ 0 := by
-  intro w h1 _ h3 h4
-  exact hZ w h4 ((one_sub_div_log_le c c₀ T w.im hc hcc hT h3).trans h1)
+  exact fun w h1 _ h3 h4 => hZ w h4 ((one_sub_div_log_le c c₀ T w.im hc hcc hT h3).trans h1)
 
 theorem norm_perronIntegrand_le_right (C₂ : ℝ)
     (hR : ∀ s : ℂ, 1 < s.re → ‖deriv riemannZeta s / riemannZeta s‖ ≤ 1 / (s.re - 1) + C₂)

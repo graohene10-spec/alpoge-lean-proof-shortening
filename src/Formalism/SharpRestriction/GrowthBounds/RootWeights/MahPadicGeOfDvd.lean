@@ -182,12 +182,10 @@ theorem mah_unit {p : ℕ} [Fact p.Prime] {x : ℚ} {θ : ℝ} (hθ : 0 < θ) (h
     exact_mod_cast this
   have hne : 1 + x ≠ 0 := by
     intro h
-    have hx1 : x = -1 := by linarith
-    rw [hx1, padicValRat.neg, padicValRat.one] at hpos
+    rw [show x = -1 by linarith, padicValRat.neg, padicValRat.one] at hpos
     exact lt_irrefl _ hpos
   refine ⟨hne, ?_⟩
-  have := padicValRat.add_eq_of_lt (p := p) hne one_ne_zero h0 (by rw [padicValRat.one]; exact hpos)
-  rw [this, padicValRat.one]
+  rw [padicValRat.add_eq_of_lt (p := p) hne one_ne_zero h0 (by rw [padicValRat.one]; exact hpos), padicValRat.one]
 
 theorem mah_padicGe_pow {p : ℕ} [Fact p.Prime] {x : ℚ} {r : ℝ} (hx : PadicGe p x r) (m : ℕ) :
     PadicGe p (x ^ m) (m * r) := by

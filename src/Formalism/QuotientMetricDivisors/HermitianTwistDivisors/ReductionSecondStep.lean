@@ -114,8 +114,7 @@ theorem image_li {d : ℕ} (φ : Matrix (Fin d) (Fin d) K) (hφ : IsUnit φ.det)
     (e : Fin d → Fin d → K) (he : LinearIndependent K e) :
     LinearIndependent K (fun i => φ *ᵥ e i) := by
   have hu : IsUnit φ := (Matrix.isUnit_iff_isUnit_det φ).mpr hφ
-  have hinj : Function.Injective φ.mulVec := Matrix.mulVec_injective_iff_isUnit.mpr hu
-  exact he.map' (Matrix.mulVecLin φ) (LinearMap.ker_eq_bot.mpr hinj)
+  exact he.map' (Matrix.mulVecLin φ) (LinearMap.ker_eq_bot.mpr (Matrix.mulVec_injective_iff_isUnit.mpr hu))
 
 theorem vec_expand {d : ℕ} (x : Fin d → K) : x = ∑ k, x k • (Pi.single k 1 : Fin d → K) := by
   funext i
@@ -223,14 +222,11 @@ theorem hcompl_le_conj (w : HeightOneSpectrum (𝓞 K)) :
     Formalism.HermitianLatticesTheory.hcompl (K := K) w.asIdeal ≤ (conjPl w).asIdeal.primeCompl := by
   unfold Formalism.HermitianLatticesTheory.hcompl
   rw [Submonoid.closure_le]
-  intro s hs
-  show s ∉ (conjPl w).asIdeal
-  intro hsc
+  rintro s hs hsc
   obtain ⟨u, hu, hus⟩ := (Ideal.mem_map_of_equiv (cO K) s).mp hsc
   apply hs.2 u _ hu
   rw [← hus]
-  show (u : K) = star (star (u : K))
-  rw [star_star]
+  exact (star_star (u : K)).symm
 
 theorem localization_eq_and_conj_eq_of_semilocalization_eq (w : HeightOneSpectrum (𝓞 K)) {d : ℕ} (A B : Submodule (𝓞 K) (Fin d → K))
     (h : Formalism.HermitianLatticesTheory.loc (K := K) w.asIdeal A = Formalism.HermitianLatticesTheory.loc (K := K) w.asIdeal B) :
@@ -377,10 +373,8 @@ theorem idx_change_img (hIC : IdxChange) {d : ℕ} (ι0 ι1 : Matrix (Fin d) (Fi
   obtain ⟨h1, h2⟩ := hIC K d (matLat ι1 L1) (matLat_lattice ι1 hι1 L1 hL1) _ li0 w γ hlb1
   obtain ⟨p1, p2⟩ := localization_eq_and_conj_eq_of_semilocalization_eq w _ _ hlb0.2
   refine ⟨γ, hγ, ?_, ?_⟩
-  · rw [← h1]
-    exact lidx_congr _ _ _ _ _ p1.symm rfl
-  · rw [← h2]
-    exact lidx_congr _ _ _ _ _ p2.symm rfl
+  · exact (lidx_congr _ _ _ _ _ p1.symm rfl).trans h1
+  · exact (lidx_congr _ _ _ _ _ p2.symm rfl).trans h2
 
 theorem local_id (hV : ValBasic) (hIC : IdxChange) (hJw : JwGram) [IsTotallyComplex K]
     (K0 : Subfield K) (hK0 : IsCMSub K0) (v0 : InfinitePlace K) (hv0 : IsConjAt v0)

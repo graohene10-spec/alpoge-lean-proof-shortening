@@ -21,10 +21,8 @@ theorem aeval_isWH {σ τ R : Type} [CommSemiring R] (w' : σ → ℕ) (w : τ �
 theorem weight_fst {M r : ℕ} (G : Fin M → ℕ) (m : Fin M × Fin r →₀ ℕ) :
     Finsupp.weight (fun x : Fin M × Fin r => G x.1) m = ∑ b, G b * ∑ c, m (b, c) := by
   rw [Finsupp.weight_apply, Finsupp.sum_fintype m (fun i c => c • G i.1) (fun i => zero_smul _ _), Fintype.sum_prod_type]
-  refine Finset.sum_congr rfl (fun b _ => ?_)
-  rw [Finset.mul_sum]
-  refine Finset.sum_congr rfl (fun c _ => ?_)
-  rw [smul_eq_mul, mul_comm]
+  simp_rw [Finset.mul_sum]
+  exact Finset.sum_congr rfl (fun b _ => Finset.sum_congr rfl (fun c _ => by rw [smul_eq_mul, mul_comm]))
 
 theorem isWH_of_eq {σ R : Type} [CommSemiring R] {w : σ → ℕ} {φ : MvPolynomial σ R} {a b : ℕ}
     (h : IsWeightedHomogeneous w φ a) (e : a = b) : IsWeightedHomogeneous w φ b := by

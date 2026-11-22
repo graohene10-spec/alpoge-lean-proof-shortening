@@ -13,8 +13,7 @@ namespace place_log_sum
 
 lemma mean_le {E : Type} [Fintype E] [Nonempty E] (u : E → ℝ) (B : ℝ) (h : ∀ s, u s ≤ B) :
     (∑ s, u s) / (Fintype.card E : ℝ) ≤ B := by
-  have hc : (0 : ℝ) < (Fintype.card E : ℝ) := by exact_mod_cast Fintype.card_pos
-  rw [div_le_iff₀ hc]
+  rw [div_le_iff₀ (by exact_mod_cast Fintype.card_pos : (0 : ℝ) < (Fintype.card E : ℝ))]
   calc ∑ s, u s ≤ ∑ _s : E, B := Finset.sum_le_sum fun s _ => h s
     _ = B * (Fintype.card E : ℝ) := by
       rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]; ring
@@ -51,9 +50,8 @@ theorem prime_log_sum_bound : PrimeLogSum := by
         · intro p _ _
           exact div_nonneg (Real.log_natCast_nonneg p) (Nat.cast_nonneg p)
     _ ≤ Real.log (⌊Y⌋₊ : ℝ) + Real.log 4 := Formalism.LogFactorialBounds.sum_primesLE_log_div_le _ hn
-    _ ≤ Real.log Y + Real.log 4 := by
-        have := Real.log_le_log hnR hfl
-        linarith
+    _ ≤ Real.log Y + Real.log 4 :=
+        add_le_add_left (Real.log_le_log hnR hfl) (Real.log 4)
 
 namespace place_log_sum
 

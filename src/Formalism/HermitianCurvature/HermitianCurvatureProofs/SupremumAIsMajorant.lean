@@ -310,9 +310,7 @@ theorem instance_lattice_sums : InstLatticeSums := by
   obtain ⟨hs, hid, _⟩ := hI h1 h2 h3 h4 h5 h6 E W D e G Cc de de' T T' l Θ hU hInst hg1 hg2 hCc hI' (by linarith) hG
   refine ⟨hs, ?_⟩
   have hK : D.K = 5 := hInst.2.1
-  have := H E W D e _ _ Θ 2 hInst.2.2.1 (by omega) (by norm_num) (by linarith) hid
-  rw [hK] at this ⊢
-  simpa using this
+  simpa [hK] using H E W D e _ _ Θ 2 hInst.2.2.1 (by omega) (by norm_num) (by linarith) hid
 
 theorem sizes_to_recursion : SizesToRecursion := by
   intro hS CA C0 CG CDel cT Cb C C' hCA hC0 hCG hCDel hcT hCb hcTb hC hCCA
@@ -333,19 +331,17 @@ theorem sizes_to_recursion : SizesToRecursion := by
   have hpow : (C / Th) ^ G.f ≤ (CA / Th) ^ G.f :=
     pow_le_pow_left₀ (div_nonneg hC a18.le) (div_le_div_of_nonneg_right hCCA a18.le) _
   have hp0 : 0 ≤ (C / Th) ^ G.f := pow_nonneg (div_nonneg hC a18.le) _
-  have hr : (0:ℝ) ≤ G.r := Nat.cast_nonneg _
-  have hb1 : (bb ^ 7)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (one_le_pow₀ a1.hbb.le)
   have hx : ((G.r : ℝ) + 1) * (C / Th) ^ G.f ≤ ((G.r : ℝ) + 1) * (CA / Th) ^ G.f :=
     mul_le_mul_of_nonneg_left hpow (by linarith)
   have hx0 : 0 ≤ ((G.r : ℝ) + 1) * (C / Th) ^ G.f := mul_nonneg (by linarith) hp0
-  have hb' : CA * (((G.r : ℝ) + 1) * (CA / Th) ^ G.f) ≤ (bb ^ 7)⁻¹ := by rw [← mul_assoc]; exact hb
+  have hb1 : CA * (((G.r : ℝ) + 1) * (CA / Th) ^ G.f) ≤ 1 := le_trans (by rw [← mul_assoc]; exact hb) (inv_le_one_of_one_le₀ (one_le_pow₀ a1.hbb.le))
   refine ⟨le_trans (le_max_left _ _) hbig, lt_of_lt_of_le (by norm_num) (le_trans (le_max_right _ _) hbig), ?_, ?_, ?_⟩
-  · exact le_trans (mul_le_mul_of_nonneg_left hpow hr) ha
+  · exact le_trans (mul_le_mul_of_nonneg_left hpow (by positivity)) ha
   · nlinarith
   · rw [mul_assoc]
     calc C * (((G.r : ℝ) + 1) * (C / Th) ^ G.f) ≤ CA * (((G.r : ℝ) + 1) * (CA / Th) ^ G.f) :=
           mul_le_mul hCCA hx hx0 (by linarith)
-      _ ≤ _ := hb'
+      _ ≤ (bb ^ 7)⁻¹ := by rw [← mul_assoc]; exact hb
 
 theorem global_positive : GlobPositive := by
   intro CDel Cb hCDel hCb
@@ -356,15 +352,12 @@ theorem global_positive : GlobPositive := by
     le_trans (Nat.le_ceil _) (by exact_mod_cast le_trans (le_max_right _ _) hk)
   have hk3r : (3 : ℝ) ≤ G.k := by exact_mod_cast hk3
   have hk0 : (0 : ℝ) < G.k := by linarith
-  have hbb := hyp.hbb
-  have hbb0 : 0 < bb := by linarith
+  have hbb0 : 0 < bb := by linarith [hyp.hbb]
   have hpos : 0 < ((G.k : ℝ) * bb) ^ 8 := by positivity
   have hg1 : 0 < G.g1 := by
-    have : (0 : ℝ) < G.g1 := lt_of_lt_of_le hpos hyp.hg1
-    exact_mod_cast this
+    exact_mod_cast (lt_of_lt_of_le hpos hyp.hg1)
   have hg2 : 0 < G.g2 := by
-    have : (0 : ℝ) < G.g2 := lt_of_lt_of_le hpos hyp.hg2
-    exact_mod_cast this
+    exact_mod_cast (lt_of_lt_of_le hpos hyp.hg2)
   refine ⟨hg1, hg2, ?_⟩
   have hm2 : 2 ≤ G.m := by unfold Sz.Glob.m; omega
   have hf2 : 2 ≤ G.f := le_trans hm2 hyp.hmf
@@ -390,11 +383,10 @@ theorem global_positive : GlobPositive := by
   have hkCb : 2 ≤ (G.k : ℝ) * Cb := by
     rw [div_le_iff₀ hCb] at hkC
     exact hkC
-  have hf2r : (2 : ℝ) ≤ G.f := by exact_mod_cast hf2
   have hbase : 2 ≤ (G.k : ℝ) * G.f * Real.log bb := by
     have e1 : (G.k : ℝ) * 2 * (Cb / 2) ≤ (G.k : ℝ) * G.f * Real.log bb := by
       apply mul_le_mul _ hlogbb (by positivity) (by positivity)
-      exact mul_le_mul_of_nonneg_left hf2r hk0.le
+      exact mul_le_mul_of_nonneg_left (by exact_mod_cast hf2) hk0.le
     nlinarith
   have h16 : (16 : ℝ) ≤ ((G.k : ℝ) * G.f * Real.log bb) ^ CDel := by
     calc (16 : ℝ) = (2 : ℝ) ^ (4 : ℝ) := by norm_num
@@ -407,11 +399,8 @@ theorem global_positive : GlobPositive := by
 theorem majorant_mono : MajMono := by
   intro E W _ D ρ ρ' l h hav
   unfold TB.Data.maj
-  apply Finset.prod_le_prod
-  · intro v _
-    exact le_min zero_le_one (pow_nonneg (div_nonneg (h v).1 (hav v)) _)
-  · intro v _
-    apply min_le_min le_rfl
-    exact pow_le_pow_left₀ (div_nonneg (h v).1 (hav v)) (div_le_div_of_nonneg_right (h v).2 (hav v)) _
+  exact Finset.prod_le_prod
+    (fun v _ => le_min zero_le_one (pow_nonneg (div_nonneg (h v).1 (hav v)) _))
+    (fun v _ => min_le_min le_rfl (pow_le_pow_left₀ (div_nonneg (h v).1 (hav v)) (div_le_div_of_nonneg_right (h v).2 (hav v)) _))
 
 end Formalism.FourierDecayAlt.P

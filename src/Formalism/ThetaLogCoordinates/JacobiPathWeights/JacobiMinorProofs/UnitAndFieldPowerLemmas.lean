@@ -167,23 +167,19 @@ theorem expSet_subset (n i N : ℕ) (B : ℕ → ℕ) :
   intro β hβ
   have hβ' : ∀ j, ∑ a, β (j, a) = if i ≤ j ∧ j < N then B j else 0 := hβ
   have hsupp : ↑β.support ⊆ Set.range (fun x : ℕ × Fin n => (i + x.1, x.2)) := by
-    intro p hp
-    obtain ⟨j, a⟩ := p
-    have hpa : β (j, a) ≠ 0 := Finsupp.mem_support_iff.mp hp
+    rintro ⟨j, a⟩ hp
     have hij : i ≤ j := by
-      by_contra hlt
+      by_contra h
       have h0 := hβ' j
-      rw [if_neg (fun h => hlt h.1)] at h0
-      exact hpa ((Finset.sum_eq_zero_iff.mp h0) a (Finset.mem_univ a))
+      rw [if_neg (fun hc => h hc.1)] at h0
+      exact Finsupp.mem_support_iff.mp hp ((Finset.sum_eq_zero_iff.mp h0) a (Finset.mem_univ a))
     exact ⟨(j - i, a), Prod.ext (show i + (j - i) = j by omega) rfl⟩
   refine ⟨Finsupp.comapDomain _ β (fun _ _ _ _ h => shift_inj n i h), ?_, ?_⟩
   · simp only [Set.mem_setOf_eq]
     intro j
     show ∑ a, β (i + j, a) = _
     rw [hβ' (i + j)]
-    by_cases h : j < N - i
-    · rw [if_pos ⟨by omega, by omega⟩, if_pos h]
-    · rw [if_neg (by omega), if_neg h]
+    exact if_congr (by constructor <;> omega) rfl rfl
   · apply Finsupp.mapDomain_comapDomain
     · exact shift_inj n i
     · exact hsupp

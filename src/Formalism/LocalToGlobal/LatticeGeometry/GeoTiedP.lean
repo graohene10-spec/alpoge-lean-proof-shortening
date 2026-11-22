@@ -60,16 +60,12 @@ theorem formsTieX_of_cusp (X : DivX D) (F : ShimFam D X.geo X.Lev)
     rfl
   have hFn : ∀ c0 : X.Comp j, X.geo.Fn (X.Yv j c0) = X.geo.Fn (U.alg.Yv (eC j h1 h2 c0)) := fun c0 => by
     rw [hT.geo.yv j h1 h2 c0]
-  let t : ∀ c0 : X.Comp j, X.geo.Fn (U.alg.Yv (eC j h1 h2 c0)) := fun c0 => cast (hFn c0) (X.iMj j c0 x)
-  have ht : ∀ c0, HEq (t c0) (X.iMj j c0 x) := fun c0 => cast_heq _ _
   let s : ∀ c' : U.Comp, X.geo.Fn (U.alg.Yv c') := fun c' =>
-    (eC j h1 h2).apply_symm_apply c' ▸ t ((eC j h1 h2).symm c')
-  have hs : ∀ c', HEq (s c') (X.iMj j ((eC j h1 h2).symm c') x) := fun c' => by
-    refine HEq.trans ?_ (ht _)
-    have key : ∀ {a b : U.Comp} (h : a = b) (v : X.geo.Fn (U.alg.Yv a)),
-        HEq (h ▸ v : X.geo.Fn (U.alg.Yv b)) v := by
-      intro a b h v; subst h; rfl
-    exact key _ _
+    cast ((hFn ((eC j h1 h2).symm c')).trans
+      (congrArg (fun z => X.geo.Fn (U.alg.Yv z))
+        ((eC j h1 h2).apply_symm_apply c')))
+      (X.iMj j ((eC j h1 h2).symm c') x)
+  have hs : ∀ c', HEq (s c') (X.iMj j ((eC j h1 h2).symm c') x) := fun c' => cast_heq _ _
   have hmem : ∀ c', s c' ∈ X.geo.H0 (U.alg.Yv c') (U.alg.Lw c' (wtOfN (datW D F.κg j).N w)) ∧
       X.geo.vanishOn (U.alg.Yv c') (U.alg.Lw c' (wtOfN (datW D F.κg j).N w)) (s c') (U.alg.Ybd c') := by
     intro c'

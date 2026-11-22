@@ -63,8 +63,7 @@ theorem projector_factor_fixes_kernel (E : GLOps n K V) (mu : Fin n → ℤ) (a 
     ppFac E mu a b T x = x := by
   have hz : ∀ k : ℕ, (divPowE E b a (k + 1) * divPowE E a b (k + 1)) x = 0 := by
     intro k
-    show divPowE E b a (k + 1) (divPowE E a b (k + 1) x) = 0
-    rw [divided_power_kills_kernel E a b (k + 1) (Nat.succ_ne_zero k) x h, map_zero]
+    rw [(show (divPowE E b a (k + 1) * divPowE E a b (k + 1)) x = divPowE E b a (k + 1) (divPowE E a b (k + 1) x) from rfl), divided_power_kills_kernel E a b (k + 1) (Nat.succ_ne_zero k) x h, map_zero]
   simp only [ppFac, LinearMap.sum_apply, LinearMap.smul_apply]
   rw [Finset.sum_range_succ']
   simp only [hz, smul_zero, Finset.sum_const_zero, zero_add]
@@ -112,12 +111,8 @@ theorem extremal_projector_sub_mem_nMinus (E : GLOps n K V) (mu : Fin n → ℤ)
     have ih' := ih (fun ab' hab' => h ab' (by simp [hab']))
     have hab : ab.1 < ab.2 := h ab (by simp)
     simp only [pp, List.map_cons, List.prod_cons] at ih' ⊢
-    have key : ∀ y : V, ppFac E mu ab.1 ab.2 T y - y ∈ nMinus E → y - x ∈ nMinus E →
-        ppFac E mu ab.1 ab.2 T y - x ∈ nMinus E := by
-      intro y h1 h2
-      have h3 := Submodule.add_mem _ h1 h2
-      rwa [sub_add_sub_cancel] at h3
-    exact key _ (projector_factor_sub_mem_nMinus E mu hab T _) ih'
+    have hsum := Submodule.add_mem _ (projector_factor_sub_mem_nMinus E mu hab T (pp E mu ord T x)) ih'
+    simpa [sub_add_sub_cancel, pp] using hsum
 
 theorem simple_raising_kill_all_raising {E : GLOps n K V} (hE : IsGLRep E) (y : V)
     (h : ∀ a b : Fin n, a.val + 1 = b.val → E a b y = 0) :

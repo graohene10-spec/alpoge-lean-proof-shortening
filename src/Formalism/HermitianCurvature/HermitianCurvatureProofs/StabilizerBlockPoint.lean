@@ -283,19 +283,13 @@ theorem superSum_blk {m : ℕ} (A : Matrix (Fin (m + 1)) (Fin (m + 1)) ℂ) (b a
     superSum (blk A b a e) = superSum A + b (Fin.last m) := by
   unfold superSum
   rw [Fin.sum_univ_castSucc]
-  congr 1
-  · refine Finset.sum_congr rfl fun i _ => ?_
-    rw [Fin.succ_castSucc, blk_cc]
-  · rw [Fin.succ_last, blk_cl]
+  simp only [Fin.succ_castSucc, Fin.succ_last, blk_cc, blk_cl]
 
 theorem subSum_blk {m : ℕ} (A : Matrix (Fin (m + 1)) (Fin (m + 1)) ℂ) (b a : Fin (m + 1) → ℂ) (e : ℂ) :
     subSum (blk A b a e) = subSum A + a (Fin.last m) := by
   unfold subSum
   rw [Fin.sum_univ_castSucc]
-  congr 1
-  · refine Finset.sum_congr rfl fun i _ => ?_
-    rw [Fin.succ_castSucc, blk_cc]
-  · rw [Fin.succ_last, blk_lc]
+  simp only [Fin.succ_castSucc, Fin.succ_last, blk_cc, blk_lc]
 
 theorem stab_core {d : ℕ} {l u : Matrix (Fin d) (Fin d) ℂ} (hu : IsUpperUni u) :
     l * wMat d * u = wMat d ↔ l = wMat d * u⁻¹ * wMat d := by

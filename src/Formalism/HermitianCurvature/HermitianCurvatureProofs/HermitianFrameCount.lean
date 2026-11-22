@@ -263,26 +263,20 @@ theorem card_root_le (p : K[X]) (hp : p ≠ 0) : Nat.card {x : K // p.eval x = 0
   rw [Nat.card_eq_fintype_card, Fintype.card_subtype]
   calc _ ≤ p.roots.toFinset.card := Finset.card_le_card (by
         intro x hx
-        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hx
-        simp only [Multiset.mem_toFinset, Polynomial.mem_roots hp, Polynomial.IsRoot.def]
-        exact hx)
-    _ ≤ Multiset.card p.roots := Multiset.toFinset_card_le _
-    _ ≤ _ := Polynomial.card_roots' p
+        simpa only [Finset.mem_filter, Finset.mem_univ, true_and, Multiset.mem_toFinset,
+          Polynomial.mem_roots hp, Polynomial.IsRoot.def] using hx)
+    _ ≤ _ := le_trans (Multiset.toFinset_card_le _) (Polynomial.card_roots' p)
 
 theorem card_pm_le {q : ℕ} (hq : 2 ≤ q) (e : K) : Nat.card {x : K // x ^ q + e * x = 0} ≤ q := by
   have hdeg : (C e * X : K[X]).degree < (q : ℕ) := by
-    calc (C e * X : K[X]).degree ≤ 1 := by
-          refine (Polynomial.degree_C_mul_X_le e)
+    calc (C e * X : K[X]).degree ≤ 1 := Polynomial.degree_C_mul_X_le e
       _ < (q : ℕ) := by exact_mod_cast (by omega : 1 < q)
   have hm : (X ^ q + C e * X : K[X]).Monic := Polynomial.monic_X_pow_add hdeg
-  have hn : (X ^ q + C e * X : K[X]).natDegree = q := by
-    have : (X ^ q + C e * X : K[X]).degree = (q : ℕ) := by
+  have hn : (X ^ q + C e * X : K[X]).natDegree = q :=
+    Polynomial.natDegree_eq_of_degree_eq_some (by
       rw [Polynomial.degree_add_eq_left_of_degree_lt (by rwa [Polynomial.degree_X_pow]),
-        Polynomial.degree_X_pow]
-    exact Polynomial.natDegree_eq_of_degree_eq_some this
-  have := card_root_le _ hm.ne_zero
-  rw [hn] at this
-  simpa using this
+        Polynomial.degree_X_pow])
+  simpa [hn] using card_root_le _ hm.ne_zero
 
 variable [StarRing K]
 
@@ -991,14 +985,10 @@ theorem rank_left_block {ν α β : Type} [Fintype ν] [DecidableEq ν] [Fintype
     rw [fromCols_mul_fromRows]; simp
   have hM : ((fromCols (1 : Matrix α α K) (0 : Matrix α β K) : Matrix α (α ⊕ β) K) *
       (S⁻¹ * ((fromCols X Y)ᴴ * J))) * X = 1 := by
-    calc _ = ((fromCols (1 : Matrix α α K) (0 : Matrix α β K) : Matrix α (α ⊕ β) K) *
-          (S⁻¹ * ((fromCols X Y)ᴴ * J))) *
-          (fromCols X Y * (fromRows (1 : Matrix α α K) (0 : Matrix β α K) : Matrix (α ⊕ β) α K)) := by
-          rw [← hX]
-      _ = (fromCols (1 : Matrix α α K) (0 : Matrix α β K) : Matrix α (α ⊕ β) K) *
+    calc _ = (fromCols (1 : Matrix α α K) (0 : Matrix α β K) : Matrix α (α ⊕ β) K) *
           (((S⁻¹ * ((fromCols X Y)ᴴ * J)) * fromCols X Y) *
             (fromRows (1 : Matrix α α K) (0 : Matrix β α K) : Matrix (α ⊕ β) α K)) := by
-          simp only [Matrix.mul_assoc]
+          nth_rewrite 2 [hX]; simp only [Matrix.mul_assoc]
       _ = 1 := by
           rw [hL, Matrix.one_mul, fromCols_mul_fromRows]
           simp

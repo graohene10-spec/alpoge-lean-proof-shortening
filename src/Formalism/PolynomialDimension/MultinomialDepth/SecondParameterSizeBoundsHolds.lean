@@ -53,15 +53,12 @@ lemma sizeBound_count_le (r N N₁ Nₛ : ℝ) (hrN1 : 2 ≤ N₁) (hN1 : N₁ ^
 
 lemma sizeBound_card_le (r N Nₛ k Q c' : ℝ) (hr : 2 ≤ r) (hk : 1 ≤ k) (hQ : 1 ≤ Q) (hc : 1 ≤ c')
     (hN0 : 0 ≤ N) (hNs2 : Nₛ ≤ 2 * N) : Nₛ ≤ r ^ 2 * N * k * c' * Q ^ 2 := by
-  have hkcQ : 1 ≤ k * c' * Q ^ 2 := by
-    have : 1 ≤ Q ^ 2 := one_le_pow₀ hQ
-    have : 1 ≤ k * c' := by nlinarith
-    nlinarith
+  have hkcQ : 1 ≤ k * c' * Q ^ 2 :=
+    pII0_one_le_mul (pII0_one_le_mul hk hc) (one_le_pow₀ hQ)
   have h4 : 4 ≤ r ^ 2 := by nlinarith
   have e1 : 2 * N ≤ r ^ 2 * N := by nlinarith
-  have e2 : r ^ 2 * N ≤ r ^ 2 * N * (k * c' * Q ^ 2) := by
-    have : 0 ≤ r ^ 2 * N := by positivity
-    nlinarith
+  have e2 : r ^ 2 * N ≤ r ^ 2 * N * (k * c' * Q ^ 2) :=
+    le_mul_of_one_le_right (by positivity) hkcQ
   calc Nₛ ≤ 2 * N := hNs2
     _ ≤ r ^ 2 * N := e1
     _ ≤ r ^ 2 * N * (k * c' * Q ^ 2) := e2

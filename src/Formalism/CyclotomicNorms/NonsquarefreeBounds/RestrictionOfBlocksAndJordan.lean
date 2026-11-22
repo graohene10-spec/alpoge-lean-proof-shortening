@@ -30,10 +30,8 @@ theorem eigen_mem_span (ρ : Representation k G V) (e : Module.Basis (Fin N) k V
     obtain ⟨y, hyI, hne⟩ := hsep i j hij
     have h1 := repr_diag_apply ρ e χ y (fun l => he l y hyI) v i
     rw [hv y hyI, map_smul, Finsupp.smul_apply, smul_eq_mul] at h1
-    have h2 : (χ j y - χ i y) * e.repr v i = 0 := by rw [sub_mul, h1, sub_self]
-    rcases mul_eq_zero.mp h2 with h | h
-    · exact absurd (sub_eq_zero.mp h).symm hne
-    · exact h
+    by_contra hri
+    exact hne (mul_right_cancel₀ hri h1).symm
   rw [Submodule.mem_span_singleton]
   refine ⟨e.repr v j, ?_⟩
   conv_rhs => rw [← e.sum_repr v]

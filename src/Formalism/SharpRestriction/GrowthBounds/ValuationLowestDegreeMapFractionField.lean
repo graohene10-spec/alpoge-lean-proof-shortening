@@ -17,7 +17,6 @@ theorem genMat_eq (R : Type) [CommRing R] (n : ℕ) : genMat R n = Matrix.mvPoly
   rfl
 
 theorem genMat_det_ne_zero (R : Type) [CommRing R] [Nontrivial R] (n : ℕ) : (genMat R n).det ≠ 0 := by
-  rw [genMat_eq]
   exact Matrix.det_mvPolynomialX_ne_zero _ _
 
 theorem genMat_map (f : R →+* R') (n : ℕ) : (MvPolynomial.map f).mapMatrix (genMat R n) = genMat R' n := by
@@ -424,9 +423,8 @@ theorem suppProj_support_subset (R : Type) [CommRing R] {σ : Type} (s : Set (σ
     (suppProj R s A).support ⊆ A.support := by
   intro m hm
   rw [MvPolynomial.mem_support_iff, coeff_suppProj] at hm
-  rw [MvPolynomial.mem_support_iff]
   by_cases h : m ∈ s
-  · rwa [if_pos h] at hm
+  · simpa [MvPolynomial.mem_support_iff, if_pos h] using hm
   · rw [if_neg h] at hm
     exact absurd rfl hm
 
@@ -2018,15 +2016,7 @@ def jone_w (LL : Letters (Fin N)) (S : Set (Fin N)) (e : Fin m → Fin k) : Fin 
 theorem jone_w_eq (LL : Letters (Fin N)) (S : Set (Fin N)) (e : Fin m → Fin k) (l : Fin N) (a b : Fin m) :
     jone_w LL S e (l, e a) = jone_w LL S e (l, e b) := by
   classical
-  have key : ∀ c : Fin m, jone_w LL S e (l, e c) = if l ∈ S then (if LL.vec l then 1 else -1) else 0 := by
-    intro c
-    unfold jone_w
-    by_cases hl : l ∈ S
-    · have h : (l, e c).1 ∈ S ∧ (l, e c).2 ∈ Set.range e := ⟨hl, c, rfl⟩
-      rw [if_pos h, if_pos hl]
-    · have h : ¬ ((l, e c).1 ∈ S ∧ (l, e c).2 ∈ Set.range e) := fun h => hl h.1
-      rw [if_neg h, if_neg hl]
-  rw [key a, key b]
+  simp [jone_w]
 
 theorem jone_stable (LL : Letters (Fin N)) (S : Set (Fin N)) (e : Fin m → Fin k) (a b : Fin m)
     (φ : MvPolynomial (Fin N × Fin k) Fd) (t : ℤ) (h : φ.IsWeightedHomogeneous (jone_w LL S e) t) :
@@ -2109,9 +2099,7 @@ theorem jone_wt [CharZero Fd] (LL : Letters (Fin N)) (S : Set (Fin N)) (e : Fin 
   have h : ∀ a, (∑ l, if l ∈ S then (if LL.vec l then (mm (l, e a) : ℤ) else -(mm (l, e a) : ℤ)) else 0 : ℤ) = lam a := by
     intro a
     have ha : glOpsE Fd LL S e a a v = (lam a : Fd) • v := by
-      have := (Submodule.mem_iInf _).mp hv a
-      rw [LinearMap.mem_ker, LinearMap.sub_apply, LinearMap.smul_apply, Module.End.one_apply, sub_eq_zero] at this
-      exact this
+      exact sub_eq_zero.mp (LinearMap.mem_ker.mp ((Submodule.mem_iInf _).mp hv a))
     have hc := congrArg (coeff mm) ha
     rw [jone_coeff_Eaa, coeff_smul, smul_eq_mul] at hc
     exact Int.cast_injective (mul_right_cancel₀ hmm hc)
@@ -2487,11 +2475,7 @@ theorem last_inequality_clause_of_lemma (D : Formalism.BasicNotions.D7) (h : Con
   intro N r K _ _ LL B hK L
   have hanti : StrictAnti (fun i : Fin N => N - i.val) := by
     intro a b hab
-    have h1 := a.2
-    have h2 := b.2
-    have h3 : a.val < b.val := hab
-    show N - b.val < N - a.val
-    omega
+    exact Nat.sub_lt_sub_left a.2 hab
   exact (h p O S N r K LL B (fun i => N - i.val) hK hanti (fun i => Nat.sub_pos_of_lt i.2) _
     (fun q hq => hq.1)).2.2 L rfl
 
@@ -2511,8 +2495,7 @@ theorem space_statement_of_lemmas (D : Formalism.BasicNotions.D7) (hA2 : Hyperpl
   rw [space_statement_iff_forall_dvr]
   intro p _ O _ _ _ S
   have h3 : StandardBasisAllData O := fun N n _ LL B th M => (hA3 p O S N n LL B th M).1
-  have h3F : StandardBasisAllData (FF O) := fun N n _ LL B th M => (hA3 p O S N n LL B th M).2
-  exact space_statement_at_ring_of_basis O (fun N n _ LL B => hA2 O N n LL B) h3 h3F (fourth_clause_of_lemmas D hB1 O h3 (last_inequality_clause_of_lemma D hB3 p O S))
+  exact space_statement_at_ring_of_basis O (fun N n _ LL B => hA2 O N n LL B) h3 (fun N n _ LL B th M => (hA3 p O S N n LL B th M).2) (fourth_clause_of_lemmas D hB1 O h3 (last_inequality_clause_of_lemma D hB3 p O S))
 
 end Fin2
 

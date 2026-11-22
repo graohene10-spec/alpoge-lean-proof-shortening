@@ -18,10 +18,8 @@ lemma bs_fock_smul_right {σ : Type*} (c : ℂ) (f g : MvPolynomial σ ℂ) :
 
 lemma bs_zScale_prod (n : ℕ) (t : ℝ) (e : Fin (n + 1) → ℕ) :
     ∏ a, (if a = Fin.last n then (t : ℂ) else 1) ^ e a = (t : ℂ) ^ e (Fin.last n) := by
-  rw [Finset.prod_eq_single (Fin.last n)]
-  · simp
-  · intro b _ hb; simp [hb]
-  · simp
+  rw [Finset.prod_eq_single (Fin.last n)] <;> simp [*]
+  exact fun b hb hb' => absurd hb' hb
 
 theorem branch_scale_formula : BranchScale := by
   intro n k d t F hF
@@ -32,9 +30,8 @@ theorem branch_scale_formula : BranchScale := by
     · rw [hF m hm, mul_comm]
     · rw [notMem_support_iff.mp hm]; simp
   refine ⟨h1, ?_⟩
-  rw [h1, bs_fock_smul_left, bs_fock_smul_right]
-  have : star ((t : ℂ) ^ d) = (t : ℂ) ^ d := by simp
-  rw [this, two_mul, pow_add]; ring
+  rw [h1, bs_fock_smul_left, bs_fock_smul_right,
+    show star ((t : ℂ) ^ d) = (t : ℂ) ^ d by simp, two_mul, pow_add]; ring
 
 lemma bs_map_weyl {r n : ℕ} (hn : n ≤ r) (ν : Fin n → ℕ) (f : MvPolynomial (Fin r × Fin n) ℚ)
     (hf : f ∈ weyl ℚ r n hn ν) : map (algebraMap ℚ ℂ) f ∈ weyl ℂ r n hn ν := by
@@ -192,8 +189,7 @@ lemma hw_weight (H : BsForm sg D) (hsg : Antitone sg) (μ : Fin n → ℕ) (hμ 
     funext b
     simp [rowNu]
   have hhw : IsWeightedHomogeneous (rowW n n) (hw ℂ le_rfl sg) sg := by
-    have := hwRowWeight ℂ n n le_rfl sg hsg
-    rwa [hnu] at this
+    simpa [hnu] using hwRowWeight ℂ n n le_rfl sg hsg
   have hconj : (Matrix.diagonal t).conjTranspose = Matrix.diagonal t := by
     rw [Matrix.diagonal_conjTranspose]
     congr 1
@@ -202,13 +198,11 @@ lemma hw_weight (H : BsForm sg D) (hsg : Antitone sg) (μ : Fin n → ℕ) (hμ 
   have e := H.adj (Matrix.diagonal t) _ (hwMem ℂ n n le_rfl sg hsg) q hq
   rw [hconj, rowActDiagWeight ℂ n n t sg _ hhw, rowActDiagWeight ℂ n n t μ _ hqw, hprod, hprod,
     H.smull, H.smulr] at e
-  have hstar : star ((2 : ℂ) ^ μ a) = 2 ^ μ a := by simp
-  rw [hstar] at e
+  rw [show star ((2 : ℂ) ^ μ a) = 2 ^ μ a by simp] at e
   have hne : (2 : ℂ) ^ sg a - 2 ^ μ a ≠ 0 := by
     rw [sub_ne_zero]
     intro h
-    have h' : (2 : ℕ) ^ sg a = 2 ^ μ a := by exact_mod_cast h
-    exact ha (Nat.pow_right_injective le_rfl h').symm
+    exact ha (Nat.pow_right_injective le_rfl (by exact_mod_cast h)).symm
   have : ((2 : ℂ) ^ sg a - 2 ^ μ a) * D (hw ℂ le_rfl sg) q = 0 := by rw [sub_mul, e, sub_self]
   exact (mul_eq_zero.mp this).resolve_left hne
 

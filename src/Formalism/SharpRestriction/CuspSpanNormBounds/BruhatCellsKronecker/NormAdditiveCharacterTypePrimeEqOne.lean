@@ -23,10 +23,9 @@ theorem Jm_allPos (k : ℕ) : Formalism.REAL.Jm (allPos k) = 1 := by
 
 theorem Kset_sub_UJset (k : ℕ) {g : Matrix (Fin k) (Fin k) ℂ} (hg : g ∈ Formalism.REAL.Kset (allPos k)) :
     g ∈ UJset (allPos k) := by
-  have h1 : star g * g = 1 := (Matrix.mem_unitaryGroup_iff').1 hg.1
   show g.conjTranspose * Formalism.REAL.Jm (allPos k) * g = Formalism.REAL.Jm (allPos k)
   rw [Jm_allPos, Matrix.mul_one]
-  exact h1
+  exact (Matrix.mem_unitaryGroup_iff').1 hg.1
 
 def htF {k : ℕ} (x : Fin k → ℝ) : ℝ := ∑ a : Fin k, -((a : ℕ) : ℝ) * x a
 
@@ -706,18 +705,12 @@ theorem NSet_mul {g g' : V ≃ₗ[E] V} (hg : g ∈ Fr.NSet) (hg' : g' ∈ Fr.NS
   · show H.h (g (g' x)) (g (g' y)) = _
     rw [hg.1, hg'.1]
   · show g (g' v) - v ∈ _
-    have e : g (g' v) - v = (g (g' v) - g' v) + (g' v - v) := by abel
-    rw [e]
-    exact Submodule.add_mem _ (hg.2.1 j hj _ (NSet_apply_Fj Fr hg' hj hv)) (hg'.2.1 j hj v hv)
+    simpa only [sub_add_sub_cancel] using Submodule.add_mem _ (hg.2.1 j hj _ (NSet_apply_Fj Fr hg' hj hv)) (hg'.2.1 j hj v hv)
   · show g (g' v) - v ∈ _
     have h1 := hg'.2.2 v hv
     have h2 : g' v ∈ H.perp (H.X Fr.f) := by
-      have e : g' v = (g' v - v) + v := by abel
-      rw [e]
-      exact Submodule.add_mem _ (X_le_perp Fr h1) hv
-    have e : g (g' v) - v = (g (g' v) - g' v) + (g' v - v) := by abel
-    rw [e]
-    exact Submodule.add_mem _ (hg.2.2 _ h2) h1
+      simpa only [sub_add_cancel] using Submodule.add_mem _ (X_le_perp Fr h1) hv
+    simpa only [sub_add_sub_cancel] using Submodule.add_mem _ (hg.2.2 _ h2) h1
 
 theorem NSet_inv_Fj {g : V ≃ₗ[E] V} (hg : g ∈ Fr.NSet) :
     ∀ j, j ≤ r → ∀ v ∈ Fr.Fj j, g.symm v - v ∈ Fr.Fj (j - 1) := by

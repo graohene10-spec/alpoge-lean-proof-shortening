@@ -575,17 +575,14 @@ theorem low_mem (A : Matrix (Fin h.1.sum) (Fin h.1.sum) K)
     obtain ⟨hH1, -, hH4⟩ := (blkM_isLowUni _ _ _ _ _).1 hH
     rw [blkM_mul, blkM_mul] at e
     obtain ⟨e1, -, -, e4⟩ := blkM_inj hN e
-    refine ⟨⟨hA, H1, hH1, ?_⟩, ⟨hD, H4, hH4, ?_⟩⟩
-    · simpa using e1
-    · simpa using e4
+    exact ⟨⟨hA, H1, hH1, by simpa using e1⟩, ⟨hD, H4, hH4, by simpa using e4⟩⟩
   · rintro ⟨⟨hA, H1, hH1, e1⟩, ⟨hD, H4, hH4, e4⟩⟩
-    have hu := pt_unit_lemma_5 g.1 g.2
     refine ⟨(blkM_isLowUni _ _ _ _ _).2 ⟨hA, rfl, hD⟩,
       blkM hN H1 0 ((pt g.1 g.2)⁻¹ * C * pt h.1 h.2) H4,
       (blkM_isLowUni _ _ _ _ _).2 ⟨hH1, rfl, hH4⟩, ?_⟩
     rw [blkM_mul, blkM_mul]
     simp only [Matrix.zero_mul, Matrix.mul_zero, add_zero, zero_add]
-    rw [e1, e4, ← Matrix.mul_assoc, ← Matrix.mul_assoc, Matrix.mul_nonsing_inv _ hu, Matrix.one_mul]
+    rw [e1, e4, ← Matrix.mul_assoc, ← Matrix.mul_assoc, Matrix.mul_nonsing_inv _ (pt_unit_lemma_5 g.1 g.2), Matrix.one_mul]
 
 def lowJ (v : lowW K h.1 h.2 × lowW K g.1 g.2) (X : Matrix (Fin g.1.sum) (Fin h.1.sum) K) :
     lowW K w.1 w.2 :=
@@ -1380,8 +1377,7 @@ theorem top_main {K : Type} [CommRing K] [TopologicalSpace K] [IsTopologicalRing
   obtain ⟨ϖ, hϖ, hex⟩ := hD.unif
   have hpq : (ϖ : K) * ((ϖ⁻¹ : Kˣ) : K) = 1 := by simp
   refine ⟨ϖ, hϖ, hex, fun r hr => ?_, fun Q hQ hu => ?_⟩
-  · obtain ⟨w, h1, _, h3⟩ := A6x4.one_add hD hn hpq hϖ hex hr
-    exact ⟨w, h3, h1⟩
+  · exact (A6x4.one_add hD hn hpq hϖ hex hr).elim (fun w h => ⟨w, h.2.2, h.1⟩)
   · exact A6x4.inv_bounded hD hn hpq hϖ hex hQ hu
 
 section Sum
@@ -1603,8 +1599,7 @@ theorem bigZ_add {a s N : ℕ} (hN : N = a + s) (Z : Matrix (Fin a) (Fin a) K)
 
 theorem mem_mulR {a x : K} : x ∈ mulR R a ↔ ∃ r ∈ R, x = a * r := by
   unfold mulR
-  rw [AddSubgroup.mem_map]
-  constructor <;> rintro ⟨r, hr, rfl⟩ <;> exact ⟨r, hr, rfl⟩
+  exact (AddSubgroup.mem_map).trans (exists_congr fun r => and_congr_right fun _ => eq_comm)
 
 theorem PhiH_const (ψ : AddChar K ℂ) (h : Point K) {n' : ℕ} (Z' : Matrix (Fin n') (Fin n') K)
     (ϖ : K) (hϖ : ϖ ∈ R) (hu : ∀ r ∈ R, ∃ y ∈ R, (1 + ϖ * r) * y = 1) (k j : ℕ)
@@ -1613,18 +1608,15 @@ theorem PhiH_const (ψ : AddChar K ℂ) (h : Point K) {n' : ℕ} (Z' : Matrix (F
     (hE : ∀ i l, ∃ r ∈ R, E i l = (pt h.1 h.2).det ^ 2 * ϖ ^ (2 * k + 1 + j) * r) :
     PhiH R ψ h Z' s (G + E) = PhiH R ψ h Z' s G := by
   have hdpt := pt_unit_lemma_5 h.1 h.2
-  have hdG : IsUnit G.det := ⟨⟨G.det, c, hc, by rw [mul_comm]; exact hc⟩, rfl⟩
   unfold PhiH
   refine finsum_congr fun τ => ?_
   congr 1
   rw [bigZ_add]
-  have hdZ : (orbZ h (rep R τ.1)).det = (pt h.1 h.2).det := by
-    unfold orbZ
-    rw [Matrix.det_mul, Matrix.det_mul, isLowUni_det K (rep R τ.1).1.2.1, isUpUni_det K (rep R τ.1).2.2]
-    ring
   have hdet : (bigZ rfl (orbZ h (rep R τ.1)) (outM R τ.2.1) (outM R τ.2.2) G).det =
       (pt h.1 h.2).det * G.det := by
-    rw [bigZ_det, hdZ]
+    unfold orbZ
+    rw [bigZ_det, Matrix.det_mul, Matrix.det_mul, isLowUni_det K (rep R τ.1).1.2.1, isUpUni_det K (rep R τ.1).2.2]
+    ring
   have hEm : ∀ i l, E i l ∈ R := by
     intro i l
     obtain ⟨r, hr, e⟩ := hE i l
@@ -1633,7 +1625,7 @@ theorem PhiH_const (ψ : AddChar K ℂ) (h : Point K) {n' : ℕ} (Z' : Matrix (F
     exact R.mul_mem (R.mul_mem hj (R.pow_mem hϖ _)) hr
   apply Fz_perturb R ϖ hϖ hu Z'
   · rw [hdet]
-    exact hdpt.mul hdG
+    exact hdpt.mul (IsUnit.of_mul_eq_one c hc)
   · exact (blkM_isInt rfl 0 0 0 E R).2 ⟨by intro i l; simp, by intro i l; simp, by intro i l; simp, hEm⟩
   · intro x y
     rw [hdet]

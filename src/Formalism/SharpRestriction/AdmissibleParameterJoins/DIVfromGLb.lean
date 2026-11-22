@@ -292,12 +292,10 @@ theorem thirdAdmissible_of_sup (D : D7) (large₂ : SizeData₂ D) (X : DivX D) 
 theorem supBound_mono {D : D7} {large₂ : SizeData₂ D} {X : DivX D} {Lc : placeRankTwoOne.Loc D X} {C C' : ℝ}
     (h : placeRankTwoOne.ThetaSupBound D large₂ X Lc C) (hC : C ≤ C') : placeRankTwoOne.ThetaSupBound D large₂ X Lc C' := by
   intro u i L L' hi
-  have hL := (scale_pos large₂.sc).2.1
   have h0 : (0 : ℝ) ≤ (D.R.f : ℝ) * placeRankTwoOne.NN D ^ 2 * large₂.sc.L :=
-    mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (sq_nonneg _)) hL.le
+    mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (sq_nonneg _)) (scale_pos large₂.sc).2.1.le
   have h1 := mul_le_mul_of_nonneg_right hC h0
-  have h2 := h u i L L' hi
-  linarith
+  linarith [h u i L L' hi, h1]
 
 theorem thirdAdmissible_of_sizes (D : D7) (large₂ : SizeData₂ D) (X : DivX D) (Lc : placeRankTwoOne.Loc D X) (Cn C1 cL CG Cs : ℝ)
     (hs : flipTwoThree.ThetaSupremumBound D) (h1 : flipTwoThree.Conclusion1 D Cn C1 large₂.sc.x) (hT : SupTie D X Lc) (hS : SupSize D large₂ Cs)

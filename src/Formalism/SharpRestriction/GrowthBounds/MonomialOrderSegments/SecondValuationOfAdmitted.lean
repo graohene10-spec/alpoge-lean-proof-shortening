@@ -21,8 +21,7 @@ theorem br_geZ_int (x : WithTop ℤ) (k : ℤ) (h : Formalism.MainNotions.PlaneG
 
 theorem br_wt_sub (a b : WithTop ℤ) (n : ℤ) (h : a ≤ b + ((n : ℤ) : WithTop ℤ)) :
     a + ((-n : ℤ) : WithTop ℤ) ≤ b := by
-  calc a + ((-n : ℤ) : WithTop ℤ) ≤ (b + ((n : ℤ) : WithTop ℤ)) + ((-n : ℤ) : WithTop ℤ) := by gcongr
-    _ = b := by rw [add_assoc, ← WithTop.coe_add, add_neg_cancel, WithTop.coe_zero, add_zero]
+  simpa only [add_assoc, ← WithTop.coe_add, add_neg_cancel, WithTop.coe_zero, add_zero] using add_le_add_left h ((-n : ℤ) : WithTop ℤ)
 
 theorem br_onLetter {L : Type} {r : ℕ} (i : L) (β : Fin r →₀ ℕ) :
     onLetter i β = Formalism.MainNotions.PlaneGramData.atLetter i (fun a => β a) := by
@@ -185,8 +184,7 @@ theorem br_le_vBB_iff {σ : Type} (t : ℝ) (F : MvPolynomial σ K) :
   · intro h α
     by_cases hα : α ∈ F.support
     · exact h α hα
-    · rw [MvPolynomial.notMem_support_iff.1 hα]
-      simp [vR]
+    · simp [MvPolynomial.notMem_support_iff.1 hα, vR]
   · intro h α _
     exact h α
 

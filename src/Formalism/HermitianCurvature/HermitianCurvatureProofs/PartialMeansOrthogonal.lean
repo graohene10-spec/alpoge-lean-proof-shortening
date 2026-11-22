@@ -31,7 +31,6 @@ theorem doubleMeanSplit : Formalism.FourierDecayAlt.A6.MeanSplit := by
 
 theorem partialMeansOrthogonal : Formalism.FourierDecayAlt.A6.POrth := by
   intro E _ _ A B _ _ u e₂ h ρ ρ' hne
-  simp only [inner_smul_left, inner_smul_right, sum_inner, inner_sum]
   simp [h ρ ρ' _ _ hne]
 
 theorem orthogonalMeanNorm : Formalism.FourierDecayAlt.A6.OrthNorm := by

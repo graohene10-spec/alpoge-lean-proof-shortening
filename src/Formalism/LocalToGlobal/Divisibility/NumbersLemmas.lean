@@ -515,13 +515,12 @@ theorem apDiag_rowLens (j : ℕ) (h1 : 1 ≤ j) (h2 : j ≤ N.R.m) (z : RPl N.R)
     ((N.apDiag j z).rowLens : Multiset ℕ) = N.apRows j z := by
   have hpos : ∀ x ∈ ((List.range (N.R.sigW j).1).map (N.apN j z)).insertionSort (· ≥ ·), 0 < x := by
     intro x hx
-    rw [(List.perm_insertionSort _ _).mem_iff, List.mem_map] at hx
+    rw [(List.perm_insertionSort _ _).mem_iff] at hx
+    simp only [List.mem_map, List.mem_range] at hx
     obtain ⟨i, hi, rfl⟩ := hx
-    rw [List.mem_range] at hi
     unfold apN
     rw [Int.lt_toNat]
-    have h3 := N.aPlus_ge_one j h1 h2 z i hi
-    have h4 : (1 : ℤ) ≤ ⌊N.aPlus j z i⌋ := Int.le_floor.2 (by exact_mod_cast h3)
+    have h4 : (1 : ℤ) ≤ ⌊N.aPlus j z i⌋ := Int.le_floor.2 (by exact_mod_cast N.aPlus_ge_one j h1 h2 z i hi)
     push_cast
     omega
   unfold apDiag apRows
@@ -530,9 +529,7 @@ theorem apDiag_rowLens (j : ℕ) (h1 : 1 ≤ j) (h2 : j ≤ N.R.m) (z : RPl N.R)
 
 theorem hookLower_of (h : Formalism.DivisionValues.RowsHook) : HookLower := by
   intro N j h1 h2 z
-  have := h (N.apDiag j z)
-  rw [N.apDiag_rowLens j h1 h2 z] at this
-  exact this
+  simpa [NumDatum.logHook, N.apDiag_rowLens j h1 h2 z] using h (N.apDiag j z)
 
 end NumDatum
 
@@ -646,8 +643,7 @@ theorem hP_eq_ofRecord {p : ℕ} (hp : p.Prime) (hN : ¬ p ∣ D.host.condN) :
     Formalism.MainNotions.G.hP D p = (ofRecord D L Del h0).hP p := by
   have hc : Nat.Coprime p D.host.condN := hp.coprime_iff_not_dvd.2 hN
   rw [hP_eq_art D hp hc]
-  unfold NumDatum.hP
-  rw [dif_pos hc]
+  simp [NumDatum.hP, hc]
 
 theorem hP_eq_hFrob {p : ℕ} (hp : p.Prime) (hN : ¬ p ∣ D.host.condN) :
     iotaHInv D.R.e (D.R.hH (D.R.iota (Formalism.MainNotions.G.hP D p))) = hFrob D.R.e p := by
@@ -897,11 +893,9 @@ theorem ofRecord_EatC (c : ErrC) {j : ℕ} (hj : 1 ≤ j) (p : ℕ) :
   have s : (∑ z : Bool × HH D, (ofRecord D L Del h0).w j z) = ∑ τ : D.what₂.Tau, wj D j τ :=
     (Finset.sum_congr rfl (fun z _ => ofRecord_w D L Del h0 hj z)).trans
       ((tauPl_bijective D).sum_comp (fun τ => wj D j τ))
-  have e : (ofRecord D L Del h0).EatC c.dig j p =
-      c.dig * (D.R.f : ℝ) * Nm D ^ 2 * Real.logb p L.sc.a +
-        (∑ z : Bool × HH D, (ofRecord D L Del h0).w j z) / ((p : ℝ) ^ 2 - 1) := rfl
-  rw [e, s]
-  rfl
+  change c.dig * (D.R.f : ℝ) * Nm D ^ 2 * Real.logb p L.sc.a + (∑ z : Bool × HH D, (ofRecord D L Del h0).w j z) / ((p : ℝ) ^ 2 - 1) =
+    c.dig * (D.R.f : ℝ) * Nm D ^ 2 * Real.logb p L.sc.a + (∑ τ : D.what₂.Tau, wj D j τ) / ((p : ℝ) ^ 2 - 1)
+  rw [s]
 
 theorem ofRecord_nuAbs (hDel : D.s.Del = (Del : ℚ)) (u : D.what₂.Word) (j : ℕ) (z : Bool × HH D) :
     (((ofRecord D L Del h0).nuAbs (letterOf D L Del h0 u) j z : ℚ) : ℝ) = nuAbs D u j (tauPl D z) := by
@@ -938,8 +932,7 @@ theorem ofRecord_EatD (hDel : D.s.Del = (Del : ℚ)) {j : ℕ} (hj : 1 ≤ j) :
   rw [Finset.sup'_image]
   refine Finset.sup'_congr _ rfl (fun u _ => ?_)
   show (((∑ t : HH D, (ofRecord D L Del h0).ctD (letterOf D L Del h0 u) j t : ℚ)) : ℝ) = ∑ t : HH D, ctD D u j t
-  rw [Rat.cast_sum]
-  exact Finset.sum_congr rfl (fun t _ => ofRecord_ctD D L Del h0 hDel u j t)
+  simpa only [Rat.cast_sum] using Finset.sum_congr rfl (fun t _ => ofRecord_ctD D L Del h0 hDel u j t)
 
 theorem ofRecord_EatG (hK : DV.KapDef D) (hEta : L.etaSz = (D.R.m : ℝ) * (h0 : ℝ)) (X : ErrX D) (c : ErrC) (i : Fin 2)
     (u : D.what₂.Word) {j : ℕ} (h1 : 1 ≤ j) (h2 : j ≤ D.R.m) (w : D.what₂.places.Pl) (bar : Bool)
@@ -1079,9 +1072,7 @@ theorem ex_nu_first (δ : Code numEx) (z : RPl numEx.R) : numEx.nu δ 1 z 0 = 14
     rintro ⟨a, -⟩; exact absurd a (by norm_num)
   unfold NumDatum.nu NumDatum.srcPar NumDatum.uW
   rw [dif_pos h, dif_neg h', example_exponent_first]
-  have e1 : (numEx.hc z).u ⟨0, h⟩ = 113 / 2 := rfl
-  rw [e1, example_rank_first, example_rank_second]
-  norm_num
+  norm_num [show (numEx.hc z).u ⟨0, h⟩ = 113 / 2 from rfl, show numEx.R.N 0 = 8 from example_rank_first, example_rank_second]
 
 theorem ex_nu_second (δ : Code numEx) (z : RPl numEx.R) :
     numEx.nu δ 1 z 1 = if δ ⟨0, by show 0 < 8 - 2; norm_num⟩ then 108 else 109 := by

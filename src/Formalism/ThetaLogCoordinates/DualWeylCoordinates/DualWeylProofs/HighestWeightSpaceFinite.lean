@@ -91,9 +91,7 @@ variable {m : ℕ} {R : Type} [CommRing R] {h : GL (Fin (m + 1)) R} {g1 : GL (Fi
 
 lemma qr_det_cast (hb : IsBlock h g1 t) {k : ℕ} (r c : Fin k → Fin m) :
     (h.val.submatrix (fun a => (r a).castSucc) (fun a => (c a).castSucc)).det = (g1.val.submatrix r c).det := by
-  congr 1
-  ext a b
-  exact hb.1 _ _
+  exact congrArg (fun M : Matrix (Fin k) (Fin k) R => Matrix.det M) (by ext a b; exact hb.1 _ _)
 
 lemma qr_det_snoc (hb : IsBlock h g1 t) {k : ℕ} (r c : Fin k → Fin m) :
     (h.val.submatrix (Fin.snoc (α := fun _ => Fin (m + 1)) (fun a => (r a).castSucc) (Fin.last m))

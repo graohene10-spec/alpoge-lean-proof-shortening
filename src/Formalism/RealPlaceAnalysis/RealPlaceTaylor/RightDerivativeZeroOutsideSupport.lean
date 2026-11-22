@@ -110,17 +110,14 @@ lemma hasDerivAt_frobenius_curve {n : ℕ} (g X : Matrix (Fin n) (Fin n) ℂ) :
     HasDerivAt (fun t : ℝ => hs (g * NormedSpace.exp ((t : ℂ) • X)))
       (∑ i, ∑ j, 2 * inner ℝ (g i j) ((g * X) i j)) 0 := by
   have hc : HasDerivAt (fun t : ℝ => g * NormedSpace.exp ((t : ℂ) • X)) (g * X) 0 := by
-    have h2 := hasDerivAt_mul_matrix_exp_smul g X 0
-    simp only [Complex.ofReal_zero, zero_smul, NormedSpace.exp_zero, one_mul] at h2
-    exact h2
+    simpa only [Complex.ofReal_zero, zero_smul, NormedSpace.exp_zero, one_mul] using
+      hasDerivAt_mul_matrix_exp_smul g X 0
   have hentry : ∀ i j, HasDerivAt (fun t : ℝ => (g * NormedSpace.exp ((t : ℂ) • X)) i j) ((g * X) i j) 0 :=
     fun i j => hasDerivAt_pi.1 (hasDerivAt_pi.1 hc i) j
   have hE : ∀ i j, HasDerivAt (fun t : ℝ => ‖(g * NormedSpace.exp ((t : ℂ) • X)) i j‖ ^ 2)
       (2 * inner ℝ (g i j) ((g * X) i j)) 0 := by
     intro i j
-    convert (hentry i j).norm_sq using 1
-    beta_reduce
-    rw [mul_exp_zero_smul]
+    simpa only [mul_exp_zero_smul] using (hentry i j).norm_sq
   have hS := HasDerivAt.sum (u := Finset.univ)
     (fun i _ => HasDerivAt.sum (u := Finset.univ) (fun j _ => hE i j))
   unfold hs
@@ -147,26 +144,21 @@ private lemma bound_of_hs_pos {n : ℕ} (X g : Matrix (Fin n) (Fin n) ℂ) (hpos
       2 * ∑ i, ∑ j, ‖g i j‖ * ‖(g * X) i j‖ := by
     calc |∑ i, ∑ j, 2 * inner ℝ (g i j) ((g * X) i j)|
           ≤ ∑ i, ∑ j, |2 * inner ℝ (g i j) ((g * X) i j)| := by
-            refine (Finset.abs_sum_le_sum_abs _ _).trans ?_
-            gcongr with i _
-            exact Finset.abs_sum_le_sum_abs _ _
+            exact (Finset.abs_sum_le_sum_abs _ _).trans (Finset.sum_le_sum fun i _ => Finset.abs_sum_le_sum_abs _ _)
       _ ≤ ∑ i, ∑ j, 2 * (‖g i j‖ * ‖(g * X) i j‖) := by
             gcongr with i _ j _
             rw [abs_mul, abs_two]
-            gcongr
-            exact abs_real_inner_le_norm _ _
+            exact mul_le_mul_of_nonneg_left (abs_real_inner_le_norm _ _) (by positivity)
       _ = 2 * ∑ i, ∑ j, ‖g i j‖ * ‖(g * X) i j‖ := by simp only [Finset.mul_sum]
-  have hT0 : 0 ≤ ∑ i, ∑ j, ‖g i j‖ * ‖(g * X) i j‖ := by positivity
-  have hX0 := frobenius_nonneg X
-  have hB0 : 0 ≤ hs g * Real.sqrt (hs X) := by positivity
-  have hsq : (∑ i, ∑ j, ‖g i j‖ * ‖(g * X) i j‖) ^ 2 ≤ (hs g * Real.sqrt (hs X)) ^ 2 := by
-    rw [mul_pow, Real.sq_sqrt hX0]
-    calc (∑ i, ∑ j, ‖g i j‖ * ‖(g * X) i j‖) ^ 2 ≤ hs g * hs (g * X) := frobenius_cauchy_schwarz g (g * X)
-      _ ≤ hs g * (hs g * hs X) := by gcongr; exact frobenius_mul_le g X
-      _ = hs g ^ 2 * hs X := by ring
-  have hT : ∑ i, ∑ j, ‖g i j‖ * ‖(g * X) i j‖ ≤ hs g * Real.sqrt (hs X) := by nlinarith
+  have hT : ∑ i, ∑ j, ‖g i j‖ * ‖(g * X) i j‖ ≤ hs g * Real.sqrt (hs X) := by
+    have hsq : (∑ i, ∑ j, ‖g i j‖ * ‖(g * X) i j‖) ^ 2 ≤ (hs g * Real.sqrt (hs X)) ^ 2 := by
+      rw [mul_pow, Real.sq_sqrt (frobenius_nonneg X)]
+      calc (∑ i, ∑ j, ‖g i j‖ * ‖(g * X) i j‖) ^ 2 ≤ hs g * hs (g * X) := frobenius_cauchy_schwarz g (g * X)
+        _ ≤ hs g * (hs g * hs X) := by gcongr; exact frobenius_mul_le g X
+        _ = hs g ^ 2 * hs X := by ring
+    nlinarith [hsq, show 0 ≤ ∑ i, ∑ j, ‖g i j‖ * ‖(g * X) i j‖ by positivity, show 0 ≤ hs g * Real.sqrt (hs X) by positivity]
   rw [abs_div, abs_of_pos hpos, div_le_iff₀ hpos]
-  nlinarith
+  nlinarith [h1, hT]
 
 theorem right_derivative_log_frobenius_le {n : ℕ} (ε : Fin n → Bool) (X g : Matrix (Fin n) (Fin n) ℂ) (hg : inUJ ε g) :
     ‖Rd X (fun x => ((hh x : ℝ) : ℂ)) g‖ ≤ 2 * Real.sqrt (hs X) := by
@@ -223,21 +215,17 @@ lemma hasDerivAt_right_derivative {n : ℕ} {ε : Fin n → Bool} {f : Matrix (F
     {X h : Matrix (Fin n) (Fin n) ℂ} (hf : SmoothOnG ε f) (hX : inG ε X) (hh : inUJ ε h) :
     HasDerivAt (fun u : ℝ => f (h * NormedSpace.exp ((u : ℂ) • X))) (Rd X f h) 0 := by
   obtain ⟨U, F, hU, hhU, hF, hfF⟩ := hf h hh
-  have h0 : h * NormedSpace.exp (((0 : ℝ) : ℂ) • X) = h := mul_exp_zero_smul h X
   have hcont : ContinuousAt (fun u : ℝ => h * NormedSpace.exp ((u : ℂ) • X)) 0 :=
     (hasDerivAt_mul_matrix_exp_smul h X 0).continuousAt
   have hmem : U ∈ 𝓝 (h * NormedSpace.exp (((0 : ℝ) : ℂ) • X)) := by
-    rw [h0]
-    exact hU.mem_nhds hhU
+    simpa only [mul_exp_zero_smul] using hU.mem_nhds hhU
   have hev : (fun u : ℝ => f (h * NormedSpace.exp ((u : ℂ) • X))) =ᶠ[𝓝 0]
       (fun u => F (h * NormedSpace.exp ((u : ℂ) • X))) := by
     filter_upwards [hcont.preimage_mem_nhds hmem] with u hu
     exact hfF _ hu (inUJ_mul_real_place_taylor hh (inUJ_exp_real_smul_of_inG hX u))
-  have hFd : DifferentiableAt ℝ F (h * NormedSpace.exp (((0 : ℝ) : ℂ) • X)) := by
-    rw [h0]
-    exact (hF.contDiffAt (hU.mem_nhds hhU)).differentiableAt (by simp)
   have hdF : DifferentiableAt ℝ (fun u : ℝ => F (h * NormedSpace.exp ((u : ℂ) • X))) 0 :=
-    hFd.comp (0 : ℝ) (hasDerivAt_mul_matrix_exp_smul h X 0).differentiableAt
+    ((hF.contDiffAt hmem).differentiableAt (by simp)).comp (0 : ℝ)
+      (hasDerivAt_mul_matrix_exp_smul h X 0).differentiableAt
   have hd : DifferentiableAt ℝ (fun u : ℝ => f (h * NormedSpace.exp ((u : ℂ) • X))) 0 :=
     hdF.congr_of_eventuallyEq hev
   unfold Rd
@@ -291,8 +279,7 @@ lemma continuous_smooth_on_group {n : ℕ} {ε : Fin n → Bool} {f : Matrix (Fi
 
 private lemma Jm_mul_conjTranspose_mul_Jm_mul_eq_one_of_inUJ {n : ℕ} {ε : Fin n → Bool} {g : Matrix (Fin n) (Fin n) ℂ}
     (hg : inUJ ε g) : Jm ε * gᴴ * Jm ε * g = 1 := by
-  have hg' : gᴴ * Jm ε * g = Jm ε := hg
-  rw [Matrix.mul_assoc, Matrix.mul_assoc, ← Matrix.mul_assoc gᴴ, hg', Jm_mul_Jm_self]
+  rw [Matrix.mul_assoc, Matrix.mul_assoc, ← Matrix.mul_assoc gᴴ, show gᴴ * Jm ε * g = Jm ε from hg, Jm_mul_Jm_self]
 
 lemma isCompact_frobenius_sublevel {n : ℕ} (ε : Fin n → Bool) (r : ℝ) : IsCompact {g : UJ ε | hsG g ≤ r} := by
   haveI : ProperSpace (Matrix (Fin n) (Fin n) ℂ) := FiniteDimensional.proper ℝ _

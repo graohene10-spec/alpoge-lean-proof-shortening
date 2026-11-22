@@ -53,9 +53,8 @@ theorem lev_mm (k r' : ℕ) (g : Mat k r') (s t : Fin (2 * r' + k + 1)) :
 
 theorem lev_mn (k r' : ℕ) (g : Mat k r') (p q : Fin (2 * (1 + r') + k + 1)) (hp : mid k r' p) (hq : ¬ mid k r' q) :
     ιLev k 1 r' g p q = 0 := by
-  have hp' : 1 ≤ p.val ∧ p.val < 2 * r' + k + 1 + 1 := hp
-  have hq' : ¬ (1 ≤ q.val ∧ q.val < 2 * r' + k + 1 + 1) := hq
-  simp only [ιLev, dif_pos hp', dif_neg hq']
+  simp only [ιLev, mid] at hp hq ⊢
+  simp only [dif_pos hp, dif_neg hq]
 
 theorem lev_n (k r' : ℕ) (g : Mat k r') (p q : Fin (2 * (1 + r') + k + 1)) (hp : ¬ mid k r' p) :
     ιLev k 1 r' g p q = if p = q then 1 else 0 := by
@@ -232,11 +231,8 @@ lemma not_mid_iff (p : Fin (2 * (1 + r') + k + 1)) : ¬ mid k r' p ↔ p = iZ k 
 
 lemma lev_col_n (g : Mat k r') (p q : Fin (2 * (1 + r') + k + 1)) (hq : ¬ mid k r' q) :
     ιLev k 1 r' g p q = if p = q then 1 else 0 := by
-  by_cases hp : mid k r' p
-  · rw [lev_mn k r' g p q hp hq, if_neg]
-    rintro rfl
-    exact hq hp
-  · exact lev_n k r' g p q hp
+  exact lev_out_col g p q (by
+    rcases (not_mid_iff q).1 hq with h | h <;> simp [h, iZ, iL])
 
 lemma lev_conjT (g : Mat k r') : (ιLev k 1 r' g)ᴴ = ιLev k 1 r' gᴴ := by
   ext p q
@@ -689,7 +685,6 @@ lemma continuous_herm {ι : Type*} [Fintype ι] (H : Matrix ι ι ℂ) :
 
 lemma continuous_lift (k r' : ℕ) : Continuous (liftVec k 1 r') := by
   refine continuous_pi fun p => ?_
-  show Continuous fun v : Fin (2 * r' + k + 1) → ℂ => liftVec k 1 r' v p
   simp only [liftVec]
   split_ifs <;> first | exact continuous_const | exact continuous_apply _ | fun_prop
 
@@ -714,24 +709,21 @@ lemma continuous_heis0 (k r' : ℕ) : Continuous (heis0 k r') := by
 def heisF (k r' : ℕ) (x : HPar k r') : Mt k (1 + r') := heis0 k r' x
 
 theorem heisF_meas : Measurable (heisF k r') := by
-  have hc : Continuous (heisF k r') := continuous_heis0 k r'
-  exact hc.measurable
+  exact (show Continuous (heisF k r') from continuous_heis0 k r').measurable
 
 def bcF (k r : ℕ) (c : Fin r → ℂ) : Mt k r := bigCell k r c 1
 
 theorem bcF_meas : Measurable (bcF k r) := by
   refine measurable_pi_lambda _ fun i => measurable_pi_lambda _ fun j => ?_
-  show Measurable fun c : Fin r → ℂ => bigCell k r c 1 i j
-  simp only [bigCell]
-  split_ifs <;> first | exact measurable_const | exact measurable_pi_apply _ | exact (continuous_star.measurable.comp (measurable_pi_apply _)).inv | exact continuous_star.measurable.inv | exact measurable_id | fun_prop | measurability
+  simp only [bcF, bigCell]
+  split_ifs <;> measurability
 
 def w0F (k r' : ℕ) (c : ℂ) : Mt k (1 + r') := w0 k r' c
 
 theorem long_weyl_element_measurable : Measurable (w0F k r') := by
   refine measurable_pi_lambda _ fun i => measurable_pi_lambda _ fun j => ?_
-  show Measurable fun c : ℂ => w0 k r' c i j
-  simp only [w0]
-  split_ifs <;> first | exact measurable_const | exact measurable_pi_apply _ | exact (continuous_star.measurable.comp (measurable_pi_apply _)).inv | exact continuous_star.measurable.inv | exact measurable_id | fun_prop | measurability
+  simp only [w0F, w0]
+  split_ifs <;> measurability
 
 theorem cell_meas {α : Type*} [MeasurableSpace α] {N T M N' : α → Mt k r} (hN : Measurable N) (hT : Measurable T)
     (hM : Measurable M) (hN' : Measurable N') :

@@ -61,18 +61,16 @@ theorem simpleAdd : Formalism.DoubleCosetMeasures.SimpleAdd := by
   intro K _ n x y
   constructor
   · intro hx hy
-    unfold sLow
-    rw [← Finset.sum_add_distrib]
+    simp only [sLow, ← Finset.sum_add_distrib]
     refine Finset.sum_congr rfl fun j _ => ?_
     by_cases h : j.val + 1 < n
-    · simp only [dif_pos h]; exact low_simple_entry hx hy j h
+    · simpa only [dif_pos h] using low_simple_entry hx hy j h
     · simp [dif_neg h]
   · intro hx hy
-    unfold sUp
-    rw [← Finset.sum_add_distrib]
+    simp only [sUp, ← Finset.sum_add_distrib]
     refine Finset.sum_congr rfl fun j _ => ?_
     by_cases h : j.val + 1 < n
-    · simp only [dif_pos h]; exact up_simple_entry hx hy j h
+    · simpa only [dif_pos h] using up_simple_entry hx hy j h
     · simp [dif_neg h]
 
 section Int

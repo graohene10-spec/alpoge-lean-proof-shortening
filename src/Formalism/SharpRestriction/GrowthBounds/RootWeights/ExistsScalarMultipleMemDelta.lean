@@ -22,10 +22,9 @@ theorem delta_le_nabla {E : GLOps n (KK O) V} {lam : Fin n → ℤ} {v : V}
 
 theorem integral_enveloping_span_top {E : GLOps n (KK O) V} {lam : Fin n → ℤ} {v : V} (hI : IsIrrHW E lam v) :
     Submodule.span (KK O) {x | ∃ u ∈ UZmon E, x = u v} = ⊤ := by
-  rw [eq_top_iff, ← hI.2.2.2]
-  refine Submodule.span_mono ?_
+  rw [eq_top_iff, ← hI.2.2.2, Submodule.span_le]
   rintro x ⟨u, hu, rfl⟩
-  exact ⟨u, enveloping_le_integral_enveloping E hu, rfl⟩
+  exact Submodule.subset_span ⟨u, enveloping_le_integral_enveloping E hu, rfl⟩
 
 theorem nabla_to_delta_maps_fg [NeZero n] [CharZero (KK O)] [FiniteDimensional (KK O) V] {E : GLOps n (KK O) V}
     {lam : Fin n → ℤ} {v : V} (hI : IsIrrHW E lam v)

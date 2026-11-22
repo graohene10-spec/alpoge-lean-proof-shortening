@@ -42,8 +42,7 @@ lemma col_hi (i j : Fin (2 * r + k + 1)) (a : Fin r) (hj : j.val = 2 * r + k - a
   rw [dif_neg (by omega), dif_neg (by omega)]
   have e : (⟨2 * r + k - j.val, by omega⟩ : Fin r) = a := Fin.ext (by simp only; omega)
   rw [e]
-  have e2 : (i.val = 2 * r + k - j.val) ↔ i.val = a.val := by omega
-  simp only [e2]
+  simp only [show i.val = 2 * r + k - j.val ↔ i.val = a.val by omega]
 
 lemma col_mid (i j : Fin (2 * r + k + 1)) (h1 : r ≤ j.val) (h2 : j.val ≤ r + k) :
     bigCell k r c μ i j = if hi : r ≤ i.val ∧ i.val ≤ r + k then
@@ -56,13 +55,12 @@ lemma row_lo (p j : Fin (2 * r + k + 1)) (a : Fin r) (hp : p.val = a.val) :
   have ha := a.isLt
   have hj := j.isLt
   by_cases h1 : j.val < r
-  · rw [col_lo c μ p j ⟨j.val, h1⟩ rfl, if_neg (by simp only; omega), if_neg (by omega)]
+  · rw [col_lo c μ p j ⟨j.val, h1⟩ rfl, if_neg (by omega), if_neg (by omega)]
   · by_cases h2 : j.val ≤ r + k
     · rw [col_mid c μ p j (by omega) h2, dif_neg (by omega), if_neg (by omega)]
     · rw [col_hi c μ p j ⟨2 * r + k - j.val, by omega⟩ (by simp only; omega)]
       by_cases h3 : j.val = 2 * r + k - a.val
-      · have e : (⟨2 * r + k - j.val, by omega⟩ : Fin r) = a := Fin.ext (by simp only; omega)
-        rw [if_pos (by simp only; omega), if_pos h3, e]
+      · rw [if_pos (by simp only; omega), if_pos h3, show (⟨2 * r + k - j.val, by omega⟩ : Fin r) = a from Fin.ext (by simp only; omega)]
       · rw [if_neg (by simp only; omega), if_neg h3]
 
 lemma row_hi (p j : Fin (2 * r + k + 1)) (a : Fin r) (hp : p.val = 2 * r + k - a.val) :
@@ -70,11 +68,9 @@ lemma row_hi (p j : Fin (2 * r + k + 1)) (a : Fin r) (hp : p.val = 2 * r + k - a
   have ha := a.isLt
   have hj := j.isLt
   by_cases h1 : j.val < r
-  · rw [col_lo c μ p j ⟨j.val, h1⟩ rfl]
-    by_cases h3 : j.val = a.val
-    · have e : (⟨j.val, h1⟩ : Fin r) = a := Fin.ext h3
-      rw [if_pos (by simp only; omega), if_pos h3, e]
-    · rw [if_neg (by simp only; omega), if_neg h3]
+  · by_cases h3 : j.val = a.val
+    · rw [col_lo c μ p j a h3, if_pos hp, if_pos h3]
+    · rw [col_lo c μ p j ⟨j.val, h1⟩ rfl, if_neg (by simp only; omega), if_neg h3]
   · by_cases h2 : j.val ≤ r + k
     · rw [col_mid c μ p j (by omega) h2, dif_neg (by omega), if_neg (by omega)]
     · rw [col_hi c μ p j ⟨2 * r + k - j.val, by omega⟩ (by simp only; omega),

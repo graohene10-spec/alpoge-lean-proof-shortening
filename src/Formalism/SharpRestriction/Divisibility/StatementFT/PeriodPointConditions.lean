@@ -47,12 +47,11 @@ def PeriodTwistCompatibility (D : D7) (Dx : DivX D) (T : TwForms D) : Prop :=
 theorem perTw_rat {D : D7} {Dx : DivX D} {T : TwForms D} {u : D.what₂.Word} {μ : D.what₂.Tup} (h : PerDecTw D Dx T u μ) :
     ∀ x ∈ (T.fm u μ).ptLat.L, ∀ F ∈ (D.what₂.Mtilde μ).carrier,
       ∃ y : D.what₂.LL, D.what₂.embLL y = (D.PTw u μ).period ((T.fm u μ).ptEmb x) ((D.eMtTw u μ).symm F) := by
-  intro x hx F hF
   obtain ⟨pc, hper, hint⟩ := h
+  intro x hx F hF
   choose y hy _ using hint x hx F hF
   refine ⟨∑ c, ((Nat.card ((T.fm u μ).stabilizer₂ c) : ℕ) : D.what₂.LL)⁻¹ * y c, ?_⟩
-  rw [hper]
-  simp only [map_sum, map_mul, map_inv₀, map_natCast, hy]
+  simp only [hper, map_sum, map_mul, map_inv₀, map_natCast, hy]
 
 def aPairAt (D : D7) (Dx : DivX D) (T : TwForms D) : Prop :=
   WeightDegreeSizes.MemberChainIntegral D ∧ WeightDegreeSizes.TwistedChainIntegral D T ∧ WeightDegreeSizes.PeriodClassSumWeyl D ∧ WeightDegreeSizes.TwistedPeriodIntegral D Dx T

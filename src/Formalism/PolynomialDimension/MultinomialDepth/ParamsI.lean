@@ -112,11 +112,10 @@ theorem cnkc (C Ck k Y Nr cl b' : ℝ) (hCk : 1 ≤ Ck) (hC : 1000 * Ck ≤ C) (
     (hN : 0 ≤ Nr) (hcl : 0 ≤ cl) (hb : 0 < b') (hM : C * k ^ 3 * Y * (Nr * cl) ≤ b') :
     Ck * Nr * k * (2 * cl) / b' ≤ 1 / Y := by
   rw [div_le_div_iff₀ hb (by linarith)]
-  have hk3 : k ≤ k ^ 3 := le_self_pow₀ hk (by norm_num)
-  have h1 : 2 * Ck * k ≤ C * k ^ 3 := by nlinarith
-  have h2 : 2 * Ck * k * (Y * (Nr * cl)) ≤ C * k ^ 3 * (Y * (Nr * cl)) :=
-    mul_le_mul_of_nonneg_right h1 (mul_nonneg (by linarith) (mul_nonneg hN hcl))
-  linarith
+  have h1 : 2 * Ck * k ≤ C * k ^ 3 := by
+    nlinarith [(le_self_pow₀ hk (by norm_num) : k ≤ k ^ 3)]
+  nlinarith [hM, mul_le_mul_of_nonneg_right h1 (mul_nonneg (by linarith : (0 : ℝ) ≤ Y)
+    (mul_nonneg hN hcl))]
 
 theorem sumP (k Y Yb Nr La L a b' : ℝ) (hk : 1 ≤ k) (hY : 1 ≤ Y) (hYb : 1 ≤ Yb) (hN : 1 ≤ Nr)
     (hLa : 0 ≤ La) (hL : 1 ≤ L) (hb : 0 < b') (ha0 : 0 < a)

@@ -41,9 +41,7 @@ theorem rat_not_lt {σ : G E Ω} (hσ : σ ∈ Dec (F := E) A) (y : Ω) (hy : y 
       rw [pow_succ σ (j + 1), AlgEquiv.mul_apply]
       exact step (j + 1)
   obtain ⟨j, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hN.ne'
-  have := all j
-  rw [hfix] at this
-  exact lt_irrefl _ this
+  exact lt_irrefl (A.valuation y) (by simpa [hfix] using all j)
 
 theorem val_eq {σ : G E Ω} (hσ : σ ∈ Dec (F := E) A) (y : Ω) (hy : y ≠ 0) (N : ℕ) (hN : 0 < N)
     (hfix : ∀ z : ℤ, ∀ x, x = (σ ^ z) y → (σ ^ N) x = x) : A.valuation (σ y) = A.valuation y := by
@@ -235,10 +233,9 @@ theorem closed_of_sat (t : Test E Ω) (X : Set (G E Ω))
     refine continuous_of_continuousAt_one t.φ ?_
     rw [ContinuousAt, map_one, nhds_discrete t.A', Filter.tendsto_pure]
     exact t.ho.mem_nhds (one_mem t.φ.ker)
-  have : X = t.φ ⁻¹' (t.φ '' X) :=
-    Set.Subset.antisymm (Set.subset_preimage_image _ _) fun σ' ⟨σ, hσ, e⟩ => h σ σ' e hσ
-  rw [this]
-  exact (isClosed_discrete _).preimage hc
+  rw [show X = t.φ ⁻¹' (t.φ '' X) from
+    Set.Subset.antisymm (Set.subset_preimage_image _ _) fun σ' ⟨σ, hσ, e⟩ => h σ σ' e hσ]
+  exact (isClosed_discrete (t.φ '' X)).preimage hc
 
 theorem exists_test (y : Ω) : ∃ t : Test E Ω, ∀ κ ∈ t.φ.ker, κ y = y := by
   have : IsGalois E Ω := IsAlgClosure.isGalois E Ω

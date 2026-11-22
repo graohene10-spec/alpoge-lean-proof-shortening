@@ -108,9 +108,7 @@ def top {V : ℕ} (B : Finset (Fin V)) : ℕ := B.sup fun u => (u : ℕ)
 theorem le_top {V : ℕ} {B : Finset (Fin V)} {u : Fin V} (h : u ∈ B) : (u : ℕ) ≤ top B := Finset.le_sup (f := fun u : Fin V => (u : ℕ)) h
 
 theorem top_mem {V : ℕ} {B : Finset (Fin V)} (h : B.Nonempty) : ∃ t ∈ B, (t : ℕ) = top B := by
-
-  obtain ⟨t, ht, he⟩ := Finset.exists_mem_eq_sup B h (fun u : Fin V => (u : ℕ))
-  exact ⟨t, ht, he.symm⟩
+  simpa [top] using (Finset.exists_mem_eq_sup B h (fun u : Fin V => (u : ℕ))).imp (fun t ht => ⟨ht.1, ht.2.symm⟩)
 
 theorem top_move {V : ℕ} {B : Finset (Fin V)} {v w : Fin V} (hw : (w : ℕ) = top B + 1) :
     top (insert w (B.erase v)) = top B + 1 := by
@@ -186,12 +184,10 @@ theorem L_sideAt_le {R X : Type} [CommRing R] [AddCommGroup X] [Module R X] {V :
     (L : (Fin V → Slot) → Submodule R X)
     (hdb : ∀ σ v, L (Function.update σ v Slot.dual) ≤ L (Function.update σ v Slot.base))
     (T : Finset (Fin V)) : L (vertexLabel T) ≤ L (fun _ => Slot.base) := by
-
   induction T using Finset.induction_on with
   | empty => exact le_of_eq (congrArg L vertexLabel_empty)
   | @insert v T hvT ih =>
-    rw [← update_positionAt_dual]
-    exact (hdb _ _).trans (by rw [update_positionAt_base_self hvT]; exact ih)
+    simpa [update_positionAt_dual] using (hdb (vertexLabel T) v).trans (by simpa [update_positionAt_base_self hvT] using ih)
 
 theorem enter_positionAt {R X : Type} [CommRing R] [AddCommGroup X] [Module R X] {V : ℕ}
     (L : (Fin V → Slot) → Submodule R X) (π : R) (b : Fin V → ℕ)

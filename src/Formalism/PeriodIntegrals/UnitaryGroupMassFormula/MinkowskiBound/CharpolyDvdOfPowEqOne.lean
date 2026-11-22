@@ -38,10 +38,8 @@ theorem good_mul (ℓ : ℕ) (p q : ℚ[X]) (hp : Good ℓ p) (hq : Good ℓ q) 
   · rw [hdeg, mul_add]; exact add_le_add hy1 hz1
   · rw [hpm.nextCoeff_mul hqm, hdeg]; push_cast; linear_combination hy2 + hz2
   · intro h0
-    have hy : y = 0 := by omega
-    have hz : z = 0 := by omega
     rw [hdeg, pow_add]
-    conv_lhs => rw [hy3 hy, hz3 hz]
+    conv_lhs => rw [hy3 (by omega), hz3 (by omega)]
 
 theorem nextCoeff_X_pow_sub_one (n : ℕ) (hn : 0 < n) :
     (X ^ n - 1 : ℚ[X]).nextCoeff = if n = 1 then -1 else 0 := by

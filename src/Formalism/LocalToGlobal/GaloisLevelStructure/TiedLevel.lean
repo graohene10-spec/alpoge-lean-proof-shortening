@@ -41,8 +41,7 @@ theorem qPl_eq_empty (D : D7) (χ : Host.HChar D.host.E)
     (h : ∀ w : PlE D.host, (∀ k, w ∉ placesOver D.host.E (D.host.g k)) → χ.UnrAt w) : qPl D χ = ∅ := by
   ext v
   simp only [Set.mem_empty_iff_false, iff_false]
-  rintro ⟨hg, w, hw, hu⟩
-  refine hu (h w fun k hk => hg ⟨w, hw, k, hk⟩)
+  exact fun ⟨hg, w, hw, hu⟩ => hu (h w fun k hk => hg ⟨w, hw, k, hk⟩)
 
 def embT (D : D7) (t : D.what₂.Tau) : D.host.E →+* ℂ :=
   D.host.emb ((D.eTau t : D.R.Psi) : D.R.GG)

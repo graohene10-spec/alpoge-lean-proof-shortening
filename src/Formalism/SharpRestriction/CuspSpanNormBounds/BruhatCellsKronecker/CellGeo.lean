@@ -46,8 +46,7 @@ theorem geo_C_v (v : ι → S.V) (h : IsUnit (geoGram v).det) (i l : ι) :
 
 theorem geo_Y_v (v w : ι → S.V) (h : IsUnit (geoGram v).det) (l : ι) : geoY v w (v l) = w l := by
   rw [geo_Y_apply]
-  simp only [geo_C_v v h]
-  simp
+  simp [geo_C_v v h]
 
 theorem geo_R (v : ι → S.V) (h : IsUnit (geoGram v).det) (z : S.V)
     (hz : z ∈ Submodule.span E (Set.range v)) (y : S.V) :

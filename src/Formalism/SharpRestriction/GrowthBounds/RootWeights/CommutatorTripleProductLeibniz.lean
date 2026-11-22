@@ -104,11 +104,8 @@ theorem gl_commutation_relation_apply {E : GLOps n K V} (hE : IsGLRep E) (a b c 
 theorem projector_recursion_base {E : GLOps n K V} (hE : IsGLRep E) (c : Fin n) (u : V) (hu0 : u ∈ weightSp E 0)
     (hu : ∀ a b : Fin n, a < c → b < c → E a b u = 0) : ProjectorRecursionProperty E c 0 u := by
   refine ⟨?_, ?_⟩
-  · have h := hu0
-    unfold weightSp at h
-    have h2 := (Submodule.mem_iInf _).mp h c
-    rw [LinearMap.mem_ker] at h2
-    simpa [sub_eq_zero] using h2
+  · simp [weightSp] at hu0
+    simpa [sub_eq_zero] using hu0 c
   · intro j hj
     have h : ∀ i ∈ Iio c, E j i (E i c u) = E j c u := by
       intro i hi

@@ -74,10 +74,8 @@ variable {E : Type} [Field E] [NumberField E] [StarRing E] {n : ℕ}
 theorem smul_mem_ideal_smul_comm {I J : Ideal (𝓞 E)} {X : Submodule (𝓞 E) (Sp E n)} {r : 𝓞 E} (hr : r ∈ J) {q : Sp E n}
     (hq : q ∈ I • X) : r • q ∈ I • (J • X) := by
   refine Submodule.smul_induction_on hq (fun s hs x hx => ?_) (fun x y hx hy => ?_)
-  · rw [show r • s • x = s • r • x from smul_comm r s x]
-    exact Submodule.smul_mem_smul hs (Submodule.smul_mem_smul hr hx)
-  · rw [smul_add]
-    exact Submodule.add_mem _ hx hy
+  · simpa only [smul_comm r s x] using Submodule.smul_mem_smul hs (Submodule.smul_mem_smul hr hx)
+  · simpa only [smul_add] using Submodule.add_mem _ hx hy
 
 theorem neighbour_path_transfer {P Q : HeightOneSpectrum (𝓞 E)} (hneQ : conjPrime₂ Q ≠ Q) (hQP : Q ≠ P) (hQP' : Q ≠ conjPrime₂ P)
     {i j : ℕ} {N e M : Submodule (𝓞 E) (Sp E n)} (hN : Submodule.IsLattice E N) (huN : IsUnimodular (hStd E n) N)

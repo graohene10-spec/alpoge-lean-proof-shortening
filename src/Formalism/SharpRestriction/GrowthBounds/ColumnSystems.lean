@@ -437,12 +437,10 @@ def FreeTopRankBound (_D : Formalism.BasicNotions.D7) (C0 CYb Cde Ck CD Cb CE1 C
 theorem RootMultiplicityTwo.toExtendedDigitRankBound {D : Formalism.BasicNotions.D7} {C0 CYb Cde Ck CD Cb CE1 CE2 Cc : ℝ}
     (h : RootMultiplicityTwo D C0 CYb Cde Ck CD Cb CE1 CE2 Cc) : ExtendedDigitRankBound D C0 CYb Cde Ck CD Cb CE1 CE2 Cc := by
   intro X _ W Qq O Kf _ _ _ _ _ _ _ _ _ _ ι σ jO w hS hE hC j rz ry hD
-  obtain ⟨⟨g1, -, -, -, -, -, -, -, g10, -⟩, -⟩ := id hE
   have hM : 0 ≤ X.b' / (X.k * X.Q * X.Y) := by
-    apply div_nonneg g10.le
-    apply mul_nonneg (mul_nonneg ?_ ?_) (by linarith)
-    · unfold Loc.k; positivity
-    · unfold Loc.Q; positivity
+    obtain ⟨⟨g1, -, -, -, -, -, -, -, g10, -⟩, -⟩ := hE
+    exact div_nonneg g10.le
+      (mul_nonneg (mul_nonneg (by unfold Loc.k; positivity) (by unfold Loc.Q; positivity)) (by linarith))
   exact (h X W Qq O Kf ι σ jO w hS hE hC j 0 le_rfl hM rz ry hD).2
 
 def ExtendedAllConclusions (D : Formalism.BasicNotions.D7) (C0 CYb Cde Ck CD Cb CE1 CE2 Cm Ckap Ct Cc Cs : ℝ) : Prop :=

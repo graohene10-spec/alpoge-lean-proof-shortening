@@ -266,17 +266,13 @@ theorem shape_unique {n : ℕ} {κ κ' : Fin n → ℤ} (h : Antitone κ) (h' : 
   · rw [le_iff_lt_colHeight_of_antitone h (κ' i) i, he, ← le_iff_lt_colHeight_of_antitone h']
 
 private theorem card_filter_val_lt_eq {n k : ℕ} (hk : k ≤ n) : (univ.filter fun m : Fin n => m.val < k).card = k := by
-  have e : (univ.filter fun m : Fin n => m.val < k).map Fin.valEmbedding = Finset.range k := by
-    ext j
-    simp only [Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_range]
-    constructor
-    · rintro ⟨m, hm, rfl⟩
-      exact hm
-    · intro hj
-      exact ⟨⟨j, by omega⟩, hj, rfl⟩
-  have h1 := congrArg Finset.card e
-  rw [Finset.card_map, Finset.card_range] at h1
-  exact h1
+  rcases lt_or_eq_of_le hk with hklt | hkeq
+  · have h : (univ.filter fun m : Fin n => m.val < k) = Finset.Iio (⟨k, hklt⟩ : Fin n) := by
+      ext m
+      simp [Finset.mem_Iio, Fin.lt_def]
+    rw [h, Fin.card_Iio]
+  · subst k
+    rw [Finset.filter_true_of_mem (fun m _ => m.isLt), Finset.card_univ, Fintype.card_fin]
 
 theorem exists_shape {n : ℕ} {μ : Fin (n + 1) → ℤ} (hμ : Antitone μ) (h : ℤ → ℕ)
     (hanti : ∀ c, h (c + 1) ≤ h c) (h1 : ∀ c, h c ≤ colHeight μ c) (h2 : ∀ c, colHeight μ c ≤ h c + 1)

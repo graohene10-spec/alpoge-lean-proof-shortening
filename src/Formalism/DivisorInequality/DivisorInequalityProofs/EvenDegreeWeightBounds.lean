@@ -60,10 +60,7 @@ theorem stepDiSharp (J Pl Emb : Type) [Fintype J] [Fintype Pl] [Fintype Emb] [No
   have hF0 : 0 ≤ f * N ^ 2 := mul_nonneg hf0 (sq_nonneg N)
   have hcF : (Fintype.card Pl : ℝ) * g0 j ≤ f * N ^ 2 := mul_le_mul hcard (hg0 j).2 (hg0 j).1 hf0
 
-  obtain ⟨K0, hK0⟩ : ∃ K0 : ℝ, K0 =
-      (Fintype.card Pl : ℝ) * g0 j * Real.log (8 + 32 * ((Fintype.card Pl : ℝ) * g0 j) * v) +
-        2 * (C2 * f * m ^ 2 * N ^ 2 * (logg + logT) + Ce * f * N ^ 2 * logg) +
-        (∑ τ, (1 + 2 * g0 j * Real.log (2 * (∑ i, ν j τ i) + 2))) + (logh j + logh' j) := ⟨_, rfl⟩
+  let K0 : ℝ := (Fintype.card Pl : ℝ) * g0 j * Real.log (8 + 32 * ((Fintype.card Pl : ℝ) * g0 j) * v) + 2 * (C2 * f * m ^ 2 * N ^ 2 * (logg + logT) + Ce * f * N ^ 2 * logg) + (∑ τ, (1 + 2 * g0 j * Real.log (2 * (∑ i, ν j τ i) + 2))) + (logh j + logh' j)
   have hpt : ∀ s, logK j s ≤ (∑ τ, ((∑ i, ph (ν j τ i)) - (∑ i, ν j τ i) * logOmτ τ s)) +
       (Fintype.card Pl : ℝ) * g0 j * logth0 s + K0 := by
     intro s
@@ -108,8 +105,6 @@ theorem stepDiSharp (J Pl Emb : Type) [Fintype J] [Fintype Pl] [Fintype Emb] [No
         (mul_nonneg (mul_nonneg (mul_nonneg p2 hf0) (sq_nonneg m)) (sq_nonneg N))
     have b5 : Ce * f * N ^ 2 * logg ≤ Ce * f * N ^ 2 * (C8 * L) :=
       mul_le_mul_of_nonneg_left hg (mul_nonneg (mul_nonneg pe hf0) (sq_nonneg N))
-    have b6 := hh j
-    have b7 := hh' j
     have b8 : 2 * C4 * (f * N ^ 2) * (L + logT + logg) ≤ 2 * C4 * (f * N ^ 2) * (L + C7 * m * L + C8 * L) :=
       mul_le_mul_of_nonneg_left (by linarith) (mul_nonneg (mul_nonneg zero_le_two p4) hF0)
     have q1 : (1 : ℝ) * 1 ≤ N ^ 2 * La := mul_le_mul hN2 hLa1 zero_le_one (sq_nonneg N)
@@ -123,7 +118,6 @@ theorem stepDiSharp (J Pl Emb : Type) [Fintype J] [Fintype Pl] [Fintype Emb] [No
     have hm3 : m ≤ m ^ 3 := by
       have := mul_le_mul_of_nonneg_left hm1 (by linarith : (0 : ℝ) ≤ m)
       linarith only [this]
-    have hm4 : 1 ≤ m ^ 3 := le_trans hm hm3
     have e1 : 0 ≤ f * N ^ 2 * C3 * (La - L) := mul_nonneg (mul_nonneg hF0 p3) (by linarith)
     have e2 : 0 ≤ f * N ^ 2 * C4 * (La - L) := mul_nonneg (mul_nonneg hF0 p4) (by linarith)
     have e3 : 0 ≤ f * N ^ 2 * (Ce * C8) * (La - L) :=
@@ -138,8 +132,8 @@ theorem stepDiSharp (J Pl Emb : Type) [Fintype J] [Fintype Pl] [Fintype Emb] [No
       mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right kA hLa0) hF0
     have e9 : f * N ^ 2 * ((2 * (C2 + C4) * (C7 + C8)) * (m ^ 3 * L)) ≤ f * N ^ 2 * (Ch * (m ^ 3 * L)) :=
       mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right kB (mul_nonneg (by linarith) hL)) hF0
-    rw [hK0]
-    linarith
+    dsimp only [K0]
+    linarith [hh j, hh' j]
   rw [hmean j, div_le_iff₀ hn]
   have hth' := (div_le_iff₀ hn).mp hth
   have t1 := mul_le_mul_of_nonneg_left hth' hc0

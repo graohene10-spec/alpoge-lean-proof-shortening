@@ -321,13 +321,11 @@ theorem block_end_leading_minors_integral (D : D7) (T T' : ℕ) (γ : Point D.ho
   obtain ⟨a, ha, rfl⟩ := mem_blockEnds D γ.1 0 l hl
   have hle : 0 + pS γ.1 (a + 1) ≤ D.R.rS + 1 := by rw [zero_add]; exact (toComp γ).sizeUpTo_le _
   refine ⟨hle, ?_⟩
-  have := point_embedding_of_boundary_point D T T' γ h ⟨a, by rw [show (toSig γ).1.length = γ.1.length from toComp_length γ]; exact ha⟩
-  have e : leadMinorK (ptMat γ) (0 + pS γ.1 (a + 1)) hle =
-      IndexedMinorEntry (toComp γ).blocksFun (toT γ) ⟨a, by rw [toComp_length]; exact ha⟩ := by
+  rw [show leadMinorK (ptMat γ) (0 + pS γ.1 (a + 1)) hle =
+      IndexedMinorEntry (toComp γ).blocksFun (toT γ) ⟨a, by rw [toComp_length]; exact ha⟩ by
     rw [E5minor_eq, leadMinorK_eq, ptMat_eq]
-    simp [sizeUpTo_toComp]
-  rw [e]
-  exact this
+    simp [sizeUpTo_toComp]]
+  exact point_embedding_of_boundary_point D T T' γ h ⟨a, by rw [show (toSig γ).1.length = γ.1.length from toComp_length γ]; exact ha⟩
 
 theorem block_start_scalar_integral (D : D7) (T T' : ℕ) (γ : Point D.host.E (D.R.rS + 1)) (h : IsBPt D T T' γ)
     (a : ℕ) (ha : a < γ.1.length) :
@@ -659,8 +657,7 @@ theorem plEmb_Gglob (T T' : ℕ) (v : D.what₂.Tau) (γ : Point D.host.E (D.R.r
       ((Complex.normSq (plEmb D v (leadMinorK (ptMat γ) (D.R.rS + 1) le_rfl)) -
         (T : ℝ) * (T' : ℝ) * Complex.normSq (plEmb D v (leadMinorK (ptMat γ) D.R.rS (Nat.le_succ _))) : ℝ) : ℂ) := by
   unfold Gglob
-  rw [map_sub, map_mul, map_mul, map_mul, map_mul, plEmb_conj, plEmb_conj, Complex.mul_conj, Complex.mul_conj,
-    map_natCast, map_natCast]
+  simp only [map_sub, map_mul, plEmb_conj, Complex.mul_conj, map_natCast]
   push_cast; ring
 
 theorem exists_rep_of_orbSq {k r : ℕ} (L : LocBessel k r) (F : Mx k r → (L.Wq →L[ℂ] L.Wp)) (γ : Point ℂ (r + 1))
@@ -1871,8 +1868,7 @@ theorem lA_pos (z : Fin (2 * r + k + 1) → ℂ) (hz : inWb k r z) (hT : 0 < Tz 
 
 theorem continuous_eucl {N : ℕ} : Continuous (eucl : (Fin N → ℂ) → ℝ) := by
   unfold eucl
-  exact Real.continuous_sqrt.comp
-    (continuous_finset_sum _ (fun i _ => Complex.continuous_normSq.comp (continuous_apply i)))
+  exact Real.continuous_sqrt.comp (continuous_finsetSum _ (fun i _ => Complex.continuous_normSq.comp (continuous_apply i)))
 
 theorem measurable_lA (z : Fin (2 * r + k + 1) → ℂ) (a : Fin (r + 1)) :
     Measurable (fun x : Mt k r => lA k r z (Matrix.of x) a) := by
@@ -2124,8 +2120,7 @@ theorem Emom_eq {k r : ℕ} (L : LocBessel k r) (Bf : L.Hs → L.Wp) (νq : Meas
     (X : Mx k r → ENNReal) (X' : Mt k r → ENNReal) (hX' : Measurable X')
     (hXX : ∀ x : Mt k r, Matrix.of x ∈ UH (Hpk k r) → X (Matrix.of x) = X' x) :
     Emom L Bf νq w X = ∫⁻ x, X' x ∂(muE L Bf νq w) := by
-  have hpos : (0:ℝ) < ‖w‖ ^ 2 := pow_pos (norm_pos_iff.mpr hw) 2
-  have hne : (ENNReal.ofReal (‖w‖ ^ 2))⁻¹ ≠ ⊤ := ENNReal.inv_ne_top.mpr (ENNReal.ofReal_pos.mpr hpos).ne'
+  have hne : (ENNReal.ofReal (‖w‖ ^ 2))⁻¹ ≠ ⊤ := ENNReal.inv_ne_top.mpr (ENNReal.ofReal_pos.mpr (pow_pos (norm_pos_iff.mpr hw) 2)).ne'
   unfold muE Formalism.MainNotions.S.ThB.Emom
   rw [lintegral_withDensity_eq_lintegral_mul₀ ((hPm.pow_const 2).const_mul _) hX'.aemeasurable]
   simp only [Pi.mul_apply, mul_assoc]
@@ -2304,8 +2299,7 @@ theorem shell_moment_bound_mono_const (D : D7) (Ch Cg Cq C1 CardSubmodulesOfInde
 theorem shell_bounds_of_moment_energy (D : D7) (Ch Cg Cq C1 CardSubmodulesOfIndexLePow C2 : ℝ) (hCg : 1 ≤ Cg) (hC1 : 1 ≤ C1) (constant_log_relation : 0 ≤ CardSubmodulesOfIndexLePow)
     (hC2 : CardSubmodulesOfIndexLePow + (Real.logb 2 C1 + 4 + |Ch|) ≤ C2) (hSm : ShellSmooth D) (hMe : PhMeas D) (hLow : LowestKTypeRightInvariant D Ch Cg)
     (ha : ShellMomentBound D Ch Cg Cq C1 CardSubmodulesOfIndexLePow) (hb : ShellEnergyBound D Ch Cg Cq C1) : SubmultiplicativeLocalNorm D Ch Cg Cq C1 C2 := by
-  have hlog : 0 ≤ Real.logb 2 C1 := Real.logb_nonneg one_lt_two hC1
-  have hC2' : CardSubmodulesOfIndexLePow ≤ C2 := by have := abs_nonneg Ch; linarith
+  have hC2' : CardSubmodulesOfIndexLePow ≤ C2 := by linarith [Real.logb_nonneg one_lt_two hC1, abs_nonneg Ch]
   exact shell_bounds_of_four_clauses D Ch Cg Cq C1 C2 hLow (shell_moment_bound_mono_const D Ch Cg Cq C1 CardSubmodulesOfIndexLePow C2 hCg hC2' ha) hb
     (majorant_ge_lowest_coordinate_sq D) (shell_tail_bound_of_moment_energy D Ch Cg Cq C1 CardSubmodulesOfIndexLePow C2 hCg hC1 constant_log_relation hC2 hSm hMe ha hb)
 
@@ -2566,8 +2560,7 @@ theorem shell_bounds_uniform_in_constant (D : D7) (Ch Cg Cq C1₀ CardSubmodules
     (hC2 : CardSubmodulesOfIndexLePow + (Real.logb 2 C1₀ + 4 + |Ch|) ≤ C2) (hSm : ShellSmooth D) (hMe : PhMeas D) (hLow : LowestKTypeRightInvariant D Ch Cg)
     (ha : ShellMomentBound D Ch Cg Cq C1₀ CardSubmodulesOfIndexLePow) (hb : ShellEnergyBound D Ch Cg Cq C1₀) : ∀ C1 ≥ C1₀, SubmultiplicativeLocalNorm D Ch Cg Cq C1 C2 := by
   intro C1 hC1ge
-  have hlog : 0 ≤ Real.logb 2 C1₀ := Real.logb_nonneg one_lt_two hC1
-  have hC2' : CardSubmodulesOfIndexLePow ≤ C2 := by have := abs_nonneg Ch; linarith
+  have hC2' : CardSubmodulesOfIndexLePow ≤ C2 := by linarith [Real.logb_nonneg one_lt_two hC1, abs_nonneg Ch]
   have h0 : 0 < C1₀ := by linarith
   exact shell_bounds_of_four_clauses D Ch Cg Cq C1 C2 hLow
     (shell_moment_bound_anti_const D Ch Cg Cq C1₀ C1 C2 hCg h0 hC1ge (shell_moment_bound_mono_const D Ch Cg Cq C1₀ CardSubmodulesOfIndexLePow C2 hCg hC2' ha))

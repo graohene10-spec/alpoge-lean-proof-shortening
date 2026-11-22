@@ -188,9 +188,8 @@ theorem mem_stdLatS {F E : Type} [Field F] [NumberField F] [Field E] [NumberFiel
   constructor
   · intro h i
     obtain ⟨s, hs⟩ := h i (Set.mem_univ i)
-    rw [← hs]; exact s.2
-  · intro h i _
-    exact ⟨⟨z i, h i⟩, rfl⟩
+    exact hs ▸ s.2
+  · exact fun h i _ => ⟨⟨z i, h i⟩, rfl⟩
 
 theorem frame_standard : FrameStd := by
   intro F E _ _ _ _ _ n x
@@ -860,8 +859,7 @@ def starO (a : 𝓞 E) : 𝓞 E := ⟨star (a : E), Formalism.BasicNotions.Examp
 theorem starO_coe (a : 𝓞 E) : ((starO a : 𝓞 E) : E) = star (a : E) := rfl
 
 theorem starO_starO (a : 𝓞 E) : starO (starO a) = a := by
-  apply RingOfIntegers.ext
-  rw [starO_coe, starO_coe, star_star]
+  exact RingOfIntegers.ext (by rw [starO_coe, starO_coe, star_star])
 
 theorem sigS_oToS (hc : CMData F E) (a : 𝓞 E) : sigS hc (oToS F E a) = oToS F E (starO a) := by
   apply Subtype.ext
@@ -886,8 +884,7 @@ theorem sigS_sigS (hc : CMData F E) (s : intAf F E) : sigS hc (sigS hc s) = s :=
 
 theorem IsConjPl.symm {PP PP' : Pl E} (h : IsConjPl PP PP') : IsConjPl PP' PP := by
   intro a b hab
-  have : (a : E) = star (b : E) := by rw [hab, star_star]
-  exact (h b a this).symm
+  exact (h b a ((star_star (a : E)).symm.trans (congrArg star hab.symm))).symm
 
 theorem sigS_mem_idS (hc : CMData F E) {PP PP' : Pl E} (h : IsConjPl PP PP') {s : intAf F E}
     (hs : s ∈ idS F PP.asIdeal) : sigS hc s ∈ idS F PP'.asIdeal := by
@@ -901,11 +898,9 @@ theorem sigS_mem_idS (hc : CMData F E) {PP PP' : Pl E} (h : IsConjPl PP PP') {s 
 theorem resS_sigS_eq_zero_iff (hc : CMData F E) {PP PP' : Pl E} (h : IsConjPl PP PP') (s : intAf F E) :
     resS F PP' (sigS hc s) = 0 ↔ resS F PP s = 0 := by
   rw [resS_eq_zero_iff, resS_eq_zero_iff]
-  constructor
-  · intro hs
-    have := sigS_mem_idS hc h.symm hs
-    rwa [sigS_sigS] at this
-  · exact sigS_mem_idS hc h
+  refine ⟨fun hs => ?_, sigS_mem_idS hc h⟩
+  have := sigS_mem_idS hc h.symm hs
+  rwa [sigS_sigS] at this
 
 def starOHom : 𝓞 E →+* 𝓞 E where
   toFun := starO
@@ -1012,8 +1007,7 @@ theorem isUnit_of_resS_ne_zero (hc : CMData F E) (c : intAf F E) (h : ∀ PP : P
     rcases mul_eq_zero.1 h0 with h1 | h1
     · exact h PP h1
     · exact h (conjPl PP) ((resS_sigS_eq_zero_iff hc (isConjPl_conjPl PP).symm c).1 h1)
-  have : IsUnit (c * sigS hc c) := by rw [hN]; exact hu.map _
-  exact isUnit_of_mul_isUnit_left this
+  exact isUnit_of_mul_isUnit_left (show IsUnit (c * sigS hc c) by rw [hN]; exact hu.map (adS F E))
 
 theorem isUnit_matrix_of_resS {n : ℕ} (hc : CMData F E) (M : Matrix (Fin n) (Fin n) (intAf F E))
     (h : ∀ PP : Pl E, (M.map (resS F PP)).det ≠ 0) : IsUnit M := by
@@ -1311,8 +1305,7 @@ theorem map_smulR {B : Type} [CommRing B] (f : A →+* B) (r : A) (M : Matrix n 
 
 theorem det_cT (σ : A →+* A) (M : Matrix n n A) : (cT σ M).det = σ M.det := by
   unfold cT
-  rw [Matrix.det_transpose]
-  exact (RingHom.map_det σ M).symm
+  simpa [Matrix.det_transpose] using (RingHom.map_det σ M).symm
 
 end Cayley
 
@@ -2395,9 +2388,7 @@ theorem lc_prV_hat (v : HeightOneSpectrum (𝓞 F)) (L : Submodule (𝓞 E) (Fin
     obtain ⟨l, hl, rfl⟩ := hu
     exact Submodule.subset_span ⟨l, hl, rfl⟩
   | zero =>
-    have : (fun i => prV (E := E) v ((0 : Fin n → E ⊗[F] Af F) i)) = 0 := by
-      funext i; simp
-    rw [this]; exact Submodule.zero_mem _
+    rw [show (fun i => prV (E := E) v ((0 : Fin n → E ⊗[F] Af F) i)) = 0 by funext i; simp]; exact Submodule.zero_mem _
   | add a b _ _ ha hb =>
     have : (fun i => prV (E := E) v ((a + b) i)) =
         (fun i => prV (E := E) v (a i)) + (fun i => prV (E := E) v (b i)) := by
@@ -2475,16 +2466,11 @@ theorem lc_stab_loc (v : HeightOneSpectrum (𝓞 F)) (L : Submodule (𝓞 E) (Fi
   · intro hw
     have hx' := Subgroup.inv_mem _ hx
     have h1 := lc_map_loc v L _ (fun u hu => (hx' u).1 hu) _ hw
-    have e : ((x⁻¹ : GL (Fin n) (E ⊗[F] Af F)) : Matrix (Fin n) (Fin n) (E ⊗[F] Af F)).map (prV (E := E) v) *ᵥ
-        (((bc (prV (E := E) v) x : GL (Fin n) (E ⊗[F] v.adicCompletion F)) :
-          Matrix (Fin n) (Fin n) (E ⊗[F] v.adicCompletion F)) *ᵥ w) = w := by
-      have h2 : ((x⁻¹ : GL (Fin n) (E ⊗[F] Af F)) : Matrix (Fin n) (Fin n) (E ⊗[F] Af F)).map (prV (E := E) v) =
-          ((bc (prV (E := E) v) x⁻¹ : GL (Fin n) (E ⊗[F] v.adicCompletion F)) :
-            Matrix (Fin n) (Fin n) (E ⊗[F] v.adicCompletion F)) := rfl
-      rw [h2, Matrix.mulVec_mulVec, ← Units.val_mul, ← map_mul, inv_mul_cancel, map_one, Units.val_one,
-        Matrix.one_mulVec]
-    rw [e] at h1
-    exact h1
+    have h2 : ((x⁻¹ : GL (Fin n) (E ⊗[F] Af F)) : Matrix (Fin n) (Fin n) (E ⊗[F] Af F)).map (prV (E := E) v) =
+        ((bc (prV (E := E) v) x⁻¹ : GL (Fin n) (E ⊗[F] v.adicCompletion F)) :
+          Matrix (Fin n) (Fin n) (E ⊗[F] v.adicCompletion F)) := rfl
+    simpa only [h2, Matrix.mulVec_mulVec, ← Units.val_mul, ← map_mul, inv_mul_cancel, map_one,
+      Units.val_one, Matrix.one_mulVec] using h1
 
 theorem lc_div (g : ℕ) (hg0 : g ≠ 0)
     (hdiv : ∀ b : 𝓞 E, (∀ PP : Pl E, (g : 𝓞 E) ∈ PP.asIdeal → b ∈ PP.asIdeal) → (g : 𝓞 E) ∣ b)
@@ -2718,9 +2704,7 @@ variable {E : Type} [Field E] [NumberField E] [StarRing E]
 
 theorem td_absNorm_natCast (hrank : Module.finrank ℚ E = 2) (p : ℕ) :
     Ideal.absNorm (Ideal.span {(p : 𝓞 E)}) = p ^ 2 := by
-  rw [Ideal.absNorm_span_singleton]
-  have h : (p : 𝓞 E) = algebraMap ℤ (𝓞 E) (p : ℤ) := by simp
-  rw [h, Algebra.norm_algebraMap, RingOfIntegers.rank, hrank]
+  rw [Ideal.absNorm_span_singleton, (show (p : 𝓞 E) = algebraMap ℤ (𝓞 E) (p : ℤ) by simp), Algebra.norm_algebraMap, RingOfIntegers.rank, hrank]
   simp [Int.natAbs_pow]
 
 theorem td_span_prime (hrank : Module.finrank ℚ E = 2) {π : 𝓞 E} {p : ℕ} (hp : p.Prime)

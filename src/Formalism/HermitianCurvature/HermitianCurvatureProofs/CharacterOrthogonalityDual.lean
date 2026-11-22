@@ -325,9 +325,7 @@ open A5x3
 
 theorem dualSpan_true_hc : Formalism.FourierDecayAlt.A5.DualSpan := by
   intro K _ R ψ h C _ _ _ ι _ lam μ hμ
-  apply mem_of_kills h
-  intro c hc
-  exact hμ c fun j => hc _ (Submodule.subset_span ⟨j, rfl⟩)
+  exact mem_of_kills h _ μ (fun c hc => hμ c (fun j => hc _ (Submodule.subset_span ⟨j, rfl⟩)))
 
 theorem quotientEndScalar : Formalism.FourierDecayAlt.A5.EndKR := by
   intro K _ _ _ R ψ hD f

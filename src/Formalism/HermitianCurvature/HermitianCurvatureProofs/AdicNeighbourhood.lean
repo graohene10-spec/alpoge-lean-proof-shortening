@@ -31,13 +31,11 @@ theorem I_nhds {R : Subring K} (ho : IsOpen (R : Set K)) (a : Kˣ) : I R (a : K)
   have : I R (a : K) = (fun x => ((a⁻¹ : Kˣ) : K) * x) ⁻¹' (R : Set K) := by
     ext x; constructor
     · rintro ⟨r, hr, rfl⟩
-      show ((a⁻¹ : Kˣ) : K) * ((a : K) * r) ∈ R
       simpa using hr
     · intro hx
       exact ⟨_, hx, by simp⟩
   rw [this]
   refine (ho.preimage (continuous_const.mul continuous_id)).mem_nhds ?_
-  show ((a⁻¹ : Kˣ) : K) * 0 ∈ R
   simp
 
 theorem inter_zero {R : Subring K} [T2Space K] [IsReduced K] (hc : IsCompact (R : Set K))
@@ -207,9 +205,7 @@ theorem Adic.bounded (h : Adic R ϖ) {C : Set K} (hC : IsCompact C) :
     ∃ a : ℕ, ∀ x ∈ C, (ϖ : K) ^ a * x ∈ R := by
   obtain ⟨a, ha⟩ := hC.elim_directed_cover (fun a : ℕ => {x : K | (ϖ : K) ^ a * x ∈ R})
     (fun a => h.isOpen.preimage (continuous_const.mul continuous_id))
-    (fun x _ => by
-      obtain ⟨m, hm⟩ := h.absorb x
-      exact Set.mem_iUnion.2 ⟨m, hm⟩)
+    (fun x _ => Set.mem_iUnion.2 (h.absorb x))
     (Monotone.directed_le (by
       intro a b hab x hx
       obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le hab

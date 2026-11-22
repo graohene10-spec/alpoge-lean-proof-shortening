@@ -21,7 +21,6 @@ theorem cnorm_sq (u : ι → ℂ) : cnorm u ^ 2 = ∑ i, ‖u i‖ ^ 2 := by
   simpa [cnorm] using Real.sq_sqrt (Finset.sum_nonneg fun i _ => sq_nonneg _)
 
 theorem cnorm_nonneg (u : ι → ℂ) : 0 ≤ cnorm u := by
-  unfold cnorm
   exact Real.sqrt_nonneg _
 
 theorem cnorm_eq_zero {u : ι → ℂ} (h : cnorm u = 0) : u = 0 := by
@@ -58,8 +57,7 @@ theorem majAt_self (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ)
 
 theorem normAt_eq_sqrt (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ) (v : InfinitePlace K)
     (x : V) : normAt b X v x = Real.sqrt (majAt b X v x x).re := by
-  rw [majAt_self, Complex.ofReal_re]
-  exact (Real.sqrt_sq (cnorm_nonneg _)).symm
+  rw [majAt_self, Complex.ofReal_re, Real.sqrt_sq (show 0 ≤ normAt b X v x from cnorm_nonneg _)]
 
 theorem isSesq_maj (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ) :
     IsSesq (fun v => majAt b X v) := by

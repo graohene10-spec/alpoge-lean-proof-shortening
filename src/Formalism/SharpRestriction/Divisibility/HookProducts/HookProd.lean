@@ -53,7 +53,6 @@ theorem D_succ (m : ℕ) (a : ℕ → ℕ) :
   rw [Finset.prod_range_succ]
   have h0 : Ioo m (m + 1) = ∅ := by
     ext x
-    simp only [Finset.mem_Ioo]
     simp
     try omega
   rw [h0, Finset.prod_empty, mul_one, ← Finset.prod_mul_distrib]
@@ -68,9 +67,8 @@ theorem D_succ (m : ℕ) (a : ℕ → ℕ) :
 theorem F_succ_zero (m : ℕ) (a : ℕ → ℕ) (h : a m = 0) :
     F (m + 1) a = (∏ i ∈ range m, (a i + m - a m - i)) * F m a := by
   unfold F
-  rw [Finset.prod_range_succ, ← Finset.prod_mul_distrib]
   have hl : a m + (m + 1) - 1 - m = 0 := by omega
-  rw [hl, Nat.factorial_zero, mul_one]
+  rw [Finset.prod_range_succ, ← Finset.prod_mul_distrib, hl, Nat.factorial_zero, mul_one]
   refine Finset.prod_congr rfl (fun i hi => ?_)
   have hi' : i < m := Finset.mem_range.mp hi
   have e1 : a i + (m + 1) - 1 - i = (a i + m - 1 - i) + 1 := by omega
@@ -106,8 +104,7 @@ theorem F_shift (n : ℕ) (a : ℕ → ℕ) (h1 : ∀ i < n, 1 ≤ a i) :
   refine Finset.prod_congr rfl (fun i hi => ?_)
   have hi' : i < n := Finset.mem_range.mp hi
   have := h1 i hi'
-  have e : a i + n - 1 - i = (a i - 1 + n - 1 - i) + 1 := by omega
-  rw [e, Nat.factorial_succ]
+  rw [show a i + n - 1 - i = (a i - 1 + n - 1 - i) + 1 by omega, Nat.factorial_succ]
 
 theorem E_mul_D (n : ℕ) :
     ∀ a : ℕ → ℕ, (∀ i l, i < l → l < n → a l ≤ a i) → E n a * D n a = F n a := by
@@ -127,12 +124,9 @@ theorem E_mul_D (n : ℕ) :
       intro a ha hmono
       have h1 : ∀ i < m + 1, 1 ≤ a i := by
         intro i hi
-        rcases Nat.lt_or_ge i m with h | h
-        · have := hmono i m h (by omega)
-          omega
-        · have e : i = m := by omega
-          rw [e, ha]
-          omega
+        rcases lt_or_eq_of_le (Nat.le_of_lt_succ hi) with h | rfl
+        · exact le_trans (by omega : 1 ≤ a m) (hmono i m h (by omega))
+        · omega
       rw [E_shift (m + 1) a h1, D_shift (m + 1) a h1, F_shift (m + 1) a h1,
         ← ihk (fun i => a i - 1) (by show a m - 1 = k; omega)
           (fun i l hil hl => by

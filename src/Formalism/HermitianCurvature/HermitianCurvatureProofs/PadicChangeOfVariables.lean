@@ -13,9 +13,8 @@ theorem nat_tri (m : ℕ) : m * (m + 1) / 2 = m * (m - 1) / 2 + m := by
   cases m with
   | zero => simp
   | succ k =>
-    have : (k + 1) * (k + 1 + 1) = (k + 1) * (k + 1 - 1) + 2 * (k + 1) := by
-      simp only [Nat.add_sub_cancel]; ring
-    rw [this, Nat.add_mul_div_left _ _ (by norm_num)]
+    rw [show (k + 1) * (k + 1 + 1) = (k + 1) * (k + 1 - 1) + 2 * (k + 1) by
+      simp only [Nat.add_sub_cancel]; ring, Nat.add_mul_div_left _ _ (by norm_num)]
 
 theorem modK_pow {K : Type} [CommRing K] [TopologicalSpace K] [IsTopologicalRing K] {R : Subring K}
     {ψ : AddChar K ℂ} (hd : LocalDatum K R ψ) {x : K} (hx : IsUnit x) (n : ℕ) :
@@ -32,8 +31,7 @@ theorem vnr [IsArtinianRing K] [IsReduced K] (a : K) : ∃ y, a = a ^ 2 * y := b
   obtain ⟨n, y, hy⟩ := IsArtinian.exists_pow_succ_smul_dvd a (1 : K)
   have hy' : a ^ (n + 1) * y = a ^ n := by simpa using hy
   have hz : a - a ^ 2 * y = 0 := by
-    apply IsNilpotent.eq_zero
-    refine ⟨n + 1, ?_⟩
+    refine IsNilpotent.eq_zero ⟨n + 1, ?_⟩
     have e : (a - a ^ 2 * y) ^ (n + 1) = a * (a ^ n - a ^ (n + 1) * y) * (1 - a * y) ^ n := by
       have : a - a ^ 2 * y = a * (1 - a * y) := by ring
       rw [this, mul_pow]; ring
@@ -826,9 +824,7 @@ theorem head_size_add_block : Formalism.FourierDecayAlt.A6.CSizeAddBlock := by
 
 theorem gram_equality_of_vectors : Formalism.FourierDecayAlt.A6.UGramEq := by
   intro hP hC hM K _ _ _ R ψ hD m h h' t t' cr hs hcr
-  have hsz : (addBlock h m t).1.sum = (addBlock h' m t').1.sum := by
-    simp [addBlock, hs]
-  obtain ⟨_, h2⟩ := hP K R ψ hD (addBlock h m t) (addBlock h' m t') hsz cr hcr
+  obtain ⟨_, h2⟩ := hP K R ψ hD (addBlock h m t) (addBlock h' m t') (by simp [addBlock, hs]) cr hcr
   have e1 : ∀ x, Ns R ψ 1 (addBlock h m t) (addBlock h' m t') (cr x) (cr x) =
       Kp R ψ (pt2 h m t (cr x)) (pt2 h' m t' (cr x)) := by
     intro x; simp [Ns, pt2]
@@ -840,11 +836,9 @@ theorem gram_equality_of_vectors : Formalism.FourierDecayAlt.A6.UGramEq := by
   obtain ⟨ha, hab⟩ := hM K R ψ hD t t'
   obtain ⟨hb, _⟩ := hM K R ψ hD t' t
   rw [nat_tri m, hab]
-  have ha' : (modK R (t : K)) ≠ 0 := ne_of_gt ha
-  have hb' : (modK R (t' : K)) ≠ 0 := ne_of_gt hb
   push_cast
-  have ha'' : ((modK R (t : K) : ℝ) : ℂ) ≠ 0 := by exact_mod_cast ha'
-  have hb'' : ((modK R (t' : K) : ℝ) : ℂ) ≠ 0 := by exact_mod_cast hb'
+  have ha'' : ((modK R (t : K) : ℝ) : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt ha
+  have hb'' : ((modK R (t' : K) : ℝ) : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt hb
   field_simp
   ring
 

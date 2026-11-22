@@ -117,9 +117,8 @@ theorem rf_hform_one (x y : Sp X.E n) : Formalism.UG.hform (starRingEnd X.E) (1 
   · rw [Matrix.one_apply_eq, mul_one]
     rfl
   · intro j _ hj
-    rw [Matrix.one_apply_ne hj.symm, mul_zero, zero_mul]
-  · intro h
-    exact absurd (Finset.mem_univ i) h
+    simp [Matrix.one_apply_ne hj.symm]
+  · simp
 
 theorem rf_hdualFr_tauLat (hX : X.Ok) {N : Submodule (𝓞 X.E) (Sp X.E n)} (hl : Submodule.IsLattice X.E N)
     (hu : IsUnimodular (hStd X.E n) N) (τ : X.Tau) :

@@ -39,8 +39,7 @@ theorem sq_le_weighted_sum_sq (a b c t : ℝ) (hc : 0 ≤ c) (h : c ≤ a + b) (
 theorem hilbert_schmidt_add_le (X Y : Wq →L[ℂ] Wp) {t : ℝ} (ht : 0 < t) :
     hsNormSq (X + Y) ≤ (1 + t) * hsNormSq Y + (1 + 1 / t) * hsNormSq X := by
   rw [hilbert_schmidt_eq_sum_basis, hilbert_schmidt_eq_sum_basis, hilbert_schmidt_eq_sum_basis, Finset.mul_sum, Finset.mul_sum, ← Finset.sum_add_distrib]
-  apply Finset.sum_le_sum
-  intro i _
+  refine Finset.sum_le_sum (fun i _ => ?_)
   rw [ContinuousLinearMap.add_apply]
   exact sq_le_weighted_sum_sq _ _ _ t (norm_nonneg _) (norm_add_le _ _) ht
 

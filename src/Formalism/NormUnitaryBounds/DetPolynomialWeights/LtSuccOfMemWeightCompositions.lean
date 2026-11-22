@@ -246,14 +246,11 @@ lemma T_comp (h3w : NormUnitaryWeight.{u}) (k : Fin n) (i : ℕ) :
   intro F hF w
   rw [Submodule.mem_inf] at hF ⊢
   refine ⟨h3w K N n ν F hF.1 w, ?_⟩
-  have hi := hF.2
-  rw [mem_weightedHomogeneousSubmodule] at hi ⊢
+  rw [mem_weightedHomogeneousSubmodule] at hF ⊢
   intro d hd
-  apply hi
+  apply hF.2
   intro h0
-  apply hd
-  rw [coeff_weightedHomogeneousComponent, h0]
-  simp
+  simp [coeff_weightedHomogeneousComponent, h0] at hd
 
 theorem count (h3p : NormUnitaryPermutationInvariance.{u}) (h3w : NormUnitaryWeight.{u}) (ν : Fin N → ℕ) (k : Fin n) :
     n * ∑ i ∈ Finset.range (∑ j, ν j + 1),

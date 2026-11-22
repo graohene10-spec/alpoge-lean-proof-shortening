@@ -109,9 +109,8 @@ theorem plane_wave_top_degree : Formalism.FourierDecayAlt.F7.PlaneWaveTop := by
   have h1 := pairing_top_degree R M Ξ (B + C (algebraMap ℂ R s) * A) Av n n 1 X X'
     (natDegree_add_le_of_degree_le dB ((natDegree_C_mul_le _ _).trans hAn.le)) hAvn.le
   have h2 := pairing_top_degree R M Ξ A Bv n n 1 X X' hAn.le dBv
-  have h3 := isTop_sub h1 h2
   rw [two_mul]
-  convert h3 using 1
+  convert (isTop_sub h1 h2) using 1
   · funext Y
     rw [j_pairing_formula R M Ξ A B Av Bv s Y (Y + 1) X X']
     simp [evR, eval_add, eval_C_mul]

@@ -53,8 +53,7 @@ theorem ph_monomial (p : ℕ) (ζ : D.EM) (c : K) :
     D.ph p (monomial ζ c) = monomial (D.phE p ζ) c := by
   classical
   rw [monomial_eq, map_mul, Finsupp.prod, map_prod, phE_eq_sum]
-  simp only [map_pow, ph_X, monomial_pow, one_pow]
-  rw [show D.ph p (C c) = C c from (D.ph p).commutes c]
+  simp only [map_pow, ph_X, monomial_pow, one_pow, show D.ph p (C c) = C c from (D.ph p).commutes c]
   rw [Finsupp.sum, ← monomial_sum_one, C_mul_monomial, mul_one]
 
 theorem ldeg_phE (p : ℕ) (ζ : D.EM) (h : D.GoodE p ζ) (i : D.OL) : ldeg (D.phE p ζ) i = D.dO i := by
@@ -66,10 +65,7 @@ theorem ldeg_phE (p : ℕ) (ζ : D.EM) (h : D.GoodE p ζ) (i : D.OL) : ldeg (D.p
 theorem Good.add {p : ℕ} {Z W : MvPolynomial (D.ML × Fin D.r) K} (hZ : D.Good p Z) (hW : D.Good p W) :
     D.Good p (Z + W) := by
   classical
-  intro ζ hζ
-  rcases Finset.mem_union.mp (support_add hζ) with h | h
-  · exact hZ ζ h
-  · exact hW ζ h
+  exact fun ζ hζ => Or.elim (Finset.mem_union.mp (support_add hζ)) (hZ ζ) (hW ζ)
 
 theorem Good.smul {p : ℕ} {Z : MvPolynomial (D.ML × Fin D.r) K} (hZ : D.Good p Z) (a : K) :
     D.Good p (a • Z) := fun ζ hζ => hZ ζ (support_smul hζ)
@@ -82,9 +78,7 @@ theorem Good.sum {p : ℕ} {ι : Type} (s : Finset ι) (f : ι → MvPolynomial 
   classical
   induction s using Finset.induction_on with
   | empty => simpa using Good.zero D p
-  | insert a s ha ih =>
-    rw [Finset.sum_insert ha]
-    exact Good.add D (h a (Finset.mem_insert_self a s)) (ih fun i hi => h i (Finset.mem_insert_of_mem hi))
+  | insert a s ha ih => simpa [Finset.sum_insert ha] using Good.add D (h a (by simp)) (ih fun i hi => h i (by simp [hi]))
 
 theorem Good.monomial {p : ℕ} {ζ : D.EM} (h : D.GoodE p ζ) (c : K) : D.Good p (monomial ζ c) := by
   intro ζ' hζ'

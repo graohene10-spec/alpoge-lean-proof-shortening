@@ -516,9 +516,7 @@ theorem lift_eqC (D : D7) {u : D.what₂.Word} (C : ColumnChain D.R D.what₂.Ta
     C.K i φ c' = ∑ c, (((Nat.card (C.stab i c) : ℕ) : ℂ)⁻¹) •
       ((((rhoOf D mt i (dt i c) : ℂˣ) : ℂ) * ((rhoOf' D mt i (dt (i + 1) c') : ℂˣ) : ℂ)) •
         C.divDe i (C.unf i c c' (C.sharp i (φ c)))) := by
-  obtain ⟨h1, h2⟩ := h i hi
-  simp only [Formalism.BasicNotions.ColumnChain.K, Formalism.ThetaLiftIndependence.kerOpM, Formalism.BasicNotions.ColumnChain.Kmap, Formalism.BasicNotions.ColumnChain.wt,
-    LinearMap.smul_apply, LinearMap.comp_apply, h1, h2]
+  simp only [ColumnChain.K, Formalism.ThetaLiftIndependence.kerOpM, ColumnChain.Kmap, ColumnChain.wt, LinearMap.smul_apply, LinearMap.comp_apply, (h i hi).1, (h i hi).2]
 
 theorem lift_eq (D : D7) (u : D.what₂.Word) (i : ℕ) (φ : (D.mem u).C.cls i → (D.mem u).C.Y i → ℂ)
     (c' : (D.mem u).C.cls (i + 1)) :
@@ -588,10 +586,8 @@ theorem lift_formula (D : D7) (T : Tor D) (e : FamE D) {u : D.what₂.Word}
   obtain ⟨-, h2⟩ := h
   rw [lift_eqC D C O.mt O.dt O.c13 i hi φ c', Finset.sum_apply]
   refine Finset.sum_congr rfl fun c _ => ?_
-  have key := h2 c c' (Q c) y'
   rw [hQ c]
-  simp only [Pi.smul_apply, smul_eq_mul, Formalism.BasicNotions.ColumnChain.divDe, Formalism.BasicNotions.mulFun, LinearMap.coe_mk,
-    AddHom.coe_mk, key]
+  simp only [Pi.smul_apply, smul_eq_mul, Formalism.BasicNotions.ColumnChain.divDe, Formalism.BasicNotions.mulFun, LinearMap.coe_mk, AddHom.coe_mk, h2 c c' (Q c) y']
 
 def LiftObj.IsMem {D : D7} {u : D.what₂.Word} (O : LiftObj D (D.mem u).C) : Prop :=
   letI := D.host.cmStar

@@ -19,8 +19,7 @@ theorem linearMap_ext_on_weightSpaces {V' : Type} [AddCommGroup V'] [Module K V'
     (f g : V →ₗ[K] V') (h : ∀ mu, ∀ x ∈ weightSp E mu, f x = g x) : f = g := by
   have hle : (⨆ mu, weightSp E mu) ≤ LinearMap.eqLocus f g := iSup_le fun mu x hx => h mu x hx
   ext x
-  have : x ∈ (⨆ mu, weightSp E mu) := by rw [hE.2.2]; trivial
-  exact hle this
+  exact hle (by rw [hE.2.2]; trivial)
 
 open Classical in
 

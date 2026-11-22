@@ -17,9 +17,7 @@ theorem isOpen_omX (m : ℕ) : IsOpen (OmX m) := by
 theorem coord_contDiff (l : Fin m) : ContDiff ℝ ∞ (fun x : Fin m → ℂ => x l) := contDiff_apply ℝ ℂ l
 
 theorem conjCoord_contDiff (l : Fin m) : ContDiff ℝ ∞ (fun x : Fin m → ℂ => star (x l)) := by
-  first
-  | exact ContDiff.star (contDiff_apply ℝ ℂ l)
-  | exact (Complex.conjCLE.contDiff).comp (contDiff_apply ℝ ℂ l)
+  exact (Complex.conjCLE.contDiff).comp (contDiff_apply ℝ ℂ l)
 
 theorem fderiv_apply_contDiffOn {f : (Fin m → ℂ) → E} (hf : ContDiffOn ℝ ∞ f (OmX m))
     (v : Fin m → ℂ) : ContDiffOn ℝ ∞ (fun x => fderiv ℝ f x v) (OmX m) := by

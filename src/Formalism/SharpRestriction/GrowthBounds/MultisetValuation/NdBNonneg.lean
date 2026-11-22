@@ -31,8 +31,7 @@ theorem nd_n_ge : (1 : ℝ) ≤ (D.R.n : ℝ) := by
   exact_mod_cast (show (1 : ℕ) ≤ D.R.n by unfold Ranks.n; omega)
 
 theorem nd_w''_le : L.sc.w'' D.R.n ≤ L.sc.b' := by
-  unfold Scale.w''
-  exact div_le_self nd_b'_nonneg (one_le_mul_of_one_le_of_one_le nd_x_ge nd_n_ge)
+  simpa only [Scale.w''] using div_le_self nd_b'_nonneg (one_le_mul_of_one_le_of_one_le nd_x_ge nd_n_ge)
 
 theorem nd_m_ge : (2 : ℝ) ≤ (D.R.m : ℝ) := by
   exact_mod_cast D.R.two_le_m
@@ -158,16 +157,14 @@ theorem nd_bT_le (hS : Formalism.MainNotions.SizesAt L) (t : D.host.TT) : (L.bT 
   linarith
 
 theorem nd_aT_le (t : D.host.TT) : (L.aT t : ℝ) ≤ 2 * L.sc.a := by
-  have hw := (L.aT_win t).2
-  have hx : (1 : ℝ) ≤ L.sc.x := nd_x_ge
   have ha : 0 ≤ L.sc.a := by
     unfold Scale.a Scale.b
-    exact mul_nonneg (by linarith) (Real.exp_pos _).le
+    exact mul_nonneg (by linarith [nd_x_ge (D := D) (L := L)]) (Real.exp_pos _).le
   have hk : (1 : ℝ) ≤ (D.R.k : ℝ) := by have := nd_k_ge (D := D); linarith
-  have hp : (1 : ℝ) ≤ L.sc.x ^ (Scale.A / 2) := Real.one_le_rpow hx (by unfold Scale.A; norm_num)
-  have hd : L.sc.a / ((D.R.k : ℝ) * L.sc.x ^ (Scale.A / 2)) ≤ L.sc.a :=
-    div_le_self ha (one_le_mul_of_one_le_of_one_le hk hp)
-  linarith
+  have hp : (1 : ℝ) ≤ L.sc.x ^ (Scale.A / 2) :=
+    Real.one_le_rpow (nd_x_ge (D := D) (L := L)) (by unfold Scale.A; norm_num)
+  linarith [(L.aT_win t).2,
+    div_le_self ha (one_le_mul_of_one_le_of_one_le hk hp)]
 
 theorem nd_N_le (hS : Formalism.MainNotions.SizesAt L) : (D.R.N D.R.m : ℝ) ≤ L.sc.a := by
   have hS' := hS

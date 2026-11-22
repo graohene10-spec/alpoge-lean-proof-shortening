@@ -36,9 +36,7 @@ theorem tie_hypE_indep (D : D7) : LinearIndependent D.host.E D.sp.hypE := by
     funext i j
     simp only [Function.comp_apply, LinearMap.pi_apply, Pi.basisFun_apply]
     rw [tie_hypFE]
-    by_cases h : i = j
-    · subst h; simp
-    · simp [h, Ne.symm h, Pi.single_apply]
+    simp [Pi.single_apply, eq_comm]
   rw [hfun]
   exact (Pi.basisFun D.host.E (Fin D.R.rS)).linearIndependent
 
@@ -78,9 +76,7 @@ theorem tie_lflag_nonempty (D : D7) (u : D.what₂.Word) :
     Nonempty (LFlag (hS D) D.R.rS ((Tu D u : ℕ) : D.host.E)) := ⟨⟨tie_flag0 D u, 0⟩⟩
 
 theorem tie_termTie_of_noTerms (D : D7) (h : ∀ u u', IsEmpty (D.s.Term u u')) : Nonempty (TermTie D) := by
-  have hex : ∀ u, ∃ n : ℕ, (n : ℝ) = dimPi (hc := D.hcW) u := fun u =>
-    ⟨_, by first | exact Nat.cast_prod _ _ | (unfold dimPi; exact Nat.cast_prod _ _)⟩
-  choose nd hnd using hex
+  choose nd hnd using (fun u => (⟨_, by first | exact Nat.cast_prod _ _ | (unfold dimPi; exact Nat.cast_prod _ _)⟩ : ∃ n : ℕ, (n : ℝ) = dimPi (hc := D.hcW) u))
   exact ⟨{
     abelian₂ := fun t => ((h _ _).false t).elim
     fl := fun t => ((h _ _).false t).elim
@@ -151,13 +147,7 @@ section Gen
 variable {E : Type} [Field E] [NumberField E] [StarRing E] {S : Formalism.BasicNotions.HSpace E} {r : ℕ}
 
 theorem tie_frameAct_one (f : Fin (r + 1) → S.V) (b : Fin (r + 1)) : frameAct f 1 b = f b := by
-  unfold frameAct
-  rw [Finset.sum_eq_single b]
-  · simp
-  · intro a _ hab
-    simp [Matrix.one_apply_ne hab]
-  · intro h
-    exact absurd (Finset.mem_univ b) h
+  simp [frameAct, Matrix.one_apply, Finset.sum_ite_eq']
 
 theorem admissible_flag_refl (Λ : Submodule (𝓞 E) S.V) (g : ℕ) {T : E} (F : LFlag S r T) : IsAdmissible Λ g F F := by
   unfold IsAdmissible AdmWit
@@ -241,12 +231,11 @@ theorem tie_idCell_row (Λ : Submodule (𝓞 E) S.V) {T T' : E} (F : LFlag S r T
     have e1 := hX _ h1
     have e2 := hX _ hz
     have e3 := F.fl.z_orth a
-    have hsplit : S.hT (F.fl.e a) F'.fl.z = S.hT (F.fl.e a) F.fl.z +
-        S.hT (F.fl.e a) (n F.fl.z - F.fl.z) - S.hT (F.fl.e a) (n F.fl.z - F'.fl.z) := by
-      rw [← map_add, ← map_sub]
-      congr 1
+    have hsplit : F'.fl.z = F.fl.z + (n F.fl.z - F.fl.z) - (n F.fl.z - F'.fl.z) := by
       abel
-    rw [hsplit, e1, e2, e3]
+    rw [hsplit]
+    nth_rewrite 1 [map_sub]
+    rw [map_add, e1, e2, e3]
     simp
   | cast c =>
     have hfc : F'.fl.fvec c.castSucc = F'.fl.e c := by simp only [FlagG.fvec, Fin.snoc_castSucc]
@@ -254,25 +243,18 @@ theorem tie_idCell_row (Λ : Submodule (𝓞 E) S.V) {T T' : E} (F : LFlag S r T
     have hc : F.fl.e c ∈ Submodule.span E (F.fl.e '' {i | i.1 < c.val + 1}) :=
       Submodule.subset_span ⟨c, by simp, rfl⟩
     have h1 := hflag c.val _ hc
-    have e1 := hX _ (hXa _ h1)
-    have hsplit : S.hT (F.fl.e a) (n (F.fl.e c)) = S.hT (F.fl.e a) (F.fl.e c) +
-        S.hT (F.fl.e a) (n (F.fl.e c) - F.fl.e c) := by
-      rw [← map_add]
-      congr 1
+    have hsplit : n (F.fl.e c) = F.fl.e c + (n (F.fl.e c) - F.fl.e c) := by
       abel
-    rw [hsplit, e1, F.fl.e_iso a c, add_zero]
+    rw [hsplit, map_add, hX _ (hXa _ h1), F.fl.e_iso a c, add_zero]
 
 theorem tie_idCell_G (hr : 0 < r) (Λ : Submodule (𝓞 E) S.V) {T T' : E} (F : LFlag S r T) (F' : LFlag S r T')
     (h : ∃ n ∈ NLam Λ F, (∀ a, n (F.fl.e a) = F'.fl.e a) ∧ n F.fl.z - F'.fl.z ∈ Xsp F) :
     Gval F F' = 0 := by
-  have hrow : ∀ (a : Fin r) b, ZhatL F F' a.castSucc b = 0 := fun a b => tie_idCell_row Λ F F' h a b
   have hD : ∀ l, 1 ≤ l → Dl F.fl F'.fl l = 0 := by
     intro l hl
     unfold Dl leadMinorE
     split_ifs with hle
-    · apply Matrix.det_eq_zero_of_row_eq_zero ⟨0, by omega⟩
-      intro j
-      exact hrow ⟨0, hr⟩ (Fin.castLE hle j)
+    · exact Matrix.det_eq_zero_of_row_eq_zero ⟨0, by omega⟩ (fun j => tie_idCell_row Λ F F' h ⟨0, hr⟩ (Fin.castLE hle j))
     · rfl
   show Gflag F.fl F'.fl = 0
   unfold Gflag
@@ -322,26 +304,24 @@ theorem tie_loopTie_of_noTerms (D : D7) (large₂ : SizeData₂ D) (X : TermTie 
     Nonempty (LoopTie D large₂ X u u' C1) := by
   unfold tie_HRows at hR
   unfold tie_HAmp at hA
-  obtain ⟨what₂, hrows⟩ := hR
-  obtain ⟨θ, hθ, W, hW, A, hAS, hdeg⟩ := hA
   exact ⟨{
     F0 := tie_flag0 D u
     flag_e_eq_hyperbolic := rfl
     formsAtZero := rfl
-    what₂ := what₂
-    isRows := hrows
+    what₂ := hR.choose
+    isRows := hR.choose_spec
     fl_eq := fun t => (h.false t).elim
     Lam_mem := fun t => (h.false t).elim
     frame_ok := fun t => (h.false t).elim
     wRow_eq := fun p => (h.false (D.s.pfst p)).elim
     pair_inj := fun p => (h.false (D.s.pfst p)).elim
-    θ := θ
-    θ_win := hθ
-    W := W
-    goodW := hW
-    A := A
-    goodS := hAS
-    deg_eq := hdeg
+    θ := hA.choose
+    θ_win := hA.choose_spec.1
+    W := hA.choose_spec.2.choose
+    goodW := hA.choose_spec.2.choose_spec.1
+    A := hA.choose_spec.2.choose_spec.2.choose
+    goodS := hA.choose_spec.2.choose_spec.2.choose_spec.1
+    deg_eq := hA.choose_spec.2.choose_spec.2.choose_spec.2
     γ := fun t => (h.false t).elim
     pt := fun t => (h.false t).elim
     θR := fun t => (h.false t).elim
@@ -364,9 +344,7 @@ theorem tie_loopTie_aut_finite (D : D7) (large₂ : SizeData₂ D) (X : TermTie 
   have h1 := X.wRow_pos p
   rw [Y.wRow_eq p] at h1
   unfold Formalism.MainNotions.S.wRow at h1
-  refine Nat.pos_of_ne_zero (fun h0 => ?_)
-  rw [h0] at h1
-  simp at h1
+  exact Nat.pos_of_ne_zero fun h0 => by simp [h0] at h1
 
 theorem loop_ties_of_no_terms (D : D7) (large₂ : SizeData₂ D) (Cn : ℝ) (h : ∀ u u', IsEmpty (D.s.Term u u'))
     (hR : ∀ u, tie_HRows D u) (hA : ∀ u u', tie_HAmp D large₂ u u' Cn) : Nonempty (Formalism.MainNotions.UniformConstantsAndStatements.Ties D large₂ Cn) := by
@@ -478,11 +456,7 @@ theorem tie_bc_form (x y : (hS D).V) :
     simp only [map_sum, map_smulₛₗ, LinearMap.sum_apply, LinearMap.smul_apply, map_smul, smul_eq_mul,
       starRingEnd_apply, HSpace.gram, Finset.mul_sum, RingHom.id_apply]
     rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro j _
-    apply Finset.sum_congr rfl
-    intro i _
-    ring
+    exact Finset.sum_congr rfl (fun j _ => Finset.sum_congr rfl (fun i _ => by ring))
   rw [hbc, hbc, show brS (hS D) x y = (hS D).hT y x from rfl, key]
   simp only [tie_hp, tie_Gp, Matrix.map_apply, tie_cj_iota, map_sum, map_mul]
 

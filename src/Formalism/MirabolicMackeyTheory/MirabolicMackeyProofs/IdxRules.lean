@@ -116,11 +116,9 @@ theorem idxRules_lidx_map (p : Ideal R) [p.IsPrime] (φ : V →ₗ[K] V') (hφ :
     (A B : Submodule R V) :
     lidx p (A.map (φ.restrictScalars R)) (B.map (φ.restrictScalars R)) = lidx p A B := by
   have hφ' : Function.Injective (φ.restrictScalars R) := hφ
-  have hinf : A.map (φ.restrictScalars R) ⊓ B.map (φ.restrictScalars R) =
-      (A ⊓ B).map (φ.restrictScalars R) := (Submodule.map_inf _ hφ').symm
   unfold lidx locLen
-  rw [hinf, localization_map₄, localization_map₄, localization_map₄, idxRules_len_map _ hφ',
-    idxRules_len_map _ hφ']
+  rw [← Submodule.map_inf (φ.restrictScalars R) hφ', localization_map₄, localization_map₄,
+    localization_map₄, idxRules_len_map _ hφ', idxRules_len_map _ hφ']
 
 theorem idxRules_span_map (φ : V →ₗ[K] V') (A : Submodule R V) :
     Submodule.span K ((A.map (φ.restrictScalars R) : Submodule R V') : Set V') =

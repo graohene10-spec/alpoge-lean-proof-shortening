@@ -21,8 +21,7 @@ variable {K : Type} [Field K] {M M₂ : Type} [AddCommGroup M] [Module K M] [Add
   (e : M ≃ₗ[K] M₂)
 
 theorem conjE_one : e.conj (1 : Module.End K M) = 1 := by
-  ext x
-  simp [LinearEquiv.conj_apply]
+  exact LinearMap.ext fun x => e.apply_symm_apply x
 
 theorem conjE_commute {f g : Module.End K M} (hfg : Commute f g) : Commute (e.conj f) (e.conj g) := by
   rw [commute_iff_eq]
@@ -71,10 +70,9 @@ variable {E : Type} [Field E] [NumberField E] [StarRing E] {K : Type} [Field K] 
 theorem heckeCSD_zero (P : offSub ST SG SG' S0) : heckeCSD S h c SG S0 (P, 0) = 1 := by
   unfold heckeCSD
   dsimp only
-  first
-    | (simp only [Col.heckeFam_zero]; ext x; simp [LinearEquiv.conj_apply])
-    | (erw [Col.heckeFam_zero]; ext x; simp [LinearEquiv.conj_apply])
-    | (ext x; simp [LinearEquiv.conj_apply, Col.heckeFam_zero])
+  erw [Col.heckeFam_zero]
+  ext x
+  simp [LinearEquiv.conj_apply]
 
 theorem heckeCSD_comm (hc : Col.HeckeComm c S0) : Col.PairComm (heckeCSD S h c SG S0) := by
   intro x y

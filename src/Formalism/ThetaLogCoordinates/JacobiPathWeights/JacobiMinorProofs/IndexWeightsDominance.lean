@@ -50,15 +50,9 @@ private theorem ncard_eq_filter_lemma {n : ℕ} (I : ℤ → Finset (Fin n)) (S 
   rw [← Set.ncard_coe_finset]
   congr 1
   ext c
-  simp only [Set.mem_setOf_eq, Finset.mem_coe, Finset.mem_filter]
-  constructor
-  · rintro ⟨h1, h2⟩
-    refine ⟨?_, h1, h2⟩
-    by_contra hcS
-    rw [hS c hcS] at h2
-    simp at h2
-  · rintro ⟨_, h1, h2⟩
-    exact ⟨h1, h2⟩
+  by_cases hc : c ∈ S
+  · simp [hc]
+  · simp [hS c hc, hc]
 
 theorem idxWeight_eq {n : ℕ} (I : ℤ → Finset (Fin n)) (S : Finset ℤ) (hS : ∀ c, c ∉ S → I c = ∅)
     (m : Fin n) :
@@ -84,8 +78,7 @@ theorem weight_torus {n : ℕ} (isVec : ℕ → Bool) (e : ℕ × Fin n →₀ �
   by_cases hx : x.2 = m
   · subst hx
     by_cases hv : isVec x.1 <;> simp [torusW, hv]
-  · have hx' : m ≠ x.2 := fun h => hx h.symm
-    by_cases hv : isVec x.1 <;> simp [torusW, hv, hx, hx', Pi.single_apply]
+  · by_cases hv : isVec x.1 <;> simp [torusW, hv, hx, Ne.symm hx]
 
 end A3comb
 
@@ -294,37 +287,18 @@ theorem idxWeight_can {n : ℕ} {μ : Fin n → ℤ} (h : Antitone μ) : idxWeig
   unfold idxWeight
   have h1 : {c : ℤ | 1 ≤ c ∧ m ∈ canIdx μ c} = Set.Icc 1 (μ m) := by
     ext c
-    simp only [Set.mem_setOf_eq, Set.mem_Icc]
-    constructor
-    · rintro ⟨hc, hm⟩
-      unfold canIdx at hm
-      rw [if_pos hc] at hm
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hm
-      exact ⟨hc, (lt_colHeight_iff_lemma h c m).mp hm⟩
-    · rintro ⟨hc, hcm⟩
-      refine ⟨hc, ?_⟩
-      unfold canIdx
-      rw [if_pos hc]
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-      exact (lt_colHeight_iff_lemma h c m).mpr hcm
+    by_cases hc : 1 ≤ c
+    · simp [canIdx, hc, lt_colHeight_iff_lemma h c m]
+    · simp [hc]
   have h2 : {c : ℤ | c ≤ 0 ∧ m ∈ canIdx μ c} = Set.Ioc (μ m) 0 := by
     ext c
-    simp only [Set.mem_setOf_eq, Set.mem_Ioc]
-    constructor
-    · rintro ⟨hc, hm⟩
-      unfold canIdx at hm
-      rw [if_neg (show ¬ (1 ≤ c) by omega)] at hm
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hm
-      have h3 : ¬ c ≤ μ m := fun h' => absurd ((lt_colHeight_iff_lemma h c m).mpr h') (by omega)
-      exact ⟨by omega, hc⟩
-    · rintro ⟨hlt, hc⟩
-      refine ⟨hc, ?_⟩
-      unfold canIdx
-      rw [if_neg (show ¬ (1 ≤ c) by omega)]
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-      by_contra hlt2
-      have := (lt_colHeight_iff_lemma h c m).mp (by omega)
-      omega
+    by_cases hc : c ≤ 0
+    · have hc1 : ¬ 1 ≤ c := by omega
+      have hcol : colHeight μ c ≤ m.val ↔ μ m < c := by
+        rw [← not_lt, lt_colHeight_iff_lemma h c m]
+        exact not_le
+      simp [canIdx, hc, hc1, hcol]
+    · simp [hc]
   rw [h1, h2, ← Finset.coe_Icc, ← Finset.coe_Ioc, Set.ncard_coe_finset, Set.ncard_coe_finset,
     Int.card_Icc, Int.card_Ioc]
   omega
@@ -356,13 +330,7 @@ theorem cnt_init {n : ℕ} (J : Finset (Fin n)) (h j : ℕ) (hJ : J.card = (rows
 
 theorem card_filter_lt_le_alt {n : ℕ} (J : Finset (Fin n)) (h j : ℕ) (hJ : J.card = ((rowsLt n h)ᶜ).card) :
     ((rowsLt n j).filter fun m => m ∈ (rowsLt n h)ᶜ).card ≤ ((rowsLt n j).filter fun m => m ∈ J).card := by
-  have f1 : ((rowsLt n j).filter fun m => m ∈ (rowsLt n h)ᶜ) = rowsLt n j ∩ (rowsLt n h)ᶜ := by
-    ext m
-    simp
-  have f2 : ((rowsLt n j).filter fun m => m ∈ J) = rowsLt n j ∩ J := by
-    ext m
-    simp
-  rw [f1, f2]
+  rw [Finset.filter_mem_eq_inter, Finset.filter_mem_eq_inter]
   rcases le_total j h with hjh | hjh
   · have e : rowsLt n j ∩ (rowsLt n h)ᶜ = ∅ := by
       ext m
@@ -370,7 +338,7 @@ theorem card_filter_lt_le_alt {n : ℕ} (J : Finset (Fin n)) (h j : ℕ) (hJ : J
       · intro hm
         simp only [rowsLt, Finset.mem_inter, Finset.mem_compl, Finset.mem_filter, Finset.mem_univ,
           true_and] at hm
-        exact absurd hm (by omega)
+        omega
       · intro hm
         simp at hm
     rw [e, Finset.card_empty]
@@ -435,9 +403,8 @@ theorem col_eq {n : ℕ} {μ : Fin n → ℤ} {I : ℤ → Finset (Fin n)} (hI :
         rowsLt n (colHeight μ c) :=
       Finset.filter_true_of_mem fun x hx => hx
     rw [e, card_rowsLt_lemma] at h
-    have g1 := Finset.eq_of_subset_of_card_le f1 (by omega)
-    have g2 := Finset.eq_of_subset_of_card_le f2 (by rw [card_rowsLt_lemma]; omega)
-    exact g1.symm.trans g2
+    exact (Finset.eq_of_subset_of_card_le f1 (by omega)).symm.trans
+      (Finset.eq_of_subset_of_card_le f2 (by rw [card_rowsLt_lemma]; omega))
   · rw [if_neg hc] at key
     rw [can_neg μ hc] at h ⊢
     have e : ((rowsLt n (colHeight μ c)).filter fun m => m ∈ (rowsLt n (colHeight μ c))ᶜ) = ∅ := by
@@ -450,8 +417,7 @@ theorem col_eq {n : ℕ} {μ : Fin n → ℤ} {I : ℤ → Finset (Fin n)} (hI :
       intro hxR
       have hmem : x ∈ (rowsLt n (colHeight μ c)).filter fun m => m ∈ I c :=
         Finset.mem_filter.mpr ⟨hxR, hx⟩
-      rw [Finset.card_eq_zero.mp h] at hmem
-      simp at hmem
+      simp [Finset.card_eq_zero.mp h] at hmem
     exact Finset.eq_of_subset_of_card_le hsub
       (by rw [Finset.card_compl, Fintype.card_fin, card_rowsLt_lemma, key]; omega)
 
@@ -546,8 +512,7 @@ theorem mkMon_inj {n N : ℕ} : Function.Injective (mkMon (n := n) (N := N)) := 
   intro d d' h
   funext i
   ext a
-  have := DFunLike.congr_fun h (i.val, a)
-  rwa [mkMon_apply, mkMon_apply] at this
+  simpa [mkMon_apply] using DFunLike.congr_fun h (i.val, a)
 
 theorem monSet_eq (n N : ℕ) (B : ℕ → ℕ) :
     {e : ℕ × Fin n →₀ ℕ | ∀ i, ∑ a, e (i, a) = if i < N then B i else 0} =

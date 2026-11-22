@@ -26,10 +26,7 @@ lemma fac_succ_of_not_mem (N : ℕ) (t : ℤ) (ht : t ∉ Finset.Icc (-(N : ℤ)
   have habs : (N : ℤ) < |t| := by
     by_contra h
     exact ht (abs_le.1 (not_lt.1 h))
-  have hz : (((N + 1 : ℕ) : ℤ) - |t|).toNat = 0 := by
-    rw [Int.toNat_eq_zero]; push_cast; omega
-  unfold fac
-  rw [hz]; simp
+  simp [fac, habs]
 
 lemma wt_succ_of_mem (N : ℕ) (τ : Fin d → ℤ)
     (hτ : τ ∈ Fintype.piFinset (fun _ : Fin d => Finset.Icc (-(N : ℤ)) N)) :

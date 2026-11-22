@@ -52,25 +52,15 @@ theorem multiset_sum_le_sum {α : Type} (m : Multiset α) (f g : α → ℝ) (hf
 
 theorem multiset_sum_neg {α : Type} (m : Multiset α) (f : α → ℝ) :
     (m.map fun x => -f x).sum = -(m.map f).sum := by
-  induction m using Multiset.induction_on with
-  | empty => simp
-  | cons a m ih =>
-    simp only [Multiset.map_cons, Multiset.sum_cons, ih, neg_add]
+  simp
 
 theorem multiset_sum_add {α : Type} (m : Multiset α) (f g : α → ℝ) :
     (m.map fun x => f x + g x).sum = (m.map f).sum + (m.map g).sum := by
-  induction m using Multiset.induction_on with
-  | empty => simp
-  | cons a m ih =>
-    simp only [Multiset.map_cons, Multiset.sum_cons, ih]
-    ring
+  simp
 
 theorem multiset_sum_mul_left {α : Type} (m : Multiset α) (c : ℝ) (f : α → ℝ) :
     (m.map fun x => c * f x).sum = c * (m.map f).sum := by
-  induction m using Multiset.induction_on with
-  | empty => simp
-  | cons a m ih =>
-    simp only [Multiset.map_cons, Multiset.sum_cons, ih, mul_add]
+  exact Multiset.sum_map_mul_left
 
 theorem multiset_card_filter_eq_sum {α : Type} (m : Multiset α) (P : α → Prop) [DecidablePred P] :
     ((m.filter P).card : ℝ) = (m.map fun x => if P x then (1 : ℝ) else 0).sum := by

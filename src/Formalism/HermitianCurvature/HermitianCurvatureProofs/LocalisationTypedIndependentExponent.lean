@@ -157,14 +157,13 @@ theorem exists_multiplier {L : Submodule ℤ E} (hL : IsFLattice E L)
         rw [← map_add, hue, map_one]
       rw [map_mul]
       linear_combination (algebraMap (𝓞 (maximalRealSubfield E)) E b * τ) * h3
-    rw [h2]; exact L.neg_mem h1
+    simpa [h2] using L.neg_mem h1
   · intro Q hQ hQP
     have hnle : ¬ P ≤ Q := fun h => hQP (hP.eq_of_le hQ.ne_top h).symm
     obtain ⟨c, hcP, hcQ⟩ := SetLike.not_le_iff_exists.mp hnle
     refine ⟨c ^ k, fun h => hcQ (hQ.isPrime.mem_of_pow_mem _ h), ?_⟩
     have h1 : c ^ k * e ∈ ann hL τ := hJ ▸ Ideal.mul_mem_mul (Ideal.pow_mem_pow hcP k) he
-    rw [mem_ann, map_mul, mul_assoc] at h1
-    exact h1
+    simpa [mem_ann, map_mul, mul_assoc] using h1
 
 theorem finite_bad {L : Submodule ℤ E} (hL : IsFLattice E L) (t : E) :
     {P : Ideal (𝓞 (maximalRealSubfield E)) | P.IsMaximal ∧ t ∉ locAt E P L}.Finite := by

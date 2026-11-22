@@ -101,11 +101,8 @@ theorem gramR_std {D : ℕ} (Γ : Matrix (Fin D) (Fin D) K) :
   unfold gramR
   congr 1
   ext a b
-  have hst : ∀ x : Fin D, star ((Pi.single a (1 : K) : Fin D → K) x) = (Pi.single a (1 : K) : Fin D → K) x := by
-    intro x; rcases eq_or_ne x a with rfl | h
-    · simp
-    · simp [Pi.single_eq_of_ne h]
-  simp only [Matrix.of_apply, dotProduct, Pi.star_apply, hst]
+  simp only [Matrix.of_apply]
+  rw [← hform_eq_dot, hform_single]
   simp [Matrix.mulVec, dotProduct, Pi.single_apply]
 
 theorem expand_std {d : ℕ} (f : Fin d → Fin d → K) :

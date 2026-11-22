@@ -178,12 +178,8 @@ theorem subgroupCharExtension_one_apply {G N : Type} [Group G] [MulOneClass N] (
 
 theorem levFn_flag1 (x : GL (Fin V.rank) (EAf D)) :
     Formalism.L2.DIV.levFn β (flag1L L) x = Formalism.L2.DIV.levFn β (flagL L) x := by
-  have h1 : Formalism.L2.DIV.ext1 (flag1L L).P.H (flag1L L).P.chi (Formalism.L2.DIV.rTup β (flag1L L) x) = 1 :=
-    subgroupCharExtension_one_apply _ _
-  have h2 : Formalism.L2.DIV.ext1 (flagL L).P.H (flagL L).P.chi (Formalism.L2.DIV.rTup β (flagL L) x) = 1 :=
-    subgroupCharExtension_one_apply _ _
   unfold Formalism.L2.DIV.levFn
-  rw [h1, h2] <;> rfl
+  rw [show Formalism.L2.DIV.ext1 (flag1L L).P.H (flag1L L).P.chi (Formalism.L2.DIV.rTup β (flag1L L) x) = 1 from subgroupCharExtension_one_apply _ _, show Formalism.L2.DIV.ext1 (flagL L).P.H (flagL L).P.chi (Formalism.L2.DIV.rTup β (flagL L) x) = 1 from subgroupCharExtension_one_apply _ _] <;> rfl
 
 theorem levChi_ne_zero (L' : Formalism.L2.DIV.LevDat D.host.E ℂ V.rank) (κ : GA D V) : levChi V β L' κ ≠ 0 := by
   unfold levChi
@@ -244,10 +240,8 @@ theorem level_action_spec {g0 : Formalism.L2.DIV.G0 L.Pg L.r} {F : GA D V → �
 theorem levFn_withP (P : Formalism.L2.DIV.LevelP L.Pg L.r ℂ) (x : GL (Fin V.rank) (EAf D)) :
     Formalism.L2.DIV.levFn β (withP L P) x =
       Formalism.L2.DIV.ext1 P.H P.chi (Formalism.L2.DIV.rTup β L x) * Formalism.L2.DIV.levFn β (flagL L) x := by
-  have h2 : Formalism.L2.DIV.ext1 (flagL L).P.H (flagL L).P.chi (Formalism.L2.DIV.rTup β (flagL L) x) = 1 :=
-    subgroupCharExtension_one_apply _ _
   unfold Formalism.L2.DIV.levFn
-  rw [h2, one_mul, mul_assoc] <;> rfl
+  rw [show Formalism.L2.DIV.ext1 (flagL L).P.H (flagL L).P.chi (Formalism.L2.DIV.rTup β (flagL L) x) = 1 from subgroupCharExtension_one_apply _ _, one_mul, mul_assoc] <;> rfl
 
 theorem IsPLevel.hasType {P : Formalism.L2.DIV.LevelP L.Pg L.r ℂ} {F : GA D V → ℂ} (hF : IsPLevel V β L P F) :
     HasType V β (withP L P) F := by

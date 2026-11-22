@@ -345,12 +345,6 @@ end Main
 
 theorem matching_existence : Matchings.{u} := by
   intro K _ _ ι _ c S sg n L
-  rw [matchings_on c S L Finset.univ sg]
-  have hset : invOn (Finset.univ : Finset (Fin n)) =
-      Finset.univ.filter (fun σ : Equiv.Perm (Fin n) => σ * σ = 1) := by
-    ext σ
-    simp [mem_invOn]
-  rw [hset]
-  rfl
+  simpa [invOn, edgeW] using matchings_on c S L Finset.univ sg
 
 end Formalism.DworkPowerSeriesWeights

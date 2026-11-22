@@ -34,8 +34,7 @@ namespace RecNums
 
 theorem x_pos : 0 < R.x := lt_trans zero_lt_one R.p1
 theorem L_nonneg : 0 ≤ R.L := by
-  rw [R.p3]
-  exact Real.rpow_nonneg (le_of_lt (lt_trans zero_lt_one R.p1)) _
+  simpa [R.p3] using Real.rpow_nonneg (le_of_lt R.x_pos) R.eps
 theorem b_ge : 1 ≤ R.b := by
   simpa [R.p4] using Real.one_le_exp R.L_nonneg
 theorem a_ge : 1 ≤ R.a := by
@@ -48,14 +47,11 @@ theorem Nn_ge : 1 ≤ R.Nn := by
   linarith [R.p1, R.p2, R.p6, R.p11, R.p14, R.p15, R.p16, R.p17, R.p18, R.p19, R.p20, R.p24, R.p25, R.p26, R.p27, R.p28,
     R.p29, R.p30, R.p31, R.p32, R.p33, R.p34, R.p35, R.p36, R.p37, R.p38, R.c1, R.c3, R.c4, R.c5]
 theorem L_ge : 1 ≤ R.L := by
-  rw [R.p3]
-  exact Real.one_le_rpow (le_of_lt R.p1) (le_of_lt R.p2)
+  simpa only [R.p3] using Real.one_le_rpow R.p1.le R.p2.le
 
 theorem La_eq : R.La = Real.log R.x + R.L + Real.log R.rd := by
-  have hx : 0 < R.x := R.x_pos
-  have hb : 0 < R.b := by rw [R.p4]; exact Real.exp_pos _
   have hrd : 0 < R.rd := by linarith [R.p6]
-  rw [R.p9, R.p5, Real.log_mul (mul_pos hx hb).ne' hrd.ne', Real.log_mul hx.ne' hb.ne', R.p4, Real.log_exp]
+  rw [R.p9, R.p5, R.p4, Real.log_mul (mul_pos R.x_pos (Real.exp_pos R.L)).ne' hrd.ne', Real.log_mul R.x_pos.ne' (Real.exp_pos R.L).ne', Real.log_exp]
 
 theorem L_le_La : R.L ≤ R.La := by
   rw [R.La_eq]
@@ -89,8 +85,7 @@ theorem hu_eq : R.hu = R.hA + ∑ j, R.hB j - ∑ j, R.hX j := by
 def NcF : ℝ := R.x ^ R.eps * R.Nc / (Real.log R.x) ^ 2
 
 theorem NcF_nonneg : 0 ≤ R.NcF := by
-  show 0 ≤ R.x ^ R.eps * R.Nc / (Real.log R.x) ^ 2
-  exact div_nonneg (mul_nonneg (Real.rpow_nonneg (le_of_lt R.x_pos) _) R.p11) (sq_nonneg _)
+  simpa only [RecNums.NcF] using div_nonneg (mul_nonneg (Real.rpow_nonneg (le_of_lt R.x_pos) _) R.p11) (sq_nonneg _)
 
 theorem NcF_spec : (Real.log R.x) ^ 2 * R.NcF = R.x ^ R.eps * R.Nc := by
   show (Real.log R.x) ^ 2 * (R.x ^ R.eps * R.Nc / (Real.log R.x) ^ 2) = R.x ^ R.eps * R.Nc
@@ -218,8 +213,7 @@ theorem complex_height_cast (hH : HeightBoundConstant) {K : Type} [Field K] [Num
       (1 / (Formalism.HN.nPl K : ℝ)) * ∑ v, (Real.log (pU v ^ 2) + ∑ j, Real.log (kU j v ^ 2)) -
         (1 / (Formalism.HN.nPl K : ℝ)) * ∑ v, minOver (fun p => ∑ j, Real.log (lam j p v)) - meanLog κ := by
   subst c0 hd
-  obtain rfl : Xc 0 = Xa := by
-    funext v; ext i j; simpa using hXz v i j
+  obtain rfl : Xc 0 = Xa := funext fun v => Matrix.ext fun i j => by simpa using hXz v i j
   exact (hH K n dQ m c Xc hXc Kj H X0 hX0 P hP XQ hXQ XE hXE ι (isUnit_det_of_bij _ hι) Ix J Qp hQp κ lam lam hκ hlam
     (fun _ _ _ => le_rfl) hsc Pt B (by simpa using hB) hne pU kU hpU hkU).2
 
@@ -342,10 +336,9 @@ theorem ChainTie.chain_le (T : ChainTie ch Q) : ∀ i (h : i ≤ Q.n) (x : Fin (
 
 theorem ChainTie.chain (T : ChainTie ch Q) (x : Fin (ch.c 0) → K) :
     T.coL ((chainMat ch.Kj ⟨Q.n + 1, by have := T.hmm; omega⟩).mulVec x) = Q.col (T.coF 0 (Nat.zero_le _) x) := by
-  have e : (chainMat ch.Kj ⟨Q.n + 1, by have := T.hmm; omega⟩).mulVec x =
-      (ch.Kj ⟨Q.n, by have := T.hmm; omega⟩).mulVec ((chainMat ch.Kj ⟨Q.n, by have := T.hmm; omega⟩).mulVec x) :=
-    (Matrix.mulVec_mulVec _ _ _).symm
-  rw [e, T.kerC, T.chain_le Q.n le_rfl x]
+  rw [(show (chainMat ch.Kj ⟨Q.n + 1, by have := T.hmm; omega⟩).mulVec x =
+      (ch.Kj ⟨Q.n, by have := T.hmm; omega⟩).mulVec ((chainMat ch.Kj ⟨Q.n, by have := T.hmm; omega⟩).mulVec x) from
+    (Matrix.mulVec_mulVec _ _ _).symm), T.kerC, T.chain_le Q.n le_rfl x]
   rfl
 
 theorem ChainTie.step_norm (T : ChainTie ch Q) (j : ℕ) (h : j < Q.n) (v : InfinitePlace K) (x : Fin (ch.c ⟨j, by have := T.hmm; omega⟩) → K) :
@@ -382,8 +375,7 @@ theorem ChainTie.evidence (T : ChainTie ch Q) {f : (Fin (ch.c 0) → K) →ₗ[K
     {g : Q.S₁.EqFun →ₗ[K] Module.Dual K (Fin (Df.nV Bs.μ0) → K)} (h0 : T.First f) (hL : T.Last g)
     (φ : Fin (Dc.a u) → K) (F : Fin (Df.nV Bs.μ0) → K) :
     Dc.Pt u Bs.μ0 φ F = g (Q.col (f fun i => φ (Fin.cast ch.c0 i))) F := by
-  rw [ch.fact φ F, chainMat_mulVec_cast ch.Kj ⟨Q.n + 1, by have := T.hmm; omega⟩ (Fin.last ch.mm) T.last_eq]
-  rw [hL, T.chain]
+  rw [ch.fact φ F, chainMat_mulVec_cast ch.Kj ⟨Q.n + 1, by have := T.hmm; omega⟩ (Fin.last ch.mm) T.last_eq, hL, T.chain]
   exact congrArg (fun z => g (Q.col z) F) (h0 _)
 
 theorem ChainTie.col_isom (T : ChainTie ch Q)
@@ -553,18 +545,15 @@ theorem nK_of_cb {m : ℕ} {c : Fin (m + 1) → ℕ} {Xc : ∀ i, InfinitePlace 
       (Matrix.mulVecLin (Kj j)) ^ 2 ≤ Real.exp (B j v) := by
   have H := Formalism.DimensionVariation.chain_coupled_bound K m c Xc Kj D.AA D.Cl D.W D.γ D.Φ D.ε D.T D.hcl D.tmax D.hyp
     (fun j v => Real.sqrt (D.sq j v)) (fun _ _ => rfl)
-  have h1 := H.1 j v
   have h2 : Real.sqrt (D.sq j v) ^ 2 = D.sq j v := H.2.1 j v
   have h0 := OperatorNormFrames.opNormAt_nonneg (Pi.basisFun K (Fin (c j.castSucc))) (Xc j.castSucc) (Pi.basisFun K (Fin (c j.succ)))
     (Xc j.succ) v (Matrix.mulVecLin (Kj j))
   have h3 : Formalism.HN.opNormAt (Pi.basisFun K (Fin (c j.castSucc))) (Xc j.castSucc) (Pi.basisFun K (Fin (c j.succ))) (Xc j.succ) v
       (Matrix.mulVecLin (Kj j)) ^ 2 ≤ D.sq j v := by
-    rw [← h2]; exact pow_le_pow_left₀ h0 h1 2
+    rw [← h2]; exact pow_le_pow_left₀ h0 (H.1 j v) 2
   rcases le_or_gt (D.sq j v) 0 with hs | hs
   · exact h3.trans (hs.trans (Real.exp_pos _).le)
-  · calc _ ≤ D.sq j v := h3
-      _ = Real.exp (Real.log (D.sq j v)) := (Real.exp_log hs).symm
-      _ ≤ Real.exp (B j v) := Real.exp_le_exp.2 (hB j v)
+  · exact h3.trans ((Real.exp_log hs).symm.trans_le (Real.exp_le_exp.2 (hB j v)))
 
 theorem exists_cu {ι : Type} [Fintype ι] [Nonempty ι] (x a : ι → ℝ) (t : ℝ) (hx : ∀ v, 0 ≤ x v)
     (ha : ∀ v, x v = 0 ∨ Real.log (x v ^ 2) ≤ a v) (hm : (1 / (Fintype.card ι : ℝ)) * ∑ v, a v ≤ t) :
@@ -1023,8 +1012,7 @@ theorem e8 : (41 : ℝ) ≤ Real.exp 8 := by
 theorem l8 : 0 ≤ Real.log 8 := Real.log_nonneg (by norm_num)
 
 theorem l8' : Real.log 8 ≤ 7 := by
-  have h := Real.log_le_sub_one_of_pos (show (0 : ℝ) < 8 by norm_num)
-  linarith
+  linarith [Real.log_le_sub_one_of_pos (show (0 : ℝ) < 8 by norm_num)]
 
 theorem La8 : Real.log (8 * Real.exp 8 * 1) = Real.log 8 + 8 := by
   rw [mul_one, Real.log_mul (by norm_num) (Real.exp_pos 8).ne', Real.log_exp]
@@ -1594,8 +1582,7 @@ def kk : Fin 2 → K3 := ![2, 2⁻¹]
 theorem chain_two : chainMat (R := K3) (m := 2) (c := fun _ => 1) (fun j => kk j • (1 : Matrix (Fin 1) (Fin 1) K3)) (Fin.last 2) = 1 := by
   show (kk 1 • (1 : Matrix (Fin 1) (Fin 1) K3)) * ((kk 0 • (1 : Matrix (Fin 1) (Fin 1) K3)) * 1) = 1
   have h : kk 1 * kk 0 = 1 := by
-    show (2 : K3)⁻¹ * 2 = 1
-    exact inv_mul_cancel₀ two_ne_zero
+    simp [kk]
   rw [mul_one, Matrix.smul_mul, one_mul, smul_smul, h, one_smul]
 
 def chThree (v0 : InfinitePlace K3) : ColChain (three.dc K3 v0) () where
@@ -1812,9 +1799,8 @@ theorem chOne_isom (v0 : InfinitePlace K3) :
                 ((chainMat (chOne v0).Kj ⟨(ptQ 0 (fun _ => 1) 1 1).n + 1, by show 0 + 1 < 1 + 1; omega⟩).mulVec x) =
         Formalism.HermitianLatticesTheory.normAt (Pi.basisFun K3 (Fin ((chOne v0).c ⟨0, by omega⟩))) ((chOne v0).X ⟨0, by omega⟩) v x := by
   intro v x
-  have h : (chainMat (chOne v0).Kj ⟨(ptQ 0 (fun _ => 1) 1 1).n + 1, by show 0 + 1 < 1 + 1; omega⟩).mulVec x = x :=
-    (congrArg (fun M => Matrix.mulVec M x) chain_one).trans (Matrix.one_mulVec x)
-  rw [h]
+  rw [show (chainMat (chOne v0).Kj ⟨(ptQ 0 (fun _ => 1) 1 1).n + 1, by show 0 + 1 < 1 + 1; omega⟩).mulVec x = x from
+    (congrArg (fun M => Matrix.mulVec M x) chain_one).trans (Matrix.one_mulVec x)]
   rfl
 
 theorem tieOne_isom (v0 : InfinitePlace K3) (v : InfinitePlace K3) (x : Fin ((chOne v0).c 0) → K3) :

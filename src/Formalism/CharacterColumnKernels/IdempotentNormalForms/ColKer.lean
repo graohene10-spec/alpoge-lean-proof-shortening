@@ -40,8 +40,7 @@ lemma free_decomp [Fintype ι] (z : ColFreeJ A r χ E ι j) :
       ∑ l, colGenJ 0 l (z.2 l).1 (z.2 l).2.1 (z.2 l).2.2 := by
   refine Prod.ext ?_ ?_
   · simp [colGenJ, Prod.fst_sum]
-  · simp only [colGenJ, Prod.snd_add, Prod.snd_sum, zero_add, Prod.mk.eta]
-    exact (Finset.univ_sum_single z.2).symm
+  · simpa only [colGenJ, Prod.snd_add, Prod.snd_sum, zero_add, Prod.mk.eta] using (Finset.univ_sum_single z.2).symm
 
 variable {M : Type*} [AddCommGroup M] [Module A M]
 
@@ -54,14 +53,12 @@ lemma map_colGenJ (ψ : ColFreeJ A r χ E ι j →ₗ[A] M) (y : Ymod r χ E) (l
 lemma map_sigRel (ψ : ColFreeJ A r χ E ι j →ₗ[A] M) (l : ι) (a : Fin (j l)) (t : A) :
     ψ (colGenJ 0 l 0 (Pi.single a t) 0) = t • ψ (fSig l a) := by
   have h0 : ψ ((0 : Ymod r χ E), 0) = 0 := map_zero ψ
-  rw [map_colGenJ]
-  simp [Pi.single_apply, h0]
+  simpa [h0, Pi.single_apply] using map_colGenJ ψ (0 : Ymod r χ E) l 0 (Pi.single a t) 0
 
 lemma map_sig0Rel (ψ : ColFreeJ A r χ E ι j →ₗ[A] M) (l : ι) (t : A) :
     ψ (colGenJ 0 l 0 0 t) = t • ψ (fSig0 l) := by
-  have h0 : ψ ((0 : Ymod r χ E), 0) = 0 := map_zero ψ
   rw [map_colGenJ]
-  simp [h0]
+  simp [show ψ ((0 : Ymod r χ E), 0) = 0 from map_zero ψ]
 
 lemma eq_zero_of_gens [Fintype ι] {e₁ : A} {δ : T'} {D : ι → Subgroup G}
     {Kc : ∀ l, Fin (j l) → G → A} {k0 : ι → G → A}
@@ -79,10 +76,7 @@ lemma eq_zero_of_gens [Fintype ι] {e₁ : A} {δ : T'} {D : ι → Subgroup G}
       rw [free_decomp z, map_add, map_sum]
       refine (congrArg₂ (· + ·) (hY z.1) (Finset.sum_eq_zero fun l _ => ?_)).trans (add_zero 0)
       rw [map_colGenJ]
-      have h1 : ψ (fNu l) = 0 := hν l
-      have h2 : ∀ a, ψ (fSig l a) = 0 := hσ l
-      have h3 : ψ (fSig0 l) = 0 := hσ₀ l
-      simp only [h0, h1, h2, h3, smul_zero, Finset.sum_const_zero, add_zero]
+      simp [ψ, h0, hν l, hσ l, hσ₀ l]
     simpa [ψ] using this
 
 end ColumnGeneratorDecomposition

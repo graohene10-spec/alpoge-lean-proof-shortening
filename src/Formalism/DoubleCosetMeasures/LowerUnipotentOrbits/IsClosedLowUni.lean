@@ -36,11 +36,8 @@ theorem haar_of_cover {G : Type*} [Group G] [TopologicalSpace G] [IsTopologicalG
   have hc : haarScalarFactor (Measure.map (· * g) (haarMeasure K₀)) (haarMeasure K₀) = 1 := by
     have h2 := congrArg (fun ν : Measure G => ν (L m)) e
     simp only [hL, Measure.smul_apply, ENNReal.smul_def, smul_eq_mul] at h2
-    have h3 : (1 : ENNReal) * haarMeasure K₀ (L m) =
-        (haarScalarFactor (Measure.map (· * g) (haarMeasure K₀)) (haarMeasure K₀) : ENNReal) *
-          haarMeasure K₀ (L m) := by rw [one_mul]; exact h2
-    have h4 := (ENNReal.mul_left_inj hpos hfin).1 h3
-    exact_mod_cast h4.symm
+    have h3 : (1 : ENNReal) * haarMeasure K₀ (L m) = (haarScalarFactor (Measure.map (· * g) (haarMeasure K₀)) (haarMeasure K₀) : ENNReal) * haarMeasure K₀ (L m) := by simpa only [one_mul] using h2
+    exact_mod_cast ((ENNReal.mul_left_inj hpos hfin).1 h3).symm
   rw [hc, one_smul] at e
   exact e
 

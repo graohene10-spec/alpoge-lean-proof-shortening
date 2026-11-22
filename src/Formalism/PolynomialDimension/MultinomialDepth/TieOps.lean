@@ -53,9 +53,7 @@ noncomputable def qlist (S : Finset (Fin r → ℤ)) (c : ℤ) : List ℤ := ((S
 
 theorem qlist_ne (S : Finset (Fin r → ℤ)) (c : ℤ) : ∀ x ∈ qlist S c, x ≠ c := by
   intro x hx
-  unfold qlist at hx
-  rw [Finset.mem_toList] at hx
-  exact Finset.ne_of_mem_erase hx
+  exact Finset.ne_of_mem_erase (by simpa [qlist] using hx : x ∈ (S.image GlW.casI).erase c)
 
 theorem mem_qlist {S : Finset (Fin r → ℤ)} {c : ℤ} {ν : Fin r → ℤ} (hν : ν ∈ S) (hne : GlW.casI ν ≠ c) :
     GlW.casI ν ∈ qlist S c := by
@@ -724,8 +722,7 @@ theorem midAct_isF (L : Letters N) (j0 J : ℕ) (c d : Fin r) {g : MvPolynomial 
 theorem killL_of_isL {j0 J : ℕ} (hJ : J ≤ j0) {q : MvPolynomial (Fin N × Fin r) ℚ_[p]} (hq : IsL (fsj N r j0) q) :
     ∀ m ∈ q.support, ∀ v : Fin N × Fin r, (v.1 : ℕ) < J → m v = 0 := by
   intro m hm v hv
-  by_contra hne
-  exact hq m hm v hne (show fsj N r j0 v from lt_of_lt_of_le hv hJ)
+  exact Classical.byContradiction fun hne => hq m hm v hne (lt_of_lt_of_le hv hJ)
 
 theorem slc_glAct (L : Letters N) {j0 J : ℕ} (hJ : J ≤ j0) (c d : Fin r) (m : Fin N × Fin r →₀ ℕ)
     (x : MvPolynomial (Fin N × Fin r) ℚ_[p]) :
@@ -2136,8 +2133,7 @@ theorem wtsp_iff {M : ℕ} (L : Letters M) (j : ℕ) (la : Fin r → ℤ) (x : M
   constructor
   · intro h m hm
     funext c
-    rw [weight_wv]
-    exact h (Finset.mem_coe.mpr (mem_support_iff.mpr hm)) c (mem_univ c)
+    simpa [weight_wv] using h (Finset.mem_coe.mpr (mem_support_iff.mpr hm)) c (mem_univ c)
   · intro h m hm c _
     rw [← weight_wv, h (mem_support_iff.mp (Finset.mem_coe.mp hm))]
 

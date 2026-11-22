@@ -99,8 +99,7 @@ lemma dg_last (k r : ℕ) (t : ℝ) (a : Fin r) (h : ¬ a.val + 1 < r) :
 variable {k r : ℕ} {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
 
 lemma inLie_zero : inLie k r (0 : Mat k r) := by
-  unfold inLie
-  simp
+  simp [inLie]
 
 lemma inLie_add {X Y : Mat k r} (hX : inLie k r X) (hY : inLie k r Y) : inLie k r (X + Y) := by
   unfold inLie at *

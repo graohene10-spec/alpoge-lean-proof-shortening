@@ -276,9 +276,7 @@ lemma slev_eq {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℂ H] {W : T
   unfold TA.Slev TA.gram
   congr 1
   refine Finset.sum_congr rfl fun x hx => Finset.sum_congr rfl fun y hy => ?_
-  show restr (PT Sg j) (D.K j) x y * _ = _
-  unfold restr
-  rw [if_pos ⟨hx, hy⟩]
+  simp [D', restr, hx, hy]
 
 lemma lsup_eq {H : Type} [NormedAddCommGroup H] [InnerProductSpace ℂ H] {W : Type} [Fintype W]
     (D : TA.Data E) (Sg : ℕ → ℕ → Finset E) (Th) (len : W → ℕ) (Kl : ℕ) (Φ : W → Pt E → H) (j : ℕ) :
@@ -310,8 +308,7 @@ theorem axA2' (D : TA.Data E) (Sg : ℕ → ℕ → Finset E) (Th) (hA : KernelS
   intro i s hs hsi hi h h' t t' hh hh' ht ht' hc
   have := hA i s hs hsi hi h h' t t' hh hh' ht ht' hc
   show restr (PT Sg i) (D.K i) (TA.ext h s t) (TA.ext h' s t') = 0
-  unfold restr
-  split_ifs <;> simp [this]
+  simp [restr, this]
 
 theorem thetaDomination_d_of_axK_of_domMinA (D : TA.Data E) (Sg : ℕ → ℕ → Finset E) (Th) (hNZ : NZSg Sg) (hK : AxK D)
     (hD : TC.DomMinA D Sg Th) : ThetaDomination (D' D Sg Th) := by
@@ -489,21 +486,16 @@ theorem psd_congr {α : Type} {Y : Finset α} {k k' : α → α → ℂ}
 
 theorem psd_zero {α : Type} (Y : Finset α) : PSDOn Y (fun _ _ => (0 : ℂ)) := by
   unfold TB.PSDOn
-  have e : (Matrix.of fun x y : Y => (0 : ℂ)) = 0 := by
-    ext x y
-    simp
-  rw [e]
-  exact Matrix.PosSemidef.zero
+  convert Matrix.PosSemidef.zero using 1
+  ext x y
+  simp
 
 theorem psd_add {α : Type} {Y : Finset α} {k k' : α → α → ℂ} (h : PSDOn Y k) (h' : PSDOn Y k') :
     PSDOn Y (fun x y => k x y + k' x y) := by
   unfold TB.PSDOn at h h' ⊢
-  have e : (Matrix.of fun x y : Y => k x y + k' x y) =
-      (Matrix.of fun x y : Y => k x y) + Matrix.of fun x y : Y => k' x y := by
-    ext x y
-    simp
-  rw [e]
-  exact h.add h'
+  convert h.add h' using 1
+  ext x y
+  simp
 
 private theorem sum_attach_ite_eq {α : Type} (X : Finset α) (a : α) (F : α → ℂ) :
     (∑ j ∈ X.attach, if (j : α) = a then F j else 0) = if a ∈ X then F a else 0 := by
@@ -525,11 +517,9 @@ theorem psd_restrict {α : Type} {X : Finset α} (Y : Finset α) {k : α → α 
 theorem psd_smul {α : Type} {Y : Finset α} {k : α → α → ℂ} (c : ℝ) (hc : 0 ≤ c) (h : PSDOn Y k) :
     PSDOn Y (fun x y => (c : ℂ) * k x y) := by
   unfold TB.PSDOn at h ⊢
-  have e : (Matrix.of fun x y : Y => (c : ℂ) * k x y) = (c : ℂ) • Matrix.of fun x y : Y => k x y := by
-    ext x y
-    simp
-  rw [e]
-  exact h.smul (Complex.zero_le_real.mpr hc)
+  convert h.smul (Complex.zero_le_real.mpr hc) using 1
+  ext x y
+  simp
 
 variable {E W : Type} [Field E]
 

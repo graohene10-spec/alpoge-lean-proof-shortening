@@ -36,12 +36,9 @@ lemma zeta_norm_le_on_circle {s : ℂ} (hs : ‖s - 2‖ = 3 / 2) : ‖riemannZe
     rw [div_le_iff₀ (by linarith)]; linarith
   have hb : 1 / s.re ≤ 2 := by
     rw [div_le_iff₀ (by linarith)]; linarith
-  have hp : 0 ≤ 1 + 1 / s.re := by
-    have : 0 < 1 / s.re := by apply div_pos <;> linarith
-    linarith
   have hc : ‖s‖ * (1 + 1 / s.re) ≤ 7 / 2 * 3 := by
-    calc ‖s‖ * (1 + 1 / s.re) ≤ 7 / 2 * (1 + 1 / s.re) := mul_le_mul_of_nonneg_right hn hp
-      _ ≤ 7 / 2 * 3 := by linarith
+    calc ‖s‖ * (1 + 1 / s.re) ≤ ‖s‖ * 3 := mul_le_mul_of_nonneg_left (by linarith) (norm_nonneg s)
+      _ ≤ 7 / 2 * 3 := mul_le_mul_of_nonneg_right hn (by norm_num)
   linarith
 
 theorem product_lfunction_growth_bound : BqGrowth := by

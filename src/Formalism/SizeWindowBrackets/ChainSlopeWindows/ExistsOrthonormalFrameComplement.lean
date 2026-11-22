@@ -53,11 +53,10 @@ lemma phase_self (c : ι → ℂ) (hc : ∀ u, c u ≠ 0) (u : ι) : phase c u u
 lemma sqrt_gaTw (ga : ι → ℝ) (c : ι → ℂ) (hc : ∀ u, c u ≠ 0) (u u' : ι) :
     Real.sqrt (gaTw ga c u * gaTw ga c u') = Real.sqrt (ga u * ga u') / (‖c u‖ * ‖c u'‖) := by
   unfold gaTw
-  have h1 : 0 < ‖c u‖ := norm_pos_iff.mpr (hc u)
-  have h2 : 0 < ‖c u'‖ := norm_pos_iff.mpr (hc u')
-  have : ga u / ‖c u‖ ^ 2 * (ga u' / ‖c u'‖ ^ 2) = ga u * ga u' / (‖c u‖ * ‖c u'‖) ^ 2 := by
-    field_simp
-  rw [this, Real.sqrt_div' _ (by positivity), Real.sqrt_sq (by positivity)]
+  have h : 0 < ‖c u‖ * ‖c u'‖ :=
+    mul_pos (norm_pos_iff.mpr (hc u)) (norm_pos_iff.mpr (hc u'))
+  rw [div_mul_div_comm, ← mul_pow, Real.sqrt_div' _ (by positivity),
+    Real.sqrt_sq h.le]
 
 lemma Kp_tw (B : ∀ u, Matrix (Fin D) (Fin (d u)) ℂ) (ga : ι → ℝ) (c : ι → ℂ)
     (V : Matrix (Fin D') (Fin D) ℂ) (U : ∀ u, Matrix (Fin (d u)) (Fin (d u)) ℂ)
@@ -193,8 +192,7 @@ lemma frame_orth (J : Matrix (Fin Dall) (Fin D) ℂ) (J1 : Matrix (Fin Dall) (Fi
 
 lemma frame_orth' (J : Matrix (Fin Dall) (Fin D) ℂ) (J1 : Matrix (Fin Dall) (Fin D1) ℂ)
     (h : OrthFrame J J1) : J1ᴴ * J = 0 := by
-  have : (Jᴴ * J1)ᴴ = J1ᴴ * J := by rw [conjTranspose_mul, conjTranspose_conjTranspose]
-  rw [← this, frame_orth J J1 h, conjTranspose_zero]
+  simpa only [conjTranspose_mul, conjTranspose_conjTranspose, conjTranspose_zero] using congrArg (fun M => Mᴴ) (frame_orth J J1 h)
 
 lemma frame_dim (J : Matrix (Fin Dall) (Fin D) ℂ) (J1 : Matrix (Fin Dall) (Fin D1) ℂ)
     (h : OrthFrame J J1) : Dall = D + D1 := by

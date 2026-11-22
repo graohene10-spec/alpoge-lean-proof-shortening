@@ -19,8 +19,7 @@ variable (S : GSD K)
 
 theorem wt_eq (h : S.Ok) (s : S.Sec) (c : S.Cl) :
     (S.toCSDOf h s).wt c = Nat.card (MulAction.stabilizer S.G (s.rep c)) := by
-  unfold CSD.wt
-  exact Fintype.card_eq_nat_card
+  simpa only [CSD.wt] using Fintype.card_eq_nat_card
 
 theorem card_stab_smul (g : S.G) (d : S.D) :
     Nat.card (MulAction.stabilizer S.G (g • d)) = Nat.card (MulAction.stabilizer S.G d) := by
@@ -63,10 +62,8 @@ def coordOf (h : S.Ok) (s : S.Sec) : S.EqFun ≃ₗ[K] (Fin (S.toCSDOf h s).dim 
 
 theorem I_coordOf (h : S.Ok) (s : S.Sec) (φ : S.EqFun) :
     (S.toCSDOf h s).I (S.coordOf h s φ) = fun c => (φ : S.D → S.V) (s.rep c) := by
-  show (((S.toCSDOf h s).basis.equivFun.symm ((S.toCSDOf h s).basis.equivFun (S.resOf h s φ)) :
-    (S.toCSDOf h s).Forms) : S.Cl → S.V) = _
-  rw [LinearEquiv.symm_apply_apply]
-  rfl
+  exact congrArg Subtype.val
+    (LinearEquiv.symm_apply_apply ((S.toCSDOf h s).basis.equivFun) (S.resOf h s φ))
 
 theorem coordOf_mem_nabLat (h : S.Ok) (s : S.Sec) (φ : S.EqFun) :
     S.coordOf h s φ ∈ (S.toCSDOf h s).nabLat ↔ φ ∈ S.intNab := by
@@ -366,9 +363,8 @@ theorem hform_coord (h : S.Ok) (h' : S'.Ok) (s : S.Sec) (s' : S'.Sec) (x y : Fin
     hform (S'.toCSDOf h' s').H (e.coord h h' s s' x) (e.coord h h' s s' y) = hform (S.toCSDOf h s).H x y := by
   have e1 := S'.ipOf_coord h' s' (e.onForms ((S.coordOf h s).symm x)) (e.onForms ((S.coordOf h s).symm y))
   have e2 := S.ipOf_coord h s ((S.coordOf h s).symm x) ((S.coordOf h s).symm y)
-  rw [LinearEquiv.apply_symm_apply, LinearEquiv.apply_symm_apply] at e2
   rw [e.ipOf_onForms h h' s s'] at e1
-  exact e1.symm.trans e2
+  simpa only [GSD.Iso.coord, LinearEquiv.trans_apply, LinearEquiv.apply_symm_apply] using e1.symm.trans e2
 
 theorem coord_mem_nabLat (h : S.Ok) (h' : S'.Ok) (s : S.Sec) (s' : S'.Sec) (x : Fin (S.toCSDOf h s).dim → K) :
     e.coord h h' s s' x ∈ (S'.toCSDOf h' s').nabLat ↔ x ∈ (S.toCSDOf h s).nabLat := by
@@ -436,8 +432,7 @@ theorem rat_comp {ι ι' ι'' V V' V'' : Type} [Fintype ι'] [AddCommGroup V] [M
     (f : V →ₗ[K] V') (f' : V' →ₗ[K] V'') (F : Subfield K) (h : ∀ i j, b'.repr (f (b j)) i ∈ F)
     (h' : ∀ i j, b''.repr (f' (b' j)) i ∈ F) (i : ι'') (j : ι) : b''.repr (f' (f (b j))) i ∈ F := by
   rw [← b'.sum_repr (f (b j))]
-  simp only [map_sum, map_smul, Finsupp.coe_finset_sum, Finset.sum_apply, Finsupp.smul_apply, smul_eq_mul]
-  exact sum_mem fun k _ => mul_mem (h k j) (h' i k)
+  simpa only [map_sum, map_smul, Finsupp.coe_finset_sum, Finset.sum_apply, Finsupp.smul_apply, smul_eq_mul] using sum_mem fun k _ => mul_mem (h k j) (h' i k)
 
 def trans {S'' : GSD K} (e' : GSD.Iso S' S'') : GSD.Iso S S'' where
   eG := e.eG.trans e'.eG
@@ -790,13 +785,9 @@ theorem split_mem_intOf (N : S.D → Submodule (𝓞 K) S.V) (hN : ∀ (b : A) (
     φ ∈ S.intOf N ↔ ∀ b, σ.split φ b ∈ (S.restr σ.T).intOf (fun t => N ((t : σ.T) : S.D)) := by
   constructor
   · intro hφ b t
-    show (φ : S.D → S.V) (b • (t : S.D)) ∈ N (t : S.D)
-    rw [← hN b]
-    exact hφ _
+    simpa [σ.split_apply, hN] using hφ (b • (t : S.D))
   · intro H d
-    have h1 : (φ : S.D → S.V) ((σ.a d)⁻¹ • σ.a d • d) ∈ N (σ.a d • d) := H (σ.a d)⁻¹ ⟨σ.a d • d, σ.a_mem d⟩
-    rw [inv_smul_smul, hN] at h1
-    exact h1
+    simpa [σ.split_apply, inv_smul_smul, hN] using H (σ.a d)⁻¹ ⟨σ.a d • d, σ.a_mem d⟩
 
 theorem split_mem_intNab (hN : ∀ (b : A) (d : S.D), S.Nab (b • d) = S.Nab d) (φ : S.EqFun) :
     φ ∈ S.intNab ↔ ∀ b, σ.split φ b ∈ (S.restr σ.T).intNab := by
@@ -808,10 +799,9 @@ theorem split_mem_intDel (hN : ∀ (b : A) (d : S.D), S.Del (b • d) = S.Del d)
 
 theorem card_stab_smul' (b : A) (d : S.D) :
     Nat.card (MulAction.stabilizer S.G (b • d)) = Nat.card (MulAction.stabilizer S.G d) := by
-  have hs : MulAction.stabilizer S.G (b • d) = MulAction.stabilizer S.G d := by
+  rw [show MulAction.stabilizer S.G (b • d) = MulAction.stabilizer S.G d from by
     ext g
-    rw [MulAction.mem_stabilizer_iff, MulAction.mem_stabilizer_iff, ← smul_comm b g d, smul_left_cancel_iff]
-  rw [hs]
+    rw [MulAction.mem_stabilizer_iff, MulAction.mem_stabilizer_iff, ← smul_comm b g d, smul_left_cancel_iff]]
 
 def clEquiv (sT : (S.restr σ.T).Sec) : A × (S.restr σ.T).Cl ≃ S.Cl :=
   Equiv.ofBijective (fun p => S.cls (p.1 • ((sT.rep p.2 : σ.T) : S.D))) (by
@@ -916,15 +906,11 @@ theorem fibre_card_stab (x : D₀) (y : fibre pr hpr x) :
   have h1 : ∀ γ : MulAction.stabilizer (MulAction.stabilizer G x) y,
       ((γ : MulAction.stabilizer G x) : G) ∈ MulAction.stabilizer G (y : D) := fun γ =>
     MulAction.mem_stabilizer_iff.mpr (congrArg Subtype.val (MulAction.mem_stabilizer_iff.mp γ.2))
-  have hy : pr (y : D) = x := y.2
-  have h2 : ∀ g : MulAction.stabilizer G (y : D), (g : G) ∈ MulAction.stabilizer G x := by
-    intro g
-    have hg : (g : G) • (y : D) = y := MulAction.mem_stabilizer_iff.mp g.2
+  have h2 : ∀ g : MulAction.stabilizer G (y : D), (g : G) ∈ MulAction.stabilizer G x := fun g => by
     refine MulAction.mem_stabilizer_iff.mpr ?_
-    calc (g : G) • x = (g : G) • pr (y : D) := by rw [hy]
-      _ = pr ((g : G) • (y : D)) := (hpr _ _).symm
-      _ = pr (y : D) := by rw [hg]
-      _ = x := hy
+    calc (g : G) • x = (g : G) • pr (y : D) := by rw [y.2]
+      _ = pr (y : D) := by rw [← hpr (g : G) (y : D), MulAction.mem_stabilizer_iff.mp g.2]
+      _ = x := y.2
   have h3 : ∀ g : MulAction.stabilizer G (y : D),
       (⟨(g : G), h2 g⟩ : MulAction.stabilizer G x) ∈ MulAction.stabilizer (MulAction.stabilizer G x) y := fun g =>
     MulAction.mem_stabilizer_iff.mpr (Subtype.ext (MulAction.mem_stabilizer_iff.mp g.2))
@@ -947,12 +933,8 @@ theorem GSD.triv_point_ip (K : Type) [Field K] [NumberField K] [StarRing K] (G :
   rw [Fintype.sum_subsingleton _ ((GSD.triv K G PUnit).cls PUnit.unit)]
   have h2 : ∀ x : PUnit, Nat.card (MulAction.stabilizer G x) = Nat.card G := by
     intro x
-    have h1 : MulAction.stabilizer G x = ⊤ := by
-      rw [eq_top_iff]
-      intro g _
-      rfl
-    rw [h1]
-    exact Subgroup.card_top
+    rw [show MulAction.stabilizer G x = ⊤ from (Subgroup.eq_top_iff' _).mpr fun g => rfl,
+      Subgroup.card_top]
   have h3 := h2 ((GSD.triv K G PUnit).outSec.rep ((GSD.triv K G PUnit).cls PUnit.unit))
   refine Eq.trans (congrArg (fun n : ℕ => ((n : K))⁻¹ * _) h3) ?_
   show ((Nat.card G : K))⁻¹ * (star (1 : K) * 1) = _
@@ -1138,8 +1120,7 @@ theorem Mat.opOf_apply {F F' : GFam K} (M : Mat F F') (h : F.Ok) (s : ∀ b, (F.
 theorem Mat.opOf_indep {F F' : GFam K} (M : Mat F F') (h : F.Ok) (s s' : ∀ b, (F.mem b).Sec) :
     M.opOf h s = M.opOf h s' := by
   refine LinearMap.ext fun φ => funext fun b' => ?_
-  rw [M.opOf_apply h s, M.opOf_apply h s']
-  exact Finset.sum_congr rfl fun b _ => by rw [(M b b').opOf_indep (h b) (s b) (s' b)]
+  exact Eq.trans (M.opOf_apply h s φ b') (Eq.trans (Finset.sum_congr rfl fun b _ => by rw [(M b b').opOf_indep (h b) (s b) (s' b)]) (M.opOf_apply h s' φ b').symm)
 
 theorem Mat.resOf_opOf {F F' : GFam K} (M : Mat F F') (h : F.Ok) (h' : F'.Ok) (s : ∀ b, (F.mem b).Sec)
     (s' : ∀ b', (F'.mem b').Sec) (φ : F.Forms) :

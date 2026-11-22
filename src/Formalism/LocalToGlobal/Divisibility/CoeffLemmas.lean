@@ -11,9 +11,8 @@ open Formalism.L2.Host Formalism.DivisionValues
 
 theorem sig0Conj : DistinguishedEmbeddingConjugation := by
   intro ι LL _ x
-  show ι (CoF.val ι LL (star x)) = _
+  show ι (CoF.val ι LL (star x)) = starRingEnd ℂ (ι (CoF.val ι LL x))
   rw [CoF.val_star, conjQb_spec]
-  rfl
 
 theorem conj_ne_of_sq_neg {w : ℂ} {r : ℝ} (hr : r < 0) (hw : w ^ 2 = (r : ℂ)) : starRingEnd ℂ w ≠ w := by
   intro h
@@ -32,8 +31,7 @@ theorem totComplex : TotComplex := by
   rw [InfinitePlace.isComplex_iff]
   intro hreal
   obtain ⟨x, hx⟩ := exists_sqrt (-(d : ℤ))
-  have hxL : x ∈ LL := hK (sqrts_sub _ hx)
-  set y : CoF ι LL := CoF.mk ι LL x hxL with hy
+  set y : CoF ι LL := CoF.mk ι LL x (hK (sqrts_sub _ hx)) with hy
   have hy2 : y ^ 2 = ((-(d : ℤ) : ℤ) : CoF ι LL) := by
     apply CoF.val_injective ι LL
     rw [map_pow, CoF.val_mk, map_intCast]
@@ -41,8 +39,7 @@ theorem totComplex : TotComplex := by
   have h2 : (v.embedding y) ^ 2 = ((-(d : ℝ) : ℝ) : ℂ) := by
     rw [← map_pow, hy2, map_intCast]; push_cast; ring
   have hneg : (-(d : ℝ)) < 0 := by
-    have : (0 : ℝ) < d := by exact_mod_cast hd
-    linarith
+    linarith [show (0 : ℝ) < d by exact_mod_cast hd]
   exact conj_ne_of_sq_neg hneg h2 (RingHom.congr_fun (ComplexEmbedding.isReal_iff.1 hreal) y)
 
 theorem isAlgebraicQb (LL : Fld) : Algebra.IsAlgebraic LL Qb := by
@@ -77,8 +74,7 @@ theorem cmQbIndep : CmQbIndep := by
 
 theorem conj_root (τ : Qb →+* ℂ) {N : ℕ} (hN : 0 < N) {z : Qb} (hz : z ∈ mus N) :
     starRingEnd ℂ (τ z) = τ z⁻¹ := by
-  have h1 : (τ z) ^ N = 1 := by rw [← map_pow, show z ^ N = 1 from hz, map_one]
-  rw [map_inv₀, Complex.inv_eq_conj (Complex.norm_eq_one_of_pow_eq_one h1 hN.ne')]
+  rw [map_inv₀, Complex.inv_eq_conj (Complex.norm_eq_one_of_pow_eq_one (by rw [← map_pow, show z ^ N = 1 from hz, map_one]) hN.ne')]
 
 theorem cycLeCm : CycLeCm := by
   intro ι N hN
@@ -132,11 +128,9 @@ theorem tauStar : TauStar := by
   rw [CoF.val_star, val_tauCo, val_tauCo]
   apply ι.injective
   rw [conjQb_spec]
-  have h1 := hL x.2 (ι.comp (s.liftNormal Qb).toRingHom)
   have h2 : ∀ u : L, s.liftNormal Qb (u : Qb) = s u := fun u => AlgHom.liftNormal_commutes s Qb u
-  have h3 : ι (s.liftNormal Qb (conjQb ι x)) = starRingEnd ℂ (ι (s.liftNormal Qb (x : Qb))) := h1
-  rw [← hy, h2, h2] at h3
-  exact h3.symm
+  have h3 : ι (s.liftNormal Qb (conjQb ι x)) = starRingEnd ℂ (ι (s.liftNormal Qb (x : Qb))) := hL x.2 (ι.comp (s.liftNormal Qb).toRingHom)
+  simpa only [← hy, h2] using h3.symm
 
 theorem finite_pow_eq {n : ℕ} (hn : 0 < n) (a : Qb) : {z : Qb | z ^ n = a}.Finite := by
   classical

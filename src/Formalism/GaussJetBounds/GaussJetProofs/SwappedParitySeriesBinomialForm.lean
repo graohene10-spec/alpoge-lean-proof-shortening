@@ -292,11 +292,10 @@ variable {K : Type u} [Field K] {d : ℕ} [NeZero d]
 theorem bnx_update_le (n : ZMod d →₀ ℕ) (s : ZMod d) (j : ℕ) (hj : j < n s) :
     ∀ t, Function.update (⇑n) s j t ≤ n t := by
   intro t
-  rw [Function.update_apply]
-  split_ifs with h
+  by_cases h : t = s
   · subst h
-    exact hj.le
-  · exact le_rfl
+    simpa using hj.le
+  · simp [h]
 
 theorem bnx_prod_choose (n : ZMod d →₀ ℕ) (s : ZMod d) (j : ℕ) (hj : j < n s) (e : ZMod d → K)
     (he : e s = 1) :

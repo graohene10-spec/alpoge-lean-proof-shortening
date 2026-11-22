@@ -212,12 +212,10 @@ theorem cell_bruhat : BruhatDecomposition := by
   refine ⟨L, U, σ, fun b => M (σ b) b, hL, hU, Finite.injective_iff_bijective.1 hinj, fun b => h2 b b.isLt, ?_⟩
   have hMm : M = mono σ (fun b => M (σ b) b) := by
     ext a b
-    unfold mono
     by_cases hab : a = σ b
-    · rw [if_pos hab, hab]
-    · rw [if_neg hab, h3 b b.isLt a hab]
-  rw [← hMm]
-  exact hZ
+    · simp [mono, hab]
+    · simp [mono, hab, h3 b b.isLt a hab]
+  simpa only [← hMm] using hZ
 
 end Formalism.MainNotions.BridgeLemma
 

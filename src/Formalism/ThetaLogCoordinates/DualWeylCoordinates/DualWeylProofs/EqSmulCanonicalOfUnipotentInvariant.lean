@@ -117,9 +117,8 @@ lemma qd_L_P (mu : Fin n → ℤ) (I : TIdx mu) : qd_L mu (qd_P mu I) = mapCoord
 lemma qd_span_le (mu : Fin n → ℤ) :
     Submodule.span ℚ (Set.range fun I : TIdx mu => mapCoord ℚ (brk mu I)) ≤
       (dualWeyl ℚ n n (qd_nu mu)).map (qd_L mu) := by
-  rw [Submodule.span_le]
-  rintro _ ⟨I, rfl⟩
-  exact ⟨qd_P mu I, tableauBideterminant_mem_dualWeyl' mu I, qd_L_P mu I⟩
+  rw [Submodule.span_le, Set.range_subset_iff]
+  exact fun I => ⟨qd_P mu I, tableauBideterminant_mem_dualWeyl' mu I, qd_L_P mu I⟩
 
 omit [NeZero n] in
 lemma generic_point_det_isUnit (n : ℕ) : IsUnit (Matrix.of fun a b : Fin n =>
@@ -146,14 +145,12 @@ omit [NeZero n] in
 lemma qd_trans_det {R : Type} [CommRing R] (a b : Fin n) (hab : a ≠ b) (t : R) :
     Matrix.GeneralLinearGroup.det (qd_trans a b hab t) = 1 := by
   ext
-  rw [Matrix.GeneralLinearGroup.val_det_apply]
-  exact Matrix.det_transvection_of_ne _ _ hab t
+  simpa [Matrix.GeneralLinearGroup.val_det_apply, qd_trans] using Matrix.det_transvection_of_ne _ _ hab t
 
 omit [NeZero n] in
 lemma qd_mul_trans {R : Type} [CommRing R] (x : GL (Fin n) R) (a b : Fin n) (hab : a ≠ b) (t : R) (i j : Fin n) :
     (x * qd_trans a b hab t).val i j = x.val i j + if j = b then t * x.val i a else 0 := by
-  have : (x * qd_trans a b hab t).val = x.val * Matrix.transvection a b t := rfl
-  rw [this]
+  change (x.val * Matrix.transvection a b t) i j = x.val i j + if j = b then t * x.val i a else 0
   split_ifs with h
   · subst h; rw [Matrix.mul_transvection_apply_same]
   · rw [Matrix.mul_transvection_apply_of_ne _ _ _ _ h, add_zero]
@@ -161,16 +158,14 @@ lemma qd_mul_trans {R : Type} [CommRing R] (x : GL (Fin n) R) (a b : Fin n) (hab
 omit [NeZero n] in
 lemma qd_trans_diag {R : Type} [CommRing R] (a b : Fin n) (hab : a ≠ b) (t : R) (i : Fin n) :
     (qd_trans a b hab t).val i i = 1 := by
-  have : (qd_trans a b hab t).val = Matrix.transvection a b t := rfl
-  rw [this, Matrix.transvection, Matrix.add_apply, Matrix.one_apply_eq, Matrix.single_apply]
-  rw [if_neg (by rintro ⟨rfl, h⟩; exact hab h.symm), add_zero]
+  change (Matrix.transvection a b t) i i = 1
+  rw [Matrix.transvection, Matrix.add_apply, Matrix.one_apply_eq, Matrix.single_apply, if_neg (by rintro ⟨rfl, h⟩; exact hab h.symm), add_zero]
 
 omit [NeZero n] in
 lemma qd_trans_low {R : Type} [CommRing R] (a b : Fin n) (hab : a < b) (t : R) (i j : Fin n) (hji : j < i) :
     (qd_trans a b hab.ne t).val i j = 0 := by
-  have : (qd_trans a b hab.ne t).val = Matrix.transvection a b t := rfl
-  rw [this, Matrix.transvection, Matrix.add_apply, Matrix.one_apply_ne hji.ne', Matrix.single_apply]
-  rw [if_neg (by rintro ⟨rfl, rfl⟩; exact absurd hab (not_lt.mpr hji.le)), add_zero]
+  change (Matrix.transvection a b t) i j = 0
+  rw [Matrix.transvection, Matrix.add_apply, Matrix.one_apply_ne hji.ne', Matrix.single_apply, if_neg (by rintro ⟨rfl, rfl⟩; exact absurd hab (not_lt.mpr hji.le)), add_zero]
 
 omit [NeZero n] in
 lemma aeval_generic_point (P : MvPolynomial (Fin n × Fin n) ℚ) :
@@ -197,9 +192,7 @@ lemma qd_aeval_xu (a b : Fin n) (hab : a ≠ b) (P : MvPolynomial (Fin n × Fin 
 
 lemma qd_U_unit {R' : Type} [CommRing R'] [Algebra ℚ R'] (x : GL (Fin n) R') (mu : Fin n → ℤ) :
     IsUnit (evGLR (R := ℚ) x (qd_U mu)) := by
-  unfold qd_U
-  rw [qd_evGLR_mapCoord, qd_evGL_detU]
-  exact Units.isUnit _
+  simp [qd_U, qd_evGLR_mapCoord, qd_evGL_detU]
 
 lemma qd_U_inv {R' : Type} [CommRing R'] [Algebra ℚ R'] (x u : GL (Fin n) R') (mu : Fin n → ℤ)
     (hu : Matrix.GeneralLinearGroup.det u = 1) :
@@ -214,9 +207,7 @@ lemma qd_raise (mu : Fin n → ℤ) (P : MvPolynomial (Fin n × Fin n) ℚ) (a b
   rw [qd_L_apply, map_mul, map_mul, qd_U_inv _ _ _ (qd_trans_det a b hab _)] at h
   have h2 := (qd_U_unit (qd_genPt n) mu).mul_left_cancel h
   rw [qd_ev_sig, qd_ev_sig, aeval_generic_point, qd_aeval_xu] at h2
-  apply Polynomial.map_injective (qd_sig n).toRingHom (qd_sig_inj n)
-  rw [h2, Polynomial.map_C]
-  rfl
+  exact Polynomial.map_injective (qd_sig n).toRingHom (qd_sig_inj n) (by simpa [Polynomial.map_C] using h2)
 
 lemma tableauBideterminant_canonical_eq_prod_leadingMinor (mu : Fin n → ℤ) :
     qd_P mu (canT mu) = ∏ c : ↥(TCols mu), lpMinor ℚ (colH mu c) (colH_le mu c) (colH_le mu c) := by

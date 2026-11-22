@@ -41,8 +41,7 @@ theorem owedC_zpow_emod {ζ : K} (hζ : ζ ^ p = 1) (a : ℤ) : ζ ^ (a % (p : �
   · simp
   have h0 : ζ ≠ 0 := by
     rintro rfl
-    rw [zero_pow hp.ne'] at hζ
-    exact zero_ne_one hζ
+    simp [hp.ne'] at hζ
   conv_rhs => rw [← Int.emod_add_mul_ediv a p, zpow_add₀ h0, zpow_mul, zpow_natCast, hζ, one_zpow, mul_one]
 
 def owedC_chr (hp : p.Prime) (h : Nat.card A = p) {ζ : K} (hζ : ζ ^ p = 1) : AddChar A K :=
@@ -52,8 +51,7 @@ def owedC_chr (hp : p.Prime) (h : Nat.card A = p) {ζ : K} (hζ : ζ ^ p = 1) : 
 theorem owedC_chr_intCast (hp : p.Prime) (h : Nat.card A = p) {ζ : K} (hζ : ζ ^ p = 1) (a : ℤ) :
     owedC_chr hp h hζ (a : A) = ζ ^ a := by
   have : NeZero p := ⟨hp.ne_zero⟩
-  have e : owedC_chr hp h hζ (a : A) = AddChar.zmodChar p hζ (owedC_res hp h (a : A)) := rfl
-  rw [e, owedC_res_intCast, AddChar.zmodChar_apply, ← owedC_zpow_emod hζ a, ← ZMod.val_intCast, zpow_natCast]
+  rw [(show owedC_chr hp h hζ (a : A) = AddChar.zmodChar p hζ (owedC_res hp h (a : A)) from rfl), owedC_res_intCast, AddChar.zmodChar_apply, ← owedC_zpow_emod hζ a, ← ZMod.val_intCast, zpow_natCast]
 
 end Res
 

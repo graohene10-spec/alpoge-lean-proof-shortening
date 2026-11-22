@@ -120,8 +120,7 @@ theorem csAt_of_definite (S : HSpace E) (hstar : ∀ (φ : E →+* ℂ) a, φ (s
 theorem csAt_of_isomEmb (S S' : HSpace E) (ι : S.V →ₗ[E] S'.V) (hι : HSpace.IsIsomEmb S S' ι) (h : CSAt S') :
     CSAt S := by
   intro φ x y
-  rw [← hι x y, ← hι x x, ← hι y y]
-  exact h φ (ι x) (ι y)
+  simpa only [← hι x y, ← hι x x, ← hι y y] using h φ (ι x) (ι y)
 
 end CSSpace
 

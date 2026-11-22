@@ -63,8 +63,7 @@ theorem restrictedLattice_divided_power (LL : Letters (K + 1)) {q : ℕ} (J : Fi
       (resL p (Fin.last K, ρ) 0).map_smul _ _
     rw [LinearMap.smul_apply, e1, ← e2]
     exact mem_restrictedLattice_of_mem LL J M ρ o' _ (Submodule.smul_mem _ _ ho') (hint h hi)
-  have := restrictedLattice_map_le LL J M ρ (((k.factorial : ℚ_[p]))⁻¹ • (B ^ k)) key z hz
-  simpa only [LinearMap.smul_apply] using this
+  simpa only [LinearMap.smul_apply] using restrictedLattice_map_le LL J M ρ (((k.factorial : ℚ_[p]))⁻¹ • (B ^ k)) key z hz
 
 private theorem glAct_mem_yCond_r {N : ℕ} (LL : Letters N) (j : ℕ) (Mt : WithTop ℤ) (a b : Fin r) :
     ∀ x ∈ YCond p (r := r) LL j Mt, glAct p LL j a b x ∈ YCond p LL j Mt := by
@@ -151,8 +150,7 @@ theorem dW_pow_y (LL : Letters (K + 1)) (hv : LL.vec (Fin.last K) = true) {q : �
 private theorem yCond_mono' {N : ℕ} (LL : Letters N) (j : ℕ) {Mt Mt' : WithTop ℤ} (hM : Mt ≤ Mt') :
     YCond p (r := r) LL j Mt ≤ YCond p LL j Mt' := by
   unfold YCond
-  refine sSup_le_sSup fun S hS => ⟨hS.1.trans ?_, hS.2⟩
-  exact MvPolynomial.restrictSupport_mono (R := ℚ_[p]) (fun m hm => le_trans hm hM)
+  exact sSup_le_sSup fun S hS => ⟨hS.1.trans (MvPolynomial.restrictSupport_mono (R := ℚ_[p]) (fun m hm => le_trans hm hM)), hS.2⟩
 
 theorem uop_y (LL : Letters (K + 1)) (hv : LL.vec (Fin.last K) = true) {q : ℕ} (J : Fin q → ℕ) (M : Fin q → WithTop ℤ)
     (c : ℤ) (k0 : Fin q) (hk0 : K + 1 ≤ J k0) (hc : M k0 = ((c : ℤ) : WithTop ℤ))
@@ -275,19 +273,14 @@ theorem compL_deg (LL : Letters (K + 1)) (o o' : ℕ) (x : MvPolynomial (Fin (K 
   change MvPolynomial.coeff m (compP _ x) = _
   rw [coeff_compP]
   by_cases hm : m ∈ x.support
-  · have hmd : MultiDeg (setLast LL o') m := ((MvPolynomial.mem_restrictSupport_iff ℚ_[p]).1 hx) hm
-    have hs : ∑ a, m (Fin.last K, a) = o' := by
-      rw [hmd (Fin.last K)]
+  · have hs : ∑ a, m (Fin.last K, a) = o' := by
+      rw [((MvPolynomial.mem_restrictSupport_iff ℚ_[p]).1 hx) hm (Fin.last K)]
       simp [setLast]
-    split_ifs with h1 h2 h2
-    · rfl
-    · exact absurd (hs.symm.trans h1) h2
-    · exact absurd (hs.trans h2) h1
-    · simp
+    by_cases ho : o' = o <;> simp [hs, ho]
   · have h0 : MvPolynomial.coeff m x = 0 := by
       by_contra hne
       exact hm (MvPolynomial.mem_support_iff.2 hne)
-    split_ifs <;> simp [h0]
+    by_cases ho : o' = o <;> simp [h0, ho]
 
 theorem restrictedLattice_exists_lift (LL : Letters (K + 1)) {q : ℕ} (J : Fin q → ℕ) (M : Fin q → WithTop ℤ) (ρ : Fin r) (o : ℕ)
     (z : MvPolynomial (Fin (K + 1) × Fin r) ℚ_[p]) (hz : z ∈ M2 p LL J M ρ) (hzP : z ∈ Pol p r (setLast LL o)) :
@@ -320,9 +313,7 @@ theorem restrictedLattice_exists_lift (LL : Letters (K + 1)) {q : ℕ} (J : Fin 
       · subst ho
         exact ⟨h', hY', hI', rfl⟩
       · exact ⟨0, Submodule.zero_mem _, Submodule.zero_mem _, rfl⟩
-    · refine ⟨0, Submodule.zero_mem _, Submodule.zero_mem _, ?_⟩
-      rw [map_zero]
-      exact (resL p (Fin.last K, ρ) 0).map_zero
+    · exact ⟨0, Submodule.zero_mem _, Submodule.zero_mem _, by rw [map_zero]; exact (resL p (Fin.last K, ρ) 0).map_zero⟩
     · rintro x y ⟨h1, hY1, hI1, e1⟩ ⟨h2, hY2, hI2, e2⟩
       exact ⟨h1 + h2, add_mem hY1 hY2, add_mem hI1 hI2, by rw [initPart_add, e1, e2, map_add]⟩
   obtain ⟨h, hY, hI, he⟩ := hP z hz

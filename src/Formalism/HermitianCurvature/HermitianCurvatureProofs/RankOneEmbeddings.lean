@@ -36,8 +36,7 @@ lemma emb_out_row (μ : Matrix (Fin (k + 1)) (Fin (k + 1)) ℂ) (q j : Fin (2 * 
 
 lemma emb_mid (μ : Matrix (Fin (k + 1)) (Fin (k + 1)) ℂ) (q j : Fin (2 * r + k + 1)) (hq : mid k r q) (hj : mid k r j) :
     embWb k r μ q j = μ ⟨q.val - r, by have := hq; omega⟩ ⟨j.val - r, by have := hj; omega⟩ := by
-  simp only [embWb]
-  rw [dif_pos ⟨hq, hj⟩]
+  simp only [embWb, dif_pos (⟨hq, hj⟩ : mid k r q ∧ mid k r j)]
 
 lemma wI_mid (l : Fin (k + 1)) : mid k r (wI k r l) := by
   have := l.isLt
@@ -258,13 +257,11 @@ def adjF (x : Mt k r) : Mt k r := (Matrix.of x : Mat k r).adjugate
 def detF (x : Mt k r) : ℂ := (Matrix.of x : Mat k r).det
 
 theorem detF_cont : Continuous (detF (k := k) (r := r)) := by
-  first
-    | exact continuous_id.matrix_det
-    | (unfold detF; fun_prop)
+  unfold detF
+  fun_prop
 theorem adjF_cont : Continuous (adjF (k := k) (r := r)) := by
-  first
-    | exact continuous_id.matrix_adjugate
-    | (unfold adjF; fun_prop)
+  unfold adjF
+  fun_prop
 
 theorem invM_smul : (invM : Mt k r → Mt k r) = fun x => (detF x)⁻¹ • adjF x := by
   funext x
@@ -536,24 +533,19 @@ theorem nu_left (CWb : ClosedWb) (CW : ClosedW) (UF : UWbFacts) (HI : HypInv) (z
     (a : Mat k r) (ha : a ∈ UWb k r) : (nu z z' s μW μW').map (lmulM a) = nu z z' s μW μW' := by
   haveI := haar_sigmaFinite hW
   haveI := haar_sigmaFinite hW'
-  have hWb := CWb k r
   apply Measure.ext_of_lintegral
   intro f hf
-  have hL : Measurable (lmulM a : Mt k r → Mt k r) := (lmulM_cont a).measurable
-  rw [lintegral_map hf hL]
+  rw [lintegral_map hf (lmulM_cont a).measurable]
   obtain ⟨G, hG, hFG⟩ := exists_G CWb z' (fun m => ∫⁻ h', f (mulM (m, h')) ∂μW') (FF_meas μW' f hf)
     (fun m h hh => FF_inv hW' f hf m h hh)
-  have hFG' : ∀ m ∈ UWb k r, (∫⁻ h', f (mulM (m, h')) ∂μW') = G (m *ᵥ z') := hFG
-  have h1 := nu_hyp CWb CW UF z z' hs hsu hW f hf G hG hFG' a ha
-  have h2 := nu_hyp CWb CW UF z z' hs hsu hW f hf G hG hFG' 1 hWb.one_mem
+  have h1 := nu_hyp CWb CW UF z z' hs hsu hW f hf G hG hFG a ha
+  have h2 := nu_hyp CWb CW UF z z' hs hsu hW f hf G hG hFG 1 (CWb k r).one_mem
   have hHI := HI k r z z' s μW hk hz hz' hT hT' hsec hW a ha
   have hav : Measurable fun v : Vc k r => a *ᵥ v :=
     (mvM_cont.comp (continuous_const.prodMk continuous_id)).measurable
-  rw [h1]
-  calc ∫⁻ v, G (a *ᵥ v) ∂(hypMeas k r z z' s μW)
-      = ∫⁻ v, G v ∂((hypMeas k r z z' s μW).map fun v => a *ᵥ v) := (lintegral_map hG hav).symm
-    _ = ∫⁻ v, G v ∂(hypMeas k r z z' s μW) := by rw [hHI]
-    _ = ∫⁻ v, G ((1 : Mat k r) *ᵥ v) ∂(hypMeas k r z z' s μW) := by simp only [Matrix.one_mulVec]
+  rw [h1, ← lintegral_map hG hav, hHI]
+  calc ∫⁻ v, G v ∂(hypMeas k r z z' s μW)
+      = ∫⁻ v, G ((1 : Mat k r) *ᵥ v) ∂(hypMeas k r z z' s μW) := by simp only [Matrix.one_mulVec]
     _ = ∫⁻ m, f (lmulM 1 m) ∂(nu z z' s μW μW') := h2.symm
     _ = ∫⁻ m, f m ∂(nu z z' s μW μW') := by
       congr 1

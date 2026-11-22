@@ -134,21 +134,16 @@ theorem DecoSet.dnAll_finite (P : ST) (d : DecoSet E n ST SG) : (d.dnAll P).Fini
   by_cases h : (d.1.dnN P).FG
   · exact (DecoSet.finite_fibre (ST := ST) (SG := SG) (d.1.dnN P) h).subset fun d' hd' => by
       have h1 : d'.1 = d.1.dn P (d'.1.f P) := hd'
-      have := congrArg Deco.N h1
-      exact this
+      exact congrArg Deco.N h1
   · have he : d.dnAll P = ∅ := by
       ext d'
       simp only [Set.mem_empty_iff_false, iff_false]
       intro hd'
       apply h
-      have h0 : d'.1 = d.1.dn P (d'.1.f P) := hd'
-      have h1 : d'.1.N = d.1.dnN P := by
-        have := congrArg Deco.N h0
-        exact this
+      have h1 : d'.1.N = d.1.dnN P := congrArg Deco.N hd'
       rw [← h1]
       exact d'.2.lat.fg
-    rw [he]
-    exact Set.finite_empty
+    simp [he]
 
 theorem DecoSet.upAll_finite (P : ST) (q : 𝓞 E) (d : DecoSet E n ST SG) : (d.upAll P q).Finite :=
   (d.trSet_finite P).biUnion fun d0 _ => DecoSet.upSet_finite d0 P q

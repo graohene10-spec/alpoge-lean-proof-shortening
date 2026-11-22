@@ -226,8 +226,7 @@ lemma omega_mul_ge {q n' : ℕ} (hq : 1 < q) (hn' : 1 ≤ n') :
     1 + (Nat.primeFactorsList n').length ≤ (Nat.primeFactorsList (q * n')).length := by
   rw [(Nat.perm_primeFactorsList_mul (by omega) (by omega)).length_eq, List.length_append]
   have : 0 < (Nat.primeFactorsList q).length := by
-    rw [List.length_pos_iff, Nat.primeFactorsList_ne_nil]
-    exact hq
+    simpa only [List.length_pos_iff, Nat.primeFactorsList_ne_nil] using hq
   omega
 
 lemma exists_max_above (E : Type) [Field E] [NumberField E] (I : Ideal (𝓞 E)) (p : ℕ) (hp : p.Prime)

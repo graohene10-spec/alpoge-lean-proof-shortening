@@ -43,15 +43,13 @@ theorem bge_proj (hP : PROJ K v p C0) (hD : DVRHyp v p) {S : Finset L} {th : ℤ
     (hF : F ∈ PolK K r d) {a : ℝ} (ha : bge v a F) :
     bge v (a - (r : ℝ) ^ 2 * lg p r (2 * ∑ i, d i)) (π F) := by
   rw [bge_iff] at ha ⊢
-  have hb := ((hP hD L sg r d S th).2 π hπ).2.2 F hF
-  have h2 := ha.trans hb
+  have h2 := ha.trans (((hP hD L sg r d S th).2 π hπ).2.2 F hF)
   generalize vBB v (π F) = x at h2 ⊢
   induction x using WithTop.recTopCoe with
   | top => exact le_top
   | coe x =>
     rw [← WithTop.coe_add, WithTop.coe_le_coe] at h2
-    rw [WithTop.coe_le_coe]
-    linarith
+    exact WithTop.coe_le_coe.mpr (by linarith)
 
 theorem prodProj (hP : PROJ K v p C0) (hD : DVRHyp v p) {ι : Type} (s : Finset ι)
     (S : ι → Finset L) (th : ι → ℤ)
@@ -142,11 +140,8 @@ theorem proj_keeps_letter (d : L → ℕ)
   have hmono : (monomial ζ (1 : K) : MvPolynomial (L × Fin r) K) ∈ PolK K r d := by
     rw [mem_PolK_iff]
     intro α hα k
-    have hαζ : α = ζ := by
-      by_contra hne
-      rw [MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial, if_neg (Ne.symm hne)] at hα
-      exact hα rfl
-    rw [hαζ]
+    have hαζ : ζ = α := by simpa [MvPolynomial.mem_support_iff, MvPolynomial.coeff_monomial] using hα
+    rw [← hαζ]
     exact hζ k
   have h := hcomm a _ hmono
   rw [euler_eq_dg, euler_eq_dg] at h
@@ -158,8 +153,7 @@ theorem proj_keeps_letter (d : L → ℕ)
     rw [MvPolynomial.smul_monomial, smul_eq_mul, mul_one]
   rw [hsm, map_smul, MvPolynomial.coeff_smul, smul_eq_mul] at h'
   have hne : (Pr (monomial ζ 1)).coeff ζ' ≠ 0 := by simpa using hζ'
-  have hc := mul_right_cancel₀ hne h'
-  exact_mod_cast hc.symm
+  exact_mod_cast (mul_right_cancel₀ hne h').symm
 
 end Torus
 

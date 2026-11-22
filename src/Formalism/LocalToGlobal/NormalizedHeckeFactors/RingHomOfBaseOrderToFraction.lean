@@ -207,9 +207,8 @@ def kEmb (D : D7) (i : D.ntw.Tw) (b : Bool) (t : D.what₂.Tau) : D.host.E →+*
 theorem embLL_embEL0 (D : D7) (t : D.what₂.Tau) (x : D.host.E) :
     D.what₂.embLL ((embEL0 D (D.host.sigmaOf ((D.eTau t : D.R.Psi) : D.R.GG) x) : ↥D.LL0) :
       D.what₂.LL) = embT D t x := by
-  have h := congrArg (fun f : D.host.E →+* ℂ =>
-    f (D.host.sigmaOf ((D.eTau t : D.R.Psi) : D.R.GG) x)) D.embE_φ₀
-  simpa [embEL0, embT, Host.emb] using h
+  simpa [embEL0, embT, Host.emb] using
+    congrArg (fun f : D.host.E →+* ℂ => f (D.host.sigmaOf ((D.eTau t : D.R.Psi) : D.R.GG) x)) D.embE_φ₀
 
 end NX
 
@@ -291,9 +290,7 @@ theorem NExpTied.psiU_ne_one {D : D7} (T : NExpTied D) (hr : 2 ≤ D.R.r) (i : D
   classical
   have : NeZero (D.host.g k) := ⟨(D.host.g_prime k).ne_zero⟩
   obtain ⟨θ, hθ, hψ⟩ := T.psiU_gen i b
-  have hu : tvAt (p := fun kv : (Σ k : Fin 2, D.nd.PlG k) => D.host.g kv.1) hr ⟨k, v⟩ ∈ D.nexp.U := by
-    rw [T.U_eq]; exact tvAt_mem hr _
-  refine ⟨⟨_, hu⟩, ?_⟩
+  refine ⟨⟨tvAt (p := fun kv : (Σ k : Fin 2, D.nd.PlG k) => D.host.g kv.1) hr ⟨k, v⟩, by rw [T.U_eq]; exact tvAt_mem hr _⟩, ?_⟩
   rw [hψ, stdVal_tvAt]
   exact char_one_ne (θ ⟨k, v⟩) (hθ hr ⟨k, v⟩)
 
@@ -301,8 +298,7 @@ theorem NExpTied.U_ne_bot {D : D7} (T : NExpTied D) (hr : 2 ≤ D.R.r) (i : D.nt
     D.nexp.U ≠ ⊥ := by
   intro h
   obtain ⟨u, hu⟩ := T.psiU_ne_one hr i true k v
-  have : u = 1 := Subtype.ext (by simpa [h] using u.2)
-  exact hu (by rw [this, map_one])
+  exact hu (by rw [show u = 1 from Subtype.ext (by simpa [h] using u.2), map_one])
 
 theorem NX.isStdGeneric_inv {ι : Type} [Fintype ι] {p : ι → ℕ} {r : ℕ} {K : Type} [Field K] {S : Subgroup (GProd p r)}
     (ψ ψ' : S →* Kˣ) (h : ∀ u, ψ' u = (ψ u)⁻¹) (hg : IsStdGeneric p r ψ) : IsStdGeneric p r ψ' := by
@@ -314,12 +310,10 @@ theorem NExpTied.delU_ne_one {D : D7} (T : NExpTied D) {i : D.ntw.Tw} {Q : Finse
     (hQ : NX.AdmQ D i Q M) (hM : 1 ≤ M) {P : PlE D.host} (hP : P ∈ Q)
     (A : ValuationSubring D.nd.Om) (hA : IsPlaceOver A P) : D.nexp.delU i Q M ≠ 1 := by
   intro h1
-  have hl : (D.ntw.l i).Prime := (D.ntw.lPrime i).out
-  have h2 : 1 < D.ntw.l i ^ M := Nat.one_lt_pow (by omega) hl.one_lt
-  have : Fact (1 < D.ntw.l i ^ M) := ⟨h2⟩
+  have : Fact (1 < D.ntw.l i ^ M) :=
+    ⟨Nat.one_lt_pow (by omega) (D.ntw.lPrime i).out.one_lt⟩
   obtain ⟨σ, hσ⟩ := (T.delU_ine i Q M hQ P hP).1 A hA 1
-  rw [h1] at hσ
-  simp at hσ
+  simp [h1] at hσ
 
 theorem NExpTied.delU_fac {D : D7} (T : NExpTied D) (i : D.ntw.Tw) (Q : Finset (PlE D.host)) (M : ℕ) (hQ : TWSet D i Q) :
     ∃ f : D.ntw.RCG i Q →* Multiplicative (DelQM D.host (D.ntw.l i) Q M),
@@ -329,11 +323,9 @@ theorem NExpTied.delU_fac {D : D7} (T : NExpTied D) (i : D.ntw.Tw) (Q : Finset (
   obtain ⟨f, hf⟩ := D.ntw.art_univ i Q (fun v hv => (hQ v hv).2)
     (Multiplicative (DelQM D.host (D.ntw.l i) Q M))
     (fun x => ⟨M, by
-      apply Multiplicative.toAdd.injective
-      funext q
+      refine Multiplicative.toAdd.injective (funext fun q => ?_)
       simp [toAdd_pow, nsmul_eq_mul]⟩)
-    (D.nexp.delU i Q M) (T.delU_cont i Q M) (D.nexp.delU_anti i Q M)
-    (fun v hv A hA σ hσ => D.nexp.delU_unr i Q M v hv A hA σ hσ)
+    (D.nexp.delU i Q M) (T.delU_cont i Q M) (D.nexp.delU_anti i Q M) (D.nexp.delU_unr i Q M)
   exact ⟨f, hf.symm⟩
 
 namespace NX

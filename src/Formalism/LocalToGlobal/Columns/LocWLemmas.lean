@@ -297,14 +297,8 @@ theorem length_map_equiv {R M : Type} [CommRing R] [AddCommGroup M] [Module R M]
     Module.length R (X ⧸ Y.comap X.subtype) := by
   refine (LinearEquiv.length_eq (Submodule.Quotient.equiv _ _ (e.submoduleMap X) ?_)).symm
   ext ⟨y, hy⟩
-  constructor
-  · rintro ⟨x, hx, hxy⟩
-    exact ⟨x, hx, congrArg Subtype.val hxy⟩
-  · rintro ⟨z, hz, hzy⟩
-    obtain ⟨x, hx, hxy⟩ := hy
-    have hxz : x = z := e.injective (hxy.trans hzy.symm)
-    subst hxz
-    exact ⟨⟨x, hx⟩, hz, Subtype.ext hxy⟩
+  obtain ⟨x, hx, rfl⟩ := hy
+  simp [Submodule.mem_comap]
 
 section Local
 variable {V : Type} [AddCommGroup V] [Module K V]

@@ -49,10 +49,8 @@ def tauF : Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.AF I.F ⊗[
 
 theorem tauF_tmul (a : Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.AF I.F) (x : I.E) :
     tauF I (a ⊗ₜ[I.F] x) = x ⊗ₜ[I.F] a.2 := by
-  first
-    | (simp [tauF, Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.sndA, Algebra.TensorProduct.tmul_mul_tmul]; done)
-    | (show (1 : I.E) ⊗ₜ[I.F] a.2 * x ⊗ₜ[I.F] (1 : Formalism.MainNotions.S.Af I.F) = _
-       rw [Algebra.TensorProduct.tmul_mul_tmul, one_mul, mul_one])
+  show ((1 : I.E) ⊗ₜ[I.F] a.2) * (x ⊗ₜ[I.F] (1 : Formalism.MainNotions.S.Af I.F)) = _
+  rw [Algebra.TensorProduct.tmul_mul_tmul, one_mul, mul_one]
 
 def ofHAInf (h : HAd I) (v : InfinitePlace I.F) : Matrix (Fin I.n) (Fin I.n) ℂ :=
   (I.P v)⁻¹ * (hmat I h).map (thetaV I v) * I.P v
@@ -102,16 +100,13 @@ theorem toHA_isBridge (hb : AdBridgeIso I) : IsBridge I (toHA I hb) := hb.choose
 
 theorem thetaV_inclR (v : InfinitePlace I.F) (x : I.E) :
     thetaV I v (Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.AF I.F) x) = I.φ v x := by
-  have h : Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.AF I.F) x =
-      (1 : Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.AF I.F) ⊗ₜ[I.F] x := rfl
-  rw [h, thetaV_tmul, map_one, one_mul]
+  rw [show Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.AF I.F) x = (1 : Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.AF I.F) ⊗ₜ[I.F] x from rfl, thetaV_tmul, map_one, one_mul]
 
 theorem tauF_inclR (x : I.E) :
     tauF I (Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.AF I.F) x) =
       Formalism.UG.inclE (F := I.F) (Formalism.MainNotions.S.Af I.F) x := by
-  have h : Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.inclR (Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.AF I.F) x =
-      (1 : Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.AF I.F) ⊗ₜ[I.F] x := rfl
-  rw [h, tauF_tmul]
+  change tauF I ((1 : Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.AF I.F) ⊗ₜ[I.F] x) = Formalism.UG.inclE (F := I.F) (Formalism.MainNotions.S.Af I.F) x
+  rw [tauF_tmul]
   rfl
 
 theorem thetaV_sigR (v : InfinitePlace I.F) (x : Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.AF I.F ⊗[I.F] I.E) :
@@ -203,10 +198,8 @@ theorem ofHAInf_mem (h : HAd I) (v : InfinitePlace I.F) : Formalism.REAL.inUJ (I
     exact thetaV_inclR I v _
   have hA : ((hmat I h).map (thetaV I v))ᴴ * I.J.map (I.φ v) * (hmat I h).map (thetaV I v) =
       I.J.map (I.φ v) := by
-    have h3 := congrArg (fun X => X.map (thetaV I v)) hM
-    simp only [Matrix.map_mul] at h3
-    rw [h1, h2] at h3
-    exact h3
+    simpa only [Matrix.map_mul, h1, h2] using
+      congrArg (fun X => X.map (thetaV I v)) hM
   have hPu : IsUnit (I.P v).det := (Matrix.isUnit_iff_isUnit_det _).mp (I.P_unit v)
   have hPP : I.P v * (I.P v)⁻¹ = 1 := Matrix.mul_nonsing_inv _ hPu
   have hPPh : ((I.P v)⁻¹)ᴴ * (I.P v)ᴴ = 1 := by
@@ -228,9 +221,7 @@ private theorem tauF_sigR_comm (x : Formalism.MainNotions.GlobalTheoryTheory.Gen
   induction x using TensorProduct.induction_on with
   | zero => simp
   | tmul a y =>
-    have hs : Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.sigR (Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.AF I.F) I.cm.sig (a ⊗ₜ[I.F] y) =
-        a ⊗ₜ[I.F] I.cm.sig y := rfl
-    rw [hs, tauF_tmul, tauF_tmul]
+    rw [show Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.sigR (Formalism.MainNotions.GlobalTheoryTheory.GenusMassVolumes.AF I.F) I.cm.sig (a ⊗ₜ[I.F] y) = a ⊗ₜ[I.F] I.cm.sig y from rfl, tauF_tmul, tauF_tmul]
     rfl
   | add a b ha hb => simp only [map_add, ha, hb]
 

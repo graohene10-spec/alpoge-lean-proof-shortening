@@ -135,8 +135,7 @@ theorem psi_ne_zero (ψ : AddChar K ℂ) (a : K) : ψ a ≠ 0 := by
 
 theorem amp_const (Λ₁ : AddSubgroup K) {m : ℕ} (A : (Fin m → K) → ℂ) (hA : LatInvN Λ₁ A) (z : K)
     (x : Fin m → K) (hx : ∀ k, x k - z ∈ Λ₁) : A x = A (fun _ => z) := by
-  have := hA (fun _ => z) (fun k => x k - z) hx
-  rw [← this]; congr 1; ext k; simp
+  simpa only [show (fun _ => z) + (fun k => x k - z) = x by ext k; simp] using hA (fun _ => z) (fun k => x k - z) hx
 
 open Classical in
 

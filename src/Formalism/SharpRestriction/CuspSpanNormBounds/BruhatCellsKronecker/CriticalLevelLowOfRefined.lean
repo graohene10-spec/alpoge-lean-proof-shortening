@@ -383,21 +383,19 @@ variable {eps : ℝ} (Fm : FamP eps)
 
 theorem tf_ev_CL (C : ℝ) : ∃ x0 : ℝ, ∀ x ≥ x0, Fm.x1 < x → ∀ i : Fm.Ix x,
     C * (Fm.L x i).sc.L ≤ ((Fm.D x i).R.m : ℝ) - 1 := by
-  have he := eps_pos Fm
-  have hl := eps_lt Fm
-  obtain ⟨a, ha1, ha⟩ := ev_rpow (show (0 : ℝ) < 1 / 4 - eps by linarith) (|C| + 1)
+  obtain ⟨a, ha1, ha⟩ := ev_rpow (show (0 : ℝ) < 1 / 4 - eps by linarith [eps_lt Fm]) (|C| + 1)
   refine ⟨a, fun x hx hx1 i => ?_⟩
   have h1 : 1 < x := one_lt_of Fm hx1
-  have h0 : 0 < x := by linarith
   rw [sc_L Fm hx1]
   have hm := m_ge Fm hx1 i
-  have hL : 1 ≤ x ^ eps := Real.one_le_rpow h1.le he.le
+  have hL : 1 ≤ x ^ eps := Real.one_le_rpow h1.le (eps_pos Fm).le
   have hs : x ^ ((1 : ℝ) / 4) = x ^ eps * x ^ ((1 : ℝ) / 4 - eps) := by
-    rw [← Real.rpow_add h0]; congr 1; ring
+    rw [← Real.rpow_add (by linarith)]; congr 1; ring
   have h2 := ha x hx
-  have h3 : C ≤ |C| := le_abs_self C
-  have h4 : x ^ eps * (|C| + 1) ≤ x ^ ((1 : ℝ) / 4) := by rw [hs]; gcongr
-  nlinarith [abs_nonneg C]
+  have h4 : x ^ eps * (|C| + 1) ≤ x ^ ((1 : ℝ) / 4) := by
+    rw [hs]; exact mul_le_mul_of_nonneg_left h2 (le_trans zero_le_one hL)
+  have hCP : C * x ^ eps ≤ |C| * x ^ eps := mul_le_mul_of_nonneg_right (le_abs_self C) (le_trans zero_le_one hL)
+  nlinarith
 
 theorem TFrame_of_sizes (Cg cb Cu cT CT C0 C3 : ℝ) (hCl : 4 ≤ sCl Fm)
     (hA : OwnEv Fm fun C' Cl x i => Hyp0 (Fm.D x i) (Fm.L x i) C' Cl Cg cb Cu cT CT C0 → cTvA (Fm.D x i))

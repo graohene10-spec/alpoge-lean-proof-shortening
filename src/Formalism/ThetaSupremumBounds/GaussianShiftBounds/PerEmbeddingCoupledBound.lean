@@ -16,8 +16,7 @@ namespace CB
 theorem card_sigma_le {AA : Type} [Fintype AA] (Cl : AA → Type) [∀ a, Fintype (Cl a)] (h : ℝ)
     (hh : ∀ a, (Fintype.card (Cl a) : ℝ) ≤ h) :
     (Fintype.card (Σ a, Cl a) : ℝ) ≤ (Fintype.card AA : ℝ) * h := by
-  rw [Fintype.card_sigma]
-  push_cast
+  rw [Fintype.card_sigma, Nat.cast_sum]
   calc (∑ a, (Fintype.card (Cl a) : ℝ)) ≤ ∑ _a : AA, h := Finset.sum_le_sum (fun a _ => hh a)
     _ = (Fintype.card AA : ℝ) * h := by rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
 
@@ -82,11 +81,6 @@ open CB
 
 theorem sharp_norm : SharpNorm := by
   intro AA AA' _ _ Cl Cl' _ _ A B _ _ _ _ γ γ' ε T h h' tmax hγ hγ' hε hT ht hh hh'
-  have hPQ : (Fintype.card (Σ a, Cl a) : ℝ) * (Fintype.card (Σ b, Cl' b) : ℝ) * tmax ≤
-      cbSq (Fintype.card AA) (Fintype.card AA') h h' tmax :=
-    const_le Cl Cl' h h' tmax ht hh hh'
-  have hcb0 : 0 ≤ cbSq (Fintype.card AA) (Fintype.card AA') h h' tmax :=
-    cbSq_nonneg Cl Cl' h h' tmax ht hh hh'
   have hsumγ : ∑ p, γ p ≤ (Fintype.card (Σ a, Cl a) : ℝ) := by
     calc ∑ p, γ p ≤ ∑ _p : (Σ a, Cl a), (1 : ℝ) := Finset.sum_le_sum (fun p _ => (hγ p).2)
       _ = (Fintype.card (Σ a, Cl a) : ℝ) := by simp
@@ -128,10 +122,10 @@ theorem sharp_norm : SharpNorm := by
             ∑ p, γ p * ‖G p‖ ^ 2 := by
           rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
           ring
-      _ ≤ _ := mul_le_mul_of_nonneg_right hPQ hS
+      _ ≤ _ := mul_le_mul_of_nonneg_right (const_le Cl Cl' h h' tmax ht hh hh') hS
   refine ⟨bound, ?_⟩
   unfold liftNormSq
-  exact csInf_le ⟨0, fun X hX => hX.1⟩ ⟨hcb0, bound⟩
+  exact csInf_le ⟨0, fun X hX => hX.1⟩ ⟨cbSq_nonneg Cl Cl' h h' tmax ht hh hh', bound⟩
 
 theorem lift_sharp_bound : LiftSharpBound := by
   intro Pl ι AA AA' _ _ _ _ Cl Cl' _ _ A B _ _ _ _ _ r ν n s Th c Rc lam Om S γ γ' ε h h'
@@ -215,10 +209,7 @@ theorem extra_le (a b f m N L La logg C8 : ℝ) (ha : a ≤ f * N ^ 2 * logg) (h
   have hN : 0 ≤ f * N ^ 2 := mul_nonneg hf (sq_nonneg N)
   have h1 : f * N ^ 2 * logg ≤ f * N ^ 2 * (C8 * La) :=
     mul_le_mul_of_nonneg_left (le_trans hg (mul_le_mul_of_nonneg_left hLLa p8)) hN
-  have hm3 : 0 ≤ m ^ 3 := pow_nonneg (le_trans zero_le_one hm) 3
-  have h2 : 0 ≤ C8 * (f * m ^ 3 * N ^ 2 * L) :=
-    mul_nonneg p8 (mul_nonneg (mul_nonneg (mul_nonneg hf hm3) (sq_nonneg N)) hL)
-  nlinarith [h1, h2, ha, hb]
+  nlinarith [h1, ha, hb, mul_nonneg p8 (mul_nonneg (mul_nonneg (mul_nonneg hf (pow_nonneg (le_trans zero_le_one hm) 3)) (sq_nonneg N)) hL)]
 
 end CB
 

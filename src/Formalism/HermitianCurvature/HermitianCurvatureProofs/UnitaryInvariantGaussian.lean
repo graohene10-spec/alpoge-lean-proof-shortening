@@ -28,10 +28,9 @@ theorem volume_unitary (d : ℕ) (W : Matrix (Fin d) (Fin d) ℂ) (hW : W ∈ Ma
       normSq_det_unitary d W hW]
   have h := Measure.map_linearMap_addHaar_eq_smul_addHaar (volume : Measure (Fin d → ℂ))
     (f := (Matrix.toLin' W).restrictScalars ℝ) (by rw [hdet]; exact one_ne_zero)
-  rw [hdet] at h
   have hf : (fun x : Fin d → ℂ => W *ᵥ x) = ⇑((Matrix.toLin' W).restrictScalars ℝ) := by
     ext x; simp
-  rw [hf, h]; simp
+  rw [hf, h, hdet]; simp
 
 theorem measurable_mulVec (d : ℕ) (W : Matrix (Fin d) (Fin d) ℂ) :
     Measurable (fun x : Fin d → ℂ => W *ᵥ x) := by

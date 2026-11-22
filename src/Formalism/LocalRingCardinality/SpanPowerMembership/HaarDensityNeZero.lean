@@ -60,11 +60,7 @@ theorem exists_of_mem (h : MM P Q) (hh : hᴴ * J * h = J) : ∃ g : UpqT P Q, U
 
 theorem mat_range : Set.range (UpqT.mat : UpqT P Q → MM P Q) = {h | hᴴ * J * h = J} := by
   ext h
-  constructor
-  · rintro ⟨g, rfl⟩
-    exact mat_mem P Q g
-  · intro hh
-    exact exists_of_mem P Q h hh
+  exact ⟨fun ⟨g, hg⟩ => hg ▸ mat_mem P Q g, exists_of_mem P Q h⟩
 
 theorem mat_closedEmbedding : IsClosedEmbedding (UpqT.mat : UpqT P Q → MM P Q) := by
   refine ⟨mat_embedding P Q, ?_⟩
@@ -105,15 +101,13 @@ theorem exp_mem (X : MM P Q) (hX : X ∈ lieU P Q) : (exp X)ᴴ * J * exp X = J 
   simp [Matrix.mul_assoc, J_sq, exp_neg_mul']
 
 theorem exp_theta (Z : MM P Q) (hZ : (exp Z)ᴴ * J * exp Z = J) : exp (J * (-Zᴴ) * J) = exp Z := by
-  have hc : (exp Z)ᴴ = exp Zᴴ := (Matrix.exp_conjTranspose Z).symm
-  rw [hc] at hZ
+  rw [← Matrix.exp_conjTranspose Z] at hZ
   have h1 : J * exp Z = exp (-Zᴴ) * J := by
     calc J * exp Z = exp (-Zᴴ) * exp Zᴴ * J * exp Z := by rw [exp_neg_mul', one_mul]
       _ = exp (-Zᴴ) * (exp Zᴴ * J * exp Z) := by simp only [mul_assoc]
       _ = exp (-Zᴴ) * J := by rw [hZ]
   rw [exp_conjJ]
-  calc J * exp (-Zᴴ) * J = J * (exp (-Zᴴ) * J) := by rw [mul_assoc]
-    _ = J * (J * exp Z) := by rw [h1]
+  calc J * exp (-Zᴴ) * J = J * (J * exp Z) := by rw [mul_assoc, ← h1]
     _ = exp Z := by rw [← mul_assoc, J_sq, one_mul]
 
 def chart : Chart (lieU P Q) (UpqT P Q) where
@@ -163,8 +157,7 @@ theorem omegaDensity_smul {μ : Measure (UpqT P Q)} {c : ℝ≥0∞} (h : OmegaD
     (ht : t ≠ ⊤) : OmegaDensity (t • μ) (t * c) := by
   obtain ⟨lam, hl, hc⟩ := h
   refine ⟨lam, hl, ?_⟩
-  refine (ENNReal.Tendsto.const_mul hc (Or.inr ht)).congr (fun r => ?_)
-  rw [Measure.smul_apply, smul_eq_mul, mul_div_assoc]
+  simpa [Measure.smul_apply, smul_eq_mul, mul_div_assoc] using ENNReal.Tendsto.const_mul hc (Or.inr ht)
 
 def mu0 : Measure (UpqT P Q) := Measure.haar
 

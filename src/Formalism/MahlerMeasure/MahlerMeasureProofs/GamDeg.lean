@@ -169,14 +169,12 @@ private theorem coeff_pderiv_lemma_7 (v : σ) (b : MvPolynomial σ ℚ_[p]) (m :
     rw [pderiv_monomial, coeff_monomial, coeff_monomial]
     by_cases h : t = m + Finsupp.single v 1
     · subst h
-      rw [if_pos (add_tsub_cancel_right m _), if_pos rfl]
-      simp
+      simp [add_tsub_cancel_right]
     · rw [if_neg h, zero_mul]
       split_ifs with h2
       · have ht : t v = 0 := by
           by_contra hne
-          apply h
-          rw [← h2, tsub_add_cancel_of_le (Finsupp.single_le_iff.2 (Nat.one_le_iff_ne_zero.2 hne))]
+          exact h (by rw [← h2, tsub_add_cancel_of_le (Finsupp.single_le_iff.2 (Nat.one_le_iff_ne_zero.2 hne))])
         simp [ht]
       · rfl
   · rename_i f g hf hg
@@ -356,11 +354,8 @@ private theorem X_mul_pderiv_monomial_lemma_3 (v : σ) (t : σ →₀ ℕ) (c : 
   · simp [ht]
   · rw [MvPolynomial.X, monomial_mul, one_mul]
     have h1 : Finsupp.single v 1 + (t - Finsupp.single v 1) = t := by
-      ext x
-      simp only [Finsupp.add_apply, Finsupp.tsub_apply, Finsupp.single_apply]
-      split_ifs with hx
-      · subst hx; omega
-      · omega
+      rw [add_comm]
+      exact tsub_add_cancel_of_le (Finsupp.single_le_iff.2 (Nat.one_le_iff_ne_zero.2 ht))
     rw [h1]
 
 private theorem coeff_X_mul_pderiv_lemma_4 (v : σ) (g : MvPolynomial σ k) (s : σ →₀ ℕ) :
@@ -1038,9 +1033,7 @@ end
 theorem alg_step {K : Type} [Field K] (a b c G Den I I' : K) (hG : G ≠ 0) (hD : Den ≠ 0)
     (hI : I' = I / Den) : a * (b * (c * (G * I))) / (G * Den) = a * b * c * I' := by
   subst hI
-  first
-  | (field_simp; ring)
-  | field_simp
+  field_simp
 
 section
 variable (p : ℕ) [Fact p.Prime]

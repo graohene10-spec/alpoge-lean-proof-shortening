@@ -60,11 +60,8 @@ theorem exists_lat_le {ι : Type} (I : Finset ι) (M : ι → AddSubgroup K)
 theorem cut_finite (R : Subring K) (hRo : IsOpen (R : Set K)) {S : Set K} (hS : IsCompact S)
     (cr : K ⧸ R.toAddSubgroup → Kˣ) (hcr : IsCr R cr) : {x | (cr x : K) ∈ S}.Finite := by
   have : DiscreteTopology (K ⧸ R.toAddSubgroup) := QuotientAddGroup.discreteTopology hRo
-  have h1 : IsCompact ((QuotientAddGroup.mk : K → K ⧸ R.toAddSubgroup) '' S) :=
-    hS.image QuotientAddGroup.continuous_mk
-  refine h1.finite_of_discrete.subset ?_
-  intro x hx
-  exact ⟨cr x, hx, hcr x⟩
+  exact (hS.image QuotientAddGroup.continuous_mk).finite_of_discrete.subset
+    fun x hx => ⟨cr x, hx, hcr x⟩
 
 theorem cutSet_compact (m : ℕ) {Om : Set K} (hOm : IsCompact Om) (t : Kˣ) :
     IsCompact (cutSet m Om t) := by
@@ -185,8 +182,7 @@ theorem mm_root (h : MM R) (z : Kˣ) (n : ℕ) (hz : modK R (z : K) ^ (n + 1) = 
   (pow_eq_one_iff_of_nonneg (h z z).1.le (Nat.succ_ne_zero n)).1 hz
 
 theorem mm_root_one (h : MM R) (z : Kˣ) (n : ℕ) (hz : z ^ (n + 1) = 1) : modK R (z : K) = 1 := by
-  apply mm_root h z n
-  rw [← mm_pow h, ← Units.val_pow_eq_pow_val, hz, Units.val_one, mm_one h]
+  exact mm_root h z n (by simpa [← mm_pow h, ← Units.val_pow_eq_pow_val, hz] using mm_one h)
 
 theorem half_sq (A : ℝ) (hA : 0 < A) (m : ℕ) :
     A ^ ((m : ℝ) ^ 2 / 2) * A ^ ((m : ℝ) ^ 2 / 2) = A ^ (m ^ 2) := by
@@ -471,8 +467,7 @@ theorem cut_mem [TopologicalSpace K] (m : ℕ) (Om : Set K) (hOm : IsOmega (m + 
       have hu : u ^ (m + 1) = (-t) ^ m * c := Units.ext (by push_cast; exact hzc)
       rw [mul_pow, inv_pow, hz, hu, mul_inv_cancel]
     rw [← Units.val_pow_eq_pow_val, h2, Units.val_one]
-  have h3 := hOm.2.2.2 u hz₀ _ h1
-  simpa using h3
+  simpa using hOm.2.2.2 u hz₀ _ h1
 
 theorem shift_ratio (t t₁ t₂ : Kˣ) (σ σ' : K) (h1 : IsShift t t₁ σ) (h2 : IsShift t t₂ σ') :
     ((t₂ * t₁⁻¹ : Kˣ) : K) = 1 + (σ - σ') * (t₂ : K) := by

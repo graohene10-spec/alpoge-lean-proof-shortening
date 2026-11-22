@@ -122,8 +122,7 @@ theorem Bd.sub {k : ℕ} {x y : K} (hx : Bd R ϖ k x) (hy : Bd R ϖ k y) : Bd R 
   rw [sub_eq_add_neg]; exact hx.add hy.neg
 
 theorem Bd.mul {k l : ℕ} {x y : K} (hx : Bd R ϖ k x) (hy : Bd R ϖ l y) : Bd R ϖ (k + l) (x * y) := by
-  have : (ϖ : K) ^ (k + l) * (x * y) = ((ϖ : K) ^ k * x) * ((ϖ : K) ^ l * y) := by ring
-  unfold Bd; rw [this]; exact R.mul_mem hx hy
+  unfold Bd; rw [pow_add, mul_mul_mul_comm]; exact R.mul_mem hx hy
 
 theorem Bd.mul_mem {k : ℕ} {x y : K} (hx : Bd R ϖ k x) (hy : y ∈ R) : Bd R ϖ k (x * y) := by
   unfold Bd; rw [← mul_assoc]; exact R.mul_mem hx hy
@@ -139,9 +138,7 @@ theorem Bd.prod {ι : Type} {k : ℕ} (S : Finset ι) (f : ι → K) (h : ∀ i 
   unfold Bd; rw [this]; exact R.prod_mem h
 
 theorem Bd.pow {k : ℕ} {x : K} (hx : Bd R ϖ k x) (n : ℕ) : Bd R ϖ (n * k) (x ^ n) := by
-  have : (ϖ : K) ^ (n * k) * x ^ n = ((ϖ : K) ^ k * x) ^ n := by
-    rw [mul_pow, ← pow_mul, mul_comm k]
-  unfold Bd; rw [this]; exact R.pow_mem hx n
+  simpa [Bd, mul_pow, ← pow_mul, mul_comm k] using R.pow_mem hx n
 
 theorem sm_zero_iff {x : K} : Sm R ϖ 0 x ↔ x ∈ R := by
   constructor
@@ -1066,9 +1063,7 @@ theorem st_pt_smul (s : List ℕ) (t : ℕ → Kˣ) (π : Kˣ) :
     pt s (fun b => π * t b) = (π : K) • pt s t := by
   ext a b
   simp only [pt, Matrix.smul_apply, smul_eq_mul]
-  split_ifs
-  · simp
-  · simp
+  split_ifs <;> simp
 
 theorem st_lowW_smul (s : List ℕ) (t : ℕ → Kˣ) (π : Kˣ) :
     lowW K s (fun b => π * t b) = lowW K s t := by
@@ -2450,18 +2445,14 @@ variable {K : Type} [CommRing K] [TopologicalSpace K] [IsTopologicalRing K] {R :
 
 theorem pw_psi_ne (ψ : AddChar K ℂ) (x : K) : ψ x ≠ 0 := by
   intro h
-  have h1 : ψ x * ψ (-x) = 1 := by rw [← AddChar.map_add_eq_mul]; simp
-  rw [h, zero_mul] at h1
-  exact zero_ne_one h1
+  exact zero_ne_one (show (0 : ℂ) = 1 by simpa [h] using (ψ.map_add_eq_mul x (-x)).symm)
 
 theorem pw_mul_finsum {α : Type} (c : ℂ) (f : α → ℂ) : ∑ᶠ i, c * f i = c * ∑ᶠ i, f i := by
   simpa [smul_eq_mul] using (smul_finsum c f).symm
 
 theorem pw_isUnit_prod {m : ℕ} (x : Fin m → K) (h : ∀ k, IsUnit (x k)) : IsUnit (∏ k, x k) := by
   choose u hu using h
-  have : ∏ k, x k = ((∏ k, u k : Kˣ) : K) := by
-    rw [Units.coe_prod]; exact Finset.prod_congr rfl fun k _ => (hu k).symm
-  rw [this]; exact Units.isUnit _
+  simpa [Units.coe_prod, hu] using Units.isUnit (∏ k, u k)
 
 theorem pw_term_inv (hD : LocalDatum K R ψ) {m : ℕ} (Φ : ∀ n : ℕ, Matrix (Fin n) (Fin n) K → ℂ)
     (hΦ : PhiHyp R (m + 1) L₀ Λ₀ Q Φ) (t c : K) (u : Matrix (Fin (m + 1)) (Fin (m + 1)) K) (s : K)
@@ -2764,8 +2755,7 @@ theorem fa_ee_inj {m : ℕ} : Function.Injective (ee : Fin m ⊕ Pr (m + 1) → 
         exact h.2
 
 theorem fa_ee_bij {m : ℕ} : Function.Bijective (ee : Fin m ⊕ Pr (m + 1) → Pr (m + 1) ⊕ Fin m) := by
-  rw [Fintype.bijective_iff_injective_and_card]
-  exact ⟨fa_ee_inj, by simp [add_comm]⟩
+  exact (Fintype.bijective_iff_injective_and_card ee).2 ⟨fa_ee_inj, by simp [add_comm]⟩
 
 theorem fa_Hm_mul {m : ℕ} (t c : K) (ξ : Fin m → K) (u r : Matrix (Fin (m + 1)) (Fin (m + 1)) K)
     (hr : IsUpUni r) : Hm t c ξ (u * r) = Hm t c ξ u * r := by

@@ -15,9 +15,7 @@ def ladjG : Matrix (Fin S.rank) (Fin S.rank) E := fun i k => S.hT (S.frame i) (S
 theorem ladj_ext (y : S.V) (h : ∀ i, S.hT (S.frame i) y = 0) : y = 0 := by
   apply S.nondeg.2 y
   intro x
-  have : S.hT.flip y = 0 := S.frame.ext (fun i => by simpa using h i)
-  have h2 := LinearMap.congr_fun this x
-  simpa using h2
+  simpa using LinearMap.congr_fun (S.frame.ext (fun i => by simpa using h i) : S.hT.flip y = 0) x
 
 theorem ladj_det : (ladjG S).det ≠ 0 := by
   intro hdet
@@ -60,10 +58,7 @@ theorem ladj_frame (B : S.V →ₗ[E] S.V) (l : Fin S.rank) (y : S.V) :
 
 theorem ladj_adj (B : S.V →ₗ[E] S.V) : LAdj S B (ladjOp S B) := by
   intro x y
-  have : (S.hT.flip y).comp B = S.hT.flip (ladjOp S B y) :=
-    S.frame.ext (fun i => by simpa using (ladj_frame S B i y).symm)
-  have h2 := LinearMap.congr_fun this x
-  simpa using h2
+  simpa using LinearMap.congr_fun (show (S.hT.flip y).comp B = S.hT.flip (ladjOp S B y) from S.frame.ext (fun i => by simpa using (ladj_frame S B i y).symm)) x
 
 end
 

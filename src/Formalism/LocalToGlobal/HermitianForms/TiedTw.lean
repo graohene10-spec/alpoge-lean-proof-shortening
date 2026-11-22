@@ -18,9 +18,7 @@ theorem lam_tw (Tw : TwForms D) (u : D.what₂.Word) (μ : D.what₂.Tup) (j : �
   funext τ
   have h : ((Tw.fm u μ).lam j τ).w = ((D.fm u).lam j τ).w := by
     funext i
-    have h1 := (Tw.fm u μ).lam_eq j hj τ i
-    have h2 := (D.fm u).lam_eq j hj τ i
-    exact_mod_cast h1.trans h2.symm
+    exact_mod_cast ((Tw.fm u μ).lam_eq j hj τ i).trans ((D.fm u).lam_eq j hj τ i).symm
   cases h1 : (Tw.fm u μ).lam j τ
   cases h2 : (D.fm u).lam j τ
   simp only [h1, h2] at h

@@ -700,8 +700,7 @@ private lemma gl2a4_count_core {C₀ Cr cr c : ℝ} (hC₀ : 0 < C₀) (hCr : 0 
   have hE : (4 * (m:ℝ)) ^ (6:ℝ) ≤ X ^ ((1:ℝ) / 20) :=
     gl2a4_rpow_le hB0 hX (by linarith)
   have hP6 : (4 * (m:ℝ)) ^ (-6:ℝ) * (4 * (m:ℝ)) ^ (6:ℝ) = 1 := by
-    rw [Real.rpow_neg hB0.le]
-    exact inv_mul_cancel₀ (Real.rpow_pos_of_pos hB0 _).ne'
+    rw [← Real.rpow_add hB0, show (-6 : ℝ) + 6 = 0 by norm_num, Real.rpow_zero]
   have hP6pos : 0 < (4 * (m:ℝ)) ^ (-6:ℝ) := Real.rpow_pos_of_pos hB0 _
   have hEpos : 0 < X ^ ((1:ℝ) / 20) := Real.rpow_pos_of_pos hX _
   have hFpos : 0 < X ^ ((9:ℝ) / 10) := Real.rpow_pos_of_pos hX _

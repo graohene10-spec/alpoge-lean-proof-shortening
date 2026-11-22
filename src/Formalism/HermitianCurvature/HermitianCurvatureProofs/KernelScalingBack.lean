@@ -132,9 +132,7 @@ def fm (p : lowW K S T × upUniG K S.sum) : lowW K S (T * c) × upUniG K S.sum :
 theorem fm_surj : Function.Surjective (fm S T c) := by
   rintro ⟨⟨v, hv⟩, ⟨u, hu⟩⟩
   refine ⟨(⟨v, (mem_lowW_scale_iff S T c).1 hv⟩, ⟨DG (dg S c) * u * (DG (dg S c))⁻¹, ?_⟩), ?_⟩
-  · have : IsUpUni ((cj (dg S c) (DG (dg S c) * u * (DG (dg S c))⁻¹) : GL (Fin S.sum) K) :
-        Matrix (Fin S.sum) (Fin S.sum) K) := by rw [cj_back]; exact hu
-    exact (isUpUni_cj _ _).1 this
+  · exact (isUpUni_cj (dg S c) (DG (dg S c) * u * (DG (dg S c))⁻¹)).1 (by rw [cj_back]; exact hu)
   · unfold fm
     simp only [cj_back]
 
@@ -453,10 +451,8 @@ theorem det_addBlock (h : Point K) (s : ℕ) : ∃ c0 : Kˣ, ∀ z : Kˣ,
     (pt (addBlock h s z).1 (addBlock h s z).2).det = ((c0 * z ^ s : Kˣ) : K) := by
   obtain ⟨e, he⟩ := det_pt_eq (K := K) (h.1 ++ [s])
   refine ⟨(∏ a : Fin h.1.sum, h.2 (blk h.1 a)) * e, fun z => ?_⟩
-  have h1 : (pt (addBlock h s z).1 (addBlock h s z).2).det =
-      (∏ a : Fin (addBlock h s z).1.sum,
-        (((addBlock h s z).2 (blk (addBlock h s z).1 a) : Kˣ) : K)) * (e : K) := he _
-  rw [h1, A5x5.prod_addBlock]
+  rw [show h.1 ++ [s] = (addBlock h s z).1 from rfl] at he
+  rw [he (addBlock h s z).2, A5x5.prod_addBlock]
   push_cast
   ring
 

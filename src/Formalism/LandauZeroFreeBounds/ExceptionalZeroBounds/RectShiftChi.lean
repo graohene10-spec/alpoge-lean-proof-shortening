@@ -66,12 +66,10 @@ lemma perron_integrand_residue_real_zero {q : ℕ} [NeZero q] {χ : DirichletCha
   have hgd : Differentiable ℂ g := fun z =>
     ((Complex.differentiableOn_dslope Filter.univ_mem).2 hLd.differentiableOn).differentiableAt
       Filter.univ_mem
-  have hgβ : g β ≠ 0 := by rw [hg, dslope_same]; exact hd
+  have hgβ : g β ≠ 0 := by simpa [hg, dslope_same] using hd
   have hLz : ∀ z, L z = (z - β) * g z := by
     intro z
-    have := sub_smul_dslope L β z
-    rw [hLβ, sub_zero, smul_eq_mul] at this
-    exact this.symm
+    simpa [g, smul_eq_mul, hLβ] using (sub_smul_dslope L β z).symm
   have hderiv : ∀ z, deriv L z = g z + (z - β) * deriv g z := by
     intro z
     have hfun : L = fun z => (z - β) * g z := funext hLz

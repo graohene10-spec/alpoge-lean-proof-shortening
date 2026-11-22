@@ -203,7 +203,6 @@ theorem gain_ge_inner_sum : GainDominatesInnerSum := by
     · exact le_rfl
   · intro e
     try dsimp only
-    have hcap : (0:ℝ) ≤ capL d TT nu1 nu2 (s + (e : ZMod d)) := Nat.cast_nonneg _
     have hpe : (0:ℝ) < (l:ℝ) ^ e := pow_pos hl0 e
     have hn2 : (0:ℝ) ≤ (nu2 s : ℝ) / (l:ℝ) ^ e := div_nonneg (Nat.cast_nonneg _) hpe.le
     have hA' : (0:ℝ) ≤ (nu1 s : ℝ) / (l:ℝ) ^ e := div_nonneg (Nat.cast_nonneg _) hpe.le
@@ -233,7 +232,6 @@ theorem gain_ge_inner_sum : GainDominatesInnerSum := by
       · exact hA'
   · intro e
     try dsimp only
-    have hcap : (0:ℝ) ≤ capL d TT nu1 nu2 (s + (e : ZMod d)) := Nat.cast_nonneg _
     have hpe : (0:ℝ) < (l:ℝ) ^ e := pow_pos hl0 e
     have hA' : (0:ℝ) ≤ (nu1 s : ℝ) / (l:ℝ) ^ e := div_nonneg (Nat.cast_nonneg _) hpe.le
     split_ifs

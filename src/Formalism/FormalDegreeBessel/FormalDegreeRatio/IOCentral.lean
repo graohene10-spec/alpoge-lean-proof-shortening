@@ -215,8 +215,7 @@ lemma io_rep_sum {ι : Type*} [Fintype ι] (c : ι → ℂ) {F : ι → Matrix (
     IORep (fun g => ∑ i, c i • F i g) (∑ i, c i • x i).1 := by
   intro g hg
   simp only [Submodule.coe_sum, Submodule.coe_smul, Finset.sum_apply, Pi.smul_apply]
-  refine Finset.sum_congr rfl fun i _ => ?_
-  rw [h i g hg]
+  exact Finset.sum_congr rfl fun i _ => congrArg (fun y => c i • y) (h i g hg)
 
 lemma io_Tm_rep {F : Matrix (Fin n) (Fin n) ℂ → E} {x : ioS ε E} (h : IORep F x.1) (u : ℂ)
     (a b : Fin n) : IORep (Top (EabV ε) u a b F) (Tm (ioE ε E) u a b x).1 := by
@@ -233,10 +232,8 @@ lemma io_foldr_rep (l : List (ℂ × Fin n × Fin n)) {F : Matrix (Fin n) (Fin n
       ((l.map fun p => Tm (ioE ε E) p.1 p.2.1 p.2.2).prod x).1 := by
   induction l with
   | nil =>
-    simp only [List.map_nil, List.foldr_nil, List.prod_nil, Module.End.one_apply]
     exact h
   | cons p l ih =>
-    simp only [List.map_cons, List.foldr_cons, List.prod_cons, Module.End.mul_apply]
     exact io_Tm_rep ih _ _ _
 
 lemma io_qminor_apply {t : ℕ} (a b : Fin t → Fin n) (u : ℂ) (x : ioS ε E) :

@@ -56,9 +56,7 @@ theorem mem_coe_smul (σ : D.host.E ≃ₐ[ℚ] D.host.E) (A : Ideal (𝓞 D.hos
   constructor
   · rintro ⟨a, ha, hz⟩
     refine ⟨σ⁻¹ • a, (Ideal.mem_pointwise_smul_iff_inv_smul_mem).1 ha, ?_⟩
-    have e1 : algebraMap (𝓞 D.host.E) D.host.E (σ⁻¹ • a) =
-        σ⁻¹ (algebraMap (𝓞 D.host.E) D.host.E a) := rfl
-    rw [e1, hz]
+    rw [show algebraMap (𝓞 D.host.E) D.host.E (σ⁻¹ • a) = σ⁻¹ (algebraMap (𝓞 D.host.E) D.host.E a) from rfl, hz]
     simp
   · rintro ⟨a, ha, rfl⟩
     exact ⟨σ • a, Ideal.smul_mem_pointwise_smul σ a A ha, rfl⟩
@@ -87,11 +85,9 @@ theorem spanSingleton_neg_one :
     FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 D.host.E)) (-1 : D.host.E) = 1 := by
   ext z
   rw [FractionalIdeal.mem_spanSingleton, FractionalIdeal.mem_one_iff]
-  constructor
-  · rintro ⟨a, rfl⟩
-    exact ⟨-a, by simp [Algebra.smul_def]⟩
-  · rintro ⟨a, rfl⟩
-    exact ⟨-a, by simp [Algebra.smul_def]⟩
+  constructor <;> rintro ⟨a, ha⟩
+  · exact ⟨-a, by rw [← ha]; simp [Algebra.smul_def]⟩
+  · exact ⟨-a, by rw [← ha]; simp [Algebra.smul_def]⟩
 
 theorem diffEK : differentIdeal (𝓞 D.host.K) (𝓞 D.host.E) =
     D.host.𝔟 * (D.host.conj • D.host.𝔟) := by
@@ -129,16 +125,7 @@ theorem pol (hA : DiffK D) (hB : NormK D) : PolPart D := by
   have hNE : ((Ideal.absNorm cc : ℕ) : D.host.E) ≠ 0 := by exact_mod_cast hN0
   have hb0 := b_ne_zero D
   have hNcc := hB cc hcc
-
-  have hb𝔟 : D.host.𝔟 ≠ ⊥ := by
-    intro h
-    have k := D.host.𝔟_spec.2
-    rw [h] at k
-    simp at k
-  have hAbot : Ideal.map (algebraMap (𝓞 D.host.K) (𝓞 D.host.E)) cc ≠ ⊥ := by
-    intro h
-    rw [h, bot_mul, eq_comm, Ideal.span_singleton_eq_bot] at hNcc
-    exact hN0 (by exact_mod_cast hNcc)
+  have hb𝔟 : D.host.𝔟 ≠ ⊥ := _root_.Formalism.MainNotions.UnusedSlot33.CMIdealEquivalence.b_ne_bot D
   refine ⟨-1 / (((Ideal.absNorm cc : ℕ) : D.host.E) * D.host.sqrtMinusD), ?_, ?_,
     fun φ hφ => im_pos D (Ideal.absNorm cc) hN0 φ hφ, ?_⟩
   · have hs : D.host.sqrtMinusD ∈ D.host.K := IntermediateField.mem_adjoin_simple_self ℚ D.host.sqd
@@ -181,10 +168,8 @@ theorem pol (hA : DiffK D) (hB : NormK D) : PolPart D := by
           rw [e, spanSingleton_neg_one]
     have hM0 : FractionalIdeal.spanSingleton _ (-1 / (((Ideal.absNorm cc : ℕ) : D.host.E) * D.host.sqrtMinusD)) *
           (((D.host.conj • Ideal.map (algebraMap (𝓞 D.host.K) (𝓞 D.host.E)) cc : Ideal (𝓞 D.host.E)) : FI) *
-            ((D.host.conj • D.host.𝔟 : Ideal (𝓞 D.host.E)) : FI)⁻¹) ≠ 0 := by
-      intro h
-      rw [h, mul_zero, zero_mul] at hprod
-      exact zero_ne_one hprod
+            ((D.host.conj • D.host.𝔟 : Ideal (𝓞 D.host.E)) : FI)⁻¹) ≠ 0 :=
+      right_ne_zero_of_mul (left_ne_zero_of_mul_eq_one hprod)
 
     have hdual : FractionalIdeal.dual ℤ ℚ (FractionalIdeal.spanSingleton _
           (-1 / (((Ideal.absNorm cc : ℕ) : D.host.E) * D.host.sqrtMinusD)) *

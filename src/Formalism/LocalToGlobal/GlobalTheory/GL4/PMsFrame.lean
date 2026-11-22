@@ -29,8 +29,7 @@ theorem dual_map_of_isom (S : HSpace E) {L L' : Submodule (𝓞 E) S.V} (γ : S.
 
 theorem isom_symm (S : HSpace E) (γ : S.V ≃ₗ[E] S.V) (hγ : ∀ x y, S.hT (γ x) (γ y) = S.hT x y) :
     ∀ x y, S.hT (γ.symm x) (γ.symm y) = S.hT x y := by
-  intro x y
-  rw [← hγ, LinearEquiv.apply_symm_apply, LinearEquiv.apply_symm_apply]
+  simpa using fun x y => (hγ (γ.symm x) (γ.symm y)).symm
 
 theorem card_le_of_frames (S : HSpace E) (M n : ℕ) {ι : Type} [Fintype ι]
     (L : ι → Submodule (𝓞 E) S.V) (e : ι → Fin n → S.V)

@@ -19,10 +19,8 @@ theorem finite_quot : Finite (𝓞 F ⧸ v.asIdeal) := Ideal.finiteQuotientOfFre
 
 theorem proper : ProperSpace (v.adicCompletion F) := by
   have := finite_quot v
-  have h1 : IsDiscreteValuationRing (v.adicCompletionIntegers F) := inferInstance
-  have h2 := adicInt_residue_finite (K := F) v
   exact Valued.integer.properSpace_iff_completeSpace_and_isDiscreteValuationRing_integer_and_finite_residueField.mpr
-    ⟨inferInstance, h1, h2⟩
+    ⟨inferInstance, (inferInstance : IsDiscreteValuationRing (v.adicCompletionIntegers F)), adicInt_residue_finite (K := F) v⟩
 
 theorem isLocalField : letI := vrel v; IsNonarchimedeanLocalField (v.adicCompletion F) := by
   let _ := vrel v

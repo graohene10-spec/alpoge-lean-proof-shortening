@@ -11,13 +11,9 @@ open Formalism.DivisionValues
 theorem errGood_nonneg (Y X2 A1 A2 kw T : ℝ) (th add : ℕ → ℝ) (hA1 : 0 ≤ A1) (hA2 : 0 ≤ A2)
     (hkw : 0 ≤ kw) (hT : 0 ≤ T) (hth : ∀ p, 0 ≤ th p) (hadd : ∀ p, 0 ≤ add p) (p : ℕ) :
     0 ≤ errGood Y X2 A1 A2 kw T th add p := by
-  have hp : (0:ℝ) ≤ (p : ℝ) := Nat.cast_nonneg p
-  have e1 : 0 ≤ A1 / (p : ℝ) := div_nonneg hA1 hp
-  have e2 : 0 ≤ kw * th p := mul_nonneg hkw (hth p)
-  have e3 : 0 ≤ T * add p := mul_nonneg hT (hadd p)
-  have e4 : 0 ≤ A2 / (p : ℝ) ^ 2 := div_nonneg hA2 (by positivity)
   unfold errGood
-  split_ifs <;> linarith
+  split_ifs <;> linarith [div_nonneg hA1 (Nat.cast_nonneg p), mul_nonneg hkw (hth p),
+    mul_nonneg hT (hadd p), div_nonneg hA2 (sq_nonneg (p : ℝ))]
 
 theorem onSum_of (hP : PlaceSum) (hR : RamBasic) (hE : ErrSumGood) : OnSum := by
   unfold OnSum
@@ -32,9 +28,7 @@ theorem onSum_of (hP : PlaceSum) (hR : RamBasic) (hE : ErrSumGood) : OnSum := by
   have hlw : ∀ w : HeightOneSpectrum (𝓞 K), 0 ≤ lw w := fun w => by
     unfold lw
     exact div_nonneg (Real.log_natCast_nonneg _) (Nat.cast_nonneg _)
-  have hram : ∀ w : HeightOneSpectrum (𝓞 K), (0:ℝ) ≤ (ramw w : ℝ) := fun w => by
-    have h1 := (hR K w).2.1
-    exact_mod_cast (le_trans (by norm_num) h1)
+  have hram : ∀ w : HeightOneSpectrum (𝓞 K), (0:ℝ) ≤ (ramw w : ℝ) := fun w => by exact_mod_cast (le_trans (by norm_num) (hR K w).2.1)
   have step1 : ∑ w ∈ S, lw w * ((ramw w : ℝ) * errl w) ≤
       ∑ w ∈ S, lw w * ((ramw w : ℝ) * X (plc w)) :=
     Finset.sum_le_sum fun w hw => mul_le_mul_of_nonneg_left

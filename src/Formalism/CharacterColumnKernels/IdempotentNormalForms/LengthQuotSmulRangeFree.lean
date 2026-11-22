@@ -480,8 +480,7 @@ lemma mem_Vx {x : X} {v : V} :
 lemma vx_pres (g : Module.End (FractionRing O) V) (hg : ∀ f : T, g * act f = act f * g) (x : X) :
     Vx T act x ≤ (Vx T act x).comap g := by
   intro v hv
-  rw [Submodule.mem_comap, mem_Vx]
-  rw [mem_Vx] at hv
+  simp only [Submodule.mem_comap, mem_Vx] at hv ⊢
   intro f
   calc act f (g v) = (act f * g) v := rfl
     _ = (g * act f) v := by rw [hg f]
@@ -548,15 +547,12 @@ theorem congMod_le (hsum : (⨆ x, Vx T act x) = ⊤) (L : Submodule O V) (hL : 
     (fun f hf x _ => vx_pres f (hcomm f hf) x) hmin (VS T act ((S : Set X)ᶜ))
     (fun f hf => VS_pres f (fun y => vx_pres f (hcomm f hf) y) _) L hL hEL
     (by
-      intro v _
-      have hv : v ∈ VS T act (S : Set X) ⊔ VS T act ((S : Set X)ᶜ) := by
-        rw [VS_sup_compl hsum (S : Set X)]
-        exact Submodule.mem_top
-      exact hv)
+      change L ≤ (VS T act (S : Set X) ⊔ VS T act ((S : Set X)ᶜ)).restrictScalars O
+      rw [VS_sup_compl hsum (S : Set X)]
+      exact le_top)
   refine le_trans (quot_mono ?_) hcore
   unfold Dsub
-  refine Submodule.comap_mono (sup_le_sup_right ?_ _)
-  refine le_inf ?_ (img_le hEL)
+  refine Submodule.comap_mono (sup_le_sup_right (le_inf ?_ (img_le hEL)) _)
   unfold img
   rw [Submodule.span_le]
   rintro v ⟨f, hf, n, hn, rfl⟩

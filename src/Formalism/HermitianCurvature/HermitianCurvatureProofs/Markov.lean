@@ -64,9 +64,8 @@ theorem T_eq_nodal (n : ℕ) (hn : n ≠ 0) :
   · rw [degree_C_mul h2, Lagrange.degree_nodal]; simp
   · rw [leadingCoeff_mul, leadingCoeff_C, Lagrange.nodal_monic.leadingCoeff]; simp
   · intro i hi
-    have h0 : eval (cos (th n i)) (Lagrange.nodal (Finset.range n) fun k => cos (th n k)) = 0 :=
-      Lagrange.eval_nodal_at_node (v := fun k => cos (th n k)) hi
-    rw [eval_mul, h0, mul_zero, Chebyshev.T_real_cos, cos_eq_zero_iff]
+    rw [eval_mul, Lagrange.eval_nodal_at_node (v := fun k => cos (th n k)) hi, mul_zero,
+      Chebyshev.T_real_cos, cos_eq_zero_iff]
     refine ⟨i, ?_⟩
     have : (n : ℝ) ≠ 0 := by exact_mod_cast hn
     simp only [th]

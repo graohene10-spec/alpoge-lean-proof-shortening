@@ -45,8 +45,7 @@ theorem block11_mul (x y : Matrix (Idx r k) (Idx r k) A) :
 
 theorem block12_mul (x y : Matrix (Idx r k) (Idx r k) A) :
     b12 (x * y) = b11 x * b12 y + b12 x * b22 y + b13 x * b32 y := by
-  ext i j
-  simp [b12, b11, b12, b13, b12, b22, b32, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
+  exact Matrix.ext fun i j => by simp [b12, b11, b13, b22, b32, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
 
 theorem block13_mul (x y : Matrix (Idx r k) (Idx r k) A) :
     b13 (x * y) = b11 x * b13 y + b12 x * b23 y + b13 x * b33 y := by
@@ -70,8 +69,7 @@ theorem block23_mul (x y : Matrix (Idx r k) (Idx r k) A) :
 
 theorem block31_mul (x y : Matrix (Idx r k) (Idx r k) A) :
     b31 (x * y) = b31 x * b11 y + b32 x * b21 y + b33 x * b31 y := by
-  ext i j
-  simp [b31, b31, b32, b33, b11, b21, b31, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
+  exact Matrix.ext fun i j => by simp [b31, b32, b33, b11, b21, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
 
 theorem block32_mul (x y : Matrix (Idx r k) (Idx r k) A) :
     b32 (x * y) = b31 x * b12 y + b32 x * b22 y + b33 x * b32 y := by
@@ -249,19 +247,14 @@ theorem isN_map {B : Type} [CommRing B] (f : A →+* B) {n : Matrix (Idx r k) (I
     (hn : IsN n) : IsN (n.map f) := by
   obtain ⟨h11, h33, h22, h21, h31, h32⟩ := hn
   refine ⟨isUpUni_map f h11, isUpUni_map f h33, ?_, ?_, ?_, ?_⟩
-  · rw [block22_map, h22]; simp
-  · rw [block21_map, h21]; simp
-  · rw [block31_map, h31]; simp
-  · rw [block32_map, h32]; simp
+  all_goals simp [block22_map, block21_map, block31_map, block32_map, h22, h21, h31, h32]
 
 theorem isN_of_map {B : Type} [CommRing B] (f : A →+* B) (hf : Function.Injective f)
     {n : Matrix (Idx r k) (Idx r k) A} (hn : IsN (n.map f)) : IsN n := by
   obtain ⟨h11, h33, h22, h21, h31, h32⟩ := hn
-  refine ⟨isUpUni_of_map f hf h11, isUpUni_of_map f hf h33, ?_, ?_, ?_, ?_⟩
-  · apply Matrix.map_injective hf; show (b22 n).map f = _; rw [← block22_map, h22]; simp
-  · apply Matrix.map_injective hf; show (b21 n).map f = _; rw [← block21_map, h21]; simp
-  · apply Matrix.map_injective hf; show (b31 n).map f = _; rw [← block31_map, h31]; simp
-  · apply Matrix.map_injective hf; show (b32 n).map f = _; rw [← block32_map, h32]; simp
+  refine ⟨isUpUni_of_map f hf h11, isUpUni_of_map f hf h33, Matrix.map_injective hf (by simpa [block22_map] using h22), Matrix.map_injective hf (by simpa [block21_map] using h21), ?_, ?_⟩
+  · exact Matrix.map_injective hf (by simpa [block31_map] using h31)
+  · exact Matrix.map_injective hf (by simpa [block32_map] using h32)
 
 theorem isN_conj {a b : Matrix (Fin k) (Fin k) A} (hab : a * b = 1)
     {n : Matrix (Idx r k) (Idx r k) A} (hn : IsN n) : IsN (hEmb r a * n * hEmb r b) := by
@@ -299,8 +292,7 @@ theorem inGLo_inv {ι : Type} [Fintype ι] [DecidableEq ι] {x : Matrix ι ι k0
 
 theorem inGLo_hEmb {r k : ℕ} {h : Matrix (Fin k) (Fin k) k0} (hh : InGLo o h) :
     InGLo o (hEmb r h) := by
-  obtain ⟨a, ha, rfl⟩ := hh
-  exact ⟨hEmb r a, by rw [det_hEmb]; exact ha, hEmb_map _ _⟩
+  exact hh.elim fun a ha => ⟨hEmb r a, by simpa [det_hEmb] using ha.1, by rw [hEmb_map, ha.2]⟩
 
 variable [IsFractionRing o k0]
 
@@ -476,16 +468,14 @@ theorem card_prod_set (Q : Matrix (Fin k) (Fin k) A → Prop) (hQ : ∀ h, Q h �
 
 theorem isUnit_det_of_isS {x : Matrix (Idx r k) (Idx r k) A} (hx : IsS x) : IsUnit x.det := by
   obtain ⟨n, h', hn, ⟨h, hh, rfl⟩, rfl⟩ := hx
-  rw [Matrix.det_mul, det_of_isN hn, det_hEmb, one_mul]
-  exact hh
+  simpa [Matrix.det_mul, det_of_isN hn, det_hEmb] using hh
 
 theorem isUnit_det_of_isUpUni {u : Matrix (Fin k) (Fin k) A} (hu : IsUpUni u) : IsUnit u.det := by
   rw [Formalism.DoubleCosetMeasures.isUpUni_det A hu]; exact isUnit_one
 
 theorem isUnit_det_of_isNU {x : Matrix (Idx r k) (Idx r k) A} (hx : IsNU x) : IsUnit x.det := by
   obtain ⟨n, h', hn, ⟨h, hh, rfl⟩, rfl⟩ := hx
-  rw [Matrix.det_mul, det_of_isN hn, det_hEmb, one_mul]
-  exact isUnit_det_of_isUpUni hh
+  simpa [Matrix.det_mul, det_of_isN hn, det_hEmb] using isUnit_det_of_isUpUni hh
 
 theorem card_S : Nat.card {x : Matrix (Idx r k) (Idx r k) A // IsS x} =
     Nat.card (GL (Fin k) A) * Nat.card {x : Matrix (Idx r k) (Idx r k) A // IsN x} := by

@@ -734,10 +734,9 @@ lemma xnInv_zero : xnInv 0 (fun _ => 0) (1 : MvPolynomial (Fin r × Fin n) ℂ) 
 
 lemma xnInv_mono {k : ℕ} {μ : ℕ → ℕ} {x h : MvPolynomial (Fin r × Fin n) ℂ} (H : xnInv k μ x h) :
     xnInv (k + 1) μ x h := by
-  exact { supp := fun q hq => H.supp q (by omega), xm := H.xm, hm := H.hm,
-          hs := MvPolynomial.supported_mono
-            (fun v hv => by simp only [Set.mem_setOf_eq] at hv ⊢; omega) H.hs,
-          le := H.le }
+  exact ⟨fun q hq => H.supp q (by omega), H.xm, H.hm,
+    MvPolynomial.supported_mono
+      (fun v hv => by simp only [Set.mem_setOf_eq] at hv ⊢; omega) H.hs, H.le⟩
 
 lemma xnInv_step {k : ℕ} {μ : ℕ → ℕ} {x h : MvPolynomial (Fin r × Fin n) ℂ} (H : xnInv k μ x h)
     (hk : k ≤ n) (hkr : k ≤ r) (J : Fin k → Fin r) (hJ : Function.Injective J) :
@@ -920,8 +919,7 @@ theorem xi_norm_bound : XiNorm := by
   have H := xn_stage n lam sg hI n le_rfl
   have hμ : (fun q => xnLam lam q - xnLam lam n) = xnLam lam := by
     funext q
-    have h0 : xnLam lam n = 0 := by simp [xnLam]
-    rw [h0, Nat.sub_zero]
+    simp [xnLam]
   have hx : (∏ i ∈ Finset.univ.filter (fun i : Fin n => i.val < n),
       (initMinor ℂ (rowsA i) (by omega : i.val + 1 ≤ n) ^ (sg i - nuNext lam i) *
         initMinor ℂ (rowsB i) (by omega : i.val + 1 ≤ n) ^ (lam i - sg i))) = xiB ℂ lam sg := by
@@ -940,8 +938,6 @@ theorem xi_norm_bound : XiNorm := by
     split_ifs <;> simp
   have H2 := H.le
   rw [hμ, hx, hh] at H2
-  unfold xnN at H2
-  rw [hW]
-  exact H2
+  simpa [xnN, hW] using H2
 
 end Formalism.BranchingDeterminantCap

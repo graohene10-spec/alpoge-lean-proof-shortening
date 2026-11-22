@@ -59,9 +59,7 @@ theorem bc_hyps {n' : ℕ} {TT : Finset (Fin n')} {r L₁ L₂ u M₀ G' N₁ : 
 theorem bc_count {n' : ℕ} {TT : Finset (Fin n')} {r L₁ L₂ u M₀ G' N₁ : ℕ} (hr : 1 ≤ r)
     (h : OrbitRaw n' TT r L₁ L₂ u M₀ G' N₁) : SegmentCountBounds n' TT.card G' N₁ := by
   obtain ⟨c0, c1, c2, _⟩ := bc_hyps h
-  have := Formalism.GrowthSums.Top.topCount n' (TT.map Fin.valEmbedding) L₂ (r - 1) r u M₀ G' N₁ hr c0 c1 c2 (bc_sub TT)
-    h.2.2.2.2
-  rwa [Finset.card_map] at this
+  simpa only [Finset.card_map, SegmentCountBounds] using Formalism.GrowthSums.Top.topCount n' (TT.map Fin.valEmbedding) L₂ (r - 1) r u M₀ G' N₁ hr c0 c1 c2 (bc_sub TT) h.2.2.2.2
 
 theorem bc_next {n' : ℕ} {TT : Finset (Fin n')} {r L₁ L₂ u M₀ G' N₁ : ℕ} (hr : 1 ≤ r)
     (h : OrbitRaw n' TT r L₁ L₂ u M₀ G' N₁) : ConsecutiveMaximaClose n' (TT.map Fin.valEmbedding) G' N₁ := by
@@ -679,13 +677,11 @@ theorem bs_next {TT : Finset (Fin n')} {r L₁ L₂ u M₀ G' N₁ : ℕ} (hr : 
     (h : OrbitRaw n' TT r L₁ L₂ u M₀ G' N₁) (x : Fin n') (hx : x ∈ TT) (hev : Even x.val) :
     ∃ (d : ℕ) (e : Fin n'), 1 ≤ d ∧ d ≤ G' ∧ e ∈ TT ∧ Even e.val ∧ e ≠ x ∧ cdist x e = d ∧
       ((TT.map Fin.valEmbedding) ∩ (Finset.Ioo 0 d).image (fun j => (x.val + j) % n')).card ≤ N₁ := by
-  obtain ⟨_, _, _, c3⟩ := bc_hyps h
   have h3 : 3 * G' ≤ n' := h.2.2.2.1
   obtain ⟨d, d1, d2, dT, dE, _, dN⟩ := bc_next hr h x.val (Finset.mem_map.mpr ⟨x, hx, rfl⟩) hev
   obtain ⟨e, heT, hev'⟩ := Finset.mem_map.mp dT
-  have hev'' : e.val = (x.val + d) % n' := hev'
-  have hcd : cdist x e = d := bc_fwd_of x.isLt e.isLt (by omega) hev''.symm
-  refine ⟨d, e, d1, d2, heT, by rw [hev'']; exact dE, ?_, hcd, dN⟩
+  have hcd : cdist x e = d := bc_fwd_of x.isLt e.isLt (by omega) hev'.symm
+  refine ⟨d, e, d1, d2, heT, by rw [show (e.val = (x.val + d) % n') from hev']; exact dE, ?_, hcd, dN⟩
   rintro rfl
   have : cdist e e = 0 := by
     show fwd n' e.val e.val = 0
@@ -846,8 +842,7 @@ theorem period_eq_addOrderOf {p : ℕ} (hc : IsResidueClassZero D p) : nP D p = 
   rw [if_neg]
   intro hs
   have h1 : D.host.cls p = PrimeClass.signal := hs
-  have h2 : D.host.cls p = PrimeClass.inertClass := hc
-  rw [h2] at h1
+  rw [show D.host.cls p = PrimeClass.inertClass from hc] at h1
   cases h1
 
 theorem orbit_index_injective {h : HH D} {i j : ℕ} (hi : i < addOrderOf h) (hj : j < addOrderOf h) (t0 : HH D)
@@ -1389,8 +1384,7 @@ variable {O Kf V : Type} [CommRing O] [IsDomain O] [IsDiscreteValuationRing O] [
 
 theorem bg_mem_scale {c : Kf} {N : Submodule O V} {x : V} : x ∈ scale c N ↔ ∃ n ∈ N, c • n = x := by
   unfold scale
-  rw [Submodule.mem_map]
-  rfl
+  exact Submodule.mem_map
 
 theorem bg_scale_le {ϖ ϖ' : O} (h : Irreducible ϖ) (h' : Irreducible ϖ') (z : ℤ) (N : Submodule O V) :
     scale ((algebraMap O Kf ϖ) ^ z) N ≤ scale ((algebraMap O Kf ϖ') ^ z) N := by
@@ -1764,14 +1758,13 @@ theorem const_le_rpow_eventually (c r : ℝ) (hr : 0 < r) : ∀ᶠ x : ℝ in Fi
 theorem family_order_bound_holds {eps : ℝ} (Fm : FamP eps) (C₄ : ℝ) : CornerGLContinuity.FamilyOrdersSmallPrimeBound Fm C₄ := by
   intro h4
   have he := family_eps_pos Fm
-  have ev := ((mul_log_le_rpow_eventually_alt 8 (eps / 3) (by positivity)).and (const_le_rpow_eventually (4 * |C₄|) (19 * eps / 300) (by positivity))).and
-    (Filter.eventually_gt_atTop Fm.x1)
-  obtain ⟨x0, hx0⟩ := Filter.eventually_atTop.mp ev
+  obtain ⟨x0, hx0⟩ := Filter.eventually_atTop.mp <|
+    (((mul_log_le_rpow_eventually_alt 8 (eps / 3) (by positivity)).and (const_le_rpow_eventually (4 * |C₄|) (19 * eps / 300) (by positivity))).and (Filter.eventually_gt_atTop Fm.x1))
   refine ⟨x0, fun x hx i => ?_⟩
   obtain ⟨⟨a1, a2⟩, a3⟩ := hx0 x hx
   apply order_statement_at_scale (Fm.L x i) C₄ (h4 x i) (Fm.sizes x a3 i).1
-  · rw [Fm.L_x x i a3, Fm.L_eps]; exact a1
-  · rw [Fm.L_x x i a3, Fm.L_eps]; exact a2
+  · simpa [Fm.L_x x i a3, Fm.L_eps] using a1
+  · simpa [Fm.L_x x i a3, Fm.L_eps] using a2
 
 theorem two_mul_first_length_le_window (D : D7) (s : Scale) {p : ℕ} (hp : p.Prime) (hc : IsResidueClassZero D p) : 2 * L1 D s p ≤ L2 D s := by
   unfold L2
@@ -1943,7 +1936,7 @@ theorem prime_power_band_log_sum_le_log_sq (X ρ P₀ : ℝ) (hX : 1 ≤ X) (hρ
     exact h.choose_spec
   have hmaps : ∀ p ∈ S, dOf p ∈ Finset.Icc 1 ⌊1 + 2 * Real.log X⌋₊ := by
     intro p hp
-    obtain ⟨h1, _, h3⟩ := hdOf p hp
+    obtain ⟨h1, _, _⟩ := hdOf p hp
     refine Finset.mem_Icc.2 ⟨h1, Nat.le_floor ?_⟩
     have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast (hS p hp).1.two_le
     have hl2 : (1 / 2 : ℝ) ≤ Real.log 2 := by
@@ -1957,13 +1950,11 @@ theorem prime_power_band_log_sum_le_log_sq (X ρ P₀ : ℝ) (hX : 1 ≤ X) (hρ
             apply Real.log_le_log (by positivity)
             nlinarith
         _ = Real.log 2 + Real.log X := Real.log_mul (by norm_num) hX0.ne'
-    have hl20 : 0 < Real.log 2 := by linarith
     have e2 : ((dOf p : ℝ) - 1) * Real.log 2 ≤ Real.log X := by linarith
-    by_contra hcon
-    rw [not_le] at hcon
-    have : 2 * Real.log X * (1 / 2) ≤ ((dOf p : ℝ) - 1) * Real.log 2 := by
-      apply mul_le_mul (by linarith) hl2 (by norm_num) (by linarith)
-    have h4 : 2 * Real.log X < (dOf p : ℝ) - 1 := by linarith
+    have h4 : ((dOf p : ℝ) - 1) * (1 / 2) ≤ Real.log X := by
+      calc ((dOf p : ℝ) - 1) * (1 / 2) ≤ ((dOf p : ℝ) - 1) * Real.log 2 :=
+            mul_le_mul_of_nonneg_left hl2 (sub_nonneg.mpr (by exact_mod_cast h1))
+        _ ≤ Real.log X := e2
     nlinarith
   rw [← Finset.sum_fiberwise_of_maps_to hmaps]
   have hB0 : 0 ≤ Real.log X * (3 * ρ + 1 / P₀) := by positivity
@@ -1997,8 +1988,7 @@ theorem prime_power_band_sum_at_scale {D : D7} (L : SizeData₂ D) (r : ℝ) (h�
   have hε : 0 < ε := L.sc.eps_pos
   have hxm1 : 0 ≤ x ^ (-1 : ℝ) := Real.rpow_nonneg hx0.le _
   rcases lt_or_ge r 0 with hneg | hρ0
-  · have hX0 : 0 < L.sc.X' := by unfold Scale.X'; exact Real.exp_pos _
-    rw [Finset.sum_eq_zero]
+  · rw [Finset.sum_eq_zero]
     · exact hxm1
     · intro p hp
       exfalso
@@ -2010,10 +2000,8 @@ theorem prime_power_band_sum_at_scale {D : D7} (L : SizeData₂ D) (r : ℝ) (h�
       unfold Scale.X'
       exact Real.one_le_exp (Real.rpow_nonneg hx0.le _)
     have hx2 : x ^ (-2 : ℝ) ≤ 1 / 4 := by
-      rw [Real.rpow_neg hx0.le, ← one_div]
+      rw [Real.rpow_neg hx0.le, ← one_div, show x ^ (2 : ℝ) = x ^ 2 by exact_mod_cast Real.rpow_natCast x 2]
       apply one_div_le_one_div_of_le (by norm_num)
-      have : x ^ (2 : ℝ) = x ^ 2 := by exact_mod_cast Real.rpow_natCast x 2
-      rw [this]
       nlinarith
     have hk1 : (1 : ℝ) ≤ D.R.k := by
       have h0 : (0 : ℝ) < D.R.k := lt_of_lt_of_le (Real.rpow_pos_of_pos hx0 _) hK.1
@@ -2779,7 +2767,6 @@ theorem sharp_tops_inequality_of_bounds (D : D7) (L : SizeData₂ D) (Lb : ℕ) 
   have hx1 := L.sc.one_lt_alt
   have hx0 : 0 < L.sc.x := lt_trans one_pos hx1
   have he := L.sc.eps_pos
-  have he' := L.sc.eps_lt
   have hh : 0 ≤ hG L.sc := by unfold hG; linarith
   have hδ0 := J.delta1_pos L.sc
   constructor
@@ -2792,21 +2779,18 @@ theorem sharp_tops_inequality_of_bounds (D : D7) (L : SizeData₂ D) (Lb : ℕ) 
   · have hn' : (n' : ℝ) ≤ L.sc.x ^ (hG L.sc + L.sc.eps / 8) := by
       refine le_trans ?_ hn
       exact_mod_cast Nat.le_of_dvd D.R.n_pos' hd
-    have hn0 : (0 : ℝ) ≤ n' := Nat.cast_nonneg _
-    have hX2 : 0 < L.sc.x ^ (-2 : ℝ) := Real.rpow_pos_of_pos hx0 _
     have hch : ∀ k, ((L2 D L.sc).choose k : ℝ) ≤ 2 ^ Lb := by
       intro k
       have h1 : (L2 D L.sc).choose k ≤ 2 ^ (L2 D L.sc) := Nat.choose_le_two_pow _ _
       have h2 : 2 ^ (L2 D L.sc) ≤ 2 ^ Lb := Nat.pow_le_pow_right (by norm_num) hL
       exact_mod_cast h1.trans h2
     have hK := delta_pow_le_rpow L.sc
-    have hK0 : 0 ≤ L.sc.delta1 ^ (KG L.sc) := pow_nonneg hδ0.le _
     have hmono : ∀ {y : ℝ}, y ≤ -2 → L.sc.x ^ y ≤ L.sc.x ^ (-2 : ℝ) :=
       fun hy => Real.rpow_le_rpow_of_exponent_le hx1.le hy
 
     have T1 : (L2 D L.sc : ℝ) * ((L2 D L.sc).choose (KG L.sc) : ℝ) * L.sc.delta1 ^ (KG L.sc) ≤
         ((Lb : ℝ) * 2 ^ Lb) * L.sc.x ^ (-2 : ℝ) := by
-      apply mul_le_mul _ (hK.trans (hmono (by linarith))) hK0 (by positivity)
+      apply mul_le_mul _ (hK.trans (hmono (by linarith))) (pow_nonneg hδ0.le (KG L.sc)) (by positivity)
       exact mul_le_mul (by exact_mod_cast hL) (hch _) (Nat.cast_nonneg _) (Nat.cast_nonneg _)
 
     have T2 : (n' : ℝ) * ((L2 D L.sc).choose (KG L.sc + 1) : ℝ) * L.sc.delta1 ^ (KG L.sc + 1) ≤
@@ -2829,7 +2813,7 @@ theorem sharp_tops_inequality_of_bounds (D : D7) (L : SizeData₂ D) (Lb : ℕ) 
     have e3 : L.sc.x ^ (hG L.sc + L.sc.eps / 8) * L.sc.x ^ (-(hG L.sc + 3)) ≤ L.sc.x ^ (-2 : ℝ) := by
       rw [← Real.rpow_add hx0]
       apply hmono
-      linarith
+      linarith [L.sc.eps_lt]
 
     have h3' := marked_tile_failure_le_rpow L.sc hδ
     have T3nn : 0 ≤ (1 - markedBound L.sc.delta1 (rG L.sc) (goodU L.sc.delta1)) ^
@@ -3278,22 +3262,18 @@ theorem initial_constant_bounds (K : Consts) (Ce S : ℝ) (H : bt_H D L K Ce S) 
   have hb : 0 ≤ L.sc.b' := le_trans (by positivity) H.b'
   refine ⟨?_, by unfold c0num; positivity, hc0'⟩
   unfold c0num
-  have h2 := H.c
-  have h3 := H.b'
   have c1 := bt_chain hS 1
   norm_num at c1
-  have p2 : S ^ 2 ≤ S ^ 20 := pow_le_pow_right₀ (by linarith) (by norm_num)
-  linarith
+  have p2 : S ^ 2 ≤ S ^ 20 := pow_le_pow_right₀ (by linarith only [hS]) (by norm_num)
+  linarith [H.c, H.b']
 
 theorem vertex_density_lower_bound (X : Inst D L) (K : Consts) (Ce S : ℝ) (H : bt_H D L K Ce S) (p : ℕ) (t0 : HH D) (O : bt_O L X S p t0) :
     (addOrderOf (hP D p) : ℝ) * cG L ≤ (Nv X p t0 : ℝ) * (L.sc.a / p) := by
-  have hS := H.forty_le_bound
   have hN0 : (0 : ℝ) ≤ (Nv X p t0 : ℝ) := by linarith only [O.N1]
-  have p3 : S ^ 3 ≤ S ^ 20 := pow_le_pow_right₀ (by linarith) (by norm_num)
   calc (addOrderOf (hP D p) : ℝ) * cG L ≤ (S * S * (Nv X p t0 : ℝ)) * S :=
-        mul_le_mul O.nN H.c (initial_constant_bounds K Ce S H).2.2 (by positivity)
+        mul_le_mul O.nN H.c (initial_constant_bounds K Ce S H).2.2 (mul_nonneg (mul_nonneg (by linarith only [H.forty_le_bound]) (by linarith only [H.forty_le_bound])) hN0)
     _ = (Nv X p t0 : ℝ) * S ^ 3 := by ring
-    _ ≤ _ := mul_le_mul_of_nonneg_left (le_trans p3 O.SB) hN0
+    _ ≤ _ := mul_le_mul_of_nonneg_left (le_trans (pow_le_pow_right₀ (by linarith only [H.forty_le_bound]) (by norm_num)) O.SB) hN0
 
 theorem bt_NB (X : Inst D L) (S : ℝ) (hS : 40 ≤ S) (p : ℕ) (t0 : HH D) (O : bt_O L X S p t0) :
     1 ≤ (Nv X p t0 : ℝ) * (L.sc.a / p) :=
@@ -4078,12 +4058,9 @@ theorem w''_nonneg₂ (s : Scale) (n : ℕ) : 0 ≤ s.w'' n := by
 theorem bl_Nm_le_Sc (P : ParameterChoice' D L) : (5 : ℝ) ≤ (D.R.k : ℝ) ∧ (D.R.N D.R.m : ℝ) ≤ L.Sc ∧ 100 ≤ L.Sc := by
   have hm : (2 : ℝ) ≤ (D.R.m : ℝ) := by exact_mod_cast D.R.two_le_m
   have hk : (5 : ℝ) ≤ (D.R.k : ℝ) := by
-    have := D.R.m_add_three_le_k
-    have h2 := D.R.two_le_m
-    exact_mod_cast (by omega : 5 ≤ D.R.k)
+    exact_mod_cast ((by have h1 := D.R.m_add_three_le_k; have h2 := D.R.two_le_m; omega) : 5 ≤ D.R.k)
   have hNk : (D.R.k : ℝ) ≤ (D.R.N D.R.m : ℝ) := by
-    have : D.R.k ≤ D.R.N D.R.m := by unfold Ranks.N; omega
-    exact_mod_cast this
+    exact_mod_cast ((by unfold Ranks.N; omega) : D.R.k ≤ D.R.N D.R.m)
   have h := P.Del_ge.2.2.2
   have hm10 : (1 : ℝ) ≤ (D.R.m : ℝ) ^ 10 := one_le_pow₀ (by linarith)
   have hN0 : (0 : ℝ) ≤ (D.R.N D.R.m : ℝ) := Nat.cast_nonneg _

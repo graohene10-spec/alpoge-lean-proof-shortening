@@ -244,9 +244,8 @@ lemma hom_freeze (LL : Letters N) (ρ : Fin r) (n : ℕ) (hS : LL.total ≤ n)
     (f : MvPolynomial (Fin N × Fin r) ℚ_[p]) (hf : f ∈ Pol p r LL) :
     IsWeightedHomogeneous (wL N r) (freeze p LL ρ n f) n := by
   unfold freeze
-  have key := ((MvPolynomial.isWeightedHomogeneous_X ℚ_[p] (wL N r) (Fin.last N, ρ)).pow (n - LL.total)).mul
-    (hom_aeval LL ρ f hf)
-  convert key using 1
+  convert ((MvPolynomial.isWeightedHomogeneous_X ℚ_[p] (wL N r) (Fin.last N, ρ)).pow (n - LL.total)).mul
+    (hom_aeval LL ρ f hf) using 1
   simp [wL]
   omega
 
@@ -293,8 +292,7 @@ lemma coeff_X_pderiv_castSucc (ρ : Fin r) (G : MvPolynomial (Fin (N + 1) × Fin
   split_ifs with h
   · rw [MvPolynomial.coeff_pderiv, hG _ ?_, zero_mul]
     simp only [kk]
-    refine Finset.sum_congr rfl fun c _ => ?_
-    simp [Finsupp.single_apply, Fin.castSucc_ne_last]
+    exact Finset.sum_congr rfl fun c _ => by simp [Finsupp.single_apply, Fin.castSucc_ne_last]
   · rfl
 
 theorem vanish (LL : Letters N) (n : ℕ) (ρ : Fin r) (G : MvPolynomial (Fin (N + 1) × Fin r) ℚ_[p])
@@ -383,8 +381,7 @@ lemma eq_ext_res (n : ℕ) (ρ : Fin r) (m : Fin (N + 1) × Fin r →₀ ℕ)
 
 lemma mem_IntPol_iff {σ : Type} (x : MvPolynomial σ ℚ_[p]) :
     x ∈ IntPol p σ ↔ (x.coeffs : Set ℚ_[p]) ⊆ Set.range (algebraMap ℤ_[p] ℚ_[p]) := by
-  rw [← MvPolynomial.mem_range_map_iff_coeffs_subset]
-  exact Iff.rfl
+  exact MvPolynomial.mem_range_map_iff_coeffs_subset
 
 end Formalism.GM.M.FB
 

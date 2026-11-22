@@ -322,8 +322,7 @@ lemma aDil_zero (k : ℕ) (t : ℝ) : aDil k 0 t = 1 := by
 
 lemma conjM_one (k r : ℕ) : (conjM (1 : Mat k r) : Mt k r → Mt k r) = id := by
   funext x
-  unfold conjM
-  rw [inv_one, Matrix.mul_one, Matrix.one_mul]
+  simp [conjM]
   rfl
 
 lemma mulM_cont {k r : ℕ} : Continuous (mulM : Mt k r × Mt k r → Mt k r) := by

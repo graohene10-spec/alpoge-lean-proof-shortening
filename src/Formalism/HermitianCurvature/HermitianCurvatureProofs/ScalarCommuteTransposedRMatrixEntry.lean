@@ -729,8 +729,7 @@ namespace Formalism.FourierDecayAlt.P
 open Formalism.FourierDecayAlt.Wd
 
 theorem positive_word_fixed : Formalism.FourierDecayAlt.Wd.XpFix := by
-  intro K A S _ _ _ _ _ _ _ _ w Y _ hr k z
-  exact Wd7.Xp_fix w Y hr k z
+  exact fun K A S _ _ _ _ _ _ _ _ w Y _ => Wd7.Xp_fix w Y
 
 theorem negative_word_fixed : Formalism.FourierDecayAlt.Wd.XmFix := by
   exact fun K A S => Wd7.Xm_fix

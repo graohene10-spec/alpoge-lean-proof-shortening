@@ -70,9 +70,7 @@ theorem mean_dom (hG : D.GramPSD) (hW : D.WordsPos) {ε : ℝ} (hε : 0 < ε) (k
     (hM : ∀ w' ∈ S, D.N0 ε k w' Y κ ≤ M) :
     ∑ t ∈ R, ∑ w' ∈ S, θ w' * D.N0 ε k w' Y (Th t) ≤ c * M := by
   rw [Finset.sum_comm]
-  simp only [← Finset.mul_sum]
-  refine prob_le S θ _ hθ _ fun w' hw' => ?_
-  exact (sum_baseGram_le D hG hW hε k w' Y R c κ Th h).trans (mul_le_mul_of_nonneg_left (hM w' hw') hc)
+  simpa only [← Finset.mul_sum] using prob_le S θ (fun w' => ∑ t ∈ R, D.N0 ε k w' Y (Th t)) hθ (c * M) (fun w' hw' => (sum_baseGram_le D hG hW hε k w' Y R c κ Th h).trans (mul_le_mul_of_nonneg_left (hM w' hw') hc))
 
 end Formalism.FourierDecayAlt.P.FormDomination
 

@@ -125,8 +125,7 @@ lemma scalar_bound {p : ℕ} (hp : p.Prime) (hp1 : ‖(p : K)‖ < 1) (c : K) (d
 lemma norm_coeff_monomial_le (m k : ℕ) (e : Fin 2 →₀ ℕ) :
     ‖MvPowerSeries.coeff e
       ((MvPowerSeries.X 0 : MvPowerSeries (Fin 2) K) ^ m * MvPowerSeries.X 1 ^ k)‖ ≤ 1 := by
-  rw [MvPowerSeries.X_pow_eq, MvPowerSeries.X_pow_eq, MvPowerSeries.monomial_mul_monomial, mul_one,
-    MvPowerSeries.coeff_monomial]
+  simp [MvPowerSeries.X_pow_eq, MvPowerSeries.monomial_mul_monomial, MvPowerSeries.coeff_monomial]
   split_ifs <;> simp
 
 lemma term_eq (p c : K) (d m : ℕ) :

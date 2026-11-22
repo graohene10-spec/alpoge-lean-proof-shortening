@@ -733,19 +733,15 @@ theorem t_NGTotal : NGTotal := by
   have hsubN : X.big X.ngSet ⊆ X.big X.nzSet := by
     intro p hp
     have hp' : (p.1 ∈ X.ngSet ∧ p.2 ∈ X.ngSet ∧ X.rowOf p.1 = X.rowOf p.2) ∧ 2 ≤ X.s0 p.1 p.2 := hp
-    have h1 : p.1 ∈ X.nzSet := (show X.G p.1 ≠ 0 ∧ ¬ X.gener p.1 from hp'.1.1).1
-    have h2 : p.2 ∈ X.nzSet := (show X.G p.2 ≠ 0 ∧ ¬ X.gener p.2 from hp'.1.2.1).1
-    show (p.1 ∈ X.nzSet ∧ p.2 ∈ X.nzSet ∧ X.rowOf p.1 = X.rowOf p.2) ∧ 2 ≤ X.s0 p.1 p.2
-    exact ⟨⟨h1, h2, hp'.1.2.2⟩, hp'.2⟩
+    exact ⟨⟨(show X.G p.1 ≠ 0 ∧ ¬ X.gener p.1 from hp'.1.1).1,
+      (show X.G p.2 ≠ 0 ∧ ¬ X.gener p.2 from hp'.1.2.1).1, hp'.1.2.2⟩, hp'.2⟩
   obtain ⟨hmN, -⟩ := hSF τ Rw I H H₁ X hA _ _ hsubN
   obtain ⟨-, habsN⟩ := hSF τ Rw I H H₁ X hA _ _ (subset_rfl : X.big X.ngSet ⊆ X.big X.ngSet)
   have hRB' : X.pairAbs (X.big X.nzSet) ≤ ε * dd := hRB
   have hRNG' : X.pairSum (X.one X.ngSet) ≤ ε' * dd := hRNG
-  have hPhiN : X.PhiEq X.ngSet ≤ (ε + ε') * dd := by
-    rw [hng]
-    have := le_abs_self (X.pairSum (X.big X.ngSet))
-    linarith
-  exact hPhiN
+  rw [hng]
+  have := le_abs_self (X.pairSum (X.big X.ngSet))
+  linarith
 
 end Hil6
 
@@ -774,8 +770,7 @@ theorem psd_add {α : Type} {Y : Finset α} {k k' : α → α → ℂ}
   simpa only [e] using Matrix.PosSemidef.add hk hk'
 
 theorem psd_one (hS : J.SchurProduct) {α : Type} (Y : Finset α) : TB.PSDOn Y (fun _ _ => (1 : ℂ)) := by
-  have h := hS α Empty Y (fun p => p.elim) (fun p => p.elim)
-  exact psd_congr (fun x _ y _ => by simp) h
+  exact psd_congr (fun x _ y _ => by simp) (hS α Empty Y (fun p => p.elim) (fun p => p.elim))
 
 variable {E : Type} [Field E]
 

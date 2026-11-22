@@ -49,8 +49,7 @@ theorem psi_eq_prod (R : Type) [CommRing R] {n N : ℕ} {isVec : ℕ → Bool} {
 
 theorem minorF_empty {R : Type*} [CommRing R] {n : ℕ} (m : Matrix (Fin n) (Fin n) R) :
     minorF m ∅ ∅ = 1 := by
-  rw [minorF_eq m (d := 0) rfl rfl]
-  exact Matrix.det_isEmpty
+  exact (minorF_eq m (d := 0) rfl rfl).trans Matrix.det_isEmpty
 
 theorem brk_eq_prod {L : Type} [CommRing L] {n N : ℕ} {isVec : ℕ → Bool} {μ : ℕ → Fin n → ℤ}
     {F : Finset ℤ} (hF : Cols isVec μ N F) (g gi : Matrix (Fin n) (Fin n) L)
@@ -178,10 +177,9 @@ theorem term_cases {L : Type} [CommRing L] {n N : ℕ} {isVec : ℕ → Bool} {�
   · right
     push Not at h
     obtain ⟨c, hc, hne⟩ := h
-    have : ∏ c ∈ F, minorF (if 1 ≤ c then g else gi.transpose) (I' c) (I c) = 0 :=
+    have this : ∏ c ∈ F, minorF (if 1 ≤ c then g else gi.transpose) (I' c) (I c) = 0 :=
       Finset.prod_eq_zero hc (minorF_ne _ (Ne.symm hne))
-    unfold term
-    rw [this, map_zero, mul_zero]
+    simp [term, this]
 
 theorem term_hom (hW : PsiWeight) {L : Type} [CommRing L] {n N : ℕ} {isVec : ℕ → Bool} {B : ℕ → ℕ}
     {μ : ℕ → Fin n → ℤ} (hp : IsPath n isVec B μ N)
@@ -335,8 +333,7 @@ theorem map_psi {k L : Type} [CommRing k] [CommRing L] (φ : k →+* L) {n N : �
   obtain ⟨F, hF⟩ := exists_cols hp
   rw [psi_eq_prod k hF hI, psi_eq_prod L hF hI, map_prod]
   refine Finset.prod_congr rfl fun c _ => ?_
-  rw [A1hw.map_pathWord]
-  simp only [map_X]
+  simp only [A1hw.map_pathWord, map_X]
 
 def evC (k : Type) [Field k] (n : ℕ) (isVec : ℕ → Bool) (ν : Fin n → ℤ) :
     MvPolynomial (ℕ × Fin n) k →ₗ[k] MvPolynomial (ℕ × Fin n) (GenField k n) :=
@@ -377,11 +374,7 @@ theorem fam_li (hBrk : FactBrk) (k : Type) [Field k] (n N : ℕ) (isVec : ℕ �
   show LinearIndependent k (fun x : {x : PathIdx n N isVec B // x.1.1 N = μ₀} => fam k x.1)
   convert hc using 1
   funext x
-  have hx : x.1.1.1 N = μ₀ := x.2
-  show fam k x.1 = _
-  unfold fam
-  rw [hx]
-  rfl
+  simp [fam, φ, x.2]
 
 end A3ev
 

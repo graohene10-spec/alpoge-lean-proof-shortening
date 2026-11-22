@@ -63,8 +63,7 @@ theorem hecke_kernel_scalar_invariance : HeckeKernelScalarInvariance := by
 theorem quotient_length_embedding_bound : QuotientLengthEmbeddingBound := by
   intro R _ M _ _ A N
   apply Module.length_le_of_injective (Submodule.mapQ (N.comap A.subtype) N A.subtype le_rfl)
-  rw [← LinearMap.ker_eq_bot, Submodule.ker_mapQ]
-  simp
+  simp [← LinearMap.ker_eq_bot, Submodule.ker_mapQ]
 
 theorem slope_kronecker_formula : SlopeTensorProductAdditive := by
   intro a b _ _ _ _ _ _ A B hA hB
@@ -449,11 +448,10 @@ theorem supportVolumeIndex_statement : SupportVolumeIndex := by
       (φ : A →ₗ[ZMod q] B), Function.Surjective φ →
       Nat.card {x : A // φ x = 0} * Nat.card B = Nat.card A := by
     intro A B _ _ _ _ φ hφ
-    have h1 := Submodule.card_eq_card_quotient_mul_card (LinearMap.ker φ)
     have h2 : Nat.card (A ⧸ LinearMap.ker φ) = Nat.card B :=
       Nat.card_congr (φ.quotKerEquivOfSurjective hφ).toEquiv
     have h3 : Nat.card {x : A // φ x = 0} = Nat.card (LinearMap.ker φ) := rfl
-    rw [h1, h2, h3]
+    simpa [h2, h3] using (Submodule.card_eq_card_quotient_mul_card (LinearMap.ker φ)).symm
   have cM : Nat.card (Matrix (Fin n') (Fin n) (ZMod q)) = q ^ (n' * n) := by
     show Nat.card (Fin n' → Fin n → ZMod q) = _
     simp [Nat.card_eq_fintype_card, ZMod.card, ← pow_mul, mul_comm]

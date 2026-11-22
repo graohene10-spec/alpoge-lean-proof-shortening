@@ -10,11 +10,8 @@ theorem integral_norm_estimate_holds : Formalism.HermitianLatticeCounting.Expans
   rw [InfinitePlace.prod_eq_abs_norm]
   have h : (Algebra.norm ℤ x) ≠ 0 := by
     simpa [Algebra.norm_eq_zero_iff] using hx
-  have h2 : (Algebra.norm ℚ (x : E)) = ((Algebra.norm ℤ x : ℤ) : ℚ) := by
-    rw [Algebra.coe_norm_int]
-  rw [h2]
-  have : (1 : ℤ) ≤ |Algebra.norm ℤ x| := Int.one_le_abs h
-  exact_mod_cast this
+  rw [← Algebra.coe_norm_int]
+  exact_mod_cast (Int.one_le_abs h)
 
 theorem prod_max_inv_le_prod_max' : Formalism.HermitianLatticeCounting.ExpansionTerms.ProdMaxInvLeProdMax := by
   intro ι _ G hG h1
@@ -413,9 +410,8 @@ noncomputable def idealRadius (E : Type) [Field E] [NumberField E]
 lemma absNorm_pos_of_ne_zero (E : Type) [Field E] [NumberField E]
     (aa : FractionalIdeal (nonZeroDivisors (𝓞 E)) E) (haa : aa ≠ 0) :
     (0 : ℝ) < (FractionalIdeal.absNorm aa : ℝ) := by
-  have h0 : FractionalIdeal.absNorm aa ≠ 0 := by
-    rw [Ne, FractionalIdeal.absNorm_eq_zero_iff]; exact haa
-  exact_mod_cast lt_of_le_of_ne (FractionalIdeal.absNorm_nonneg aa) (Ne.symm h0)
+  exact_mod_cast (lt_of_le_of_ne (FractionalIdeal.absNorm_nonneg aa) (Ne.symm (by
+    rwa [Ne, FractionalIdeal.absNorm_eq_zero_iff])))
 
 lemma idealRadius_pos (E : Type) [Field E] [NumberField E]
     (aa : FractionalIdeal (nonZeroDivisors (𝓞 E)) E) (haa : aa ≠ 0) : 0 < idealRadius E aa :=
@@ -470,12 +466,8 @@ open Finset Real MeasureTheory NumberField Formalism.HermitianLatticeCounting.Ex
 
 lemma le_exp_div_e (x : ℝ) : x ≤ Real.exp (x / Real.exp 1) := by
   have h := Real.add_one_le_exp (x / Real.exp 1 - 1)
-  have he : 0 < Real.exp 1 := Real.exp_pos 1
-  rw [Real.exp_sub, le_div_iff₀ he] at h
-  have h2 : (x / Real.exp 1 - 1 + 1) * Real.exp 1 = x := by
-    field_simp
-    ring
-  linarith
+  rw [Real.exp_sub, le_div_iff₀ (Real.exp_pos 1)] at h
+  rwa [sub_add_cancel, div_mul_cancel₀ _ (Real.exp_pos 1).ne'] at h
 
 lemma list_prod_le_exp_sum_div_e (l : List ℕ) : ((l.prod : ℕ) : ℝ) ≤ Real.exp (((l.sum : ℕ) : ℝ) / Real.exp 1) := by
   induction l with
@@ -564,22 +556,17 @@ lemma exp_div_e_le_two_pow (n : ℕ) : Real.exp ((n : ℝ) / Real.exp 1) ≤ 2 ^
 theorem blockMinorSumPowSixtyFour_of_blockMinorSumExplicit (h : BlockMinorSumExplicit) : BlockMinorSumPowSixtyFour := by
   intro E _ _ _ r S hS
   refine (h E r S hS).trans ?_
-  set f := Fintype.card (InfinitePlace E) with hf
+  set f := Fintype.card (InfinitePlace E)
   have hf1 : 1 ≤ f := Fintype.card_pos
   have h1 : Real.exp (((r : ℝ) + 1) / Real.exp 1) ≤ 2 ^ (r + 1) := by
-    have := exp_div_e_le_two_pow (r + 1); push_cast at this; exact this
-  have h2 : (2 : ℝ) ^ r ≤ 2 ^ (r + 1) := pow_le_pow_right₀ (by norm_num) (by omega)
-  have h3 : (2 : ℝ) ^ (r + 1) * 2 ^ (r + 1) = 4 ^ (r + 1) := by
-    rw [← mul_pow]; norm_num
+    simpa using exp_div_e_le_two_pow (r + 1)
   have h4 : (4 : ℝ) ^ (r + 1) ≤ 4 ^ (f * (r + 1)) :=
     pow_le_pow_right₀ (by norm_num) (by nlinarith)
-  have h5 : (64 : ℝ) ^ (f * (r + 1)) = 4 ^ (f * (r + 1)) * 16 ^ (f * (r + 1)) := by
-    rw [← mul_pow]; norm_num
-  rw [h5]
+  rw [show (64 : ℝ) ^ (f * (r + 1)) = 4 ^ (f * (r + 1)) * 16 ^ (f * (r + 1)) by rw [← mul_pow]; norm_num]
   apply mul_le_mul_of_nonneg_right _ (by positivity)
   calc (2 : ℝ) ^ r * Real.exp (((r : ℝ) + 1) / Real.exp 1) ≤ 2 ^ (r + 1) * 2 ^ (r + 1) :=
-        mul_le_mul h2 h1 (Real.exp_pos _).le (by positivity)
-    _ = 4 ^ (r + 1) := h3
+        mul_le_mul (pow_le_pow_right₀ (by norm_num) (by omega)) h1 (Real.exp_pos _).le (by positivity)
+    _ = 4 ^ (r + 1) := by rw [← mul_pow]; norm_num
     _ ≤ _ := h4
 
 lemma integral_points_weight_sum_le (hs : IdealInversePowerSum) (E : Type) [Field E] [NumberField E] [NumberField.IsTotallyComplex E]

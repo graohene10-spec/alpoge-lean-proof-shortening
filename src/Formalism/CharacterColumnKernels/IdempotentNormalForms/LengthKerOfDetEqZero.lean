@@ -46,8 +46,7 @@ variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 abbrev AK (A : Matrix ι ι O) : Matrix ι ι (FractionRing O) := A.map (algebraMap O (FractionRing O))
 
 lemma isUnit_det_AK (A : Matrix ι ι O) (hd : A.det ≠ 0) : IsUnit (AK A).det := by
-  rw [isUnit_iff_ne_zero, AK, ← RingHom.mapMatrix_apply, ← RingHom.map_det]
-  exact fun h => hd (IsFractionRing.injective O (FractionRing O) (by rw [h, map_zero]))
+  simpa only [isUnit_iff_ne_zero, AK, ← RingHom.mapMatrix_apply, ← RingHom.map_det] using fun h => hd (IsFractionRing.injective O (FractionRing O) (by rw [h, map_zero]))
 
 def phi (A : Matrix ι ι O) : (ι → O) →ₗ[O] (ι → KO O) where
   toFun x i := Submodule.Quotient.mk (((AK A)⁻¹ *ᵥ (fun j => algebraMap O (FractionRing O) (x j))) i)

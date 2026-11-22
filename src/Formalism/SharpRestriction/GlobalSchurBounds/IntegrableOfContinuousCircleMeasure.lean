@@ -15,19 +15,16 @@ section Use
 open Formalism.HermitianLattices.TraceIntegrality Formalism.LogVandermondeBounds.flipTwoThree
 
 theorem b_Wnum_one_le {n : ℕ} (lam : Fin (n + 1) → ℤ) (h : Antitone lam) : (1 : ℝ) ≤ (Wnum lam : ℝ) := by
-  have h0 : lam (Fin.last n) ≤ lam 0 := h (Fin.zero_le _)
-  have h0' : (lam (Fin.last n) : ℝ) ≤ lam 0 := by exact_mod_cast h0
-  have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+  have h0 : (lam (Fin.last n) : ℝ) ≤ lam 0 := by exact_mod_cast h (Fin.zero_le _)
   unfold Wnum
   push_cast
-  linarith
+  linarith [show (0 : ℝ) ≤ (n : ℝ) from Nat.cast_nonneg n]
 
 theorem b_summin_nonneg {n : ℕ} (lam : Fin (n + 1) → ℤ) (nu : Fin n → ℤ) (h : Formalism.LogVandermondeBounds.flipTwoThree.Interlace lam nu) :
     (0 : ℝ) ≤ ∑ i, ((min (len lam i) (B0 lam nu) : ℤ) : ℝ) := by
   have hB : 0 ≤ B0 lam nu := Finset.sum_nonneg fun i _ => by have := (h.2 i).1; omega
-  refine Finset.sum_nonneg fun i _ => ?_
-  have h1 : 0 ≤ len lam i := by have := h.2 i; unfold len; omega
-  exact_mod_cast le_min h1 hB
+  exact Finset.sum_nonneg fun i _ =>
+    Int.cast_nonneg (le_min (by have := h.2 i; unfold len; omega) hB)
 
 def Z3bd {n : ℕ} (c : ℝ) (lam : Fin (n + 1) → ℤ) (nu : Fin n → ℤ) (logT : ℝ) : ℝ :=
   -(degZ lam nu : ℝ) * logT
@@ -232,7 +229,6 @@ theorem b_lam_eq (D : D7) (u : D.what₂.Word) (j : ℕ) (hj : j ≤ D.R.m) (τ 
   · rw [dif_neg h, if_neg h, dif_pos (D.R.blk_lt hj i h)]
 
 theorem b_mem_tops (D : D7) (τ : D.what₂.Tau) : τ ∈ tops D ↔ IsTop D τ := by
-  classical
   simp only [tops, topsOf, IsTop, plc, Finset.mem_filter, Finset.mem_univ, true_and]
 
 theorem b_card_tops (D : D7) : (tops D).card = D.host.TT.card := by
@@ -338,8 +334,7 @@ theorem b_ptB_nonneg (D : D7) (u : D.what₂.Word) : 0 ≤ ptB D u :=
 
 theorem b_opSq_le_ptB (D : D7) (h6 : adm6 D) (u : D.what₂.Word) (hP : (D.fm u).PRat) (s : D.what₂.LL →+* ℂ) :
     opSq D ((D.fm u).lat D.R.m) (D.fm u).ptLat s ((D.fm u).PtL hP) ≤ ptB D u := by
-  obtain ⟨h', hb⟩ := h6 u
-  exact opNormAt_sq_le _ _ _ _ ((D.fm u).lat_good D.R.m).1 (InfinitePlace.mk s)
+  exact (h6 u).elim fun h' hb => opNormAt_sq_le _ _ _ _ ((D.fm u).lat_good D.R.m).1 (InfinitePlace.mk s)
     (IsTotallyComplex.isComplex _) ((D.fm u).PtL hP) _ (b_ptB_nonneg D u) (hb (InfinitePlace.mk s))
 
 theorem b_Tu_pos (D : D7) (u : D.what₂.Word) : (0 : ℝ) < (Tu D u : ℝ) := by
@@ -550,9 +545,8 @@ theorem b_chain_le (D : D7) (u : D.what₂.Word) (hK : ∀ i, i < D.R.m → (D.f
   induction j with
   | zero =>
     intro hj
-    simp only [Finset.range_zero, Finset.sum_empty, Real.exp_zero]
-    show Formalism.HN.opNormAt _ _ _ _ v LinearMap.id ^ 2 ≤ 1
-    exact pow_le_one₀ (norm_nonneg _) (b_opNormAt_id _ _ ((D.fm u).lat_good 0).1 v)
+    simpa only [Finset.range_zero, Finset.sum_empty, Real.exp_zero, opSqPl, Formalism.HN.opNormAt, chainL] using
+      pow_le_one₀ (norm_nonneg _) (b_opNormAt_id _ _ ((D.fm u).lat_good 0).1 v)
   | succ j ih =>
     intro hj
     rw [Finset.sum_range_succ, add_comm (∑ x ∈ Finset.range j, e x) (e j), Real.exp_add]
@@ -689,9 +683,8 @@ theorem b_Z2N : ∀ C₀ : ℝ, 0 ≤ C₀ → ∃ C : ℝ, ∀ (ι σ : Type) [
   intro C₀ hC₀
   obtain ⟨C, hC⟩ := Formalism.HermitianLattices.TraceIntegrality.second_zeta_mean_bound C₀ hC₀
   refine ⟨C, ?_⟩
-  intro ι σ _ _ _ _ TT T2 N' N m hN'
-  obtain ⟨R, rfl⟩ : ∃ R, N' = R + 1 := ⟨N' - 1, by omega⟩
-  intro nu A w a b' L logT logg logOm logOms logTh logK
+  intro ι σ _ _ _ _ TT T2 N' N m hN' nu A w a b' L logT logg logOm logOms logTh logK
+  obtain ⟨R, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hN'.ne'
   exact hC ι σ TT T2 R N m nu A w a b' L logT logg logOm logOms logTh logK
 
 def thicks (D : D7) : Finset D.what₂.Tau := by
@@ -707,9 +700,7 @@ theorem b_top_not_thick (D : D7) (τ : D.what₂.Tau) (h : IsTop D τ) : ¬ IsTh
 theorem b_toNat_cast (q : ℚ) (h : ∃ z : ℤ, q = z) (h0 : 0 ≤ q) : ((⌊q⌋.toNat : ℕ) : ℝ) = (q : ℝ) := by
   obtain ⟨z, rfl⟩ := h
   have hz : (0 : ℤ) ≤ z := by exact_mod_cast h0
-  rw [Int.floor_intCast]
-  have h2 : ((z.toNat : ℤ) : ℝ) = (z : ℝ) := by rw [Int.toNat_of_nonneg hz]
-  rw [Rat.cast_intCast, ← h2, Int.cast_natCast]
+  rw [Int.floor_intCast, Rat.cast_intCast, ← (show ((z.toNat : ℤ) : ℝ) = (z : ℝ) by rw [Int.toNat_of_nonneg hz]), Int.cast_natCast]
 
 theorem b_coef {c C₀ X Y : ℝ} (h1 : |c| ≤ C₀) (hX : 0 ≤ X) (hXY : X ≤ Y) : c * X ≤ C₀ * Y := by
   nlinarith [mul_nonneg (sub_nonneg.2 (le_abs_self c)) hX, mul_nonneg (sub_nonneg.2 h1) hX,
@@ -1015,10 +1006,9 @@ theorem b_card_Gx (D : D7) (i : ℕ) : Fintype.card (Gx D i) = gDim D i := by
   simp [Gx, gDim, Fintype.card_prod, Fintype.card_fin, D.what₂.card_Tau, mul_assoc]
 
 theorem b_host_v_pos (D : D7) : 0 < D.host.v := by
-  unfold Host.v Host.rdE
-  have h : (0 : ℝ) < |(discr D.host.E : ℝ)| := abs_pos.2 (by exact_mod_cast NumberField.discr_ne_zero D.host.E)
-  have := Real.rpow_pos_of_pos h ((1 : ℝ) / (Module.finrank ℚ D.host.E : ℝ))
-  linarith
+  simpa [Host.v, Host.rdE] using Real.rpow_pos_of_pos
+    (abs_pos.2 (by exact_mod_cast NumberField.discr_ne_zero D.host.E))
+    ((1 : ℝ) / (Module.finrank ℚ D.host.E : ℝ))
 
 theorem b_one_le_f (D : D7) : 1 ≤ D.R.f := by
   unfold Ranks.f Ranks.n
@@ -1197,12 +1187,10 @@ theorem b_prod_emb {K : Type} [Field K] [NumberField K] (x : K) :
     Finset.prod_const, InfinitePlace.card_filter_mk_eq]
 
 theorem b_finrank_host (D : D7) : Module.finrank ℚ D.host.E = 2 * D.R.f := by
-  have hb := (factEmb D.R D.host).1
-  have h1 : Nat.card (D.R.GG) = Nat.card (D.host.E →+* ℂ) := Nat.card_congr (Equiv.ofBijective _ hb)
-  have h2 : Nat.card (D.host.E →+* ℂ) = Module.finrank ℚ D.host.E := by
-    rw [Nat.card_eq_fintype_card]; exact NumberField.Embeddings.card D.host.E ℂ
-  have h4 : Nat.card (D.R.GG) = 4 * D.R.ord := D.R.natCard_GG
-  rw [← h2, ← h1, h4]
+  rw [← NumberField.Embeddings.card D.host.E ℂ,
+      ← Nat.card_eq_fintype_card,
+      ← Nat.card_congr (Equiv.ofBijective _ (factEmb D.R D.host).1),
+      D.R.natCard_GG]
   simp only [Ranks.f, Ranks.n]
   ring
 
@@ -1308,8 +1296,7 @@ theorem propZ_second_holds : HookLengthFactorialBound := by
     simp only [he]
     refine ⟨h1, fun h => ?_⟩
     have h0 : (nu ⟨0, h⟩ : ℝ) = (nn 0 : ℝ) := by
-      have : nu ⟨0, h⟩ = nn 0 := hnn 0
-      rw [this]; norm_cast
+      rw [show nu ⟨0, h⟩ = nn 0 from hnn 0]; norm_cast
     rw [h0]
     have e1 : (((M + 1 : ℕ) : ℝ)) = (M : ℝ) + 1 := by push_cast; ring
     rw [e1, ← add_assoc]
@@ -1349,12 +1336,11 @@ theorem numbers_of_nums {D : D7} {T g1 g2 : ℕ} {Cn x b L b' Sc eta : ℝ} (K :
   · nlinarith
   · have : 0 ≤ (D.R.m : ℝ) * L := by positivity
     nlinarith
-  · have : ((g1 : ℝ) * g2) = ((g1 * g2 : ℕ) : ℝ) := by push_cast; ring
-    rw [this]; exact Real.log_natCast_nonneg _
+  · simpa [Nat.cast_mul] using Real.log_natCast_nonneg (g1 * g2)
   · by_cases h1 : (g1 : ℝ) = 0
-    · rw [h1, zero_mul, Real.log_zero]; positivity
+    · simp [h1]; positivity
     by_cases h2 : (g2 : ℝ) = 0
-    · rw [h2, mul_zero, Real.log_zero]; positivity
+    · simp [h2]; positivity
     rw [Real.log_mul h1 h2]
     nlinarith
   · have := D.R.m_add_three_le_k; omega
@@ -2941,9 +2927,8 @@ theorem normSq_at_zero_le_circle_mean (g : ℂ → ℂ) (hg : Differentiable ℂ
 
 theorem rot_mp (ι : Type) [Fintype ι] (θ : ℝ) :
     MeasurePreserving (fun (w : ι → ℂ) g => cexp ((θ : ℂ) * I) * w g) volume volume := by
-  have h := volume_preserving_pi (ι := ι) (α' := fun _ => ℂ) (β' := fun _ => ℂ)
+  simpa [rotation_apply, Circle.coe_exp] using volume_preserving_pi (ι := ι) (α' := fun _ => ℂ) (β' := fun _ => ℂ)
     (f := fun _ => (rotation (Circle.exp θ) : ℂ → ℂ)) (fun _ => (rotation (Circle.exp θ)).measurePreserving)
-  simpa [rotation_apply, Circle.coe_exp] using h
 
 end MV1
 
@@ -3050,10 +3035,7 @@ theorem gauss_mv (D : D7) (i : ℕ) (s : D.what₂.LL →+* ℂ) (F : (Gx D i �
 
 theorem supUnfold_holds (D : D7) : SupUnfold D := by
   intro i s T Th hA B hB z
-  have hB0 : 0 ≤ B := le_trans (tsum_nonneg fun _ => (Real.exp_pos _).le) (hB 0).2
-  have hl0 : 0 ≤ T.l2Sq Th := by
-    unfold Torus.l2Sq
-    exact integral_nonneg fun x => dens_nonneg D i s Th x
+  have hBL : 0 ≤ 2 ^ gDim D i * (B * T.l2Sq Th) := mul_nonneg (by positivity) (mul_nonneg (le_trans (tsum_nonneg fun _ => (Real.exp_pos _).le) (hB 0).2) (integral_nonneg fun x => dens_nonneg D i s Th x))
   have hFd : Differentiable ℂ (trans D i s (-z) Th) := by
     unfold trans Hherm
     have h1 : Differentiable ℂ fun w : Gx D i → ℂ => Th (w - -z) := hA.1.comp (by fun_prop)
@@ -3085,7 +3067,7 @@ theorem supUnfold_holds (D : D7) : SupUnfold D := by
     exact (Continuous.measurable (by fun_prop)).ennreal_ofReal)] at h1
   have h2 := le_trans h1 (mul_le_mul_right (unfold_le D i s T Th hA B hB z) _)
   rw [← ENNReal.ofReal_mul (by positivity)] at h2
-  have h3 := (ENNReal.ofReal_le_ofReal_iff (by positivity)).1 h2
+  have h3 := (ENNReal.ofReal_le_ofReal_iff hBL).1 h2
   linarith [h3]
 
 theorem supBound_holds (D : D7) : ThetaSupremumBound D := by

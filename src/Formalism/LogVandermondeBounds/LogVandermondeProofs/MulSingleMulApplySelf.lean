@@ -85,13 +85,10 @@ lemma inj_core (ψ : (ι → H) → K)
         have hset : univ.filter (fun w => ((Pi.mulSingle v c : ι → H) * h) w = 1)
             = (univ.filter (fun w => h w = 1)).erase v := by
           ext w
-          simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_erase]
           by_cases hwv : w = v
           · subst hwv
-            rw [mulSingle_mul_apply_self, hv, mul_one]
-            simp [hc]
-          · rw [mulSingle_mul_apply_ne v w c h hwv]
-            simp [hwv]
+            simp [hv, hc]
+          · simp [hwv]
         rw [hset]
         exact Finset.card_erase_lt_of_mem (by simp [hv])
       · intro h1

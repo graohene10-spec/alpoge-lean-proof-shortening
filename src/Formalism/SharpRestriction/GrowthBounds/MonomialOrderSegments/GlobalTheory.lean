@@ -62,9 +62,7 @@ theorem tangent_exponent_same_block {ζ ζ' : D.EM} (hb : D.SameBlockAlt ζ ζ')
 
 theorem label_function_same_block {ζ ζ' : D.EM} (hb : D.SameBlockAlt ζ ζ') : D.labF ζ' = D.labF ζ := by
   unfold SameBlockAlt at hb
-  obtain ⟨_, hlab, _⟩ := hb
-  funext t a
-  exact hlab t a
+  exact funext (fun t => funext (hb.2.1 t))
 
 def dUp : D.ML → ℕ :=
   Sum.elim D.dB (Sum.elim (fun _ => 0) (Sum.elim D.dT (fun _ => 0)))

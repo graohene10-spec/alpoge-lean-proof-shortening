@@ -237,8 +237,7 @@ lemma euclNorm_add_le {ι : Type} [Fintype ι] [DecidableEq ι] (v w : ι → �
 lemma euclNorm_sq_eq_star_dotProduct {ι : Type} [Fintype ι] [DecidableEq ι] (v : ι → ℂ) : ((n2G v ^ 2 : ℝ) : ℂ) = star v ⬝ᵥ v := by
   rw [euclNorm_sq_eq_sum_sq, dotProduct]
   push_cast
-  apply Finset.sum_congr rfl; intro i _
-  rw [Pi.star_apply, Complex.star_def, Complex.conj_mul']
+  simp [Pi.star_apply, Complex.conj_mul']
 
 lemma euclNorm_mulVec_le_frobenius {ι : Type} [Fintype ι] [DecidableEq ι] (A : Matrix ι ι ℂ) (v : ι → ℂ) :
     n2G (A *ᵥ v) ≤ hsG A * n2G v := by

@@ -42,8 +42,7 @@ private theorem algEquiv_eqOn_K_of_eq_sqd (H : Host R) (σ τ : H.E ≃ₐ[ℚ] 
 
 private theorem algEquiv_fix_K_of_gal_eq_one (H : Host R) (σ : H.E ≃ₐ[ℚ] H.E) (h : (H.gal σ).1.2 = 1)
     (x : H.E) (hx : x ∈ H.K) : σ x = x := by
-  have h1 := algEquiv_eqOn_K_of_eq_sqd H σ 1 (by rw [H.gal_sqd, h, AlgEquiv.one_apply]; simp) x hx
-  rwa [AlgEquiv.one_apply] at h1
+  simpa [AlgEquiv.one_apply] using algEquiv_eqOn_K_of_eq_sqd H σ 1 (by rw [H.gal_sqd, h, AlgEquiv.one_apply]; simp) x hx
 
 theorem sigmaOf_fix_K (g : R.GG) (hg : g ∈ R.Psi) (x : H.E) (hx : x ∈ H.K) :
     H.sigmaOf g x = x := by
@@ -69,8 +68,7 @@ theorem b_ne_zero : H.sqrtMinusD ≠ 0 := by
   simpa [show H.sqd = 0 from h] using H.sqd_sq
 
 theorem conj_conj (x : H.E) : H.conj (H.conj x) = x := by
-  have h : H.conj * H.conj = 1 := by
-    apply H.gal.injective
+  have h : H.conj * H.conj = 1 := H.gal.injective <| by
     rw [map_mul, map_one, show H.gal H.conj = R.cc from H.gal.apply_symm_apply _]
     exact Formalism.MainNotions.UnusedSlot33.HK.cc_mul_cc R.toFrame
   rw [← AlgEquiv.mul_apply, h, AlgEquiv.one_apply]
@@ -91,9 +89,8 @@ theorem eq_of_le_of_absNorm_eq {K : Type*} [Field K] [NumberField K] {I J : Idea
   have h1 : Ideal.absNorm M = 1 := by
     have h2 := congrArg Ideal.absNorm hM
     rw [map_mul, ← h] at h2
-    exact Nat.eq_of_mul_eq_mul_left (Nat.pos_of_ne_zero hI) (h2.symm.trans (mul_one _).symm)
-  rw [Ideal.absNorm_eq_one_iff] at h1
-  rw [hM, h1, Ideal.mul_top]
+    exact Nat.eq_of_mul_eq_mul_left (Nat.pos_of_ne_zero hI) (by simpa using h2.symm)
+  rw [hM, Ideal.absNorm_eq_one_iff.mp h1, Ideal.mul_top]
 
 theorem different_quad (K : Type) [Field K] [NumberField K] (a : ℤ) (x : K)
     (hx : x ^ 2 = (a : K)) (hadj : IntermediateField.adjoin ℚ {x} = ⊤) (hsf : Squarefree a)

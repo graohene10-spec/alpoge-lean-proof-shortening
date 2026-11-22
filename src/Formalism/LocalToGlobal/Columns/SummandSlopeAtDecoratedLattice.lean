@@ -71,7 +71,6 @@ def castW {n κ : ℕ} (h : κ + 1 = n) (lam : DomWeight n) : Fin (κ + 1) → �
 
 theorem castW_anti {n κ : ℕ} (h : κ + 1 = n) (lam : DomWeight n) : Antitone (castW h lam) := by
   intro i j hij
-  show lam.w (Fin.cast h j) ≤ lam.w (Fin.cast h i)
   exact lam.anti (by rw [Fin.le_iff_val_le_val] at hij ⊢; simpa using hij)
 
 section Nums

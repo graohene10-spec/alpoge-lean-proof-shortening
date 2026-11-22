@@ -63,8 +63,7 @@ theorem binomial_expansion_coeff_padic_dvd (p t : ℕ) (hp : p.Prime) (rho M l :
 theorem binomial_expansion_coeff_zero_of_gt (P rho M l : ℕ) (h : M < l) : binomialExpansionCoeff P rho M l = 0 := by
   unfold binomialExpansionCoeff
   obtain ⟨q, hq⟩ : X ∣ ((1 + X) ^ P - 1 : ℤ[X]) := by
-    rw [X_dvd_iff]
-    simp [coeff_one_add_X_pow]
+    simp [X_dvd_iff, coeff_one_add_X_pow]
   rw [hq, mul_pow, show (1 + X : ℤ[X]) ^ rho * (X ^ l * q ^ l) = X ^ l * ((1 + X) ^ rho * q ^ l) by ring,
     coeff_X_pow_mul', if_neg (by omega)]
 

@@ -35,9 +35,8 @@ theorem TiedDataSK.kernel_frame_at_infinity {ex : Extra D L hT Gi Gl K Y cX} (T 
     (T.ker.O u D.what₂.mu0).frm i (Herm.yCast D u i y) τ =
       Forms.atInf (Forms.embT D) (T.crd u i hi).1 τ * (Forms.eYS (T.cols.forms u) i hi y).1 τ := by
   rw [T.ker_frm]
-  congr 2
-  simp only [Forms.twYS, Equiv.trans_apply]
-  rw [T.tw.chM.eY u i hi, Equiv.symm_apply_apply]
+  simp only [Forms.twYS, Equiv.trans_apply, T.tw.chM.eY u i hi, Equiv.symm_apply_apply]
+  exact hi
 
 theorem TiedDataSK.ker_de {ex : Extra D L hT Gi Gl K Y cX} (T : TiedDataSK ex) (u : D.what₂.Word) (μ : D.what₂.Tup) (i : ℕ)
     (hi : i ≤ D.R.m) (y : (D.chTw u μ).Y i) (τ : D.what₂.Tau) :

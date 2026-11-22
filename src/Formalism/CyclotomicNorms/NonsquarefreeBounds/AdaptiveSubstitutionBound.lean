@@ -82,15 +82,13 @@ end AdaptiveSubstitution
 open SubstitutionExponents AdaptiveSubstitution in
 theorem adaptive_substitution_bound : SubstitutionAdaptive := by
   intro k _ ℓ r s F B hℓ hF
-  classical
   have hne : ∀ t, {d | MvPowerSeries.coeff d (F t) ≠ 0}.Nonempty := fun t =>
     (MvPowerSeries.ne_zero_iff_exists_coeff_ne_zero _).1 (hF t)
   let α : Fin s → (Fin r →₀ ℕ) := fun t => (revLex_wf (r := r)).min _ (hne t)
   obtain ⟨e, he1, he2, he3⟩ := exists_exps_adaptive ℓ hℓ α B
   refine ⟨e, he1, he2, fun t h0 => ?_⟩
-  have hn : ∀ j, ℓ ^ e j ≠ 0 := fun j => pow_ne_zero _ (by omega)
   have hc := congrArg (PowerSeries.coeff (weight (fun j => ℓ ^ e j) (α t))) h0
-  rw [coeff_subst_weight (fun j => ℓ ^ e j) hn, map_zero,
+  rw [coeff_subst_weight (fun j => ℓ ^ e j) (fun j => pow_ne_zero _ (by omega)), map_zero,
     finsum_eq_single _ (α t)] at hc
   · rw [if_pos rfl] at hc
     exact (revLex_wf (r := r)).min_mem _ (hne t) hc

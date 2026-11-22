@@ -52,8 +52,7 @@ theorem nonempty_GCtx (E : Type*) [NormedAddCommGroup E] [NormedSpace ℂ E] (r 
   ⟨{ nV := r, Eop := fun _ _ _ _ => 0, H := 0, eIdx := id, Rad := fun _ _ => False, PolyInv := ∅ }⟩
 
 theorem size_condition_exists (C : ℝ) (L : Lev) (N : ℕ) : ∃ (A : ℝ) (mm : ℕ), Big C L N A mm := by
-  obtain ⟨mm, hmm⟩ := exists_nat_ge
-    (C * ((L.r : ℝ) + 1) ^ 4 * ((N : ℝ) * ((2 * L.r + L.k0 + 2 : ℕ) : ℝ) ^ 2 + ((2 * L.r + L.k0 + 2 : ℕ) : ℝ) ^ 3))
+  obtain ⟨mm, hmm⟩ := exists_nat_ge (C * ((L.r : ℝ) + 1) ^ 4 * ((N : ℝ) * ((2 * L.r + L.k0 + 2 : ℕ) : ℝ) ^ 2 + ((2 * L.r + L.k0 + 2 : ℕ) : ℝ) ^ 3) : ℝ)
   exact ⟨_, mm, le_rfl, hmm⟩
 
 def RadialOperatorsWellDefinedOnGerms (L : Lev) : Prop :=
@@ -316,14 +315,10 @@ theorem diagonal_torus_mem_maximal_compact (θ : Fin 1 → ℝ) :
   constructor
   · rw [Matrix.mem_unitaryGroup_iff]
     ext i j
-    have hi : i = 0 := Subsingleton.elim _ _
-    have hj : j = 0 := Subsingleton.elim _ _
-    subst hi; subst hj
+    fin_cases i; fin_cases j
     simp [Matrix.mul_apply, Matrix.star_apply, ← Complex.exp_conj, ← Complex.exp_add]
   · ext i j
-    have hi : i = 0 := Subsingleton.elim _ _
-    have hj : j = 0 := Subsingleton.elim _ _
-    subst hi; subst hj
+    fin_cases i; fin_cases j
     simp [Matrix.mul_apply, Formalism.REAL.Jm, Formalism.MainNotions.S.allPos]
 
 def powerCharacterU1 (m : ℕ) : Matrix (Fin (0 + 1)) (Fin (0 + 1)) ℂ → (ℂ →L[ℂ] ℂ) :=
@@ -481,9 +476,8 @@ theorem level_from_reps_hyp_restrict_down (hσ : Formalism.MainNotions.S.IsHCTyp
     (hint : ∀ i, ∃ m : ℤ, u i - u' i = m) (hI : Formalism.MainNotions.S.IsCutS u u' I)
     (hρ : ∃ ρ : Fin k0 → ℝ, Interlace u ρ ∧ Interlace u' ρ) (i r' : ℕ) (h : i + r' = r) :
     HypC ((levelFromCompactRepresentations k0 r Hp Hq σ σ').down i r' h) u u' I := by
-  obtain ⟨_, H''⟩ := hyp_transport_along_level_eq k0 r' Hp Hq σ σ' _ (level_from_reps_restrict_down k0 r Hp Hq σ σ' i r' h) u u' I
-    (level_from_reps_hyp k0 r' Hp Hq σ σ' u u' I hσ hσ' hint hI hρ)
-  exact H''
+  exact Exists.elim (hyp_transport_along_level_eq k0 r' Hp Hq σ σ' _ (level_from_reps_restrict_down k0 r Hp Hq σ σ' i r' h) u u' I (level_from_reps_hyp k0 r' Hp Hq σ σ' u u' I hσ hσ' hint hI hρ))
+    (fun _ H => H)
 
 theorem negative_basis_vector_lift_rank : liftVectorLevel (negativeBasisVector k0 r) = negativeBasisVector k0 (r + 1) := by
   funext p
@@ -515,8 +509,7 @@ theorem level_from_reps_compatible : (levelFromCompactRepresentations k0 r Hp Hq
     (fun g => σ' (upperBlockOfMatrix k0 (r + 1) g)) := by
   intro g
   have hb := upper_block_lift_rank_eq k0 r g
-  exact ⟨by show σ (upperBlockOfMatrix k0 r g) = σ (upperBlockOfMatrix k0 (r + 1) (ι1 g)); rw [hb],
-    by show σ' (upperBlockOfMatrix k0 r g) = σ' (upperBlockOfMatrix k0 (r + 1) (ι1 g)); rw [hb]⟩
+  exact ⟨congrArg σ hb.symm, congrArg σ' hb.symm⟩
 
 theorem level_from_reps_hyp_lift_rank (hσ : Formalism.MainNotions.S.IsHCTypeU (k0 + 1) u σ) (hσ' : Formalism.MainNotions.S.IsHCTypeU (k0 + 1) u' σ')
     (hint : ∀ i, ∃ m : ℤ, u i - u' i = m) (hI : Formalism.MainNotions.S.IsCutS u u' I)

@@ -34,9 +34,7 @@ lemma smul_eq_zero_iff_crit {V : Type*} [AddCommGroup V] [Module Λ V] [IsSimple
       rw [mul_smul, hv, mul_smul, mul_smul, hx, smul_zero, smul_zero]
     rw [sub_smul, e1, e2, zero_sub, neg_eq_zero] at h1
     by_contra hcm
-    have hu : IsUnit c := by
-      by_contra hu'
-      exact hcm hu'
+    have hu : IsUnit c := Classical.byContradiction fun hu' => hcm hu'
     exact hv0 (((hu.map (algebraMap O Λ)).smul_eq_zero).mp h1)
   · intro hc
     by_contra hx

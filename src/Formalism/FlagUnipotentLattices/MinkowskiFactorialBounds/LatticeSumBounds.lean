@@ -7,14 +7,12 @@ namespace Formalism.HermitianLatticeCounting.P
 
 theorem sesqFormSumExpansion : CommonLiftExpand := by
   intro V _ _ h r e e' l₁ l₂ α α' h1 h2
-  have hA : ∀ x, h (∑ a, α a • e a) x = ∑ a, α a * h (e a) x := by
-    intro x
-    simp [map_sum, LinearMap.sum_apply, map_smul, LinearMap.smul_apply]
-  have hB : ∀ x, h x (∑ b, α' b • e' b) = ∑ b, conj (α' b) * h x (e' b) := by
-    intro x
-    simp [map_sum, map_smulₛₗ]
-  simp only [map_add, LinearMap.add_apply, hA, hB, h1, h2, mul_zero, Finset.sum_const_zero,
-    zero_add, add_zero, Finset.mul_sum, mul_assoc]
+  simp [map_add, LinearMap.add_apply, map_sum, LinearMap.sum_apply, map_smul, LinearMap.smul_apply,
+    map_smulₛₗ, h1, h2, mul_zero, Finset.sum_const_zero, zero_add, add_zero, Finset.mul_sum,
+    mul_assoc]
+  conv_rhs => rw [Finset.sum_comm]
+  refine Finset.sum_congr rfl fun x _ => Finset.sum_congr rfl fun i _ => ?_
+  ring
 
 theorem hermitianDefectBaseChange : PhiBaseChange := by
   intro n R _ _ _ _ S Y g hg
@@ -34,9 +32,7 @@ theorem hermitianDefectConjTranspose : PhiInverse := by
   have e1 : (1 + S * Yᴴ) * (1 + S * Y) = 1 := by
     have : (1 + S * Yᴴ) * (1 + S * Y) = 1 + S * (Y + Yᴴ + Yᴴ * S * Y) := by noncomm_ring
     rw [this, hD, Matrix.mul_zero, add_zero]
-  have e2 : (1 + S * Y) * (1 + S * Yᴴ) = 1 := by
-    rw [← Matrix.inv_eq_right_inv e1]
-    exact Matrix.nonsing_inv_mul _ (Matrix.isUnit_det_of_right_inverse e1)
+  have e2 : (1 + S * Y) * (1 + S * Yᴴ) = 1 := by simpa [Matrix.inv_eq_right_inv e1] using Matrix.nonsing_inv_mul (1 + S * Yᴴ) (Matrix.isUnit_det_of_right_inverse e1)
   have e3 : S * (Yᴴ + Y + Y * S * Yᴴ) = 0 := by
     have : S * (Yᴴ + Y + Y * S * Yᴴ) = (1 + S * Y) * (1 + S * Yᴴ) - 1 := by noncomm_ring
     rw [this, e2, sub_self]
@@ -69,14 +65,10 @@ theorem prodMaxLeProdMaxDiv : PThreshold := by
 theorem powSubOneIdentities : PowSubOneIdentities := by
   intro T k f hT hk
   have hT1 : (1:ℝ) < T := by exact_mod_cast (by omega : 1 < T)
-  have hTk : (0:ℝ) < (T:ℝ) ^ k := by positivity
   constructor
-  · rw [mul_comm f k, pow_mul, ← mul_pow, mul_sub, mul_one, mul_inv_cancel₀ hTk.ne']
+  · rw [mul_comm f k, pow_mul, ← mul_pow, mul_sub, mul_one, mul_inv_cancel₀ (((by positivity : (0:ℝ) < (T:ℝ) ^ k)).ne')]
   · have key : (T:ℝ) ^ (k - 1) ≤ ((T:ℝ) ^ k - 1) / ((T:ℝ) - 1) := by
-      rw [le_div_iff₀ (by linarith)]
-      have e : (T:ℝ) ^ k = (T:ℝ) ^ (k - 1) * T := by
-        rw [← pow_succ]; congr 1; omega
-      rw [e]
+      rw [le_div_iff₀ (by linarith), show (T:ℝ) ^ k = (T:ℝ) ^ (k - 1) * T by rw [← pow_succ, Nat.sub_add_cancel (by omega : 1 ≤ k)]]
       nlinarith [one_le_pow₀ hT1.le (n := k - 1)]
     rw [← pow_mul, mul_comm f (k - 1), pow_mul]
     exact pow_le_pow_left₀ (by positivity) key f
@@ -1792,12 +1784,8 @@ theorem invMassFactorLe : InvMk := by
   have hWpos := factorialPiWeight_pos v hv0 k
   have hWi : (s5bA v k)⁻¹ ≤
       (Real.exp 1 * Real.pi / (k * v)) ^ k * Real.sqrt (k / (2 * Real.pi)) := by
-    calc (s5bA v k)⁻¹ = (s5bA v k)⁻¹ * 1 := (mul_one _).symm
-      _ ≤ (s5bA v k)⁻¹ * ((Real.exp 1 * Real.pi / (k * v)) ^ k *
-            Real.sqrt (k / (2 * Real.pi)) * s5bA v k) :=
-          mul_le_mul_of_nonneg_left hW (inv_nonneg.mpr hWpos.le)
-      _ = (Real.exp 1 * Real.pi / (k * v)) ^ k * Real.sqrt (k / (2 * Real.pi)) := by
-          rw [mul_comm (s5bA v k)⁻¹, mul_assoc, mul_inv_cancel₀ hWpos.ne', mul_one]
+    rw [inv_eq_one_div, div_le_iff₀ hWpos]
+    exact hW
   have hs1 : Real.sqrt (k / (2 * Real.pi)) * 1.356 ≤ k := by
     have h1 : (k:ℝ) / (2 * Real.pi) ≤ ((k:ℝ) / 2) ^ 2 := by
       rw [div_le_iff₀ (by positivity)]
@@ -1817,8 +1805,8 @@ theorem invMassFactorLe : InvMk := by
         ≤ ((Real.exp 1 * Real.pi / (k * v)) ^ k * Real.sqrt (k / (2 * Real.pi))) ^ f *
             (2 * v) ^ f * (1.356:ℝ) ^ f :=
         mul_le_mul (mul_le_mul (pow_le_pow_left₀ (by positivity) hWi f) hs2 (by positivity)
-          (by positivity)) (hLi.trans (pow_le_pow_left₀ (by linarith) hzle f)) (by positivity)
-          (by positivity)
+          (by positivity)) (hLi.trans (pow_le_pow_left₀ (by linarith) hzle f))
+          (inv_nonneg.mpr hL0.le) (by positivity)
     _ = ((Real.exp 1 * Real.pi / (k * v)) ^ k) ^ f * (Real.sqrt (k / (2 * Real.pi)) * 1.356) ^ f *
           (2 * v) ^ f := by ring
     _ ≤ ((Real.exp 1 * Real.pi / (k * v)) ^ k) ^ f * (k:ℝ) ^ f * (2 * v) ^ f :=
@@ -1928,13 +1916,8 @@ theorem massRatioBound : XiBound := by
   have hB3 : ∀ j ∈ Finset.Ioc (k - s) k, 3 ≤ j := by intro j hj; rw [Finset.mem_Ioc] at hj; omega
   have hzpos : ∀ j, 3 ≤ j → 0 < Formalism.HermitianLatticeCounting.LatticeSumBounds.zetaR j := fun j hj =>
     lt_of_lt_of_le one_pos (one_le_zetaSeries j (by omega))
-  have hLpos : ∀ j, 3 ≤ j → 0 < Lv j := fun j hj =>
-    lt_of_lt_of_le (inv_pos.mpr (pow_pos (hzpos j hj) f)) (hL j hj).1
-  have hW : ∀ j, 0 < s5bA v j := factorialPiWeight_pos v hv0
-  have hσ0 : 0 < Real.sqrt ((2 * v) ^ f) := Real.sqrt_pos.mpr (by positivity)
-  have hσ2 : Real.sqrt ((2 * v) ^ f) ^ 2 = (2 * v) ^ f := Real.sq_sqrt (by positivity)
-  have hPB0 : 0 < ∏ j ∈ Finset.Ioc (k - s) k, s5bA v j := Finset.prod_pos (fun j _ => hW j)
-  have hLB0 : 0 < ∏ j ∈ Finset.Ioc (k - s) k, Lv j := Finset.prod_pos (fun j hj => hLpos j (hB3 j hj))
+  have hPB0 : 0 < ∏ j ∈ Finset.Ioc (k - s) k, s5bA v j := Finset.prod_pos (fun j _ => factorialPiWeight_pos v hv0 j)
+  have hLB0 : 0 < ∏ j ∈ Finset.Ioc (k - s) k, Lv j := Finset.prod_pos (fun j hj => lt_of_lt_of_le (inv_pos.mpr (pow_pos (hzpos j (hB3 j hj)) f)) (hL j (hB3 j hj)).1)
   have hR := prod_factorialPiWeight_le v hv k s hs hk
   have hratio : (∏ j ∈ Finset.Ioc 2 s, s5bA v j) /
       (∏ j ∈ Finset.Ioc (k - s) k, s5bA v j) ≤
@@ -1943,7 +1926,7 @@ theorem massRatioBound : XiBound := by
     rw [div_le_iff₀ hPB0]; exact hR
   have hLA : ∏ j ∈ Finset.Ioc 2 s, Lv j ≤ Real.exp 0.356 ^ f := by
     calc ∏ j ∈ Finset.Ioc 2 s, Lv j ≤ ∏ j ∈ Finset.Ioc 2 s, Formalism.HermitianLatticeCounting.LatticeSumBounds.zetaR j ^ f :=
-          Finset.prod_le_prod (fun j hj => (hLpos j (hA3 j hj)).le) (fun j hj => (hL j (hA3 j hj)).2)
+          Finset.prod_le_prod (fun j hj => (lt_of_lt_of_le (inv_pos.mpr (pow_pos (hzpos j (hA3 j hj)) f)) (hL j (hA3 j hj)).1).le) (fun j hj => (hL j (hA3 j hj)).2)
       _ = (∏ j ∈ Finset.Ioc 2 s, Formalism.HermitianLatticeCounting.LatticeSumBounds.zetaR j) ^ f := Finset.prod_pow _ _ _
       _ ≤ Real.exp 0.356 ^ f :=
           pow_le_pow_left₀ (Finset.prod_nonneg (fun j hj => (hzpos j (hA3 j hj)).le))
@@ -1953,9 +1936,7 @@ theorem massRatioBound : XiBound := by
       rw [← Finset.prod_pow, ← Finset.prod_inv_distrib]
       exact Finset.prod_le_prod (fun j hj => (inv_pos.mpr (pow_pos (hzpos j (hB3 j hj)) f)).le)
         (fun j hj => (hL j (hB3 j hj)).1)
-    have h2 : 0 < (∏ j ∈ Finset.Ioc (k - s) k, Formalism.HermitianLatticeCounting.LatticeSumBounds.zetaR j) ^ f :=
-      pow_pos (Finset.prod_pos (fun j hj => hzpos j (hB3 j hj))) f
-    have h3 := inv_anti₀ (inv_pos.mpr h2) h1
+    have h3 := inv_anti₀ (inv_pos.mpr (pow_pos (Finset.prod_pos (fun j hj => hzpos j (hB3 j hj))) f)) h1
     rw [inv_inv] at h3
     exact h3.trans (pow_le_pow_left₀ (Finset.prod_nonneg (fun j hj => (hzpos j (hB3 j hj)).le))
       (prod_zetaSeries_le _ hB3) f)
@@ -1975,9 +1956,9 @@ theorem massRatioBound : XiBound := by
   rw [prod_massFactor, prod_massFactor, Nat.card_Ioc, Nat.card_Ioc, show k - (k - s) = s by omega]
   have hs' : (Real.sqrt ((2 * v) ^ f))⁻¹ ^ s = (Real.sqrt ((2 * v) ^ f))⁻¹ ^ ((s - 2) + 2) := by
     congr 1; omega
+  have hσ0 : 0 < Real.sqrt ((2 * v) ^ f) := Real.sqrt_pos.mpr (by positivity)
+  have hσ2 : Real.sqrt ((2 * v) ^ f) ^ 2 = (2 * v) ^ f := Real.sq_sqrt (by positivity)
   rw [hs', key _ _ _ _ _ _ _ hPB0 hLB0 hσ0, hσ2]
-  have hRf0 : 0 ≤ Real.pi ^ ((s - 2) * (k - s - 2)) * 17 *
-      ((Real.exp 1 * Real.pi / (k * v)) ^ k * Real.sqrt (k / (2 * Real.pi))) := by positivity
   calc mass2 * ((∏ j ∈ Finset.Ioc 2 s, s5bA v j) /
           (∏ j ∈ Finset.Ioc (k - s) k, s5bA v j)) ^ f * (2 * v) ^ f *
           ((∏ j ∈ Finset.Ioc 2 s, Lv j) * (∏ j ∈ Finset.Ioc (k - s) k, Lv j)⁻¹)
@@ -1985,10 +1966,10 @@ theorem massRatioBound : XiBound := by
             ((Real.exp 1 * Real.pi / (k * v)) ^ k * Real.sqrt (k / (2 * Real.pi)))) ^ f * (2 * v) ^ f *
           (Real.exp 0.356 ^ f * Real.exp 0.356 ^ f) :=
         mul_le_mul (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left
-          (pow_le_pow_left₀ (div_nonneg (Finset.prod_nonneg (fun j _ => (hW j).le)) hPB0.le) hratio f) hm2)
+          (pow_le_pow_left₀ (div_nonneg (Finset.prod_nonneg (fun j _ => (factorialPiWeight_pos v hv0 j).le)) hPB0.le) hratio f) hm2)
           (by positivity))
           (mul_le_mul hLA hLB (inv_nonneg.mpr hLB0.le) (by positivity))
-          (mul_nonneg (Finset.prod_nonneg (fun j hj => (hLpos j (hA3 j hj)).le)) (inv_nonneg.mpr hLB0.le))
+          (mul_nonneg (Finset.prod_nonneg (fun j hj => (lt_of_lt_of_le (inv_pos.mpr (pow_pos (hzpos j (hA3 j hj)) f)) (hL j (hA3 j hj)).1).le)) (inv_nonneg.mpr hLB0.le))
           (by positivity)
     _ ≤ mass2 * (Real.pi ^ ((s - 2) * (k - s - 2)) * 17 *
             ((Real.exp 1 * Real.pi / (k * v)) ^ k * Real.sqrt (k / (2 * Real.pi)))) ^ f * (2 * v) ^ f *

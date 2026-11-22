@@ -113,13 +113,10 @@ def Ku (hK : X.LevelSubgroupCharacter) : Subgroup (Hfin X u) where
 
 theorem chi2_apply_one (hK : X.LevelSubgroupCharacter) : X.chi2 1 = 1 := by
   have h1 := hK.2.2.2.1 1 hK.1 1 hK.1
-  have hn := hK.2.2.2.2 1 hK.1
-  rw [one_mul] at h1
   have h0 : X.chi2 1 ≠ 0 := by
-    intro h
-    rw [h, norm_zero] at hn
-    exact zero_ne_one hn
-  exact mul_left_cancel₀ h0 (h1.symm.trans (mul_one _).symm)
+    rw [← norm_ne_zero_iff, hK.2.2.2.2 1 hK.1]
+    norm_num
+  exact mul_left_cancel₀ h0 (by simpa using h1.symm)
 
 def psiK (hK : X.LevelSubgroupCharacter) : Ku X u hK →* ℂˣ where
   toFun h := Units.mk0 (X.chi2 ((X.xu u)⁻¹ * ((h : Hfin X u) : X.B.I.Gf) * X.xu u)) (by
@@ -217,11 +214,9 @@ def Pu (hK : X.LevelSubgroupCharacter) (Dt : Set X.B.I.GA) (hD : IsReps X u Dt) 
 
 theorem one_mem_level_subgroup : (1 : X.B.I.Gf) ∈ X.K2 := by
   have h1 : X.B.I.fmat 1 = 1 := by simp [AutInst.fmat]
-  simp only [HidaSetting.K2, K2set, K2cong, InMod, Set.mem_setOf_eq, h1, sub_self, Matrix.zero_mulVec,
+  simp only [HidaSetting.K2, K2set, K2cong, InMod, Set.mem_ofPred_eq, h1, sub_self, Matrix.zero_mulVec,
     Submodule.zero_mem, implies_true, and_true]
-  first
-  | simp [AutInst.Kset]
-  | exact (Formalism.UG.stabGL X.B.I.Lf).one_mem
+  simp [AutInst.Kset]
 
 def frameOrthogonalLattice : Set (VA X.B.I) :=
   {y | y ∈ X.B.I.Lf ∧ ∀ a, hA X.B.I (incl X.B.I (X.eR a)) y = 0 ∧ hA X.B.I (incl X.B.I (X.fR a)) y = 0 ∧

@@ -35,8 +35,7 @@ theorem Primes.Ok.T_modEq (hPr : Pr.Ok) (u : Pr.Word) : Pr.T u ≡ 1 [MOD Pr.con
 theorem Primes.Ok.two_lt_alt (hPr : Pr.Ok) (u : Pr.Word) : 2 < Pr.T u := by
   by_contra hcon
   have h2 : Pr.T u = 2 := le_antisymm (not_lt.mp hcon) (hPr.T_prime u).two_le
-  have h3 := hPr.T_modEq u
-  rw [h2] at h3
+  have h3 : 2 ≡ 1 [MOD Pr.cond * (Pr.g 0 * Pr.g 1) ^ 2] := by simpa [h2] using hPr.T_modEq u
   have h4 : Pr.cond * (Pr.g 0 * Pr.g 1) ^ 2 ∣ 2 - 1 := (Nat.modEq_iff_dvd' (by norm_num)).1 h3.symm
   have h5 : Pr.g 0 ∣ 1 :=
     dvd_trans (dvd_trans (Dvd.intro _ rfl) (dvd_trans (dvd_pow_self _ (by norm_num)) (Dvd.intro_left _ rfl))) h4
@@ -69,11 +68,9 @@ theorem exists_finrank_Mf_Mram (hX : X.Ok) (hPr : Pr.Ok) (hbig : 2 * X.f * R.k <
   have h2 := finrank_ColRamV_of_slice W Ch hX u 0 σ
   simp only [card_resU hPr u, Finset.prod_const, Finset.card_univ, Fintype.card_coe, hPr.vT_card u, Nat.sub_sub] at h1 h2
   refine ⟨finrank X.K ((colGSD W Ch u 0).restr σ.T).EqFun, ?_, h1.trans (mul_comm _ _), h2.trans (mul_comm _ _)⟩
-  rcases Nat.eq_zero_or_pos (finrank X.K ((colGSD W Ch u 0).restr σ.T).EqFun) with h0 | h0
-  · have := finrank_MfV_pos W Ch hX hPr hbig u
-    rw [h1, h0, zero_mul] at this
-    exact absurd this (lt_irrefl 0)
-  · exact h0
+  have hpos := finrank_MfV_pos W Ch hX hPr hbig u
+  rw [h1] at hpos
+  exact Nat.pos_of_mul_pos_right hpos
 
 theorem le_finrank_MramV (hX : X.Ok) (hPr : Pr.Ok) (hbig : 2 * X.f * R.k < Pr.g 0 - 1) (u : Pr.Word) :
     (Pr.T u - 2) ^ X.f ≤ finrank X.K (MramV W Ch u) := by
@@ -430,9 +427,7 @@ theorem col_ip_ne_zero (hX : X.Ok) (u : Pr.Word) (j : ℕ) {φ : ColV W Ch u j} 
     (colGSD W Ch u j).ip (colOk W Ch hX u j) φ φ ≠ 0 := by
   obtain ⟨σ, hσ⟩ := hX.conjK
   intro h0
-  have := col_ip_pos W Ch hX u j σ hσ hφ
-  rw [h0, map_zero] at this
-  exact lt_irrefl _ this
+  exact (col_ip_pos W Ch hX u j σ hσ hφ).ne' (by simp [h0])
 
 end ColPos
 
@@ -444,8 +439,7 @@ variable {K : Type} [Field K] [NumberField K] {V : Type} [AddCommGroup V] [Modul
 theorem nd_isLattice_comap {L : Submodule (𝓞 K) V} (hL : Submodule.IsLattice K L) (U : Submodule K V) :
     Submodule.IsLattice K (L.comap (U.subtype.restrictScalars (𝓞 K))) := by
   constructor
-  · have h1 : Module.Finite (𝓞 K) L := Module.Finite.iff_fg.mpr hL.fg
-    have h2 : IsNoetherian (𝓞 K) L := isNoetherian_of_isNoetherianRing_of_finite (𝓞 K) L
+  · have : Module.Finite (𝓞 K) L := Module.Finite.iff_fg.mpr hL.fg
     let f : L.comap (U.subtype.restrictScalars (𝓞 K)) →ₗ[𝓞 K] L :=
       { toFun := fun x => ⟨((x : U) : V), x.2⟩
         map_add' := fun _ _ => rfl
@@ -791,9 +785,7 @@ theorem gaussianRationals_le_cyclotomic_four_mul (M : ℕ) : KQ 1 ≤ cycQ (4 * 
   unfold KQ sqQ cycQ
   apply IntermediateField.adjoin.mono
   intro z hz
-  have h : z ^ 2 = -1 := by
-    have h1 : z ^ 2 = ((-((1 : ℕ) : ℤ) : ℤ) : Qb) := hz
-    rw [h1]; simp
+  have h : z ^ 2 = ((-((1 : ℕ) : ℤ) : ℤ) : Qb) := hz
   show z ^ (4 * M) = 1
   rw [show 4 * M = 2 * (2 * M) by ring, pow_mul, h, pow_mul]
   simp

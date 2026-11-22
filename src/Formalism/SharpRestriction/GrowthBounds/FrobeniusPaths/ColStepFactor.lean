@@ -134,13 +134,12 @@ variable (p : ℕ) [Fact p.Prime] {O : Type} [CommRing O] [IsDomain O] [IsDiscre
 
 lemma piR_ker {σ : Type} (S : UniformizedDVR p O) (Y : MvPolynomial σ O)
     (h : MvPolynomial.map (IsLocalRing.residue O) Y = 0) : ∃ T, Y = C S.w * T := by
-  have : C S.w ∣ Y := by
-    rw [MvPolynomial.C_dvd_iff_dvd_coeff]
-    intro m
-    have h1 : IsLocalRing.residue O (Y.coeff m) = 0 := by rw [← coeff_map, h, coeff_zero]
-    rw [IsLocalRing.residue_eq_zero_iff, S.w_irr.maximalIdeal_eq, Ideal.mem_span_singleton] at h1
-    exact h1
-  exact this
+  change C S.w ∣ Y
+  rw [MvPolynomial.C_dvd_iff_dvd_coeff]
+  intro m
+  have h1 : IsLocalRing.residue O (Y.coeff m) = 0 := by rw [← coeff_map, h, coeff_zero]
+  rw [IsLocalRing.residue_eq_zero_iff, S.w_irr.maximalIdeal_eq, Ideal.mem_span_singleton] at h1
+  exact h1
 
 lemma piR_w {σ : Type} (S : UniformizedDVR p O) :
     MvPolynomial.map (IsLocalRing.residue O) (C S.w : MvPolynomial σ O) = 0 := by

@@ -45,8 +45,7 @@ theorem card_isoZZ {K : Type} [CommRing K] (R : Subring K) {n n' : ℕ} (Z : Mat
         rw [← hv]; simp
       rw [← ρ.2.2 v', ← h4, hφ0.2]
   · refine ⟨?_, fun v' => ?_⟩
-    · have : φ.1.symm (eZ R Z') = eZ R Z := by rw [← φ.2.1]; simp
-      simp [this, hφ0.1]
+    · simp [LinearEquiv.trans_apply, hφ0.1, ← φ.2.1]
     · obtain ⟨v, hv⟩ := Submodule.Quotient.mk_surjective _ (φ.1.symm (Submodule.Quotient.mk v'))
       have h3 : φ.1 (Submodule.Quotient.mk v) = Submodule.Quotient.mk v' := by rw [hv]; simp
       simp only [LinearEquiv.trans_apply]

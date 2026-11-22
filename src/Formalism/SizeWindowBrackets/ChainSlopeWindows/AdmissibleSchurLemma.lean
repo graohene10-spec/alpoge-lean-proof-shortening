@@ -242,13 +242,10 @@ lemma askAt_le_geom (I : Finset ℕ) (at_ p : ℝ) (w : ℕ → ℝ) (hp : 0 < p
     (hw : ∀ i ∈ I, 0 ≤ w i) : askAt I at_ p w ≤ at_ * ∑ i ∈ I, (1 / p) ^ i := by
   unfold askAt
   rw [Finset.mul_sum]
-  apply Finset.sum_le_sum
-  intro i hi
+  refine Finset.sum_le_sum (fun i hi => ?_)
   have e : at_ * (1 / p) ^ i = at_ / p ^ i := by rw [one_div, inv_pow]; rfl
   rw [e]
-  apply max_le
-  · linarith [hw i hi]
-  · positivity
+  exact max_le (by linarith [hw i hi]) (by positivity)
 
 lemma geom_odd (I : Finset ℕ) (q : ℝ) (hq0 : 0 ≤ q) (hq : q ≤ 1 / 2) (hI : ∀ i ∈ I, Odd i) :
     ∑ i ∈ I, q ^ i ≤ 4 / 3 * q := by
@@ -956,36 +953,30 @@ theorem first_kind_bucket_bound : FirstKindBucket := by
   intro e J I Y X' c p₀ P s he hJ hY hc0 hc hp₀ hP hs
   have hf0 : ∀ p : ℕ, 0 ≤ Real.log p / (p : ℝ) :=
     fun p => div_nonneg (Real.log_natCast_nonneg p) (Nat.cast_nonneg p)
+  have hnonneg : ∀ (q : Prop) [Decidable q] (p : ℕ),
+      0 ≤ (if q then Real.log p / (p : ℝ) else 0) := by
+    intro q _ p
+    split_ifs
+    · exact hf0 p
+    · exact le_rfl
   have hterm : ∀ p ∈ s, Real.log p / (p : ℝ) ≤
       (if ((p : ℝ) ≤ Y ∧ ∃ hl : Nat.Coprime p (4 * 2 ^ e),
           orderOf (Formalism.RankGapBounds.LocalQuadraticParts.hOf e p hl) ≤ J) then Real.log p / (p : ℝ) else 0) +
       ∑ i ∈ Finset.range I, (if (p₀ ≤ p ∧ P i * (1 - c) ≤ p ∧ (p : ℝ) ≤ P i * (1 + c)) then
           Real.log p / (p : ℝ) else 0) := by
     intro p hp
-    have hsum0 : 0 ≤ ∑ i ∈ Finset.range I,
-        (if (p₀ ≤ p ∧ P i * (1 - c) ≤ p ∧ (p : ℝ) ≤ P i * (1 + c)) then
-          Real.log p / (p : ℝ) else 0) := by
-      apply Finset.sum_nonneg
-      intro i _
-      split_ifs
-      · exact hf0 p
-      · exact le_rfl
     rcases (hs p hp).2.2 with h | ⟨i, hi, hb⟩
-    · rw [if_pos h]; linarith
+    · rw [if_pos h]
+      exact le_add_of_nonneg_right (Finset.sum_nonneg (fun i _ => hnonneg _ p))
     · have h1 := Finset.single_le_sum (f := fun i =>
           (if (p₀ ≤ p ∧ P i * (1 - c) ≤ p ∧ (p : ℝ) ≤ P i * (1 + c)) then
-            Real.log p / (p : ℝ) else 0)) (s := Finset.range I) (by
-          intro i _
-          split_ifs
-          · exact hf0 p
-          · exact le_rfl) (Finset.mem_range.2 hi)
+            Real.log p / (p : ℝ) else 0)) (s := Finset.range I)
+          (fun i _ => hnonneg _ p) (Finset.mem_range.2 hi)
       rw [if_pos hb] at h1
-      have : 0 ≤ (if ((p : ℝ) ≤ Y ∧ ∃ hl : Nat.Coprime p (4 * 2 ^ e),
-          orderOf (Formalism.RankGapBounds.LocalQuadraticParts.hOf e p hl) ≤ J) then Real.log p / (p : ℝ) else 0) := by
-        split_ifs
-        · exact hf0 p
-        · exact le_rfl
-      linarith
+      have hfirst : 0 ≤ (if ((p : ℝ) ≤ Y ∧ ∃ hl : Nat.Coprime p (4 * 2 ^ e),
+          orderOf (Formalism.RankGapBounds.LocalQuadraticParts.hOf e p hl) ≤ J) then Real.log p / (p : ℝ) else 0) :=
+        hnonneg _ p
+      exact h1.trans (le_add_of_nonneg_left hfirst)
   refine (Finset.sum_le_sum hterm).trans ?_
   rw [Finset.sum_add_distrib, Finset.sum_comm, ← Finset.sum_filter]
   simp only [← Finset.sum_filter]

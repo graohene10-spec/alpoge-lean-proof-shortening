@@ -116,20 +116,16 @@ theorem redThrough_mul {z w : Ω} (hz : z ∈ B) (hw : w ∈ B) :
 
 theorem redThrough_one : redThrough B κ 1 = 1 := by
   unfold redThrough
-  rw [dif_pos (one_mem B)]
-  have : (⟨1, one_mem B⟩ : B) = 1 := rfl
-  rw [this, map_one, map_one]
+  rw [dif_pos (one_mem B), show (⟨1, one_mem B⟩ : B) = 1 from rfl, map_one, map_one]
 
 theorem redThrough_pow {z : Ω} (hz : z ∈ B) (n : ℕ) : redThrough B κ (z ^ n) = redThrough B κ z ^ n := by
-  induction n with
-  | zero => rw [pow_zero, pow_zero, redThrough_one]
-  | succ n ih => rw [pow_succ, redThrough_mul B κ (pow_mem hz n) hz, ih, pow_succ]
+  unfold redThrough
+  simpa [dif_pos (pow_mem hz n), dif_pos hz] using map_pow (κ.toRingHom.toMonoidHom.comp (IsLocalRing.residue B).toMonoidHom) ⟨z, hz⟩ n
 
 theorem pow_eq_one_of_charP {k : Type} [Field k] (l : ℕ) [Fact l.Prime] [CharP k l] (y : k) (a m : ℕ)
     (h : y ^ (l ^ a * m) = 1) : y ^ m = 1 := by
-  have h2 : (y ^ m - 1) ^ (l ^ a) = 0 := by
-    rw [sub_pow_char_pow, one_pow, ← pow_mul, mul_comm, h, sub_self]
-  exact sub_eq_zero.mp (pow_eq_zero_iff (pow_ne_zero _ (Fact.out : l.Prime).ne_zero) |>.mp h2)
+  rw [← sub_eq_zero, ← pow_eq_zero_iff (pow_ne_zero _ (Fact.out : l.Prime).ne_zero : l ^ a ≠ 0)]
+  rw [sub_pow_char_pow, one_pow, ← pow_mul, mul_comm, h, sub_self]
 
 theorem redThrough_primeToPart {M : Type} [Monoid M] (t : M →* Ω) (u : M) (hu : 0 < orderOf u) :
     redThrough B κ (t (Formalism.CyclotomicNorms.primeToPart l u)) = redThrough B κ (t u) := by
@@ -287,13 +283,10 @@ theorem offs_add_le_sum {m : ℕ} (c : Fin m → ℕ) (i : Fin m) : offs c i + c
   unfold offs
   have e : c i = ∑ k : Fin m, if k = i then c k else 0 := by rw [Finset.sum_ite_eq']; simp
   rw [e, ← Finset.sum_add_distrib]
-  apply Finset.sum_le_sum
-  intro k _
+  refine Finset.sum_le_sum (fun k _ => ?_)
   by_cases h1 : k < i
   · simp [h1, ne_of_lt h1]
-  · by_cases h3 : k = i
-    · subst h3; simp
-    · simp [h1, h3]
+  · by_cases h3 : k = i <;> simp [h1, h3]
 
 variable {g : ℕ} [Fact g.Prime]
 

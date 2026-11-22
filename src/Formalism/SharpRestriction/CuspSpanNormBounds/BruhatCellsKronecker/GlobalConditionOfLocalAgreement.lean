@@ -133,19 +133,13 @@ instance nontrivEp : Nontrivial A.Ep :=
 theorem alg_mem_O (b : A.Fp) (hb : b ∈ 𝒪[A.Fp]) : algebraMap A.Fp A.Ep b ∈ A.O := by
   rw [A.O_def]
   have h : IsIntegral 𝒪[A.Fp] (algebraMap 𝒪[A.Fp] A.Ep ⟨b, hb⟩) := isIntegral_algebraMap
-  first
-  | exact h
-  | (rw [IsScalarTower.algebraMap_apply 𝒪[A.Fp] A.Fp A.Ep] at h; exact h)
-  | simpa using h
+  rw [IsScalarTower.algebraMap_apply 𝒪[A.Fp] A.Fp A.Ep] at h
+  exact h
 
 private theorem mem_valuationSubring_of_isIntegral' (b : A.Fp) (h : IsIntegral 𝒪[A.Fp] b) : b ∈ 𝒪[A.Fp] := by
-  first
-  | (obtain ⟨y, hy⟩ := (Valuation.integer.integers (valuation A.Fp)).mem_of_integral h
-     rw [← hy]; exact y.2)
-  | (obtain ⟨y, hy⟩ := (Valuation.integer.integers _).mem_of_integral h
-     rw [← hy]; exact y.2)
-  | (obtain ⟨y, hy⟩ := IsIntegrallyClosed.isIntegral_iff.1 h
-     rw [← hy]; exact y.2)
+  obtain ⟨y, hy⟩ := IsIntegrallyClosed.isIntegral_iff.1 h
+  rw [← hy]
+  exact y.2
 
 theorem mem_OF_of_alg (b : A.Fp) (h : algebraMap A.Fp A.Ep b ∈ A.O) : b ∈ 𝒪[A.Fp] := by
   rw [A.O_def] at h
@@ -169,9 +163,7 @@ theorem scal_iff (S : Set A.Ep) (hS : ∀ b ∈ 𝒪[A.Fp], ∀ z ∈ S, algebra
     intro c c' hc hv h
     have hu : c' / c ∈ 𝒪[A.Fp] := by
       (rw [mem_valuationSubring_iff_valuation_le_one A, map_div₀, ← hv, div_self ((Valuation.ne_zero_iff _).2 hc)]) <;> exact le_rfl
-    have h2 := hS _ hu _ h
-    have e : c' / c * c = c' := by field_simp
-    rwa [← mul_assoc, ← map_mul, e] at h2
+    simpa only [← mul_assoc, ← map_mul, div_mul_cancel₀ c' hc] using hS _ hu _ h
   exact ⟨key b b' hb hv, key b' b hb' hv.symm⟩
 
 theorem O_scal : ∀ b ∈ 𝒪[A.Fp], ∀ z ∈ (A.O : Set A.Ep), algebraMap A.Fp A.Ep b * z ∈ (A.O : Set A.Ep) :=
@@ -753,10 +745,8 @@ theorem locGen_gdd (p : PlF D) (c : D.host.F)
       (algebraMap D.host.F D.host.E c)) (k ν : ℕ) :
     LocGen p (gdd (D := D) (k : ℤ) (ν : ℤ)) (algebraMap D.host.F D.host.E (((Lat.gS D : ℕ) : D.host.F) ^ k * c ^ ν)) := by
   have hgS : ((Lat.gS D : ℕ) : D.host.E) ≠ 0 := by
-    simp only [Lat.gS, Nat.cast_mul]
-    exact mul_ne_zero (Nat.cast_ne_zero.2 (D.host.g_prime 0).ne_zero) (Nat.cast_ne_zero.2 (D.host.g_prime 1).ne_zero)
-  simp only [gdd, zpow_natCast, map_mul, map_pow, map_natCast]
-  exact (LocGen.span (p := p) (pow_ne_zero k hgS)).mul (h.pow ν)
+    simpa only [Lat.gS, Nat.cast_mul] using (mul_ne_zero (Nat.cast_ne_zero.2 (D.host.g_prime 0).ne_zero) (Nat.cast_ne_zero.2 (D.host.g_prime 1).ne_zero) : ((D.host.g 0 : ℕ) : D.host.E) * ((D.host.g 1 : ℕ) : D.host.E) ≠ 0)
+  simpa only [gdd, zpow_natCast, map_mul, map_pow, map_natCast] using (LocGen.span (p := p) (pow_ne_zero k hgS)).mul (h.pow ν)
 
 theorem laIsPeriod_of (δ : ∀ p, (D.s.atP p).Fp) (M : ∀ p : PlF D, Loc.Model (D.s.atP p).Fp (D.s.atP p).Ep)
     (hA : ∀ p, Agree δ M p) (hd : ∀ p, IsDiffGen δ p) (ν s : ℕ) : LaIsPeriod δ M ν s := by
@@ -766,21 +756,19 @@ theorem laIsPeriod_of (δ : ∀ p, (D.s.atP p).Fp) (M : ∀ p : PlF D, Loc.Model
       ((D.s.atP p).ιE (x / algebraMap D.host.F D.host.E (((Lat.gS D : ℕ) : D.host.F) ^ k * c ^ ν)) ∈ (D.s.atP p).O ↔
         atP p (gdd (D := D) (k : ℤ) (ν : ℤ)) x) := by
     intro k x p c hc
-    rw [int_iff (D.s.atP p) conjF_inv conjF_fix]
-    exact ((locGen_gdd p c hc k ν).2 x).symm
+    simpa only [int_iff (D.s.atP p) conjF_inv conjF_fix] using
+      ((locGen_gdd p c hc k ν).2 x).symm
   unfold LaIsPeriod
   intro t
   simp only [La, Set.mem_setOf_eq]
   rw [mem_iff_forall_atP (F := D.host.F) (gdd (D := D) 1 ν) t,
     mem_iff_forall_atP (F := D.host.F) (gdd (D := D) 2 ν) _, ← forall_and]
-  apply forall_congr'
-  intro p
+  refine forall_congr' fun p => ?_
   obtain ⟨c, hcv, hcg⟩ := hd p
-  have hc0 : c ≠ 0 := fun h0 => hcg.1 (by rw [h0, map_zero])
   have k1 := key 1 t p c hcg
   have k2 := key 2 (t - (-1) ^ s * D.conjF t) p c hcg
   simp only [Nat.cast_one, Nat.cast_ofNat] at k1 k2
-  rw [loc_iff δ M p (hA p) c hc0 hcv ν s t, k1, k2]
+  rw [loc_iff δ M p (hA p) c (fun h0 => hcg.1 (by rw [h0, map_zero])) hcv ν s t, k1, k2]
 
 end Rec2
 
@@ -799,8 +787,7 @@ theorem G1root_of_agree (δ : ∀ p, (D.s.atP p).Fp) (M : ∀ p : PlF D, Loc.Mod
   have hg : ((gpart p : ℕ) : (D.s.atP p).Fp) ≠ 0 := natFp_ne_zero p _ (gpart_ne_zero p)
   have hoth : ((oth p : ℕ) : (D.s.atP p).Fp) ≠ 0 := natFp_ne_zero p _ (oth_ne_zero p)
   have hu : ((uP p : ℚ) : D.host.E) = algebraMap D.host.F D.host.E (((oth p : ℕ) : D.host.F)⁻¹) := by
-    rw [unitAt_eq p]
-    simp [map_inv₀, map_natCast]
+    simp [unitAt_eq p, map_inv₀, map_natCast]
   have hx : x / ((Lat.gS D : ℕ) : D.host.E) = x * algebraMap D.host.F D.host.E (((Lat.gS D : ℕ) : D.host.F)⁻¹) := by
     rw [map_inv₀, map_natCast, div_eq_mul_inv]
   rw [qE_eq p, inverse_alg _ hg, hx, hu]

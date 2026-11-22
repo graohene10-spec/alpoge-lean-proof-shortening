@@ -281,8 +281,7 @@ theorem lev_mn (k r' : ℕ) (g : Mat k r') (p q : Fin (2 * (1 + r') + k + 1)) (h
 
 theorem lev_n (k r' : ℕ) (g : Mat k r') (p q : Fin (2 * (1 + r') + k + 1)) (hp : ¬ mid k r' p) :
     ιLev k 1 r' g p q = if p = q then 1 else 0 := by
-  have hp' : ¬ (1 ≤ p.val ∧ p.val < 2 * r' + k + 1 + 1) := hp
-  simp only [ιLev]
+  simp only [mid, ιLev] at hp ⊢
   split_ifs <;> first | rfl | omega
 
 theorem lev_one (k r' : ℕ) : ιLev k 1 r' 1 = 1 := by
@@ -343,16 +342,12 @@ theorem lev_cont (k r' : ℕ) : Continuous (ιLev k 1 r') := by
 theorem levM_cont (k r' : ℕ) : Continuous (levM k r') := lev_cont k r'
 
 theorem lev_closed (k r' : ℕ) (U : Set (Mat k r')) (hU : IsClosed U) : IsClosed (ιLev k 1 r' '' U) := by
+
   have e : ιLev k 1 r' '' U = {y | ιLev k 1 r' (blk k r' y) = y} ∩ blk k r' ⁻¹' U := by
     ext y
     constructor
     · rintro ⟨x, hx, rfl⟩
-      refine ⟨?_, ?_⟩
-      · show ιLev k 1 r' (blk k r' (ιLev k 1 r' x)) = ιLev k 1 r' x
-        rw [blk_lev]
-      · show blk k r' (ιLev k 1 r' x) ∈ U
-        rw [blk_lev]
-        exact hx
+      simp [blk_lev, hx]
     · rintro ⟨h1, h2⟩
       exact ⟨blk k r' y, h2, h1⟩
   rw [e]
@@ -361,9 +356,7 @@ theorem lev_closed (k r' : ℕ) (U : Set (Mat k r')) (hU : IsClosed U) : IsClose
 
 theorem map_compl_null {X : Type*} [MeasurableSpace X] {k r : ℕ} (V : Set (Mat k r)) (hV : IsClosed V) (μ : Measure X)
     (f : X → Mt k r) (hf : Measurable f) (h : μ {x | f x ∉ V} = 0) : (μ.map f) Vᶜ = 0 := by
-  have hm : MeasurableSet (Vᶜ : Set (Mt k r)) :=
-    (show IsOpen (Vᶜ : Set (Mt k r)) from hV.isOpen_compl).measurableSet
-  rw [Measure.map_apply hf hm]
+  rw [Measure.map_apply hf (show MeasurableSet (Vᶜ : Set (Mt k r)) from (show IsOpen (Vᶜ : Set (Mt k r)) from hV.isOpen_compl).measurableSet)]
   exact h
 
 theorem map_ne_zero {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y] (μ : Measure X) (f : X → Y) (hf : Measurable f)
@@ -505,18 +498,13 @@ theorem invM_contOn {k r : ℕ} : ContinuousOn (invM : Mt k r → Mt k r) {x | I
   exact inv_contOn (n := 2 * r + k + 1)
 
 theorem invM_meas {k r : ℕ} : Measurable (invM : Mt k r → Mt k r) := by
-  have h : (invM : Mt k r → Mt k r) = fun x i j =>
-      ((Matrix.of x : Mat k r).det)⁻¹ * (Matrix.of x : Mat k r).adjugate i j := by
-    funext x i j
-    simp only [invM, inv_eq, Matrix.smul_apply, smul_eq_mul]
-  rw [h]
   have hof : Continuous (fun x : Mt k r => (Matrix.of x : Mat k r)) := continuous_id
   refine measurable_pi_lambda _ fun i => measurable_pi_lambda _ fun j => ?_
-  exact hof.matrix_det.measurable.inv.mul ((hof.matrix_adjugate).matrix_elem i j).measurable
+  simp only [invM, inv_eq, Matrix.smul_apply, smul_eq_mul]
+  exact (hof.matrix_det.measurable.inv).mul ((hof.matrix_adjugate).matrix_elem i j).measurable
 
 theorem sfin {k r : ℕ} {U : Set (Mat k r)} {μ : Measure (Mt k r)} (h : IsHaarOn U μ) : SigmaFinite μ := by
-  haveI : IsFiniteMeasureOnCompacts μ := ⟨fun K hK => h.finite_compact K hK⟩
-  infer_instance
+  haveI : IsFiniteMeasureOnCompacts μ := ⟨h.finite_compact⟩; infer_instance
 
 theorem ae_of_compl {X : Type*} [MeasurableSpace X] (μ : Measure X) (s : Set X) (h : μ sᶜ = 0) : ∀ᵐ x ∂μ, x ∈ s := by
   exact ae_iff.mpr h

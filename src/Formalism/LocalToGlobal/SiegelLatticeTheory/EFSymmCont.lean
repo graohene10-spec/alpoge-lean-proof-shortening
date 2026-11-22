@@ -38,9 +38,7 @@ theorem conjF_invol (D : D7) (x : D.host.E) : D.conjF (D.conjF x) = x := by
   have h2 : D.host.gal.symm D.R.toFrame.cc * D.host.gal.symm D.R.toFrame.cc = 1 := by
     rw [← map_mul, h1, map_one]
   show D.host.gal.symm D.R.toFrame.cc (D.host.gal.symm D.R.toFrame.cc x) = x
-  first
-    | rw [← AlgEquiv.mul_apply, h2, AlgEquiv.one_apply]
-    | exact congrArg (fun e : D.host.E ≃ₐ[ℚ] D.host.E => e x) h2
+  rw [← AlgEquiv.mul_apply, h2, AlgEquiv.one_apply]
 
 def locC (D : D7) (p : HeightOneSpectrum (𝓞 D.host.F)) : Formalism.MainNotions.S.Loc.LocAt D.host.F D.host.E D.conjF p :=
   Examples₂.locAtC D.conjF (conjF_invol D) (Examples₂.finrank_FE D.host) p
@@ -72,8 +70,7 @@ theorem letterOf_inj (D : D7) (τ : D.what₂.Tau) : Function.Injective fun w =>
   have e : (fun w => letterOf (D.hcW w τ)) = D.s.letter := by
     funext w l
     exact (letter_eq D w τ l).symm
-  rw [e]
-  exact D.s.letter_inj
+  simpa only [e] using D.s.letter_inj
 
 def LocIso.refl {F E : Type} [Field F] [NumberField F] [Field E] [NumberField E] [Algebra F E]
     {sig : E →ₐ[F] E} {p : HeightOneSpectrum (𝓞 F)} (A : Formalism.MainNotions.S.Loc.LocAt F E sig p) : LocIso A A where

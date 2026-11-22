@@ -172,8 +172,7 @@ theorem lowest_K_type_stable (ε : Fin n → Bool) (lam : Fin n → ℝ) (σ : M
 
 theorem orth_proj_mem {E : H →L[ℂ] H} {S : Submodule ℂ H} (hE : IsOrthProjOnto E S) (y : H) : E y ∈ S := by
   obtain ⟨-, -, hr⟩ := hE
-  rw [← hr]
-  exact LinearMap.mem_range_self (E : H →ₗ[ℂ] H) y
+  exact hr ▸ LinearMap.mem_range_self (E : H →ₗ[ℂ] H) y
 
 theorem orth_proj_fix {E : H →L[ℂ] H} {S : Submodule ℂ H} (hE : IsOrthProjOnto E S) {x : H} (hx : x ∈ S) :
     E x = x := by
@@ -719,8 +718,7 @@ theorem trace_conj_mul_eq_hilbert_schmidt (g : Matrix (Fin n) (Fin n) ℂ) : (g.
   simp only [Matrix.trace, Matrix.diag, Matrix.mul_apply, Matrix.conjTranspose_apply]
   push_cast
   rw [Finset.sum_comm]
-  refine Finset.sum_congr rfl fun a _ => Finset.sum_congr rfl fun b _ => ?_
-  rw [Complex.star_def, Complex.conj_mul']
+  simp only [Complex.star_def, Complex.conj_mul']
 
 theorem hs_unitary_conj (P x : Matrix (Fin n) (Fin n) ℂ) (hP : P ∈ Matrix.unitaryGroup (Fin n) ℂ) :
     Formalism.REAL.hs (P * x * P.conjTranspose) = Formalism.REAL.hs x := by

@@ -48,10 +48,9 @@ theorem eq_of_occurs_of_le {x : I → K} (hx : Occurs op x) {i : I} {a : K}
 
 theorem Occurs.eq_one {x : I → K} (hx : Occurs op x) {i : I} (hi : op i = 1) : x i = 1 := by
   refine eq_of_occurs_of_le hx ?_
-  have := maxGen_smul_one (K := K) (V := V) 1
-  rw [one_smul] at this
-  rw [hi, this]
-  exact le_top
+  have hmax := maxGen_smul_one (K := K) (V := V) 1
+  rw [one_smul] at hmax
+  simp [hi, hmax]
 
 theorem iSupIndep_eigAt (hc : PairComm op) : iSupIndep (eigAt op) :=
   independent_iInf_maxGenEigenspace_of_forall_mapsTo op
@@ -399,15 +398,13 @@ theorem eigSumOver_eq_eigSum [FiniteDimensional K V] (hc : PairComm op) (hs : Sp
   have h0 := (disjoint_eigSum (hc.opL (L := L)) (C := C) (C' := fun y => ¬ C y)
     fun _ h h' => h' h).le_bot ⟨h1, h2⟩
   have hb0 : b = 0 := tmul_one_injective (L := L) (by
-    simp only [TensorProduct.tmul_zero]; exact (Submodule.mem_bot L).1 h0)
-  rw [hb0, add_zero]
-  exact ha
+    simpa only [TensorProduct.tmul_zero] using (Submodule.mem_bot L).1 h0)
+  simpa only [hb0, add_zero] using ha
 
 theorem baseChange_le_of_le_eigSumOver {C : (I → L) → Prop} {p : Submodule K V}
     (h : p ≤ eigSumOver L op C) : p.baseChange L ≤ eigSum (opL L op) C := by
   rw [Submodule.baseChange_eq_span, Submodule.span_le]
-  rintro _ ⟨v, hv, rfl⟩
-  exact h hv
+  exact fun x ⟨v, hv, hx⟩ => hx ▸ (h hv)
 
 theorem baseChange_sup_eq_top {p p' : Submodule K V} (h : p ⊔ p' = ⊤) :
     p.baseChange L ⊔ p'.baseChange L = ⊤ := by
@@ -465,9 +462,7 @@ theorem span_le_eigSum (b : Basis J K V) (e : J → I → K)
 theorem span_sup_span (b : Basis J K V) (e : J → I → K) (C : (I → K) → Prop) :
     Submodule.span K (b '' {j | C (e j)}) ⊔ Submodule.span K (b '' {j | ¬ C (e j)}) = ⊤ := by
   rw [← Submodule.span_union, ← Set.image_union, eq_top_iff, ← b.span_eq]
-  refine Submodule.span_mono ?_
-  rintro _ ⟨j, rfl⟩
-  exact ⟨j, em _, rfl⟩
+  exact Submodule.span_mono (Set.range_subset_iff.2 fun j => ⟨j, em _, rfl⟩)
 
 theorem eigSum_eq_span_of_basis [FiniteDimensional K V] (b : Basis J K V) (e : J → I → K)
     (h : ∀ i j, op i (b j) = e j i • b j) (C : (I → K) → Prop) :
@@ -844,8 +839,7 @@ def DecoPts.nb (c : DecoPts S E n ST SG) (P : Ideal (𝓞 E)) (i : ℕ) (d : S.D
 
 theorem DecoPts.mem_nb (c : DecoPts S E n ST SG) (P : Ideal (𝓞 E)) (i : ℕ) (d e : S.D) :
     e ∈ c.nb P i d ↔ c.pts e ∈ (c.pts d).heckeNb P i := by
-  unfold DecoPts.nb
-  rw [Finset.mem_map_equiv, Equiv.symm_symm]
+  simp only [DecoPts.nb, Finset.mem_map_equiv, Equiv.symm_symm]
 
 def heckeD (c : DecoPts S E n ST SG) (P : Ideal (𝓞 E)) (i : ℕ) : LocOp S S :=
   LocOp.ofNbr (MonoidHom.id S.G) (c.nb P i) LinearMap.id
@@ -970,10 +964,8 @@ theorem DecoSet.heckeSet_zero (P : Ideal (𝓞 E)) (d : DecoSet E n ST SG) : d.h
     exact Subtype.ext (Deco.ext (le_antisymm hle hge) hf hbe)
   · rintro rfl
     refine ⟨⟨Submodule.smul_le_right, Submodule.smul_le_right, ?_⟩, rfl, rfl⟩
-    have htop : (e.1.N ⊓ e.1.N).comap e.1.N.subtype = ⊤ := by
-      rw [inf_idem, Submodule.comap_subtype_self]
     have : Subsingleton (e.1.N ⧸ (e.1.N ⊓ e.1.N).comap e.1.N.subtype) :=
-      Submodule.Quotient.subsingleton_iff.2 htop
+      Submodule.Quotient.subsingleton_iff.2 (by rw [inf_idem, Submodule.comap_subtype_self])
     exact ⟨LinearEquiv.ofSubsingleton _ _⟩
 
 end NbrLemmas
@@ -1157,8 +1149,7 @@ theorem DecoSet.heckeSet_nonempty_of_surj (d : DecoSet E n ST SG) (P : HeightOne
 theorem intAt_of_mem_stdLat (Q : HeightOneSpectrum (𝓞 E)) {x : Sp E n} (hx : x ∈ stdLat E n) (j : Fin n) :
     IntAt Q (x j) := by
   obtain ⟨r, hr⟩ := (mem_stdLat x).1 hx j
-  rw [← hr]
-  exact IntAt.coe Q r
+  simpa only [hr] using IntAt.coe Q r
 
 def redMap (Q : HeightOneSpectrum (𝓞 E)) {n i : ℕ} (h : i ≤ n) :
     stdLat E n →ₗ[𝓞 E] (Fin i → 𝓞 E ⧸ Q.asIdeal) where
@@ -1244,8 +1235,7 @@ theorem range_blockProjC [FiniteDimensional K S.EqFun] (c : DecoPts S E n ST SG)
 theorem heckePoly_coeff_zero (c : DecoPts S E n ST SG) (S0 : Set (HeightOneSpectrum (𝓞 E)))
     {x : LevOff ST SG S0 × ℕ → K} (hx : Occurs (heckeFam c S0) x) (P : LevOff ST SG S0) :
     (heckePoly n SplitOff.q x P).coeff 0 = 1 := by
-  have h1 : x (P, 0) = 1 := hx.eq_one (heckeFam_zero c S0 P)
-  simp [heckePoly, heckePolyOf, Polynomial.coeff_X_pow, Finset.sum_ite_eq, h1]
+  simp [heckePoly, heckePolyOf, Polynomial.coeff_X_pow, Finset.sum_ite_eq, hx.eq_one (heckeFam_zero c S0 P)]
 
 end Fam
 

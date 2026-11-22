@@ -125,9 +125,8 @@ theorem norm_sub_le_max' (a b : K) : ‖a - b‖ ≤ max ‖a‖ ‖b‖ := by
 theorem norm_finsum_le {α : Type*} {g : α → K} {C : ℝ} (hC : 0 ≤ C) (h : ∀ e, ‖g e‖ ≤ C) :
     ‖∑ᶠ e, g e‖ ≤ C := by
   by_cases hg : (Function.support g).Finite
-  · rw [finsum_eq_sum g hg]
-    exact IsUltrametricDist.norm_sum_le_of_forall_le_of_nonneg hC fun e _ => h e
-  · rw [finsum_of_infinite_support hg, norm_zero]; exact hC
+  · simpa [finsum_eq_sum g hg] using IsUltrametricDist.norm_sum_le_of_forall_le_of_nonneg hC fun e _ => h e
+  · simpa [finsum_of_infinite_support hg] using hC
 
 theorem divBy_mul_sub {c : K} {a a' b b' : MvPowerSeries τ K} (ha' : IntegralMv a')
     (hb : IntegralMv b) (hab : DivByMv c (a - a')) (hbb : DivByMv c (b - b')) :
@@ -172,19 +171,16 @@ theorem fwd [CharZero K] {p q : ℕ} {hq : q ≠ 0} {σ : K →+* K} (hS : Funct
   obtain ⟨k, hk, hkb⟩ := coeff_bound_vector K p q hq σ hS ι M hM ι f hf0 hfe j e
   obtain ⟨h, hh0, hqh⟩ := hS.2.1
   choose m hm using hk
-  have hp1 : ‖(p : K)‖ ≤ 1 := hS.2.2.1.le
-  have hpow : ∀ i, DivByMv ((p : K) ^ (r + h * k)) (α i ^ e i - β i ^ e i) := by
-    intro i
+  have hpow : ∀ i, DivByMv ((p : K) ^ (r + h * k)) (α i ^ e i - β i ^ e i) := fun i => by
     rw [hm i, hqh, ← pow_mul]
     exact PowCongr_valid K τ p hS.1 (α i) (β i) (hα i) (hβ i) r hr (hd i) (h * k) (m i)
-  have hpc := divBy_prod_sub hα hβ e hpow e.support d
   have hpc' : ‖coeff d ((e.prod fun s n => α s ^ n) - e.prod fun s n => β s ^ n)‖ ≤
       ‖(p : K)‖ ^ (r + h * k) := by
-    simpa only [Finsupp.prod, norm_pow] using hpc
+    simpa only [Finsupp.prod, norm_pow] using divBy_prod_sub hα hβ e hpow e.support d
   have hkk : ‖(p : K)‖ ^ (r + h * k) ≤ ‖(p : K)‖ ^ k * ‖(p : K)‖ ^ r := by
     rw [pow_add, mul_comm]
     apply mul_le_mul_of_nonneg_right _ (pow_nonneg (norm_nonneg _) _)
-    exact pow_le_pow_of_le_one (norm_nonneg _) hp1 (Nat.le_mul_of_pos_left k hh0)
+    exact pow_le_pow_of_le_one (norm_nonneg _) hS.2.2.1.le (Nat.le_mul_of_pos_left k hh0)
   calc ‖coeff e (f j)‖ * ‖coeff d ((e.prod fun s n => α s ^ n) - e.prod fun s n => β s ^ n)‖
       ≤ ‖coeff e (f j)‖ * (‖(p : K)‖ ^ k * ‖(p : K)‖ ^ r) :=
         mul_le_mul_of_nonneg_left (hpc'.trans hkk) (norm_nonneg _)

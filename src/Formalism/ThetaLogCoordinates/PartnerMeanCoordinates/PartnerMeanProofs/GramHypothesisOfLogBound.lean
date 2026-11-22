@@ -29,12 +29,10 @@ theorem natLog_le_lgSeg (p : ℕ) [Fact p.Prime] (a : ℝ) (r x : ℕ) (ha : 0 �
   unfold lgSeg
   have hp : 1 < (p : ℝ) := by exact_mod_cast (Fact.out : p.Prime).one_lt
   have hr' : (1 : ℝ) ≤ r := by exact_mod_cast hr
-  have hy : (1 : ℝ) ≤ 8 * a + r := by linarith
-  have hl : 0 ≤ Real.logb p (8 * a + r) := Real.logb_nonneg hp hy
   rcases Nat.eq_zero_or_pos x with hx0 | hx0
   · subst hx0
     simp only [Nat.log_zero_right, Nat.cast_zero]
-    linarith
+    linarith [Real.logb_nonneg hp (show (1 : ℝ) ≤ 8 * a + r by linarith)]
   · have h1 : ((p ^ Nat.log p x : ℕ) : ℝ) ≤ (x : ℝ) := by
       exact_mod_cast Nat.pow_log_le_self p hx0.ne'
     push_cast at h1
@@ -175,8 +173,7 @@ theorem theoremMV7Of : TheoremMV7Of := by
 theorem setTies_total_le {N : ℕ} (LL : Letters N) (T : TieData) (n n' : Fin T.t → ℕ) (h : ∀ i, n i ≤ n' i) :
     (LL.setTies T n).total ≤ (LL.setTies T n').total := by
   unfold Letters.total
-  apply Finset.sum_le_sum
-  intro i _
+  refine Finset.sum_le_sum fun i _ => ?_
   unfold Letters.setTies
   dsimp only
   split_ifs with hh

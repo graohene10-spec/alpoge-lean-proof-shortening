@@ -133,8 +133,7 @@ theorem prim_unique {N1 N2 : ℕ} [NeZero N1] [NeZero N2] (χ1 : DirichletCharac
     (χ2 : DirichletCharacter ℂ N2) (h1 : χ1.IsPrimitive) (h2 : χ2.IsPrimitive) (M : ℕ) (hM : M ≠ 0)
     (h : ∀ p : ℕ, p.Prime → ¬ p ∣ M → χ1 (p : ZMod N1) = χ2 (p : ZMod N2)) :
     (∀ n : ℕ, χ1 (n : ZMod N1) = χ2 (n : ZMod N2)) ∧ (χ1 = 1 ↔ χ2 = 1) := by
-  have hN : N1 * N2 * M ≠ 0 := mul_ne_zero (mul_ne_zero (NeZero.ne N1) (NeZero.ne N2)) hM
-  have : NeZero (N1 * N2 * M) := ⟨hN⟩
+  have : NeZero (N1 * N2 * M) := ⟨mul_ne_zero (mul_ne_zero (NeZero.ne N1) (NeZero.ne N2)) hM⟩
   have d1 : N1 ∣ N1 * N2 * M := ⟨N2 * M, by ring⟩
   have d2 : N2 ∣ N1 * N2 * M := ⟨N1 * M, by ring⟩
   have d3 : M ∣ N1 * N2 * M := ⟨N1 * N2, by ring⟩
@@ -149,7 +148,7 @@ theorem prim_unique {N1 N2 : ℕ} [NeZero N1] [NeZero N2] (χ1 : DirichletCharac
     exact h p hpp hpM
   have c1 : conductor (changeLevel d1 χ1) = N1 := by rw [conductor_changeLevel]; exact h1
   have c2 : conductor (changeLevel d2 χ2) = N2 := by rw [conductor_changeLevel]; exact h2
-  have hEq : N1 = N2 := c1.symm.trans ((congrArg conductor key).trans c2)
+  have hEq : N1 = N2 := by rw [← c1, key, c2]
   subst hEq
   have : χ1 = χ2 := changeLevel_injective d1 key
   subst this
@@ -346,8 +345,7 @@ theorem prim_both (ψ : Chr D) :
     (DirichletCharacter.primitiveCharacter_isPrimitive _) (discr D.host.E).natAbs
     (Int.natAbs_ne_zero.2 (NumberField.discr_ne_zero D.host.E)) (fun p hp hd => ?_)
   have hU : Unram D p := ⟨hp, fun h => hd (Int.natCast_dvd.1 h)⟩
-  rw [(prim_spec D ψ).2 p hU]
-  exact ((reads0 D ψ).2 p hU).symm
+  exact ((prim_spec D ψ).2 p hU).trans (((reads0 D ψ).2 p hU).symm)
 
 theorem prim_val (ψ : Chr D) (n : ℕ) (hn : n ≠ 0) :
     (prim D ψ).2 (n : ZMod (prim D ψ).1) = characterSumData.primVal (AD D) (aOf D ψ) n := by
@@ -435,8 +433,7 @@ theorem log_deriv_L_one_congr_primitive {N1 N2 : ℕ} [NeZero N1] [NeZero N2] (�
     (χ2 : DirichletCharacter ℂ N2) (h1 : χ1.IsPrimitive) (h2 : χ2.IsPrimitive)
     (h : ∀ n : ℕ, n ≠ 0 → χ1 (n : ZMod N1) = χ2 (n : ZMod N2)) :
     GlobalTheoryTheory.logDerivativeAtOne χ1 = GlobalTheoryTheory.logDerivativeAtOne χ2 := by
-  have hN : N1 * N2 ≠ 0 := mul_ne_zero (NeZero.ne N1) (NeZero.ne N2)
-  have : NeZero (N1 * N2) := ⟨hN⟩
+  have : NeZero (N1 * N2) := ⟨mul_ne_zero (NeZero.ne N1) (NeZero.ne N2)⟩
   have d1 : N1 ∣ N1 * N2 := ⟨N2, rfl⟩
   have d2 : N2 ∣ N1 * N2 := ⟨N1, by ring⟩
   have key : changeLevel d1 χ1 = changeLevel d2 χ2 := by
@@ -447,7 +444,7 @@ theorem log_deriv_L_one_congr_primitive {N1 N2 : ℕ} [NeZero N1] [NeZero N2] (�
     exact h p hpp.ne_zero
   have c1 : conductor (changeLevel d1 χ1) = N1 := by rw [conductor_changeLevel]; exact h1
   have c2 : conductor (changeLevel d2 χ2) = N2 := by rw [conductor_changeLevel]; exact h2
-  have hEq : N1 = N2 := c1.symm.trans ((congrArg conductor key).trans c2)
+  have hEq : N1 = N2 := by rw [← c1, key, c2]
   subst hEq
   have : χ1 = χ2 := changeLevel_injective d1 key
   subst this
@@ -473,19 +470,15 @@ theorem char_at {D : D7} (L : SizeData₂ D) (x eps c6 C5 : ℝ) : Char_at L x e
     rw [cOf_chC, Lp_chC_eq]
     rfl
   · intro hT ψ y hy
-    have h1 := GPsi_eq D ψ y
-    have h2 := hT _ (prim D (cOf D ψ)).2 (GlobalTheoryTheory.ConductorDivisibility.jnt_prim_isCharED D (cOf D ψ)) y hy
-    calc ‖GPsi (Formalism.MainNotions.arithOf D.host.toHostRaw) (Formalism.MainNotions.LnkBr.ell D) ψ y‖ = ‖Gc D (cOf D ψ) y‖ := congrArg _ h1
-      _ ≤ _ := h2
+    rw [show GPsi (Formalism.MainNotions.arithOf D.host.toHostRaw) (Formalism.MainNotions.LnkBr.ell D) ψ y = Gc D (cOf D ψ) y from GPsi_eq D ψ y]
+    exact hT _ (prim D (cOf D ψ)).2 (GlobalTheoryTheory.ConductorDivisibility.jnt_prim_isCharED D (cOf D ψ)) y hy
   · intro hQ ψ hψ
     obtain ⟨B1, B2, B3⟩ := hQ
-    have h1 := GPsi_eq D ψ x
-    have key : ‖Gc D (cOf D ψ) x‖ ≤ x ^ ((1 : ℝ) / 2 + eps) ∧ ‖Lp D (cOf D ψ)‖ ≤ C5 * Real.log x := by
-      rcases hψ with rfl | rfl | rfl
-      · rw [cOf_psC]; exact B1 _ _ (GlobalTheoryTheory.ConductorDivisibility.jnt_induces_ps D _ (prim_spec D _))
-      · rw [cOf_chC]; exact B2 _ _ (GlobalTheoryTheory.ConductorDivisibility.jnt_induces_ch D _ (prim_spec D _))
-      · rw [cOf_chpsC]; exact B3 _ _ (GlobalTheoryTheory.ConductorDivisibility.jnt_induces_chps D _ (prim_spec D _))
-    exact ⟨(congrArg norm h1).trans_le key.1, key.2⟩
+    rw [show GPsi (Formalism.MainNotions.arithOf D.host.toHostRaw) (Formalism.MainNotions.LnkBr.ell D) ψ x = Gc D (cOf D ψ) x from GPsi_eq D ψ x, show Formalism.MainNotions.LnkBr.ell D ψ = Lp D (cOf D ψ) from rfl]
+    rcases hψ with rfl | rfl | rfl
+    · rw [cOf_psC]; exact B1 _ _ (GlobalTheoryTheory.ConductorDivisibility.jnt_induces_ps D _ (prim_spec D _))
+    · rw [cOf_chC]; exact B2 _ _ (GlobalTheoryTheory.ConductorDivisibility.jnt_induces_ch D _ (prim_spec D _))
+    · rw [cOf_chpsC]; exact B3 _ _ (GlobalTheoryTheory.ConductorDivisibility.jnt_induces_chps D _ (prim_spec D _))
 
 theorem charF {eps : ℝ} (Fm : FamP eps) : CharF Fm :=
   fun c6 C5 => ⟨0, fun x _ i => char_at (Fm.L x i) x eps c6 C5⟩
@@ -532,10 +525,7 @@ theorem frame_at_of {D : D7} (L : SizeData₂ D) (C0 CH sg de eB : ℝ) (hsgx : 
   refine ⟨5 * sg + 3 * Real.sqrt de, 2 * e0, by positivity, le_refl _, by linarith, heB, fun HH hHH hpos => ?_⟩
   have hRs : D.what₂.Dstar / sg ≤ RsG ιf := by
     refine word_count_bound_holds D.what₂.Word ιf D.what₂.Dstar sg C0 (GamL L) hD0 hsg0 (by linarith) (Real.exp_pos _) ?_ ?_
-    · have h := hCo
-      unfold ChCode_at at h
-      rw [hsgx, Real.rpow_neg hx0.le, div_inv_eq_mul]
-      exact h
+    · simpa [ChCode_at, hsgx, Real.rpow_neg hx0.le, div_inv_eq_mul] using hCo
     · intro u
       have h := (hP u).1
       rw [le_div_iff₀ hD0] at h
@@ -1146,8 +1136,7 @@ theorem rows_orthonormal (D : D7) (V : D.what₂.EE ≃ₗᵢ[ℂ] D.what₂.EE)
   exact if_congr eq_comm rfl rfl
 
 theorem Drows_le (D : D7) : D.what₂.Drows ≤ D.what₂.Dall := by
-  have h := (rows_orthonormal D (LinearIsometryEquiv.refl ℂ _)).linearIndependent.fintype_card_le_finrank
-  rwa [card_RRι, D.s_HH] at h
+  simpa [card_RRι, D.s_HH] using (rows_orthonormal D (LinearIsometryEquiv.refl ℂ _)).linearIndependent.fintype_card_le_finrank
 
 theorem exists_rowBasis (D : D7) (V : D.what₂.EE ≃ₗᵢ[ℂ] D.what₂.EE) :
     ∃ f : OrthonormalBasis (RowIx D) ℂ D.s.HH, ∀ k, f (Sum.inl k) = D.sEE (V (oE D k)) := by
@@ -1157,16 +1146,10 @@ theorem exists_rowBasis (D : D7) (V : D.what₂.EE ≃ₗᵢ[ℂ] D.what₂.EE) 
     omega
   have hv : Orthonormal ℂ ((Set.range (Sum.inl : D.div.RR.ι → RowIx D)).restrict
       (Sum.elim (fun k => D.sEE (V (oE D k))) (fun _ => 0))) := by
-    have h0 := rows_orthonormal D V
-    rw [orthonormal_iff_ite] at h0 ⊢
-    intro a b
-    obtain ⟨a, ha⟩ := a
-    obtain ⟨b, hb⟩ := b
-    obtain ⟨k, hk⟩ := ha
-    obtain ⟨k', hk'⟩ := hb
-    subst hk; subst hk'
+    rw [orthonormal_iff_ite]
+    rintro ⟨_, ⟨k, rfl⟩⟩ ⟨_, ⟨k', rfl⟩⟩
     show inner ℂ (D.sEE (V (oE D k))) (D.sEE (V (oE D k'))) = _
-    rw [h0 k k']
+    rw [orthonormal_iff_ite.mp (rows_orthonormal D V) k k']
     by_cases h : k = k'
     · subst h; rw [if_pos rfl, if_pos rfl]
     · rw [if_neg h, if_neg (fun h' => h (Sum.inl_injective (congrArg Subtype.val h')))]
@@ -1384,41 +1367,31 @@ theorem dall_pos {D : D7} (u : D.what₂.Word) (e0 : ℝ) (he : e0 < 1) (hd : 0 
     (h : hsDiagFull D u ≤ e0 * (D.duS u : ℝ)) : 0 < D.what₂.Dall := by
   by_contra hcon
   have h0 : D.what₂.Dall = 0 := by omega
-  have hfr : Module.finrank ℂ D.s.HH = 0 := by rw [D.s_HH, h0]
-  haveI : Subsingleton D.s.HH := Module.finrank_zero_iff.mp hfr
+  haveI : Subsingleton D.s.HH := Module.finrank_zero_iff.mp (by rw [D.s_HH, h0])
   have hK : S.KD D u u = 0 := by
     apply ContinuousLinearMap.ext
     intro x
     have hP : D.s.Pu u x = 0 := Subsingleton.elim _ _
     simp [S.KD, S.Kmat, hP]
-  have hfin : Module.finrank ℂ (D.s.Cu u) = D.duS u := by
-    unfold D7.duS
-    exact LinearEquiv.finrank_eq (D.s_Cu u)
   have hval : hsDiagFull D u = (D.duS u : ℝ) := by
-    unfold hsDiagFull S.hsNormSq S.hsInner
-    rw [hK, zero_sub]
-    simp [hfin]
+    unfold hsDiagFull
+    rw [hK, hs_neg_id]
   rw [hval] at h
   have hd' : (0 : ℝ) < (D.duS u : ℝ) := by exact_mod_cast hd
   nlinarith
 
 theorem rrRankF_of {eps : ℝ} (Fm : FamP eps) (Cabs CH C0 : ℝ) (hC0 : 0 < C0) (lS : LinkS Fm C0)
     (cPr : ChosenProviso Fm C0) (lI : LinkIRR Fm) (lD : LinkDIV Fm Cabs CH) : RRRankF Fm := by
-  have heps := fam_eps_pos Fm
   obtain ⟨a0, lS⟩ := lS
   obtain ⟨a1, cPr⟩ := cPr
   obtain ⟨a2, lI⟩ := lI
   obtain ⟨C, a3, lD⟩ := lD
   refine ⟨1 + |a0| + |a1| + |a2| + |a3|, fun x hx i => ?_⟩
-  have b0 := abs_nonneg a0
-  have b1 := abs_nonneg a1
-  have b2 := abs_nonneg a2
-  have b3 := abs_nonneg a3
-  have hx0 : 0 < x := by linarith
-  have e0' : x ≥ a0 := by linarith [le_abs_self a0]
-  have e1 : x ≥ a1 := by linarith [le_abs_self a1]
-  have e2 : x ≥ a2 := by linarith [le_abs_self a2]
-  have e3 : x ≥ a3 := by linarith [le_abs_self a3]
+  have hx0 : 0 < x := by linarith [abs_nonneg a0, abs_nonneg a1, abs_nonneg a2, abs_nonneg a3]
+  have e0' : x ≥ a0 := by linarith [le_abs_self a0, abs_nonneg a1, abs_nonneg a2, abs_nonneg a3]
+  have e1 : x ≥ a1 := by linarith [le_abs_self a1, abs_nonneg a0, abs_nonneg a2, abs_nonneg a3]
+  have e2 : x ≥ a2 := by linarith [le_abs_self a2, abs_nonneg a0, abs_nonneg a1, abs_nonneg a3]
+  have e3 : x ≥ a3 := by linarith [le_abs_self a3, abs_nonneg a0, abs_nonneg a1, abs_nonneg a2]
   obtain ⟨eta0, eta1, e0, he0, -, -, hse, hS⟩ := lS x e0' i
   have hP := cPr x e1 i
   obtain ⟨-, hdiag, -⟩ := hS hP
@@ -1426,10 +1399,7 @@ theorem rrRankF_of {eps : ℝ} (Fm : FamP eps) (Cabs CH C0 : ℝ) (hC0 : 0 < C0)
     have h := Real.exp_lt_exp.mpr (show -y < 0 by linarith)
     rwa [Real.exp_zero] at h
   have hs1 : Real.sqrt e0 < 1 := lt_of_le_of_lt hse (hexp _ (Real.rpow_pos_of_pos hx0 _))
-  have he1 : e0 < 1 := by
-    have h1 := Real.sq_sqrt he0
-    have h2 := Real.sqrt_nonneg e0
-    nlinarith
+  have he1 : e0 < 1 := by nlinarith [Real.sq_sqrt he0, Real.sqrt_nonneg e0]
   have hdu : 0 < (Fm.D x i).duS (Fm.D x i).u₀ := by
     by_contra hcon
     have hz : (Fm.D x i).duS (Fm.D x i).u₀ = 0 := by omega
@@ -1870,9 +1840,8 @@ theorem estimates_at_scale_of_points (hCov : Fm.CoverAll) (hx : Fm.x1 < x) (P : 
     · rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
       field_simp
     · intro p hp
-      have := g5 p hp
       rw [← Finset.mul_sum, one_div, inv_mul_eq_div]
-      exact this
+      exact g5 p hp
     · intro υ p hp o
       exact (hpt o (υ.1 o) (υ.2 o)).1 p hp
     · intro υ o

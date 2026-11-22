@@ -115,21 +115,16 @@ theorem Formalism.G0.tail_concavity : TailConcavity := by
     simp [fTail]
   set U : Fin N := ⟨u₀, hu⟩ with hU
   have hbk : (k' : ℝ) ≤ B U := by exact_mod_cast hkB U
-  have hkpos' : (0 : ℝ) < k' := by exact_mod_cast hkpos
-  have hbpos : (0 : ℝ) < B U := lt_of_lt_of_le hkpos' hbk
-  have hcn : ∀ l : Fin N, cn k' N B l.val = g k' (B l) := by
-    intro l
-    simp [cn, l.isLt]
+  have hbpos : (0 : ℝ) < B U := lt_of_lt_of_le (by exact_mod_cast hkpos) hbk
+  have hcn : ∀ l : Fin N, cn k' N B l.val = g k' (B l) := fun l => by simp [cn, l.isLt]
 
   have hprev : ∀ u : Fin N, u.val ≠ 0 →
       ∃ hp : u.val - 1 < N, 4 * B u ≤ B ⟨u.val - 1, hp⟩ := by
     intro u hu0
     refine ⟨by omega, ?_⟩
     have h : (u.val - 1) + 1 < N := by omega
-    have h4 := hB4 ⟨u.val - 1, by omega⟩ h
-    have e : (⟨u.val - 1 + 1, h⟩ : Fin N) = u := Fin.ext (by dsimp; omega)
-    rw [e] at h4
-    exact h4
+    have e : (⟨(u.val - 1) + 1, h⟩ : Fin N) = u := Fin.ext (by dsimp; omega)
+    simpa [e] using hB4 ⟨u.val - 1, by omega⟩ h
   have hen_eq : ∀ u : Fin N, u.val ≠ 0 → ∃ hp : u.val - 1 < N,
       en k' N B u.val = g k' (B u) - g k' (B ⟨u.val - 1, hp⟩) ∧ 4 * B u ≤ B ⟨u.val - 1, hp⟩ := by
     intro u hu0
@@ -139,8 +134,7 @@ theorem Formalism.G0.tail_concavity : TailConcavity := by
     simp [cn, hp]
   have hen0 : ∀ u : Fin N, u.val = 0 → en k' N B u.val = g k' (B u) := by
     intro u hu0
-    simp only [en, hu0, if_true, sub_zero]
-    rw [← hu0, hcn u]
+    simpa [en, hu0] using hcn u
   have en_nonneg : ∀ u : Fin N, 0 ≤ en k' N B u.val := by
     intro u
     by_cases hu0 : u.val = 0
@@ -175,10 +169,8 @@ theorem Formalism.G0.tail_concavity : TailConcavity := by
 
   have step1 : ∑ l, fTail k' (α l) - ∑ l, fTail k' (B l) ≤ ∑ l, cn k' N B l.val * d l := by
     rw [← sum_sub_distrib]
-    apply sum_le_sum
-    intro l _
-    rw [hcn l]
-    exact fTail_sub_le k' (α l) (B l)
+    exact Finset.sum_le_sum fun l _ => by
+      simpa [hcn l, d] using fTail_sub_le k' (α l) (B l)
 
   have step2 : ∑ l, cn k' N B l.val * d l = ∑ u : Fin N, en k' N B u.val * D u := by
     have hc : ∀ l : Fin N, cn k' N B l.val =

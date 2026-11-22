@@ -105,8 +105,7 @@ theorem lw_de (X : Formalism.MainNotions.G.Inst D L) (Y : Formalism.MainNotions.
 theorem lw_c_le (hS : Formalism.MainNotions.SizesAt L) : Formalism.MainNotions.G.cG L ≤ 4 / 5 * L.sc.w'' D.R.n := by
   obtain ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, hDel, _⟩ := hS
   have h4 := hDel.2.2.2.1
-  have hk := nd_k_ge (D := D)
-  have h2 : 5 * L.Sc ≤ (D.R.k : ℝ) * L.Sc := mul_le_mul_of_nonneg_right hk L.Sc_pos.le
+  have h2 : 5 * L.Sc ≤ (D.R.k : ℝ) * L.Sc := mul_le_mul_of_nonneg_right (nd_k_ge (D := D)) L.Sc_pos.le
   unfold Formalism.MainNotions.G.cG
   linarith
 

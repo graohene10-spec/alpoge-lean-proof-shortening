@@ -148,8 +148,7 @@ theorem mem_resSet3_of_mem_ixFin3 {X : Finset (G → K)} {p : Typ3 K Pl0 I0 Ty} 
 
 theorem mem_ixFin_fst (hc : Col.PairComm B.op) {X : Finset (G → K)} {p : Typ3 K Pl0 I0 Ty} (h : p ∈ D.ixFin3 X) :
     p.1 ∈ B.ixFin X := by
-  rw [B.mem_ixFin hc]
-  exact D.mem_resSet_of_mem_resSet3 (D.mem_resSet3_of_mem_ixFin3 h)
+  exact (B.mem_ixFin hc X p.1).2 (D.mem_resSet_of_mem_resSet3 (D.mem_resSet3_of_mem_ixFin3 h))
 
 theorem diffAt_of_mem_ixFin3 {X : Finset (G → K)} {p p' : Typ3 K Pl0 I0 Ty} (h : p ∈ D.ixFin3 X)
     (h' : p' ∈ D.ixFin3 X) (hne : p ≠ p') : D.DiffAt p p' := by
@@ -182,12 +181,10 @@ theorem inert_parts_independent (hc : Col.PairComm D.opAll) {ι : Type} (ps : ι
 
 theorem commute_gaOp {s : ℕ} (h : B.Ok s) (hD : D.Ok3) (a : MonoidAlgebra K G) (k : D.OpIx) :
     Commute (D.opAll k) (B.S.gaOp B.r a) := by
-  have hT : ∀ g, Commute (D.opAll k) (B.r g) := by
-    rcases k with i | k
-    · exact fun g => h.opG i g
-    · exact fun g => hD.opG k g
   unfold CSD.gaOp
-  exact Commute.sum_right _ _ _ fun t _ => (hT t).smul_right _
+  rcases k with i | k
+  · exact Commute.sum_right _ _ _ fun t _ => (h.opG i t).smul_right _
+  · exact Commute.sum_right _ _ _ fun t _ => (hD.opG k t).smul_right _
 
 theorem inert_parts_span_top {v0 : InfinitePlace K} (hv0 : IsConjAt v0) {s : ℕ} (h : B.Ok s) (hD : D.Ok3)
     (hX : ∀ χ ∈ ℓ.X, IsAbsIrrChar χ) (hZ : D.Stable3 Z) {ι : Type} [Fintype ι]

@@ -64,16 +64,13 @@ variable {p : ℕ} [Fact p.Prime] {N r : ℕ}
 
 theorem isoC_congr (LL : Letters N) (j : ℕ) (Cs : Finset (Fin r)) {la la' : Fin r → ℤ}
     (h : ∀ c ∈ Cs, la c = la' c) : IsoC p LL j Cs la = IsoC p LL j Cs la' := by
-  have hc : la ∘ enumC Cs = la' ∘ enumC Cs := by
-    funext i
-    exact h _ (Finset.orderEmbOfFin_mem Cs rfl i)
-  rw [isoC_eq, isoC_eq, hc]
+  rw [isoC_eq, isoC_eq, (show la ∘ enumC Cs = la' ∘ enumC Cs from
+    funext fun i => h _ (Finset.orderEmbOfFin_mem Cs rfl i))]
 
 theorem iSup_isoC_eq (LL : Letters N) (j : ℕ) (Cs : Finset (Fin r)) (la : Fin r → ℤ) :
     (⨆ (la' : Fin r → ℤ) (_ : la' ∈ {la' : Fin r → ℤ | ∀ c ∈ Cs, la' c = la c}), IsoC p LL j Cs la') =
       IsoC p LL j Cs la := by
-  refine le_antisymm (iSup₂_le fun la' h => (isoC_congr LL j Cs h).le) ?_
-  exact le_iSup₂_of_le la (fun c _ => rfl) le_rfl
+  exact le_antisymm (iSup₂_le fun la' h => (isoC_congr LL j Cs h).le) (le_iSup₂_of_le la (fun c _ => rfl) le_rfl)
 
 theorem isoC_diag (LL : Letters N) (j : ℕ) (Cs : Finset (Fin r)) (c : Fin r) (la : Fin r → ℤ) :
     ∀ x ∈ IsoC p LL j Cs la, glAct p LL j c c x ∈ IsoC p LL j Cs la := by

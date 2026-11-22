@@ -54,8 +54,7 @@ theorem perm : NormUnitaryPermutationInvariance := by
   intro R _ N n ν σ F hF
   rw [mem_H_iff] at hF ⊢
   refine ⟨isWeightedHomogeneous_rename hF.1, fun i j hij => ?_⟩
-  rw [shear_rename_perm, hF.2 i j hij, Polynomial.map_C]
-  rfl
+  simp [shear_rename_perm, hF.2 i j hij]
 
 def CoeffHom {σ M : Type*} [AddCommMonoid M] (wt : σ → M) (m : M)
     (P : Polynomial (MvPolynomial σ R)) : Prop :=

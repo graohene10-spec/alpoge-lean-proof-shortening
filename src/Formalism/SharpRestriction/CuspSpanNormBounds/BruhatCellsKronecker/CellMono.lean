@@ -88,9 +88,7 @@ theorem cell_mono : RelevantMonomialConsecutive := by
   rw [cmono_supSum_succ (σ b) (σ c) y hv] at h
   have hy0 : y ≠ 0 := by
     rw [hy]
-    intro h0
-    have h1 : -(t c / t b) = 0 := by simpa using h0
-    exact (div_ne_zero htc htb) (neg_eq_zero.1 h1)
+    exact fun h0 => (div_ne_zero htc htb) (neg_eq_zero.1 (by simpa using h0))
   by_cases hb : b.val = c.val + 1
   · refine ⟨hb, ?_⟩
     rw [cmono_supSum_succ c b 1 hb, star_one] at h

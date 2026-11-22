@@ -89,14 +89,12 @@ theorem dom_iff_le {n : ℕ} (A B : Finset (Fin n)) :
     Formalism.InvariantFactorPaths.GelfandTsetlinBases.Branch.Dom A B ↔ ∀ t : Fin n, (B.filter (· ≤ t)).card ≤ (A.filter (· ≤ t)).card := by
   constructor
   · intro h t
-    rw [← cnt_succ, ← cnt_succ]; exact h _
+    simpa only [← cnt_succ] using h (t.val + 1)
   · intro h x
     rcases x with _ | y
     · simp [Formalism.InvariantFactorPaths.GelfandTsetlinBases.Branch.cnt]
     · by_cases hy : y < n
-      · have := h ⟨y, hy⟩
-        rw [← cnt_succ, ← cnt_succ] at this
-        exact this
+      · simpa only [← cnt_succ] using h ⟨y, hy⟩
       · have hn : n ≤ y + 1 := by omega
         rw [Formalism.InvariantFactorPaths.GelfandTsetlinBases.Branch.cnt_of_le A hn, Formalism.InvariantFactorPaths.GelfandTsetlinBases.Branch.cnt_of_le B hn]
         rcases Nat.eq_zero_or_pos n with h0 | hpos
@@ -123,16 +121,14 @@ theorem index_off_range {N n : ℕ} (mu : Fin (N + 1) → Fin n → ℤ) (I : �
       rw [Finset.filter_true_of_mem]
       · simp
       · intro m _
-        have := neg_abs_le (pEnd mu m)
-        have := hT m
+        have := (abs_le.mp (hT m)).1
         omega
     omega
   · rw [if_pos (by omega)]
     unfold colH
     rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
     intro m _
-    have := le_abs_self (pEnd mu m)
-    have := hT m
+    have := (abs_le.mp (hT m)).2
     omega
 
 theorem restStd : RestStd := by

@@ -330,8 +330,7 @@ theorem valS_empty_le {R : Type} [Field R] {ι : Type} {n : ℕ} [NeZero n] (LL 
   rw [Finsupp.mem_support_iff]
   show (LaurentPolynomial.C (((algebraMap (MvPolynomial (Fin n × Fin n) R) (GLCoord R n)).comp MvPolynomial.C)
     (F.coeff m))).coeff 0 ≠ 0
-  rw [LaurentPolynomial.C_apply]
-  simp only [if_true]
+  simp only [LaurentPolynomial.C_apply, if_true]
   exact (map_ne_zero _).2 hm
 
 section Lift
@@ -404,12 +403,9 @@ theorem li_K (h3a : Formalism.MainNotions.PlaneGramData.PathColumnBasisAtRing O)
   have h1 := hli.map' (MvPolynomial.mapAlgHom (σ := Fin N × Fin r) (Algebra.ofId O (KK O))).toLinearMap
     (LinearMap.ker_eq_bot.2 (MvPolynomial.map_injective _ (IsFractionRing.injective O (KK O))))
   have h2 : LinearIndependent O (fun x : Idx N r LL d => Psi (KK O) x.1.1.mu x.1.2) := by
-    have e : (fun x : Idx N r LL d => Psi (KK O) x.1.1.mu x.1.2) =
-        (⇑(MvPolynomial.mapAlgHom (σ := Fin N × Fin r) (Algebra.ofId O (KK O))).toLinearMap ∘
-          fun x : Idx N r LL d => Psi O x.1.1.mu x.1.2) := by
-      funext x
-      exact (StandardMonomialSpace.Psi_map (algebraMap O (KK O)) x.1.1.mu x.1.2).symm
-    rw [e]; exact h1
+    have h1' : LinearIndependent O (fun x : Idx N r LL d =>
+        MvPolynomial.map (algebraMap O (KK O)) (Psi O x.1.1.mu x.1.2)) := h1
+    simpa only [StandardMonomialSpace.Psi_map] using h1'
   exact (LinearIndependent.iff_fractionRing O (KK O)).1 h2
 
 theorem psiK_mem (h3a : Formalism.MainNotions.PlaneGramData.PathColumnBasisAtRing O) {N r : ℕ} [NeZero r] {LL : Letters (Fin N)} {d : Fin N → ℕ}

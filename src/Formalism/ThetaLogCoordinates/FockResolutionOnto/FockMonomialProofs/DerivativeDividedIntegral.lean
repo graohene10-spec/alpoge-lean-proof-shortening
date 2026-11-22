@@ -62,8 +62,7 @@ variable (LL : Letters (K + 1)) (Cs : Finset (Fin r)) (a : Fin r)
 theorem DDop_apply (F : MvPolynomial (Fin (K + 1) × Fin r) ℚ_[p]) :
     DDop p LL Cs a F = X (Fin.last K, a) * ProjS.eulL (fun c : Fin r => (Fin.last K, c)) F +
         ∑ b ∈ Cs, X (Fin.last K, b) * glAct p LL K a b F := by
-  simp only [DDop, eulW, Wm, dW, ProjS.eulL, LinearMap.add_apply, LinearMap.comp_apply, LinearMap.sum_apply,
-    LinearMap.mulLeft_apply]
+  simp [DDop, eulW, Wm, dW, ProjS.eulL, Finset.mul_sum]
 
 theorem Uop_eq (c : ℤ) (F : MvPolynomial (Fin (K + 1) × Fin r) ℚ_[p]) :
     Uop p LL c Cs a F = ((c : ℤ) : ℚ_[p]) • (X (Fin.last K, a) * F) - DDop p LL Cs a F := by
@@ -251,9 +250,8 @@ theorem Uop_pow_one (c : ℤ) (k : ℕ) :
 
 theorem one_int : (1 : MvPolynomial (Fin (K + 1) × Fin r) ℚ_[p]) ∈ IntPol p (Fin (K + 1) × Fin r) := by
   classical
-  rw [intPol_iff_norm]
+  simp [intPol_iff_norm, coeff_one]
   intro m
-  rw [coeff_one]
   split_ifs <;> simp
 
 private theorem Uop_add_one_apply (c : ℤ) (H : MvPolynomial (Fin (K + 1) × Fin r) ℚ_[p]) :

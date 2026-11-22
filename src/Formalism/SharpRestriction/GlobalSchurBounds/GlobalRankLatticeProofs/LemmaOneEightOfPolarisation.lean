@@ -38,11 +38,9 @@ theorem mult_ring {M : Type} [Field M] [NumberField M]
 private theorem mem_one_iff'' {M : Type} [Field M] [NumberField M] (t : M) :
     t ∈ (1 : FractionalIdeal (nonZeroDivisors (𝓞 M)) M) ↔ IsIntegral ℤ t := by
   rw [FractionalIdeal.mem_one_iff]
-  constructor
-  · rintro ⟨x', rfl⟩
-    exact NumberField.RingOfIntegers.isIntegral_coe x'
-  · intro h
-    exact ⟨⟨t, h⟩, rfl⟩
+  refine ⟨fun h => ?_, fun h => ⟨⟨t, h⟩, rfl⟩⟩
+  rcases h with ⟨x', rfl⟩
+  exact NumberField.RingOfIntegers.isIntegral_coe x'
 
 private theorem integ_iff' {M : Type} [Field M] [NumberField M] (σ : M ≃ₐ[ℚ] M) (t : M) :
     IsIntegral ℤ (σ t) ↔ IsIntegral ℤ t :=

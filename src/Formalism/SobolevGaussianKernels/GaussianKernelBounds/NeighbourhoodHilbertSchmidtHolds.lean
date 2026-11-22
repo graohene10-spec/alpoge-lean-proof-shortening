@@ -11,14 +11,12 @@ open scoped InnerProductSpace ComplexConjugate
 lemma fu_sum_comp {ι M N Q : Type*} [AddCommMonoid M] [AddCommMonoid N] [AddCommMonoid Q]
     [Module ℂ M] [Module ℂ N] [Module ℂ Q] (s : Finset ι) (f : ι → N →ₗ[ℂ] Q) (g : M →ₗ[ℂ] N) :
     (∑ i ∈ s, f i) ∘ₗ g = ∑ i ∈ s, f i ∘ₗ g := by
-  ext x
-  simp [LinearMap.sum_apply]
+  exact LinearMap.ext fun x => by simp [LinearMap.sum_apply]
 
 lemma fu_comp_sum {ι M N Q : Type*} [AddCommMonoid M] [AddCommMonoid N] [AddCommMonoid Q]
     [Module ℂ M] [Module ℂ N] [Module ℂ Q] (s : Finset ι) (g : N →ₗ[ℂ] Q) (f : ι → M →ₗ[ℂ] N) :
     g ∘ₗ (∑ i ∈ s, f i) = ∑ i ∈ s, g ∘ₗ f i := by
-  ext x
-  simp [LinearMap.sum_apply, map_sum]
+  exact LinearMap.ext fun x => by simp [LinearMap.sum_apply, map_sum]
 
 section HS
 

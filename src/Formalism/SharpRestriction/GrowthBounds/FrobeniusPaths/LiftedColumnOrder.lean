@@ -132,11 +132,8 @@ lemma lift_substitution_column_kernel (w : O) (LL : LiftLetters (Fin N)) (g g' :
     (J : Finset (Fin (r + K))) :
     liftSubst p f O w r LL g' (KKc p f (O := O) LL g z mu c J) =
       MvPolynomial.map (algebraMap O (KK O)) (ZZ p (zetaL p f w LL g g') LL.pos mu c N z J) := by
-  rw [KKc_eq]
-  have h1 := ZZ_map (liftSubst p f O w r LL g').toRingHom p (letG p f (O := O) LL g) LL.pos mu c N le_rfl z J
-  have h2 := ZZ_map (MvPolynomial.map (algebraMap O (KK O))) p (zetaL p f w LL g g') LL.pos mu c N le_rfl z J
-  rw [h2]
-  refine h1.trans ?_
+  rw [KKc_eq, ZZ_map (MvPolynomial.map (algebraMap O (KK O))) p (zetaL p f w LL g g') LL.pos mu c N le_rfl z J]
+  refine (ZZ_map (liftSubst p f O w r LL g').toRingHom p (letG p f (O := O) LL g) LL.pos mu c N le_rfl z J).trans ?_
   congr 1
   funext i b
   exact lift_substitution_letter p f w LL g g' hg hg' i b

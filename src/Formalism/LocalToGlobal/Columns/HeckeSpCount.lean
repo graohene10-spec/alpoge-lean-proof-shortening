@@ -12,10 +12,7 @@ section GaussProd
 theorem hcnt_prod_succ (q : ℤ) (a i : ℕ) :
     ∏ j ∈ Finset.range (i + 1), (q ^ (a + 1) - q ^ j) =
       (q ^ (a + 1) - 1) * q ^ i * ∏ j ∈ Finset.range i, (q ^ a - q ^ j) := by
-  rw [Finset.prod_range_succ']
-  have h : ∀ j ∈ Finset.range i, (q ^ (a + 1) - q ^ (j + 1)) = q * (q ^ a - q ^ j) := by
-    intro j _; ring
-  rw [Finset.prod_congr rfl h, Finset.prod_mul_distrib, Finset.prod_const, Finset.card_range]
+  rw [Finset.prod_range_succ', Finset.prod_congr rfl (fun j (_ : j ∈ Finset.range i) => show q ^ (a + 1) - q ^ (j + 1) = q * (q ^ a - q ^ j) by ring), Finset.prod_mul_distrib, Finset.prod_const, Finset.card_range]
   ring
 
 theorem gaussBin_mul_prod (q n i : ℕ) :
@@ -97,14 +94,7 @@ theorem hcnt_card_mul (i : ℕ) (hi : i ≤ finrank K V) :
     Nat.card_eq_fintype_card]
 
 private theorem gaussBin_eq_zero_of_lt (q : ℕ) {n i : ℕ} (h : n < i) : gaussBin q n i = 0 := by
-  induction n generalizing i with
-  | zero =>
-    obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : i ≠ 0)
-    rfl
-  | succ n ih =>
-    obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : i ≠ 0)
-    show gaussBin q n k + q ^ (k + 1) * gaussBin q n (k + 1) = 0
-    rw [ih (by omega), ih (by omega), mul_zero, add_zero]
+  exact gaussBin_eq_zero q h
 
 theorem card_subspaces_finrank (i : ℕ) :
     Nat.card {U : Submodule K V // finrank K U = i} = gaussBin (Fintype.card K) (finrank K V) i := by
@@ -365,8 +355,7 @@ theorem heckeFam_eq_zero_of_lt (c : DecoPts S E n ST SG) (S0 : Set (HeightOneSpe
   have h : c.nb P.1.asIdeal i d = ∅ := by
     rw [← Finset.card_eq_zero, c.card_nb P i d, gaussBin_eq_zero _ hi]
   change (((heckeD c P.1.asIdeal i).op φ : S.EqFun) : S.D → S.V) d = _
-  rw [heckeD_op_apply, h, Finset.sum_empty]
-  rfl
+  simp [heckeD_op_apply, h, Finset.sum_empty]
 
 variable (K) (E) (n) (ST) (SG)
 

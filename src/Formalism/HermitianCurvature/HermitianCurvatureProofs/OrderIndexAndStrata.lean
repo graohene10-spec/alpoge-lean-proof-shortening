@@ -148,8 +148,7 @@ theorem mid_form {A : Type} [CommRing A] {k : ℕ} (y : Matrix (Mid k) (Mid k) A
     · simpa [midEmb] using r22 (Sum.inl b)
     · simpa [midEmb] using c22 (Sum.inr ())
   refine ⟨_, ?_, hy'⟩
-  rw [hy', Formalism.FourierDecayAlt.P.S3x1.midEmb_det] at hy
-  exact hy
+  rwa [hy', Formalism.FourierDecayAlt.P.S3x1.midEmb_det] at hy
 
 theorem sFrame (hS : SExplicit) : SIsFrameStabiliser := by
   intro A _ r k x hx

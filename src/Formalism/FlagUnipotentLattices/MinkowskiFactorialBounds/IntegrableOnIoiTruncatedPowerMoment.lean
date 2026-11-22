@@ -57,8 +57,7 @@ theorem lemSSupBound_of (hE : Formalism.HermitianLatticeCounting.ExpansionTerms.
 
 lemma gl_radial_integrable (f : ℝ → ℝ) :
     Integrable (fun x : ℂ => f ‖x‖) ↔ IntegrableOn (fun y : ℝ => y * f y) (Set.Ioi 0) := by
-  have h := integrable_fun_norm_addHaar (E := ℂ) (volume : Measure ℂ) (f := f)
-  simpa [Complex.finrank_real_complex] using h
+  simpa [Complex.finrank_real_complex] using integrable_fun_norm_addHaar (E := ℂ) (volume : Measure ℂ) (f := f)
 
 lemma gl_radial_integral (f : ℝ → ℝ) :
     ∫ x : ℂ, f ‖x‖ = 2 * π * ∫ y in Set.Ioi (0 : ℝ), y * f y := by
@@ -88,9 +87,7 @@ lemma integrableOn_Ioc_truncated_power_moment {K L : ℝ} (hK : 0 ≤ K) :
 
 lemma integrableOn_Ioi_truncated_power_moment {K L : ℝ} (hK : 2 < K) (hL : 0 < L) :
     IntegrableOn (fun y : ℝ => y * TruncationCutoff K L y) (Set.Ioi L) := by
-  have hE : Set.EqOn (fun y : ℝ => y * TruncationCutoff K L y) (fun y => L ^ K * y ^ (1 - K)) (Set.Ioi L) :=
-    fun y hy => gl_cut_gt (by linarith) hL hy
-  refine IntegrableOn.congr_fun ?_ hE.symm measurableSet_Ioi
+  refine IntegrableOn.congr_fun ?_ (fun y hy => (gl_cut_gt (by linarith) hL hy).symm) measurableSet_Ioi
   exact Integrable.const_mul (integrableOn_Ioi_rpow_of_lt (by linarith) hL) _
 
 lemma gl_e3Integral : Formalism.HermitianLatticeCounting.ExpansionTerms.CutoffIntegralFormula := by
@@ -733,13 +730,9 @@ lemma ge_det_mul_eq_sum_principal {K : Type*} [CommRing K] {i n : ℕ} (A : Matr
     (B : Matrix (Fin n) (Fin i) K) :
     (A * B).det = ∑ S ∈ (Finset.univ : Finset (Fin n)).powersetCard i,
       ((B * A).submatrix (Subtype.val : S → Fin n) Subtype.val).det := by
-  rw [← ge_coeff_top_det (A * B)]
-  have h1 : (1 : Matrix (Fin i) (Fin i) K[X]) + (X : K[X]) • (A * B).map C
-      = 1 + ((X : K[X]) • A.map C) * (B.map C) := by
-    rw [Matrix.map_mul, Matrix.smul_mul]
-  have h2 : (B.map C) * ((X : K[X]) • A.map C) = (X : K[X]) • (B * A).map C := by
-    rw [Matrix.mul_smul]; congr 1; simp [Matrix.map_mul]
-  rw [h1, det_one_add_mul_comm, h2, coeff_det_one_add_X_smul_eq_sum_minors]
+  rw [← ge_coeff_top_det (A * B), Matrix.map_mul, ← Matrix.smul_mul,
+    det_one_add_mul_comm, Matrix.mul_smul, ← Matrix.map_mul,
+    coeff_det_one_add_X_smul_eq_sum_minors]
 
 lemma ge_principal_minor_factor {K : Type*} [CommRing K] {i n : ℕ} (A : Matrix (Fin i) (Fin n) K)
     (B : Matrix (Fin n) (Fin i) K) (S : Finset (Fin n)) (hS : S.card = i) :

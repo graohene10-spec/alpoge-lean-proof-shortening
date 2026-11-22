@@ -126,9 +126,7 @@ theorem exists_norm_iteratedFDeriv_critCut_le (d : ℕ) {δ : ℝ} (hδ : 0 < δ
   have hc : HasCompactSupport (critCut (n := d) δ 0) :=
     HasCompactSupport.intro (isCompact_closedBall 0 (2 * δ)) fun x hx => critCut_eq_zero hδ (by
       rw [Metric.mem_closedBall, dist_zero_right, not_le] at hx
-      have e : (x - fun _ => (0 : ℂ)) = x := by funext k; simp
-      rw [e]
-      exact hx.le)
+      simpa only [show (fun _ : Fin d => (0 : ℂ)) = (0 : Fin d → ℂ) from rfl, sub_zero] using hx.le)
   exact ((critCut_contDiff δ 0 (n := j)).continuous_iteratedFDeriv le_rfl).bounded_above_of_compact_support
     (hc.iteratedFDeriv j)
 
@@ -158,8 +156,7 @@ theorem one_le_mul_of_root {s : ℕ} {ζ : ℂ} (hs : 0 < s) (h : ζ ^ s = 1) (h
       _ ≤ _ := Finset.sum_le_sum fun i hi => (norm_pow_sub_one_le hn i).trans
           (mul_le_mul_of_nonneg_right (by exact_mod_cast (Finset.mem_range.mp hi).le) (norm_nonneg _))
   rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul] at h2
-  have hs' : (0 : ℝ) < s := by exact_mod_cast hs
-  exact le_of_mul_le_mul_left (by linarith) hs'
+  exact le_of_mul_le_mul_left (by simpa using h2) ((by exact_mod_cast hs) : (0 : ℝ) < s)
 
 theorem root_sep {s : ℕ} (hs : 0 < s) {z z' : ℂ} (h : z ^ s = z' ^ s) (hne : z ≠ z') :
     ‖z‖ ≤ (s : ℝ) * ‖z - z'‖ := by

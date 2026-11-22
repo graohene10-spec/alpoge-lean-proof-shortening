@@ -60,9 +60,7 @@ theorem der_adj {n : Type*} [Fintype n] [DecidableEq n] (N : Matrix n n A) (a b 
   have h1 : (adjugate N).map D * N + adjugate N * N.map D = D N.det • (1 : Matrix n n A) := by
     rw [← map_mul_der, adjugate_mul]
     ext i j
-    by_cases h : i = j
-    · subst h; simp
-    · simp [Matrix.one_apply_ne h]
+    by_cases h : i = j <;> simp [h]
   have h2 : N.det • (adjugate N).map D + adjugate N * (N.map D * adjugate N) =
       D N.det • adjugate N := by
     have h3 := congrArg (fun M => M * adjugate N) h1
@@ -490,12 +488,7 @@ theorem cayleyIdentity : CayleyId := by
       Finset.prod_empty, one_smul]
   | succ k =>
     have h := Formalism.IncomingBounds.Cay.gen (K := F) (k+1) s k id id
-    have hsub : (Formalism.IncomingBounds.Cay.Mg F (k+1)).submatrix id id =
-        Formalism.IncomingBounds.Cay.Mg F (k+1) := Matrix.submatrix_id_id _
-    have hadj : ((adjugate (Formalism.IncomingBounds.Cay.Mg F (k+1))).submatrix id id).det =
-        (Formalism.IncomingBounds.Cay.Mg F (k+1)).det ^ k := by
-      rw [Matrix.submatrix_id_id, det_adjugate, Fintype.card_fin, Nat.add_sub_cancel]
-    rw [hsub, hadj] at h
+    simp only [Matrix.submatrix_id_id, det_adjugate, Fintype.card_fin, Nat.add_sub_cancel] at h
     have hne : (Formalism.IncomingBounds.Cay.Mg F (k+1)).det ^ k ≠ 0 :=
       pow_ne_zero _ (Formalism.IncomingBounds.Cay.det_ne (K := F) (k+1))
     apply mul_left_cancel₀ hne

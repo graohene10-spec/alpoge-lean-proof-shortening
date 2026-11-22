@@ -220,9 +220,7 @@ theorem evFr_coord (G : ι → Matrix (Fin n) (Fin n) ℂ) (s : K →+* ℂ) (la
 
 theorem map_inv_matrix {K L : Type} [Field K] [Field L] (s : K →+* L) (A : Matrix (Fin n) (Fin n) K) :
     (A⁻¹).map s = (A.map s)⁻¹ := by
-  have hdet : (A.map s).det = s A.det := (RingHom.map_det s A).symm
-  have hadj : (A.map s).adjugate = A.adjugate.map s := (RingHom.map_adjugate s A).symm
-  rw [Matrix.inv_def, Matrix.inv_def, hdet, hadj]
+  rw [Matrix.inv_def, Matrix.inv_def, (show (A.map s).det = s A.det from (RingHom.map_det s A).symm), (show (A.map s).adjugate = A.adjugate.map s from (RingHom.map_adjugate s A).symm)]
   ext i j
   simp [Ring.inverse_eq_inv', map_inv₀]
 

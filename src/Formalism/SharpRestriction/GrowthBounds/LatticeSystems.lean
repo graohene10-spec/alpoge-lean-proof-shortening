@@ -412,8 +412,7 @@ theorem kp_lamAt_antitone {n' m : ℕ} (lam0 : Fin n' → Fin (m + 1) → ℤ) (
 
 theorem kp_nuOf_antitone {m : ℕ} (lam : Fin (m + 1) → ℤ) (h : Antitone lam) : Antitone (nuOf lam) := by
   intro i j hij
-  unfold nuOf
-  exact Int.toNat_le_toNat (by have := h hij; omega)
+  simpa [nuOf] using Int.toNat_le_toNat (sub_le_sub_right (h hij) (lam (Fin.last m)))
 
 theorem kp_dimV_pos (Kf : Type) [Field Kf] {n' m : ℕ} (lam0 : Fin n' → Fin (m + 1) → ℤ)
     (hdom : IsDominant lam0) : 0 < dimV Kf lam0 := by
@@ -512,8 +511,7 @@ theorem ef_yv_eq (v : Fin P.nV) (F : P.Tup → P.Xsp) (L : P.Tup) :
     Level.yv (P := P) v F L =
       ((p : Kf) ^ P.ArV v) • ∑ L'' ∈ ef_E P v (L v), F (Function.update L v L'') := by
   unfold Level.yv
-  congr 1
-  exact finsum_mem_eq_finite_toFinset_sum _ (ef_places_finite P v (L v))
+  exact congrArg (fun z => ((p : Kf) ^ P.ArV v) • z) (finsum_mem_eq_finite_toFinset_sum _ (ef_places_finite P v (L v)))
 
 theorem ef_yv_add (v : Fin P.nV) (F F' : P.Tup → P.Xsp) :
     Level.yv (P := P) v (F + F') = Level.yv (P := P) v F + Level.yv (P := P) v F' := by
@@ -551,11 +549,8 @@ theorem ef_yv_comm (u v : Fin P.nV) (F : P.Tup → P.Xsp) :
     exact h
   rw [h1 u v huv, h1 v u (Ne.symm huv), smul_comm, Finset.sum_comm]
   congr 2
-  apply Finset.sum_congr rfl
-  intro y _
-  apply Finset.sum_congr rfl
-  intro x _
-  exact congrArg F (Function.update_comm huv x y L)
+  exact Finset.sum_congr rfl fun y _ => Finset.sum_congr rfl fun x _ =>
+    congrArg F (Function.update_comm huv x y L)
 
 end PlacesLevel
 
@@ -911,8 +906,7 @@ theorem local_lattice_chain_of_local (G : GAtP p) (v : Fin G.P.nV) (tv : ℕ) (h
     apply hx ψ
     refine ⟨?_, ?_⟩
     · refine ⟨G.P.w ^ tv • ψ, Submodule.smul_mem _ _ hψ, ?_⟩
-      rw [ch_w_smul]
-      exact ch_cancel' G v tv _
+      simpa only [ch_w_smul, LinearMap.restrictScalars_apply, LinearMap.lsmul_apply] using ch_cancel' G v tv ψ
     · refine (Submodule.mem_iInf _).2 fun e => (Submodule.mem_iInf _).2 fun he => ?_
       exact hc1 e he.1 he.2 hψ
   exact hc2 hx2
@@ -1298,8 +1292,7 @@ variable {p : ℕ}
 
 theorem la_frob (G : GAtP p) (v : Fin G.P.nV) (x : G.P.W v) :
     ∃ y : G.P.W v, G.P.σ v (algebraMap (G.P.W v) (G.P.Qq v) x) = algebraMap (G.P.W v) (G.P.Qq v) y := by
-  obtain ⟨y, hy⟩ := (G.P.setting v).frob x
-  exact ⟨_, hy⟩
+  exact Exists.elim ((G.P.setting v).frob x) fun y hy => ⟨x ^ p + ↑p * y, hy⟩
 
 theorem la_extO_G (G : GAtP p) (v : Fin G.P.nV) (s : ℕ) (g : Matrix (Fin (G.P.m + 1)) (Fin (G.P.m + 1)) (G.P.Qq v)) :
     extO G.O (G.P.ι v) (G.P.σ v) s (colSpan (G.P.W v) g) = colSpan G.O (la_tw (G.P.ι v) (G.P.σ v) s g) :=
@@ -1314,8 +1307,7 @@ theorem la_H_le_V (G : GAtP p) (v : Fin G.P.nV) (Lv : Submodule (G.P.W v) (Fin (
     unfold Hten tensorLat
     rw [Submodule.span_le]
     rintro _ ⟨F, hF, rfl⟩
-    apply Submodule.subset_span
-    refine ⟨F, fun s => ?_, rfl⟩
+    refine Submodule.subset_span ⟨F, fun s => ?_, rfl⟩
     have hanti := kp_lamAt_antitone (G.P.lam0 v) (G.P.dom v) s
     beta_reduce
     rw [if_pos hanti]
@@ -1665,8 +1657,7 @@ theorem lb_tensor (O Kf : Type) [CommRing O] [Field Kf] [Algebra O Kf] {S : Type
     unfold tensorLat
     rw [Submodule.span_le]
     rintro _ ⟨F, hF, rfl⟩
-    apply Submodule.subset_span
-    refine ⟨fun s => c s • F s, fun s => h s _ (hF s), ?_⟩
+    refine Submodule.subset_span ⟨fun s => c s • F s, fun s => h s _ (hF s), ?_⟩
     simp only [LinearMap.restrictScalars_apply, LinearMap.lsmul_apply, map_smul]
     rw [Finset.prod_smul]
   exact fun P hP => key hP
@@ -1774,20 +1765,19 @@ theorem lb_Hdual_le_Re' (G : GAtP p) (v : Fin G.P.nV) (hE : RestEdgeLat G v)
 theorem lb_col {O Kf : Type} [CommRing O] [Field Kf] [Algebra O Kf] {k : ℕ} (M : Matrix (Fin k) (Fin k) Kf)
     (d : Fin k → Kf) (o : Fin k → O) (a : O) (h : ∀ j, algebraMap O Kf a * d j = algebraMap O Kf (o j)) :
     ∀ x ∈ colSpan O (M * Matrix.diagonal d), a • x ∈ colSpan O M := by
-  have key : colSpan O (M * Matrix.diagonal d) ≤
-      (colSpan O M).comap (a • (LinearMap.id : (Fin k → Kf) →ₗ[O] (Fin k → Kf))) := by
-    unfold colSpan
-    rw [Submodule.span_le]
-    rintro _ ⟨j, rfl⟩
-    have h1 : a • (fun i => (M * Matrix.diagonal d) i j) = o j • (fun i => M i j) := by
-      funext i
-      simp only [Pi.smul_apply, Matrix.mul_diagonal, Algebra.smul_def]
-      rw [← h j]; ring
-    show a • (fun i => (M * Matrix.diagonal d) i j) ∈
-      Submodule.span O (Set.range fun c : Fin k => fun i => M i c)
-    rw [h1]
-    exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨j, rfl⟩)
-  exact fun x hx => key hx
+  show colSpan O (M * Matrix.diagonal d) ≤
+      (colSpan O M).comap (a • (LinearMap.id : (Fin k → Kf) →ₗ[O] (Fin k → Kf)))
+  unfold colSpan
+  rw [Submodule.span_le]
+  rintro _ ⟨j, rfl⟩
+  have h1 : a • (fun i => (M * Matrix.diagonal d) i j) = o j • (fun i => M i j) := by
+    funext i
+    simp only [Pi.smul_apply, Matrix.mul_diagonal, Algebra.smul_def]
+    rw [← h j]; ring
+  show a • (fun i => (M * Matrix.diagonal d) i j) ∈
+    Submodule.span O (Set.range fun c : Fin k => fun i => M i c)
+  rw [h1]
+  exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨j, rfl⟩)
 
 theorem lb_tw_apply {Qq Kf : Type} [Field Qq] [Field Kf] (ι : Qq →+* Kf) (σ : Qq ≃+* Qq) (s : ℕ) {k : ℕ}
     (g : Matrix (Fin k) (Fin k) Qq) (i j : Fin k) : la_tw ι σ s g i j = ι ((σ ^ s) (g i j)) := rfl
@@ -2274,10 +2264,8 @@ theorem fn_torsion (G : GAtP p) (v : Fin G.P.nV) (c : G.O) (hc : c ≠ 0) (F : G
 theorem mna_free (G : GAtP p) (v : Fin G.P.nV) [Module.Finite G.O G.Mna] : Module.Free G.O G.Mna := by
   have : Module.IsTorsionFree G.O ↥G.Mna := ⟨fun c hc x y hxy => by
     have h0 : c • (x - y) = 0 := by
-      rw [smul_sub]
-      exact sub_eq_zero.2 hxy
-    have h1 : x - y = 0 := Subtype.ext (fn_torsion G v c hc.ne_zero (x - y).1 (congrArg Subtype.val h0))
-    exact sub_eq_zero.1 h1⟩
+      rwa [smul_sub, sub_eq_zero]
+    exact sub_eq_zero.1 (Subtype.ext (fn_torsion G v c hc.ne_zero (x - y).1 (congrArg Subtype.val h0)))⟩
   exact Module.free_of_finite_type_torsion_free'
 
 end Formalism.MainNotions.G.LatticeSystems
@@ -2537,9 +2525,8 @@ theorem jd_subst_comp (M N : ∀ v, Fin (P.n' v) → Matrix (Fin (P.m + 1)) (Fin
   ring
 
 theorem jd_natAct_one : P.natAct (fun _ => 1) = LinearMap.id := by
-  unfold Places.natAct
-  simp only [Units.val_one, inv_one, jd_gPos_one, Matrix.det_one, one_zpow, Finset.prod_const_one, one_smul,
-    jd_subst_one]
+  simp only [Places.natAct, Units.val_one, inv_one, jd_gPos_one, Matrix.det_one, one_zpow, Finset.prod_const_one,
+    one_smul, jd_subst_one]
   rfl
 
 theorem jd_natAct_mul (A B : ∀ v, GL (Fin (P.m + 1)) (P.Qq v)) :
@@ -2569,9 +2556,8 @@ variable {P} (C : Level P)
 
 theorem jd_smul_one (L : P.Tup) : C.smul 1 L = L := by
   funext v
-  unfold Level.smul
   ext x
-  simp
+  simp [Level.smul]
 
 theorem jd_smul_mul (γ γ' : C.Γ) (L : P.Tup) : C.smul (γ * γ') L = C.smul γ (C.smul γ' L) := by
   funext v
@@ -2859,15 +2845,13 @@ theorem je_Hten {O Kf : Type} [CommRing O] [Field Kf] [Algebra O Kf] (hI : H0Ind
   induction hz using Submodule.span_induction with
   | mem x hx =>
     obtain ⟨F, hF, rfl⟩ := hx
-    apply Submodule.subset_span
-    refine ⟨fun s => ((g s).det ^ (-(lamAt lam0 s (Fin.last m)))) • rowAct Kf (g s)⁻¹ (F s),
+    refine Submodule.subset_span ⟨fun s => ((g s).det ^ (-(lamAt lam0 s (Fin.last m)))) • rowAct Kf (g s)⁻¹ (F s),
       fun s => H0_row_action_mem hI m _ (hdom s) (g s) (h s) (hg s) (hh s) (F s) (hF s), ?_⟩
     unfold je_rho
     rw [LinearMap.smul_apply, AlgHom.toLinearMap_apply, map_prod]
-    simp only [(blockActTensor Kf Kf (Fin n') (m + 1) (m + 1) (fun s => (g s)⁻¹)).1, map_smul]
-    exact je_prod_smul _ _
-  | zero => rw [map_zero]; exact Submodule.zero_mem _
-  | add x y _ _ hx hy => rw [map_add]; exact Submodule.add_mem _ hx hy
+    simpa only [(blockActTensor Kf Kf (Fin n') (m + 1) (m + 1) (fun s => (g s)⁻¹)).1, map_smul] using je_prod_smul _ _
+  | zero => simp
+  | add x y _ _ hx hy => simpa using Submodule.add_mem _ hx hy
   | smul a x _ hx => rw [LinearMap.map_smul_of_tower]; exact Submodule.smul_mem _ a hx
 
 theorem je_Hten' {O Kf : Type} [CommRing O] [Field Kf] [Algebra O Kf] (hI : H0IndepOfBasis O Kf) {n' m : ℕ}
@@ -3102,9 +3086,7 @@ theorem jEquiv (G : GAtP p) : JEquiv G := by
   | mem x hx =>
     obtain ⟨F, hF, rfl⟩ := hx
     apply Submodule.smul_mem
-    apply Submodule.subset_span
-    exact ⟨fun v => je_loc G v ((G.lev i).act v γ) (F v),
-      fun v => mapsTo_je_loc G v (t v) (σ v) _ (L v) (hL v) (F v) (hF v), je_natAct_prod G _ F⟩
+    exact Submodule.subset_span ⟨fun v => je_loc G v ((G.lev i).act v γ) (F v), fun v => mapsTo_je_loc G v (t v) (σ v) _ (L v) (hL v) (F v) (hF v), je_natAct_prod G _ F⟩
   | zero => rw [map_zero, smul_zero]; exact Submodule.zero_mem _
   | add x y _ _ hx hy => rw [map_add, smul_add]; exact Submodule.add_mem _ hx hy
   | smul a x _ hx => rw [LinearMap.map_smul_of_tower, smul_comm]; exact Submodule.smul_mem _ a hx
@@ -3233,9 +3215,7 @@ theorem js_val (G : GAtP p) (t : Fin G.P.nV → ℕ) (B : Finset (Fin G.P.nV)) (
   · intro z hz
     have hz2 : z ∈ piLattice₂ G v (t v) (Function.update (vertexLabel B) v Slot.ball v) (upd G L v L'' v) := hz
     rw [Function.update_self, js_upd_self] at hz2
-    show _ ∈ piLattice₂ G v (t v) (vertexLabel B v) (L v)
-    rw [hs]
-    exact nt_local G v (t v) ⟨L'', L v⟩ hE z hz2
+    simpa [hs] using nt_local G v (t v) ⟨L'', L v⟩ hE z hz2
   · intro u hu
     show piLattice₂ G u (t u) (Function.update (vertexLabel B) v Slot.ball u) (upd G L v L'' u) ≤
       piLattice₂ G u (t u) (vertexLabel B u) (L u)

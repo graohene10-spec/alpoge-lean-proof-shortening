@@ -250,13 +250,11 @@ theorem bm_rowcomp_comm_bmEL (R : Type*) [CommRing R] (n : ℕ) (ρ : Fin (n + 1
 
 theorem elemDeriv_X (R : Type*) [CommRing R] (n : ℕ) (s t : Fin n) (v : Fin (n + 1) × Fin n) :
     bmE R n s t (X v) = if v.2 = t ∧ v.1 ≠ Fin.last n then X (v.1, s) else 0 := by
-  unfold bmE
-  exact mkDerivation_X R _ v
+  simp [bmE]
 
 theorem lastRowDeriv_X (R : Type*) [CommRing R] (n : ℕ) (s t : Fin n) (v : Fin (n + 1) × Fin n) :
     bmZ R n s t (X v) = if v.2 = t ∧ v.1 = Fin.last n then X (v.1, s) else 0 := by
-  unfold bmZ
-  exact mkDerivation_X R _ v
+  simp only [bmZ, mkDerivation_X]
 
 theorem ite_derivation_apply {R A : Type*} [CommRing R] [CommRing A] [Algebra R A] (c : Prop) [Decidable c]
     (D : Derivation R A A) (x : A) : (if c then D else 0) x = if c then D x else 0 := by
@@ -416,8 +414,7 @@ theorem lastRowDeriv_weighted_homogeneous (R : Type*) [CommRing R] (n : ℕ) (l 
     (hF : IsWeightedHomogeneous (zW n) F β) :
     IsWeightedHomogeneous (zW n) (bmZ R n l j F) (β + (Pi.single l 1 - Pi.single j 1)) := by
   have h := bm_zcomp_bmZ R n β l j F
-  simp only [zcomp] at h
-  rw [bm_whcSame_lemma hF] at h
+  simp only [zcomp, bm_whcSame_lemma hF] at h
   rw [← h]
   exact bm_whcWH_lemma_3 _ _ _
 
@@ -1057,12 +1054,10 @@ theorem bmE_comp_ne_iff {R σ B : Type*} [CommRing R] [AddCommMonoid B] [Decidab
     split_ifs at hd with hw
     · exact Finset.mem_image.mpr ⟨d, mem_support_iff.mpr hd, hw⟩
     · exact absurd rfl hd
-  · intro h
+  · intro h h0
     obtain ⟨d, hd, hw⟩ := Finset.mem_image.mp h
-    intro h0
-    have := congrArg (coeff d) h0
-    rw [coeff_weightedHomogeneousComponent, if_pos hw, coeff_zero] at this
-    exact mem_support_iff.mp hd this
+    refine mem_support_iff.mp hd ?_
+    simpa [coeff_weightedHomogeneousComponent, hw, coeff_zero] using congrArg (coeff d) h0
 
 theorem bmE_sep_op {R σ B : Type*} [CommRing R] [AddCommMonoid B] (w : σ → B) (ω : B → ℤ)
     (C : ℤ → Module.End R (MvPolynomial σ R)) (W : Submodule R (MvPolynomial σ R)) (χ : B → ℤ → ℤ)
@@ -1356,8 +1351,7 @@ theorem bmD_zcomp_bmE {R : Type*} [CommRing R] {n : ℕ} (β : Fin n → ℤ) (s
 theorem bmD_zcomp_bmZ {R : Type*} [CommRing R] {n : ℕ} (β : Fin n → ℤ) (l j : Fin n) (Y : BP R n) :
     zcomp R n β (bmZ R n l j Y) =
       bmZ R n l j (zcomp R n (β - (Pi.single l 1 - Pi.single j 1)) Y) := by
-  have := bm_zcomp_bmZ R n (β - (Pi.single l 1 - Pi.single j 1)) l j Y
-  rwa [sub_add_cancel] at this
+  rw [← bm_zcomp_bmZ R n (β - (Pi.single l 1 - Pi.single j 1)) l j Y, sub_add_cancel]
 
 theorem bmD_zero_of_gt {R : Type*} [CommRing R] {n : ℕ} (G : BP R n) (β : Fin n → ℤ)
     (hmax : ∀ β', zcomp R n β' G ≠ 0 → omg β' ≤ omg β) (β' : Fin n → ℤ) (h : omg β < omg β') :
@@ -1682,8 +1676,7 @@ theorem bmLift_mul {R : Type*} [CommRing R] {n : ℕ} {lam b lam' b' : Fin n →
     refine bmF_low_add (bmF_fil_mul_low (bmF_fil_of_WH (bmF_lead_WH R n b f)) h'.2.2) ?_
     rw [add_comm (omg _)]
     refine bmF_fil_mul_low ?_ h.2.2
-    have : G' = zmon R n b' * emb R n f' + (G' - zmon R n b' * emb R n f') := by ring
-    rw [this]
+    rw [show G' = zmon R n b' * emb R n f' + (G' - zmon R n b' * emb R n f') by ring]
     exact bmF_fil_add_low (bmF_fil_of_WH (bmF_lead_WH R n b' f')) h'.2.2
 
 theorem bmLift_one (R : Type*) [CommRing R] (n : ℕ) : bmLift R n 0 0 1 1 := by
@@ -1705,9 +1698,8 @@ theorem bmLift_pow {R : Type*} [CommRing R] {n : ℕ} {lam b : Fin n → ℕ}
   induction k with
   | zero => simpa using bmLift_one R n
   | succ k ih =>
-    have := bmLift_mul ih h
     rw [succ_nsmul, succ_nsmul, pow_succ, pow_succ]
-    exact this
+    exact bmLift_mul ih h
 
 theorem bmF_emb_X (R : Type*) [CommRing R] (n : ℕ) (v : Fin n × Fin n) :
     emb R n (X v) = X (v.1.castSucc, v.2) := by
@@ -1923,10 +1915,9 @@ theorem bmG_cast {R : Type*} [CommRing R] {n : ℕ} {lam b lam' b' : Fin n → �
   exact h
 
 theorem bmG_zero (R : Type*) [CommRing R] (n : ℕ) (lam b : Fin n → ℕ) : bmLift R n lam b 0 0 := by
-  refine ⟨Submodule.zero_mem _, ?_, ?_⟩
-  · apply isWeightedHomogeneous_zero
-  · rw [map_zero, mul_zero, sub_zero]
-    exact bmF_low_zero _
+  refine ⟨Submodule.zero_mem _, by apply isWeightedHomogeneous_zero, ?_⟩
+  rw [map_zero, mul_zero, sub_zero]
+  exact bmF_low_zero _
 
 theorem bmG_prod {R : Type*} [CommRing R] {n : ℕ} {ι : Type*} (s : Finset ι) (lam b : ι → Fin n → ℕ)
     (f : ι → MvPolynomial (Fin n × Fin n) R) (G : ι → BP R n)
@@ -1936,8 +1927,7 @@ theorem bmG_prod {R : Type*} [CommRing R] {n : ℕ} {ι : Type*} (s : Finset ι)
   induction s using Finset.induction_on with
   | empty => simpa using bmLift_one R n
   | @insert a s ha ih =>
-    rw [Finset.sum_insert ha, Finset.sum_insert ha, Finset.prod_insert ha, Finset.prod_insert ha]
-    exact bmLift_mul (h a (Finset.mem_insert_self a s)) (ih fun i hi => h i (Finset.mem_insert_of_mem hi))
+    simpa [Finset.sum_insert ha, Finset.prod_insert ha] using bmLift_mul (h a (Finset.mem_insert_self a s)) (ih fun i hi => h i (Finset.mem_insert_of_mem hi))
 
 theorem bmG_shapeDeg_succ {n K : ℕ} (sz : Fin (K + 1) → ℕ) (t : Fin n) :
     shapeDeg sz t = (if t.val < sz 0 then 1 else 0) + shapeDeg (fun k : Fin K => sz k.succ) t := by
@@ -1970,8 +1960,7 @@ theorem bmG_nuNext_of_succ {n : ℕ} (ν : Fin n → ℕ) (i j : Fin n) (h : j.v
   exact congrArg ν (Fin.ext h.symm)
 
 theorem bmG_nuNext_last {n : ℕ} (ν : Fin n → ℕ) (i : Fin n) (h : ¬ i.val + 1 < n) : nuNext ν i = 0 := by
-  unfold nuNext
-  rw [dif_neg h]
+  exact dif_neg h
 
 theorem bmG_minor_empty (R : Type*) [CommRing R] {r n : ℕ} (I : Fin 0 → Fin r) (hs : 0 ≤ n) :
     initMinor R I hs = 1 := by
@@ -2401,9 +2390,8 @@ theorem bmK_Zz (R : Type*) [CommRing R] (n : ℕ) (lam sg : Fin n → ℕ) (β :
 theorem bmK_capW {R : Type} [CommRing R] [IsDomain R] [CharZero R] {n : ℕ} (lam : Fin n → ℕ) (d : ℕ) (u : ℤ)
     (G : BP R n) (hG : G ∈ bmW R n lam d) : bmCap R n u G ∈ bmW R n lam d := by
   rw [bmK_mem_alt] at hG ⊢
-  refine ⟨bmK_mem lam u G hG.1, ?_⟩
-  exact bm_isWH_of_comm (lastW n) d (bmCap R n u)
-    (capDet_commute_of (bmEL R n) u _ (fun i j => bm_lastcomp_comm_bmEL R n d i j)) G hG.2
+  exact ⟨bmK_mem lam u G hG.1,
+    bm_isWH_of_comm (lastW n) d (bmCap R n u) (capDet_commute_of (bmEL R n) u _ (fun i j => bm_lastcomp_comm_bmEL R n d i j)) G hG.2⟩
 
 theorem bmK_ZW {R : Type} [CommRing R] [IsDomain R] [CharZero R] {n : ℕ} (lam sg : Fin n → ℕ) (d : ℕ)
     (G : BP R n) (hG : G ∈ bmW R n lam d) : bmZop R n lam sg G ∈ bmW R n lam d := by

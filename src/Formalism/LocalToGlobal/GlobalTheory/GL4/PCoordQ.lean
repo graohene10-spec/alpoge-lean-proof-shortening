@@ -26,8 +26,7 @@ theorem psi_apply {n : ℕ} (G : Matrix (Fin n) (Fin n) E) (m : Fin n → 𝓞 E
 theorem incl_mulVec {n : ℕ} (Gm : Matrix (Fin n) (Fin n) (𝓞 E)) (m : Fin n → 𝓞 E) :
     incl n (Gm *ᵥ m) = (Gm.map ((↑) : 𝓞 E → E)) *ᵥ incl n m := by
   funext i
-  rw [incl_apply]
-  exact (RingHom.map_mulVec (algebraMap (𝓞 E) E) Gm m i)
+  exact (incl_apply n (Gm *ᵥ m) i).trans (RingHom.map_mulVec (algebraMap (𝓞 E) E) Gm m i)
 
 theorem psi_mulVec {n : ℕ} (Gm : Matrix (Fin n) (Fin n) (𝓞 E)) (hdet : (Gm.map ((↑) : 𝓞 E → E)).det ≠ 0)
     (m : Fin n → 𝓞 E) : psi (Gm.map ((↑) : 𝓞 E → E)) (Gm *ᵥ m) = incl n m := by

@@ -118,13 +118,10 @@ theorem perp_mulLat (b : Kˣ) (L : AddSubgroup K) :
   ext a
   rw [mem_mulLat, inv_inv, mem_perp, mem_perp]
   constructor
-  · intro h l hl
-    have := h ((b : K) * l) ⟨l, hl, rfl⟩
-    rwa [show a * ((b : K) * l) = (b : K) * a * l by ring] at this
+  · rintro h l hl
+    simpa only [mul_assoc, mul_comm, mul_left_comm] using h ((b : K) * l) ⟨l, hl, rfl⟩
   · rintro h _ ⟨l, hl, rfl⟩
-    have := h l hl
-    rwa [show (b : K) * a * l = a * (AddMonoidHom.mulLeft (b : K) l) by
-      simp only [AddMonoidHom.coe_mulLeft]; ring] at this
+    simpa only [AddMonoidHom.coe_mulLeft, mul_assoc, mul_comm, mul_left_comm] using h l hl
 
 theorem psi_out {A L : AddSubgroup K} {z : K} (hz : z ∈ perp ψ L) (r : A) :
     ψ (z * ((Quotient.out (r : A ⧸ L.addSubgroupOf A) : A) : K)) = ψ (z * (r : K)) := by

@@ -19,9 +19,7 @@ def eB (a : Fin (D.nB j)) : D.Lb := ((D.LLj j).equivFin.symm a).1
 
 theorem seg_eB (a : Fin (D.nB j)) : D.seg (D.eB j a) = j := by
   unfold eB
-  have h : ((D.LLj j).equivFin.symm a).1 ∈ D.LLj j := ((D.LLj j).equivFin.symm a).2
-  unfold LLj at h
-  exact (Finset.mem_filter.1 h).2
+  simpa only [LLj, Finset.mem_filter, Finset.mem_univ, true_and] using ((D.LLj j).equivFin.symm a).2
 
 theorem eB_inj : Function.Injective (D.eB j) := by
   intro a b h

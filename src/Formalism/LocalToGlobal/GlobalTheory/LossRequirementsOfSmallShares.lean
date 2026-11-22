@@ -29,11 +29,8 @@ theorem bad_card_at (p : ℕ) : ((TTv D).filter (fun n => badAt X p n)).card = (
   have h := pb_sum_TTv (D := D) (fun n => if badAt X p n then (1 : ℝ) else 0)
   rw [Finset.sum_boole] at h
   have h2 : (∑ t : D.host.TT, if badAt X p (t : D.R.A).val then (1 : ℝ) else 0) = ((badTops X p).card : ℝ) := by
-    rw [badTops, Finset.card_filter]
-    push_cast
-    rw [← Finset.sum_coe_sort D.host.TT]
-    refine Finset.sum_congr rfl fun t _ => ?_
-    simp only [badAt, pb_cast]
+    rw [badTops, Finset.card_filter, ← Finset.sum_coe_sort D.host.TT]
+    simp [badAt]
   exact_mod_cast h.trans h2
 
 end AtRecord
@@ -55,8 +52,7 @@ theorem loss_setting_family : LossSettingFamily := by
     rw [eθ, tie.x, ← cands_eq]
     have e9 : L.sc.x ^ (-9 : ℝ) = (L.sc.x ^ 9)⁻¹ := by
       rw [Real.rpow_neg hx0.le]
-      congr 1
-      exact_mod_cast Real.rpow_natCast L.sc.x 9
+      exact congrArg (fun y : ℝ => y⁻¹) (Real.rpow_natCast L.sc.x 9)
     rw [← e9]
     exact hW
   · unfold ChBadp_at at hB
@@ -65,9 +61,8 @@ theorem loss_setting_family : LossSettingFamily := by
     simp only [bad_card_at]
     exact hB
   · intro _ p _
-    have h := Lnk.ioP_le X K p (hG.2.1 p) (hSig p)
-    rw [card_lifts, card_TTv, ea]
-    exact h
+    simpa only [card_lifts, card_TTv, ea] using
+      Lnk.ioP_le X K p (hG.2.1 p) (hSig p)
   · exact lossHyp_at X K Cr C bo H hG P tie hbo hLa hp0
   · exact firstHyp_at X K Cr C bo H (T_not_inert _) P tie
   · intro p _ h
@@ -75,9 +70,7 @@ theorem loss_setting_family : LossSettingFamily := by
     rw [eθ]
     exact ⟨(mem_sAt K).mpr h1, h2⟩
   · intro p hp h n hn
-    have hn' : n ∈ TTv D ∧ n ∉ (ldAt X K C bo).TTp p := by
-      simpa only [Finset.mem_sdiff] using hn
-    exact unserved_bad X K Cr C bo H (T_not_inert _) p hp h n (Finset.mem_sdiff.mpr hn')
+    exact unserved_bad X K Cr C bo H (T_not_inert _) p hp h n (Finset.mem_sdiff.mpr (by simpa only [Finset.mem_sdiff] using hn))
 
 section Family
 

@@ -110,9 +110,7 @@ theorem prTan_sys (i : Fin (N + 1)) : DecSys (isoSub (ETan F r K LL i)) (prTan D
 theorem initialSegments_nested (i j : Fin (N + 1)) :
     ({l : Fin N | l.val < i.val} ⊆ {l : Fin N | l.val < j.val}) ∨
       ({l : Fin N | l.val < j.val} ⊆ {l : Fin N | l.val < i.val}) := by
-  rcases le_total i j with h | h
-  · exact Or.inl fun l (hl : l.val < i.val) => lt_of_lt_of_le hl h
-  · exact Or.inr fun l (hl : l.val < j.val) => lt_of_lt_of_le hl h
+  exact (le_total i j).imp (fun h l (hl : l.val < i.val) => lt_of_lt_of_le hl h) (fun h l (hl : l.val < j.val) => lt_of_lt_of_le hl h)
 
 theorem fin_castAdd_ne_natAdd (a : Fin r) (b : Fin K) : Fin.castAdd K a ≠ Fin.natAdd r b := by
   intro h

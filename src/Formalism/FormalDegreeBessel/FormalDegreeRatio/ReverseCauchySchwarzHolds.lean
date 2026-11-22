@@ -25,13 +25,11 @@ lemma ggDet_updateCol_last_single (n : ℕ) (Z : Matrix (Fin (n + 1)) (Fin (n + 
     (updateCol Z (Fin.last n) (Pi.single (Fin.last n) 1)).det =
       (Z.submatrix Fin.castSucc Fin.castSucc).det := by
   rw [det_succ_column _ (Fin.last n), Finset.sum_eq_single (Fin.last n)]
-  · have : (updateCol Z (Fin.last n) (Pi.single (Fin.last n) 1)).submatrix
-        (Fin.last n).succAbove (Fin.last n).succAbove = Z.submatrix Fin.castSucc Fin.castSucc := by
-      ext i j
-      simp [Fin.succAbove_last, updateCol_apply, (Fin.castSucc_lt_last j).ne]
-    rw [this]
-    simp only [updateCol_self, Pi.single_eq_same, mul_one, Fin.val_last]
-    rw [Even.neg_one_pow ⟨n, rfl⟩, one_mul]
+  · simp only [updateCol_self, Pi.single_eq_same, mul_one, Fin.val_last,
+      Even.neg_one_pow ⟨n, rfl⟩, one_mul]
+    congr 1
+    ext i j
+    simp [Fin.succAbove_last, updateCol_apply, (Fin.castSucc_lt_last j).ne]
   · intro i _ hi
     simp [updateCol_apply, Pi.single_apply, hi]
   · simp
@@ -220,11 +218,8 @@ lemma ggHerm_Wb (k r : ℕ) (z w : Fin (2 * r + k + 1) → ℂ) (hw : inWb k r w
   ring
 
 lemma ggRe_star_mul (x : ℂ) : (star x * x).re = ‖x‖ ^ 2 := by
-  rw [Complex.sq_norm, Complex.normSq_apply]
-  first
-  | (simp [Complex.mul_re]; ring)
-  | simp [Complex.mul_re]
-  | (simp only [Complex.star_def, Complex.mul_re, Complex.conj_re, Complex.conj_im]; ring)
+  rw [Complex.sq_norm, Complex.normSq_apply, Complex.star_def, ← Complex.normSq_eq_conj_mul_self, Complex.normSq_apply]
+  simp
 
 theorem reverse_cauchy_schwarz_holds : RevCS := by
   intro k r z z' hz hz' h1 h2

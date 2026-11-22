@@ -258,23 +258,19 @@ theorem yProdL_ratU {p : ℕ} (G : GAtP p) {V : Type*} (φ : V → G.Fn) (yL : F
   have hstep : ∀ (v : Fin G.P.nV) (k : ℕ) (y : V),
       (G.yv v)^[k] (φ y) = (((ε v ^ k : G.Oˣ)) : G.O) • φ ((yL v)^[k] y) := by
     intro v k
-    have hlin : ∀ (c : G.O) (F : G.Fn), G.yv v (c • F) = c • G.yv v F :=
-      fun c F => map_smul (yEnd G v) c F
     induction k with
     | zero => intro y; simp
     | succ k ih =>
       intro y
-      rw [Function.iterate_succ_apply', ih, Function.iterate_succ_apply', hlin, h, smul_smul,
-        pow_succ, Units.val_mul]
+      rw [Function.iterate_succ_apply', ih, Function.iterate_succ_apply',
+        (show ∀ (c : G.O) (F : G.Fn), G.yv v (c • F) = c • G.yv v F from fun c F => map_smul (yEnd G v) c F), h, smul_smul, pow_succ, Units.val_mul]
   rw [yProdL_apply]
   induction vs with
   | nil => simp
   | cons v vs ih =>
     simp only [List.map_cons, List.foldr_cons, Function.comp_apply, List.prod_cons]
-    rw [ih]
-    have hi : ∀ (c : G.O) (F : G.Fn), (G.yv v)^[m] (c • F) = c • (G.yv v)^[m] F :=
-      fun c F => iter_smul (yEnd G v) m c F
-    rw [hi, hstep, smul_smul, Units.val_mul, mul_comm]
+    rw [ih,
+      (show ∀ (c : G.O) (F : G.Fn), (G.yv v)^[m] (c • F) = c • (G.yv v)^[m] F from fun c F => iter_smul (yEnd G v) m c F), hstep, smul_smul, Units.val_mul, mul_comm]
 set_option maxHeartbeats 1000000 in
 open Classical in
 

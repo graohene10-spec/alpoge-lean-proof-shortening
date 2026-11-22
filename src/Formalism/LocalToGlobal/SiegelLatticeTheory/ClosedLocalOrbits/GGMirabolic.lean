@@ -134,12 +134,10 @@ def TermsGGBound : Prop :=
 theorem termsGGBound_of_matrix (h : GGMatrixBound) : TermsGGBound := by
   intro ι _ Fq _ _ k ψ hψ hq X _ _ hfree d hd τ Rw H H₁ _ _ _ _ T hGG hG1
   have h2 := (h ι Fq k ψ hψ hq X hfree d hd).2
-  unfold Formalism.FourierDecayAlt.PB.Terms.GGBound
   have hM : Matrix.of T.GG = Matrix.of fun i j =>
       if ∃ x : (∀ v, GL (Fin k) (Fq v))ᵐᵒᵖ, x • j = i then conj (gamProd ψ (d i j)) else 0 := by
     ext i j; simp [hGG]
-  rw [hM, hG1]
-  convert h2 using 3
+  simpa [Formalism.FourierDecayAlt.PB.Terms.GGBound, hM, hG1] using h2
 
 end
 

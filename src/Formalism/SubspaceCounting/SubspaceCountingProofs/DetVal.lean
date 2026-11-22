@@ -178,13 +178,8 @@ theorem Formalism.G0.det_valuation : Formalism.G0.DetVal := by
   have hsum := sum_cov_zero vec S' A hv
   refine ⟨fun hS => ⟨?_, ?_⟩, fun hS => ?_⟩
   · intro L _ _ g
-    rw [hsum]
-    simpa using part1a (K := K) hr vec S' A hv hS g
+    simpa only [hsum, Nat.add_zero, pow_one] using part1a (K := K) hr vec S' A hv hS g
   · intro hval
-    have := hval K (1 : GL (Fin r) K)
-    rw [hsum] at this
-    exact part1b hr vec S' A hA hv hS this
+    exact part1b hr vec S' A hA hv hS (by simpa only [hsum, Nat.add_zero] using hval K (1 : GL (Fin r) K))
   · intro hval
-    have := hval K (1 : GL (Fin r) K)
-    rw [hsum] at this
-    exact part2 hr vec S' A hA hv hS this
+    exact part2 hr vec S' A hA hv hS (by simpa only [hsum, Nat.add_zero] using hval K (1 : GL (Fin r) K))

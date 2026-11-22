@@ -156,9 +156,7 @@ theorem SqRep.inner_map (h : SqRep μ ρ) (g : G) (x y : H) : ⟪ρ g x, ρ g y�
   exact (⟨(ρ g : H →ₗ[ℂ] H), h.iso g⟩ : H →ₗᵢ[ℂ] H).inner_map_map x y
 
 theorem SqRep.inv_apply (h : SqRep μ ρ) (g : G) (x : H) : ρ g (ρ g⁻¹ x) = x := by
-  have e : ρ (g * g⁻¹) x = ρ g (ρ g⁻¹ x) := by
-    rw [h.mul] <;> rfl
-  rw [← e]
+  rw [← ContinuousLinearMap.comp_apply, ← h.mul, mul_inv_cancel]
   simp [h.one]
 
 theorem SqRep.inner_left (h : SqRep μ ρ) (g : G) (x y : H) : ⟪ρ g x, y⟫_ℂ = ⟪x, ρ g⁻¹ y⟫_ℂ := by
@@ -216,10 +214,8 @@ theorem Tlin_cont (h : SqRep μ ρ) (v : H) : Continuous (Tlin h v) := by
 def Tcl (h : SqRep μ ρ) (v : H) : H →L[ℂ] Lp ℂ 2 μ := ⟨Tlin h v, Tlin_cont h v⟩
 
 private theorem innerC_lemma (a b : ℂ) : ⟪a, b⟫_ℂ = star a * b := by
-  first
-  | (simp only [RCLike.inner_apply, starRingEnd_apply]; done)
-  | (simp only [RCLike.inner_apply, starRingEnd_apply]; ring)
-  | simp [mul_comm]
+  simp only [RCLike.inner_apply, starRingEnd_apply]
+  ring
 
 theorem Tcl_inner (h : SqRep μ ρ) (v v' w w' : H) :
     ⟪Tcl h v w, Tcl h v' w'⟫_ℂ = ∫ g, ⟪w, ρ g v⟫_ℂ * star ⟪w', ρ g v'⟫_ℂ ∂μ := by
@@ -584,13 +580,11 @@ theorem schur_UJ [CompleteSpace H] (σ : Matrix (Fin n) (Fin n) ℂ → (H →L[
     ∃ d : ℝ, IsFdeg (Formalism.REAL.muG ε) σ d := by
   haveI := hN
   haveI : (Formalism.REAL.muG ε).IsMulLeftInvariant := by
-    first
-    | infer_instance
-    | (unfold Formalism.REAL.muG; infer_instance)
+    unfold Formalism.REAL.muG
+    infer_instance
   haveI : (Formalism.REAL.muG ε).IsOpenPosMeasure := by
-    first
-    | infer_instance
-    | (unfold Formalism.REAL.muG; infer_instance)
+    unfold Formalism.REAL.muG
+    infer_instance
   obtain ⟨d, hd, hrel⟩ := schur_orth (μ := Formalism.REAL.muG ε) (sqRep_of hU hS) (irr_of hI)
   exact ⟨d, hd, hrel⟩
 

@@ -161,8 +161,7 @@ variable {K : Type*} [CommRing K] {N r : ℕ}
 
 theorem X_mul_monomial' {σ : Type*} (x : σ) (m : σ →₀ ℕ) (a : K) :
     (X x : MvPolynomial σ K) * monomial m a = monomial (m + Finsupp.single x 1) a := by
-  show monomial (Finsupp.single x 1) (1 : K) * monomial m a = _
-  rw [monomial_mul, one_mul, add_comm]
+  rw [show (X x : MvPolynomial σ K) = monomial (Finsupp.single x 1) (1 : K) from rfl, monomial_mul, one_mul, add_comm]
 
 theorem X_pow_mul_monomial' {σ : Type*} (x : σ) (k : ℕ) (m : σ →₀ ℕ) (a : K) :
     (X x : MvPolynomial σ K) ^ k * monomial m a = monomial (m + Finsupp.single x k) a := by
@@ -305,9 +304,7 @@ theorem ycond_le (LL : Letters N) (j : ℕ) (M : WithTop ℤ) :
 theorem wt_le_of_mem (LL : Letters N) (j : ℕ) (M : WithTop ℤ) (F : MvPolynomial (Fin N × Fin r) ℚ_[p])
     (hF : F ∈ YCond p LL j M) (m : Fin N × Fin r →₀ ℕ) (hm : m ∈ F.support) :
     ((wt LL j 0 m : ℤ) : WithTop ℤ) ≤ M := by
-  have h := ycond_le p LL j M hF
-  rw [mem_restrictSupport_iff] at h
-  exact h (Finset.mem_coe.2 hm)
+  exact (ycond_le p LL j M hF) (Finset.mem_coe.2 hm)
 
 theorem ycond_map {NA NB : ℕ} (LA : Letters NA) (LB : Letters NB) (jA jB : ℕ) (M : WithTop ℤ)
     (P : MvPolynomial (Fin NA × Fin r) ℚ_[p] →ₗ[ℚ_[p]] MvPolynomial (Fin NB × Fin r) ℚ_[p])

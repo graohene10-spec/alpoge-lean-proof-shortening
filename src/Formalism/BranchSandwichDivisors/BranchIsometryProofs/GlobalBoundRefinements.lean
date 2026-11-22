@@ -25,15 +25,13 @@ theorem division_inequality : DivRecord := by
   have hL1 : 1 ≤ L := by rw [hLdef]; exact Real.one_le_rpow hx heps.le
   have hx0 : 0 < x := by linarith
   have hb0 : 0 < b := by rw [hbdef]; exact Real.exp_pos _
-  have ha0 : 0 < a := by rw [hadef]; positivity
-  have hrd0 : 0 < rd := by linarith
   have hloga : Real.log a = Real.log x + L := by
     rw [hadef, Real.log_mul hx0.ne' hb0.ne', hbdef, Real.log_exp]
-  have hLa : La = Real.log x + L + Real.log rd := by
-    rw [hLadef, Real.log_mul ha0.ne' hrd0.ne', hloga]
   have hlx : 0 ≤ Real.log x := Real.log_nonneg hx
   have hlrd : 0 ≤ Real.log rd := Real.log_nonneg hrd
-  have hLa0 : 0 ≤ La := by linarith
+  have hLa0 : 0 ≤ La := by
+    rw [hLadef, Real.log_mul (by rw [hadef]; exact mul_ne_zero hx0.ne' hb0.ne') (by linarith : (0 : ℝ) < rd).ne', hloga]
+    linarith
   obtain ⟨hpass1, hpass2⟩ := meanShiftAssembly Sg rk nS dg nbar lam0 HH0 muP0 muPs mu0 muC f r g Q
     C0 p1 p2 p3 p4 hf0 p5 p6 p7 p8 p9 p10 p11 p12 p13 p14 p15 p16
   have hpos : 0 ≤ ((TT.card : ℝ) * b' * N + f * (m * η + S) * N + f * N ^ 2) * La := by
@@ -53,17 +51,13 @@ theorem division_inequality : DivRecord := by
 theorem mul_sq_le_of_const_bound {C C0 CL nV N L' La : ℝ} (hC0 : 0 ≤ C) (hnV : 0 ≤ nV) (hnVN : nV ≤ N) (hL' : L' ≤ CL * La)
     (hCL : 0 ≤ CL) (hCCL : C * CL ≤ C0) (hLa0 : 0 ≤ La) : C * (nV ^ 2 * L') ≤ C0 * (N ^ 2 * La) := by
   have hsq : nV ^ 2 ≤ N ^ 2 := pow_le_pow_left₀ hnV hnVN 2
-  have hnV2 : 0 ≤ nV ^ 2 := by positivity
-  have hN2 : 0 ≤ N ^ 2 := by positivity
-  have h1 : nV ^ 2 * L' ≤ nV ^ 2 * (CL * La) := mul_le_mul_of_nonneg_left hL' hnV2
-  have h2 : nV ^ 2 * (CL * La) ≤ N ^ 2 * (CL * La) :=
-    mul_le_mul_of_nonneg_right hsq (mul_nonneg hCL hLa0)
-  have h3 : C * (nV ^ 2 * L') ≤ C * (N ^ 2 * (CL * La)) :=
-    mul_le_mul_of_nonneg_left (le_trans h1 h2) hC0
-  have h4 : (C * CL) * (N ^ 2 * La) ≤ C0 * (N ^ 2 * La) :=
-    mul_le_mul_of_nonneg_right hCCL (mul_nonneg hN2 hLa0)
-  have h5 : C * (N ^ 2 * (CL * La)) = (C * CL) * (N ^ 2 * La) := by ring
-  linarith
+  calc
+    C * (nV ^ 2 * L') ≤ C * (nV ^ 2 * (CL * La)) :=
+      mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hL' (sq_nonneg nV)) hC0
+    _ ≤ C * (N ^ 2 * (CL * La)) :=
+      mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hsq (mul_nonneg hCL hLa0)) hC0
+    _ = (C * CL) * (N ^ 2 * La) := by ring
+    _ ≤ C0 * (N ^ 2 * La) := mul_le_mul_of_nonneg_right hCCL (mul_nonneg (sq_nonneg N) hLa0)
 
 theorem kernel_bound_split {C C0 f N La m L : ℝ} (hCC : C ≤ C0) (hC00 : 0 ≤ C0) (hf0 : 0 ≤ f) (hLa0 : 0 ≤ La)
     (hm0 : 0 ≤ m) (hL0 : 0 ≤ L) :
@@ -89,18 +83,15 @@ theorem division_inequality_full : DivRecordFull := by
   have hL1 : 1 ≤ L := by rw [hLdef]; exact Real.one_le_rpow hx heps.le
   have hx0 : 0 < x := by linarith
   have hb0 : 0 < b := by rw [hbdef]; exact Real.exp_pos _
-  have ha0 : 0 < a := by rw [hadef]; positivity
-  have hrd0 : 0 < rd := by linarith
   have hloga : Real.log a = Real.log x + L := by
     rw [hadef, Real.log_mul hx0.ne' hb0.ne', hbdef, Real.log_exp]
-  have hLa : La = Real.log x + L + Real.log rd := by
-    rw [hLadef, Real.log_mul ha0.ne' hrd0.ne', hloga]
   have hlx : 0 ≤ Real.log x := Real.log_nonneg hx
   have hlrd : 0 ≤ Real.log rd := Real.log_nonneg hrd
-  have hLa0 : 0 ≤ La := by linarith
+  have hLa0 : 0 ≤ La := by
+    rw [hLadef, Real.log_mul (by rw [hadef]; exact mul_ne_zero hx0.ne' hb0.ne') (by linarith), hloga]
+    linarith [hlx, hlrd, hL1]
   have hf0 : 0 ≤ f := by linarith
   have hm0 : 0 ≤ m := by linarith
-  have hN0 : 0 ≤ N := by linarith
   have hL0 : 0 ≤ L := by linarith
   have hC00 : 0 ≤ C0 := by linarith
   have hsum : (∑ j : J, ((∑ ρ, logH j ρ) - C * f * nV ^ 2 * L')) =
@@ -129,22 +120,18 @@ theorem third_descent_inequality : StepDiiiRecord := by
   have key := heightSumBound Pl TT hP logT ev aT bT nτ lam1 D0 D1 logc logxi a La L m f k N S η (2 * b') CT Cev
     h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h16 h17 h18 h19 h20 h21 (by linarith) h23 h24 h25
   have hf : 0 ≤ f := le_trans (Nat.cast_nonneg _) h23
-  have hN : 0 ≤ N := by linarith
   have hm : 0 ≤ m := by linarith
-  have hc : (0 : ℝ) ≤ (TT.card : ℝ) := Nat.cast_nonneg _
-  have x1 : 0 ≤ (TT.card : ℝ) * b' * N := by positivity
-  have x2 : 0 ≤ f * (m * η + S) * N := by positivity
-  have x3 : 0 ≤ f * N ^ 2 := by positivity
-  have hC0 : 0 ≤ 16 + CT + Cev := by linarith
+  have hN : 0 ≤ N := by linarith
+  have hrest : 0 ≤ f * (m * η + S) * N + f * N ^ 2 := by positivity
   have step : (16 + CT + Cev) * ((TT.card : ℝ) * (2 * b') * N + f * (m * η + S) * N + f * N ^ 2) * La
       ≤ C * ((TT.card : ℝ) * b' * N + f * (m * η + S) * N + f * N ^ 2) * La := by
     apply mul_le_mul_of_nonneg_right _ h14
     calc (16 + CT + Cev) * ((TT.card : ℝ) * (2 * b') * N + f * (m * η + S) * N + f * N ^ 2)
         ≤ (16 + CT + Cev) * (2 * ((TT.card : ℝ) * b' * N + f * (m * η + S) * N + f * N ^ 2)) := by
-          apply mul_le_mul_of_nonneg_left _ hC0; nlinarith
+          exact mul_le_mul_of_nonneg_left (by nlinarith [hrest]) (by linarith)
       _ = (2 * (16 + CT + Cev)) * ((TT.card : ℝ) * b' * N + f * (m * η + S) * N + f * N ^ 2) := by ring
       _ ≤ C * ((TT.card : ℝ) * b' * N + f * (m * η + S) * N + f * N ^ 2) := by
-          apply mul_le_mul_of_nonneg_right hC; linarith
+          exact mul_le_mul_of_nonneg_right hC (by positivity)
   linarith
 
 theorem chain_weights : ChainWeights := by

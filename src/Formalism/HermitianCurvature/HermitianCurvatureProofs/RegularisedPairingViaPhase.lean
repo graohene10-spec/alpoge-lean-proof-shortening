@@ -180,8 +180,7 @@ theorem dil_inSS (D : RealPlaceData k r Wp Wq) {p : SS k r} (hp : D.inSS p) {t�
 
 theorem chi_ne (D : RealPlaceData k r Wp Wq) {t : ℝ} (h : D.χ t ≠ 0) : t ≠ 0 := by
   rintro rfl
-  have h0 := D.χ_supp (subset_tsupport _ (Function.mem_support.2 h))
-  norm_num at h0
+  exact (by norm_num : (0 : ℝ) ∉ Set.Ioo (1 / 2) 2) (D.χ_supp (subset_tsupport _ (Function.mem_support.2 h)))
 
 end setting
 
@@ -275,10 +274,8 @@ theorem ckOn_continuousOn {m : ℕ∞} {f : Mat k r → E} (h : CkOn m (GV k r) 
 
 theorem aesm_of_continuousOn {μ : Measure (Mt k r)} (h : IsHaarOn (GV k r) μ) {f : Mat k r → E}
     (hf : ContinuousOn f (GV k r)) : AEStronglyMeasurable (fun g : Mt k r => f (Matrix.of g)) μ := by
-  have hc : IsClosed (X := Mt k r) (GV k r) := GV_closed
-  have hs : MeasurableSet (α := Mt k r) (GV k r) := hc.measurableSet
-  have hf' : ContinuousOn (fun g : Mt k r => f (Matrix.of g)) (GV k r) := hf
-  have h1 := hf'.aestronglyMeasurable (μ := μ) hs
+  have hs : MeasurableSet (α := Mt k r) (GV k r) := (show IsClosed (X := Mt k r) (GV k r) from GV_closed).measurableSet
+  have h1 := (show ContinuousOn (fun g : Mt k r => f (Matrix.of g)) (GV k r) from hf).aestronglyMeasurable (μ := μ) hs
   rwa [Measure.restrict_eq_self_of_ae_mem (haar_ae h)] at h1
 
 end ck
@@ -663,11 +660,9 @@ theorem hs_hasDerivAt {a b : ℝ → (Wq →L[ℂ] Wp)} {a' b' : Wq →L[ℂ] Wp
     (hb : HasDerivAt b b' x) :
     HasDerivAt (fun t => hsInner (a t) (b t)) (hsInner a' (b x) + hsInner (a x) b') x := by
   have hA : HasDerivAt (fun t => hsVec (a t)) (hsVec a') x := by
-    have := ((hsL (Wp := Wp) (Wq := Wq)).restrictScalars ℝ).hasFDerivAt.comp_hasDerivAt x ha
-    simpa [Function.comp_def, hsL_apply] using this
+    simpa [Function.comp_def, hsL_apply] using ((hsL (Wp := Wp) (Wq := Wq)).restrictScalars ℝ).hasFDerivAt.comp_hasDerivAt x ha
   have hB : HasDerivAt (fun t => hsVec (b t)) (hsVec b') x := by
-    have := ((hsL (Wp := Wp) (Wq := Wq)).restrictScalars ℝ).hasFDerivAt.comp_hasDerivAt x hb
-    simpa [Function.comp_def, hsL_apply] using this
+    simpa [Function.comp_def, hsL_apply] using ((hsL (Wp := Wp) (Wq := Wq)).restrictScalars ℝ).hasFDerivAt.comp_hasDerivAt x hb
   simpa only [hsInner] using HasDerivAt.inner ℂ hB hA
 
 theorem hs_contDiff {a b : ℝ → (Wq →L[ℂ] Wp)} (ha : ContDiff ℝ 1 a) (hb : ContDiff ℝ 1 b) :

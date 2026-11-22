@@ -282,9 +282,7 @@ theorem wN_cast {j : ℕ} (z : RPl N.R) (h0 : 0 ≤ N.w j z) : (N.wN j z : ℝ) 
 theorem nuN_cast (δ : Code N) {j : ℕ} (h1 : 1 ≤ j) (h2 : j ≤ N.R.m) (z : RPl N.R) {i : ℕ} (hi : i < N.R.N (j - 1))
     (h0 : 0 ≤ N.nu δ j z i) : (N.nuN δ j z i : ℝ) = ((N.nu δ j z i : ℚ) : ℝ) := by
   unfold nuN
-  first
-  | exact toNat_floor_cast (N.nu_int δ j h1 h2 z i hi) h0
-  | exact N.toNat_floor_cast (N.nu_int δ j h1 h2 z i hi) h0
+  exact toNat_floor_cast (N.nu_int δ j h1 h2 z i hi) h0
 
 theorem apN_cast {j : ℕ} (h1 : 1 ≤ j) (h2 : j ≤ N.R.m) (z : RPl N.R) {i : ℕ} (hi : i < (N.R.sigW j).1) :
     (N.apN j z i : ℝ) = ((N.aPlus j z i : ℚ) : ℝ) :=
@@ -773,8 +771,7 @@ def hcTop : HCParam R0 where
 def MBig : ℝ := 200 + |numEx.logOm|
 
 theorem MBig_ge : 200 ≤ MBig := by
-  unfold MBig
-  linarith [abs_nonneg numEx.logOm]
+  simpa only [MBig] using le_add_of_nonneg_right (abs_nonneg numEx.logOm)
 
 def scBig : Scale where
   x := Real.exp (100 * MBig)

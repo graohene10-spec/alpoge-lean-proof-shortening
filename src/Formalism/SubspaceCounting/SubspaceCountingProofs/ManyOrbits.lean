@@ -80,8 +80,7 @@ theorem allBut_mono {π : R} {M P : Submodule R X} {g g' E E' : ℕ} (h : AllBut
     (hg : g ≤ g') (hE : E ≤ E') : AllButLE π M P g' E' := by
   obtain ⟨C, hCM, hcard, hC⟩ := h
   refine ⟨C, hCM, hcard.trans hg, fun x hx => ?_⟩
-  have := Submodule.smul_mem _ (π ^ (E' - E)) (hC x hx)
-  rwa [smul_smul, ← pow_add, Nat.sub_add_cancel hE] at this
+  simpa only [smul_smul, ← pow_add, Nat.sub_add_cancel hE] using Submodule.smul_mem _ (π ^ (E' - E)) (hC x hx)
 
 theorem allBut_comap (π : R) (M P : Submodule R X) (g E : ℕ) (h : AllButLE π M P g E) :
     AllButLE π (⊤ : Submodule R M) (P.comap M.subtype) g E := by

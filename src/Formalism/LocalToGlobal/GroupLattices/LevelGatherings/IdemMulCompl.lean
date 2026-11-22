@@ -157,9 +157,8 @@ theorem inv_mul_trivializeAt_mem_away (L : ColLevel R F E sp gp C A clsLat) (p :
 theorem mk_trivP (L : ColLevel R F E sp gp C A clsLat) (p : ℕ)
     (y : UPts sp.cm.sig sp.gram0 (FiniteAdeleRing (𝓞 F) F)) :
     (Quotient.mk'' (trivP sp p y) : compL L p) = Quotient.mk'' y := by
-  refine ((DoubleCoset.eq _ _ _ _).mpr ⟨1, Subgroup.one_mem _, y⁻¹ * trivP sp p y, ?_, ?_⟩).symm
-  · exact Subgroup.mem_subgroupOf.mpr (inv_mul_trivializeAt_mem_away L p y)
-  · rw [one_mul, mul_inv_cancel_left]
+  exact ((DoubleCoset.eq _ _ _ _).mpr ⟨1, Subgroup.one_mem _, y⁻¹ * trivP sp p y,
+    Subgroup.mem_subgroupOf.mpr (inv_mul_trivializeAt_mem_away L p y), by rw [one_mul, mul_inv_cancel_left]⟩).symm
 
 def repP (L : ColLevel R F E sp gp C A clsLat) (p : ℕ) (i : compL L p) :
     UPts sp.cm.sig sp.gram0 (Formalism.L2.Herm.Af F) :=

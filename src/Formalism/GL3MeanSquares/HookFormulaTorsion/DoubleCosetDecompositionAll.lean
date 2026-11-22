@@ -361,9 +361,7 @@ private lemma sat_pow {R M : Type} [CommRing R] [AddCommGroup M] [Module R M] (�
   | zero => intro x hx; simpa using hx
   | succ k ih =>
     intro x hx
-    apply h
-    apply ih
-    rwa [← mul_smul, ← pow_succ]
+    exact h x (ih (ϖ • x) (by rwa [← mul_smul, ← pow_succ]))
 
 end Formalism.HermitianLattices.OneDimInversion
 

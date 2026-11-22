@@ -16,8 +16,7 @@ theorem le_lord_iff (n : WithTop ℤ) (f : LaurentPolynomial R) :
 
 theorem lord_zero : lord (0 : LaurentPolynomial R) = ⊤ := by
   rw [eq_top_iff, le_lord_iff]
-  intro k hk
-  exact absurd rfl hk
+  exact fun k hk => absurd rfl hk
 
 theorem le_lord_add {n : WithTop ℤ} {f g : LaurentPolynomial R} (hf : n ≤ lord f) (hg : n ≤ lord g) :
     n ≤ lord (f + g) := by
@@ -260,11 +259,8 @@ theorem substS_mem (T : Subring (MvPolynomial (L × Fin r) R)) (hC : ∀ c : K, 
 
 theorem substS_monomial_of_free (α : L × Fin r →₀ ℕ) (c : K) (h : ∀ x ∈ α.support, x.1 ∉ S) :
     substS ι sg S A B (monomial α c) = monomial α (ι c) := by
-  rw [substS_monomial]
-  have : (α.prod fun x k => subX sg S A B x ^ k) = α.prod fun x k => (X x : MvPolynomial (L × Fin r) R) ^ k := by
-    refine Finset.prod_congr rfl fun x hx => ?_
-    simp only [subX, if_neg (h x hx)]
-  rw [this, monomial_eq]
+  rw [substS_monomial, monomial_eq]
+  exact congrArg (fun q => C (ι c) * q) (Finset.prod_congr rfl fun x hx => by simp only [subX, if_neg (h x hx)])
 
 variable (out : L → Prop) [DecidablePred out]
 
@@ -1058,16 +1054,13 @@ theorem prod_choose_single {σ : Type} (α : σ →₀ ℕ) (x : σ) (k : ℕ) (
   classical
   unfold Finsupp.prod
   rw [Finset.prod_eq_single x]
-  · dsimp only
-    rw [Finsupp.single_eq_same]
+  · simp [Finsupp.single_eq_same]
   · intro y _ hy
-    dsimp only
-    rw [Finsupp.single_apply, if_neg (Ne.symm hy), Nat.choose_zero_right, Nat.cast_one]
+    simp [Ne.symm hy, Nat.choose_zero_right]
   · intro hx
     have h0 : α x = 0 := Finsupp.notMem_support_iff.mp hx
     have hk0 : k = 0 := by omega
-    dsimp only
-    rw [Finsupp.single_eq_same, h0, hk0, Nat.choose_zero_right, Nat.cast_one]
+    simp [h0, hk0]
 
 omit [CharZero K] [Fintype L] [NeZero r] in
 theorem dg_choose_eq {σ : Type} (x : σ) (k : ℕ) (F : MvPolynomial σ K) :

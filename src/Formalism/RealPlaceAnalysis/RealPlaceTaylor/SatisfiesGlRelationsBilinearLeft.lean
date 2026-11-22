@@ -13,12 +13,10 @@ lemma pderiv_pderiv_comm_real_place_taylor {σ : Type*} (v w : σ) (f : MvPolyno
       (pderiv w : Derivation ℂ (MvPolynomial σ ℂ) (MvPolynomial σ ℂ))⁆ = 0 := by
     apply MvPolynomial.derivation_ext
     intro i
-    rw [Derivation.commutator_apply]
-    simp only [pderiv_X, Pi.single_apply]
+    simp only [Derivation.commutator_apply, pderiv_X, Pi.single_apply]
     split_ifs <;> simp
-  have hf := congrArg (fun D : Derivation ℂ (MvPolynomial σ ℂ) (MvPolynomial σ ℂ) => D f) hc
-  simp only [Derivation.commutator_apply, Derivation.zero_apply] at hf
-  exact sub_eq_zero.mp hf
+  simpa only [Derivation.commutator_apply, Derivation.zero_apply, sub_eq_zero] using
+    congrArg (fun D : Derivation ℂ (MvPolynomial σ ℂ) (MvPolynomial σ ℂ) => D f) hc
 
 lemma bilinear_commutator_identity {A : Type*} [Ring A] (p1 b1 p2 b2 d1 d2 : A)
     (h1 : b1 * p2 - p2 * b1 = d1) (h2 : b2 * p1 - p1 * b2 = d2)
@@ -55,14 +53,13 @@ lemma deriv_mulX_commutator (v w : σ) : (D v) * (Mx w) - (Mx w) * (D v) = if v 
     simp [pderiv_mul, pderiv_X, Pi.single_apply, h, Ne.symm h]
 
 lemma mulX_negDeriv_commutator (v w : σ) : (Mx v) * -(D w) - -(D w) * (Mx v) = if v = w then 1 else 0 := by
-  by_cases h : v = w
-  · subst h
-    refine LinearMap.ext fun f => ?_
-    simp [pderiv_mul, pderiv_X, Pi.single_apply]
-    all_goals abel
-  · refine LinearMap.ext fun f => ?_
-    simp [pderiv_mul, pderiv_X, Pi.single_apply, h, Ne.symm h]
-    all_goals abel
+  calc
+    (Mx v) * -(D w) - -(D w) * (Mx v)
+        = -((Mx v) * (D w)) - -((D w) * (Mx v)) := by rw [mul_neg, neg_mul]
+    _ = (D w) * (Mx v) - (Mx v) * (D w) := by abel
+    _ = if v = w then 1 else 0 := by
+      rw [deriv_mulX_commutator]
+      exact if_congr eq_comm rfl rfl
 
 lemma deriv_mul_deriv_comm (v w : σ) : (D v) * (D w) = (D w) * (D v) := by
   refine LinearMap.ext fun f => ?_

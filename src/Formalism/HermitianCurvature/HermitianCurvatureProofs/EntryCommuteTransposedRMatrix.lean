@@ -140,8 +140,7 @@ theorem io_comm {x y : A} (h : Commute x y) : Commute (io x : SlopeTestRemaining
   rw [← io_mul, ← io_mul, h.eq]
 
 theorem diagScalar_mul (x y : SlopeTestRemainingChoices S A) : d0 (x * y) = d0 x * d0 y := by
-  unfold d0
-  rw [Matrix.diagonal_mul_diagonal]
+  simp [d0]
 
 theorem entry_commute_R_matrix {z : SlopeTestRemainingChoices S A} {a : S} (h : ∀ i j, Commute z (eU a i j)) (D : K) : EC z (Rh0 a D) := by
   intro i j
@@ -190,8 +189,7 @@ theorem ins_mul_io (a : S) (x : A) (N : M2 A) :
 
 theorem unit_mul_ins (a : S) (j i : Fin 2) (x : A) (N : M2 A) :
     (eU a j i : SlopeTestRemainingChoices S A) * io x * ins a (lift0 N) = ∑ s, eU a j s * io (x * N i s) := by
-  unfold ins lift0
-  simp only [Finset.mul_sum, Matrix.map_apply, unit_mul]
+  simp only [ins, lift0, Finset.mul_sum, Matrix.map_apply, unit_mul]
   simp
 
 theorem ins_mul_unit (a : S) (k j : Fin 2) (x : A) (N : M2 A) :
@@ -506,19 +504,15 @@ end Formalism.FourierDecayAlt.P.Wd6
 namespace Formalism.FourierDecayAlt.P
 
 theorem exchange_plus_factor : Formalism.FourierDecayAlt.Wd.ExchangePlusFactor := by
-  intro K A S _ _ _ _ _ _ _ _ σ w Y hσ hw
-  exact Wd6.Xp_lift0_d0_comm σ w Y hσ hw.1
+  exact fun K A S _ _ _ _ _ _ _ _ σ w Y hσ hw => Wd6.Xp_lift0_d0_comm σ w Y hσ hw.1
 
 theorem exchange_second_case : Formalism.FourierDecayAlt.Wd.ExchangeMinusFactorStar := by
-  intro K A S _ _ _ _ _ _ _ _ σ w Y hσ hw hY
-  exact Wd6.exch2 σ w Y hσ hw.1 hw.2.1 hY
+  exact fun K A S _ _ _ _ _ _ _ _ σ w Y hσ hw hY => Wd6.exch2 σ w Y hσ hw.1 hw.2.1 hY
 
 theorem exchange_third_case : Formalism.FourierDecayAlt.Wd.ExchangeMinusFactorTranspose := by
-  intro K A S _ _ _ _ _ _ _ _ σ w Y hσ hw hY
-  exact Wd6.exch3 σ w Y hσ hw.1 hw.2.1 hY
+  exact fun K A S _ _ _ _ _ _ _ _ σ w Y hσ hw hY => Wd6.exch3 σ w Y hσ hw.1 hw.2.1 hY
 
 theorem exchange_fourth_case : Formalism.FourierDecayAlt.Wd.ExchangePlusFactorTranspose := by
-  intro K A S _ _ _ _ _ _ _ _ σ w Y hσ hw
-  exact Wd6.exch4 σ w Y hσ hw.1
+  exact fun K A S _ _ _ _ _ _ _ _ σ w Y hσ hw => Wd6.exch4 σ w Y hσ hw.1
 
 end Formalism.FourierDecayAlt.P

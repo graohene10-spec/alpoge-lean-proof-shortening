@@ -12,8 +12,7 @@ theorem padicInt_norm_le_p {p : ℕ} [Fact p.Prime] (y : ℤ_[p]) (hy : PadicInt
     ‖y‖ ≤ ‖(p : ℤ_[p])‖ := by
   have h1 : y ∈ RingHom.ker (PadicInt.toZMod (p := p)) := hy
   rw [PadicInt.ker_toZMod] at h1
-  have h2 : ‖y‖ < 1 := PadicInt.mem_nonunits.1 ((IsLocalRing.mem_maximalIdeal _).1 h1)
-  obtain ⟨z, rfl⟩ := (PadicInt.norm_lt_one_iff_dvd _).1 h2
+  obtain ⟨z, rfl⟩ := (PadicInt.norm_lt_one_iff_dvd _).1 (PadicInt.mem_nonunits.1 ((IsLocalRing.mem_maximalIdeal _).1 h1))
   rw [norm_mul]
   exact mul_le_of_le_one_right (norm_nonneg _) (PadicInt.norm_le_one z)
 

@@ -62,9 +62,7 @@ theorem ddiv_zero' (F : MvPolynomial σ K) : ddiv 0 F = F := by
 
 theorem expand_monomial' {τ : Type} (P : ℕ) (d : τ →₀ ℕ) (c : K) :
     expand P (monomial d c) = monomial (P • d) c := by
-  rw [MvPolynomial.expand_monomial, MvPolynomial.monomial_eq,
-    Finsupp.prod_of_support_subset _ Finsupp.support_smul (fun n e => (X n : MvPolynomial τ K) ^ e)
-      (fun i _ => pow_zero _)]
+  simp
 
 end Gen
 
@@ -104,9 +102,7 @@ theorem absE_eq_sum (β : Fin r →₀ ℕ) : absE β = ∑ a, β a := by
   exact Finsupp.sum_fintype _ _ (fun _ => rfl)
 
 theorem absE_letE (α : L × Fin r →₀ ℕ) (i : L) : absE (letE α i) = ldeg α i := by
-  rw [absE_eq_sum]
-  unfold ldeg
-  simp only [letE_apply]
+  simp [absE_eq_sum, ldeg]
 
 end Letter
 

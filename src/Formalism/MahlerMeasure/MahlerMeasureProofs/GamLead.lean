@@ -36,10 +36,8 @@ theorem fk_eq_sum (F G : MvPolynomial σ K) (s : Finset (σ →₀ ℕ)) (h : F.
 theorem fk_eq_sum' (F G : MvPolynomial σ K) (s : Finset (σ →₀ ℕ)) (h : G.support ⊆ s) :
     fk F G = ∑ m ∈ s, F.coeff m * G.coeff m * wf m := by
   rw [fk_eq_sum F G (F.support ∪ s) Finset.subset_union_left]
-  symm
-  apply Finset.sum_subset Finset.subset_union_right
-  intro m _ hm
-  rw [notMem_support_iff.mp (fun h' => hm (h h'))]; ring
+  exact (Finset.sum_subset Finset.subset_union_right (fun m _ hm => by
+    rw [notMem_support_iff.mp (fun h' => hm (h h'))]; ring)).symm
 
 theorem fk_symm (F G : MvPolynomial σ K) : fk F G = fk G F := by
   rw [fk_eq_sum F G _ (Finset.subset_union_left (s₂ := G.support)),
@@ -768,17 +766,14 @@ variable {K σ : Type} [Field K] [DecidableEq σ] {r : ℕ} {w e : Fin r → σ}
 theorem biHom_one : BiHom w e 0 0 (1 : MvPolynomial σ K) := by
   classical
   intro m hm
-  rw [show (1 : MvPolynomial σ K) = monomial 0 1 from rfl, support_monomial, if_neg one_ne_zero] at hm
-  simp only [Finset.mem_singleton] at hm
+  rw [show (1 : MvPolynomial σ K) = monomial 0 1 from rfl, support_monomial, if_neg one_ne_zero, Finset.mem_singleton] at hm
   subst hm; simp
 
 theorem biHom_mul {a b a' b' : ℕ} {u v : MvPolynomial σ K} (hu : BiHom w e a b u) (hv : BiHom w e a' b' v) :
     BiHom w e (a + a') (b + b') (u * v) := by
   intro m hm
   obtain ⟨m1, hm1, m2, hm2, rfl⟩ := Finset.mem_add.mp (support_mul u v hm)
-  simp only [Finsupp.add_apply, Finset.sum_add_distrib]
-  rw [(hu m1 hm1).1, (hu m1 hm1).2, (hv m2 hm2).1, (hv m2 hm2).2]
-  exact ⟨rfl, rfl⟩
+  simp [Finsupp.add_apply, Finset.sum_add_distrib, (hu m1 hm1).1, (hu m1 hm1).2, (hv m2 hm2).1, (hv m2 hm2).2]
 
 theorem biHom_pow {a b : ℕ} {u : MvPolynomial σ K} (hu : BiHom w e a b u) (k : ℕ) :
     BiHom w e (k * a) (k * b) (u ^ k) := by
@@ -1146,10 +1141,8 @@ theorem top_eq_kill (a d : ℕ) (g g' : MvPolynomial (Fin (N + 1 + 1) × Fin r) 
     · exact absurd rfl hM
   rw [fk_eq_sum _ _ _ hs]
   refine Finset.sum_congr rfl (fun M hM => ?_)
-  rw [coeff_kill, coeff_kill]
-  have hd := (hg M hM).2
   have key : (∀ v, Pη (N := N) ρ v → M v = 0) ↔ M (Fin.last (N + 1), ρ) = d := by
-    rw [← hd, ← Finset.add_sum_erase _ _ (Finset.mem_univ ρ)]
+    rw [← (hg M hM).2, ← Finset.add_sum_erase _ _ (Finset.mem_univ ρ)]
     constructor
     · intro h
       rw [Finset.sum_eq_zero (fun c hc => h _ ⟨rfl, Finset.ne_of_mem_erase hc⟩), add_zero]
@@ -1159,9 +1152,8 @@ theorem top_eq_kill (a d : ℕ) (g g' : MvPolynomial (Fin (N + 1 + 1) × Fin r) 
       obtain ⟨rfl, hv2⟩ := hv
       have h0 : ∑ c ∈ Finset.univ.erase ρ, M (eη (N := N) c) = 0 := by simp only [eη] at h ⊢; omega
       exact (Finset.sum_eq_zero_iff.mp h0) v2 (Finset.mem_erase.mpr ⟨hv2, Finset.mem_univ _⟩)
-  by_cases h : M (Fin.last (N + 1), ρ) = d
-  · rw [if_pos (key.mpr h), if_pos (key.mpr h), if_pos h]; ring
-  · rw [if_neg (fun h' => h (key.mp h')), if_neg h]; ring
+  simp only [coeff_kill, key]
+  by_cases h : M (Fin.last (N + 1), ρ) = d <;> simp [h]
 
 end frz
 
@@ -1213,8 +1205,7 @@ theorem choose_lim' (S j d : ℕ) (hjd : j ≤ d) :
   by_cases h : j = d
   · subst h; rw [if_pos rfl]; exact choose_lim j S j
   · rw [if_neg h]
-    have h1 := (choose_lim j S j).mul (inv_pow_lim (d - j) (by omega))
-    rw [mul_zero] at h1
+    have h1 : Tendsto (fun n : ℕ => ((n + j - S).choose j : ℝ) / (n : ℝ) ^ j * (1 / (n : ℝ) ^ (d - j))) atTop (𝓝 0) := by simpa only [mul_zero] using (choose_lim j S j).mul (inv_pow_lim (d - j) (by omega))
     refine h1.congr' ?_
     filter_upwards [eventually_ge_atTop 1] with n hn
     have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast (by omega : n ≠ 0)
@@ -1368,9 +1359,8 @@ theorem biHom_Yh : BiHom (wW (N := N)) eη (LL.deg (Fin.last N) - e - 1) (n - e 
 
 theorem Yh_ne : Yh (K := K) LL ρ e m n ≠ 0 → 1 ≤ LL.deg (Fin.last N) - e ∧ 1 ≤ n - e := by
   intro h
-  unfold Yh at h
   by_cases h' : m (Fin.last N, ρ) = e
-  · rw [if_pos h'] at h; exact absurd rfl h
+  · simp [Yh, h'] at h
   · have hS := m_W_le LL ρ m hm
     have hoS := o_le_S LL
     omega
@@ -1441,9 +1431,8 @@ theorem kappa_zero_tendsto_factorials (o z e r : ℕ) :
 
 theorem chooseA_lim (o z r : ℕ) :
     Tendsto (fun n : ℕ => ((o + n + r + z - 1).choose o : ℝ) / (n : ℝ) ^ o) atTop (𝓝 (1 / (o.factorial : ℝ))) := by
-  refine (choose_lim (o + r + z) 1 o).congr' (Eventually.of_forall (fun n => ?_))
-  simp only
-  rw [show n + (o + r + z) - 1 = o + n + r + z - 1 by omega]
+  simpa only [show ∀ n : ℕ, n + (o + r + z) - 1 = o + n + r + z - 1 from fun n => by omega]
+    using choose_lim (o + r + z) 1 o
 
 theorem inv_sub_lim (o : ℕ) : Tendsto (fun n : ℕ => 1 / (2 * ((n - o : ℕ) : ℝ))) atTop (𝓝 0) := by
   have h1 : Tendsto (fun n : ℕ => ((n - o : ℕ) : ℝ)) atTop atTop :=

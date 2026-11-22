@@ -470,14 +470,13 @@ theorem jnt_ramEK (D : D7) (𝔭 : Ideal (𝓞 D.host.K)) (h𝔭 : 𝔭.IsPrime)
     omega
   rw [Ideal.ramificationIdxIn, dif_pos hex] at hr
   obtain ⟨hP, hlo⟩ := hex.choose_spec
-  generalize hex.choose = P at hr hP hlo
-  have hdvd : P ∣ differentIdeal (𝓞 D.host.K) (𝓞 D.host.E) := by
+  have hdvd : hex.choose ∣ differentIdeal (𝓞 D.host.K) (𝓞 D.host.E) := by
     by_contra hnd
     have hun := not_dvd_differentIdeal_iff.mp hnd
     have := Ideal.ramificationIdx_eq_one_iff.mpr hun
     omega
-  rw [Ideal.mem_of_liesOver P 𝔭, map_natCast]
-  exact D.host.der.diffSupport P hP hdvd
+  rw [Ideal.mem_of_liesOver hex.choose 𝔭, map_natCast]
+  exact D.host.der.diffSupport hex.choose hP hdvd
 
 theorem jnt_inertiaD (D : D7) (P : Ideal (𝓞 D.host.E)) (hP : P.IsPrime)
     (hd : (D.host.d : 𝓞 D.host.E) ∈ P) (σ : D.host.E ≃ₐ[ℚ] D.host.E) :
@@ -556,21 +555,10 @@ theorem jnt_nums' (D : D7) (T g1 g2 : ℕ) (Cn x b Lr b' Sc eta : ℝ)
     (h : Formalism.MainNotions.flipTwoThree.Nums D T g1 g2 Cn x b Lr b' Sc eta) :
     Real.log 2 ≤ Lr ∧ Real.log x ≤ Lr ∧ Real.log D.host.v ≤ Lr ∧
       |Formalism.MainNotions.TaylorLogMetric.logDerivativeAtOne D| ≤ Cn * Lr ∧ 1 ≤ D.host.v := by
-  obtain ⟨hb, hL, _, _, _, hb', hSc, heta, hsum, _, _, _, hdl, hx2, hv1, _⟩ := h
-  have hx0 : (0:ℝ) < x := by linarith
-  have hmt : (0:ℝ) ≤ D.R.m * D.R.t := by positivity
-  have h2 : 2 ≤ b' / x := by linarith
-  have hb'2 : 2 * x ≤ b' := (le_div_iff₀ hx0).mp h2
-  rw [mul_div_cancel_left₀ b hx0.ne'] at hb'
-  have hb1 : 1 ≤ b := by linarith
-  have hv0 : (0:ℝ) < D.host.v := by linarith
-  have hlog : Real.log (x * b * D.host.v) = Real.log x + Real.log b + Real.log D.host.v := by
-    rw [Real.log_mul (mul_pos hx0 hb).ne' hv0.ne', Real.log_mul hx0.ne' hb.ne']
-  have hlb : 0 ≤ Real.log b := Real.log_nonneg hb1
-  have hlv : 0 ≤ Real.log D.host.v := Real.log_nonneg hv1
-  have hlx : 0 ≤ Real.log x := Real.log_nonneg (by linarith)
-  have hl2 : Real.log 2 ≤ Real.log x := Real.log_le_log (by norm_num) hx2
-  exact ⟨by linarith, by linarith, by linarith, hdl, hv1⟩
+  have hh := h
+  obtain ⟨_, _, _, _, _, _, _, _, _, _, _, _, hdl, hx2, hv1, _⟩ := h
+  have h' := jnt_nums D T g1 g2 Cn x b Lr b' Sc eta (by linarith [hx2]) hv1 hh
+  exact ⟨h'.1, h'.2.1, h'.2.2, hdl, hv1⟩
 
 theorem _root_.Formalism.MainNotions.flipTwoThree.first_hypothesis_of_lifting (D : D7) (Cn x : ℝ)
     (T : Formalism.MainNotions.TaylorLogMetric.Tor D) (hper : Formalism.MainNotions.TaylorLogMetric.per22 D T) (hl : OmLink D T) :
@@ -639,12 +627,10 @@ theorem _root_.Formalism.MainNotions.flipTwoThree.second_hypothesis_of_lifting (
     (hfree : ThFree D) (hl : ThLinkLe D T e) :
     Formalism.MainNotions.flipTwoThree.adm2 D Cn (C * (1 + Cn)) x := by
   intro u b Lr b' Sc eta hN i hi
-  obtain ⟨-, hlx, hlv, hd1, -⟩ := jnt_nums' D _ _ _ Cn x b Lr b' Sc eta hN
+  obtain ⟨-, -, hlv, hd1, -⟩ := jnt_nums' D _ _ _ Cn x b Lr b' Sc eta hN
   refine ⟨hfree u i hi, ?_⟩
   obtain ⟨L, L', hAdm, M, hM, hD, hC, hle⟩ := hl u i hi
-  refine le_trans hle ?_
-  have h1 := hth.2.1 ((1 + Cn) * Lr) (by linarith) (D.R.N i) (D.R.N (i + 1)) L L' hAdm M hD hC
-  calc _ ≤ C * (Formalism.MainNotions.TaylorLogMetric.fF D : ℝ) * (D.R.N i : ℝ) * (D.R.N (i + 1) : ℝ) * ((1 + Cn) * Lr) := h1
+  calc _ ≤ C * (Formalism.MainNotions.TaylorLogMetric.fF D : ℝ) * (D.R.N i : ℝ) * (D.R.N (i + 1) : ℝ) * ((1 + Cn) * Lr) := le_trans hle (hth.2.1 ((1 + Cn) * Lr) (by linarith) (D.R.N i) (D.R.N (i + 1)) L L' hAdm M hD hC)
     _ = C * (1 + Cn) * D.R.f * (D.R.N i : ℝ) * (D.R.N (i + 1) : ℝ) * Lr := by
       unfold Formalism.MainNotions.TaylorLogMetric.fF; ring
 
@@ -694,11 +680,10 @@ theorem jnt_exists_place (D : D7) (g : ℕ) (hg : g.Prime) :
   have : (Ideal.span {(g : ℤ)}).IsPrime := (Ideal.span_singleton_prime hgZ.ne_zero).mpr hgZ
   obtain ⟨P, hP, hlo⟩ :=
     (inferInstance : Nonempty (Ideal.primesOver (Ideal.span {(g : ℤ)}) (𝓞 D.host.F)))
-  have hmem : ((g : ℤ) : 𝓞 D.host.F) ∈ P := (Ideal.liesOver_span_iff hP.ne_top hgZ).mp hlo
-  have hmem' : (g : 𝓞 D.host.F) ∈ P := by simpa using hmem
-  refine ⟨⟨P, hP, ?_⟩, hmem'⟩
+  have hmem : (g : 𝓞 D.host.F) ∈ P := by simpa using (Ideal.liesOver_span_iff hP.ne_top hgZ).mp hlo
+  refine ⟨⟨P, hP, ?_⟩, hmem⟩
   rintro rfl
-  exact hg.ne_zero (by exact_mod_cast (Ideal.mem_bot.mp hmem'))
+  exact hg.ne_zero (by exact_mod_cast (Ideal.mem_bot.mp hmem))
 
 theorem _root_.Formalism.MainNotions.StandardLattice.column_lemma_of_definite_form (D : D7) (Lv : LevelData D) (h : Formalism.MainNotions.UnusedSlot33.division_rows_rational_lattice D)
     (hD : letI := D.host.cmStar; Formalism.MainNotions.UnusedSlot33.IsDef D.sp.cm.sig D.sp.gram0) : Formalism.MainNotions.StandardLattice.adm17 D Lv := by
@@ -1032,9 +1017,8 @@ def xiOf (D : D7) (ψ : ZetaZeroFreeRegion.Chr D) : DirichletCharacter ℂ D.hos
 
 theorem xiOf_even (D : D7) (ψ : ZetaZeroFreeRegion.Chr D) : (xiOf D ψ).Even := by
   show xiOf D ψ (-1) = 1
-  have h1 : (-1 : ZMod D.host.condN) = (((-1 : (ZMod D.host.condN)ˣ)) : ZMod D.host.condN) := by simp
   unfold xiOf
-  rw [h1, MulChar.ofUnitHom_coe]
+  rw [show (-1 : ZMod D.host.condN) = (((-1 : (ZMod D.host.condN)ˣ)) : ZMod D.host.condN) by simp, MulChar.ofUnitHom_coe]
   simp only [MonoidHom.comp_apply]
   rw [D.host.art_neg_one]
   show ((ψ 1 : ℂˣ) : ℂ) = 1
@@ -1514,9 +1498,7 @@ theorem mem_inerP (D : D7) (p : ℕ) [Fact p.Prime] (P : Ideal (𝓞 D.host.E)) 
   constructor
   · rintro ⟨σ, rfl, hσ⟩
     exact ((fld D p P σ).1).mp hσ
-  · intro h
-    refine ⟨D.host.sigmaOf g, galE_sigmaOf D g, ((fld D p P _).1).mpr ?_⟩
-    rwa [galE_sigmaOf]
+  · exact fun h => ⟨D.host.sigmaOf g, galE_sigmaOf D g, ((fld D p P _).1).mpr (by simpa [galE_sigmaOf D g] using h)⟩
 
 theorem frob_mem (D : D7) (p : ℕ) [Fact p.Prime] (P : Ideal (𝓞 D.host.E)) [hP : P.IsPrime]
     [hlo : P.LiesOver (Ideal.span {(p : ℤ)})] :
@@ -1745,9 +1727,7 @@ theorem sw1b1_iff_swb1 : StandardLattice.SW1b1 F E σ M J ↔ UnusedSlot34.SWb1 
   refine imp_congr_right fun _ => forall_congr' fun β => forall_congr' fun d => forall_congr' fun b =>
     forall_congr' fun Φ => forall_congr' fun Φi => forall_congr' fun Φf => forall_congr' fun Φv =>
     imp_congr_right fun _ => imp_congr_right fun _ => imp_congr_right fun _ =>
-    imp_congr_right fun _ => ?_
-  refine Iff.trans (as_congr fun ψ _ => onH_congr F E σ M J fun μ 𝓕 => onSD_iff F E σ M J ψ 1 _ _ _ _ _) ?_
-  exact onH_swap F E σ M J
+    imp_congr_right fun _ => (as_congr fun ψ _ => onH_congr F E σ M J fun μ 𝓕 => onSD_iff F E σ M J ψ 1 _ _ _ _ _).trans (onH_swap F E σ M J)
 
 theorem shintani_weight_c1_iff : StandardLattice.SW1c1 F E σ M J ↔ UnusedSlot34.SWc1 F E σ M J := by
   unfold StandardLattice.SW1c1 UnusedSlot34.SWc1
@@ -1756,8 +1736,7 @@ theorem shintani_weight_c1_iff : StandardLattice.SW1c1 F E σ M J ↔ UnusedSlot
     forall_congr' fun Φ => forall_congr' fun Φi => forall_congr' fun Φf => forall_congr' fun Φv =>
     imp_congr_right fun _ => imp_congr_right fun _ => imp_congr_right fun _ =>
     imp_congr_right fun _ => ?_
-  refine Iff.trans (as_congr fun ψ _ => onH_congr F E σ M J fun μ 𝓕 => onSD_iff F E σ M J ψ n _ _ _ _ _) ?_
-  exact onH_swap F E σ M J
+  exact Iff.trans (as_congr fun ψ _ => onH_congr F E σ M J fun μ 𝓕 => onSD_iff F E σ M J ψ n _ _ _ _ _) (onH_swap F E σ M J)
 
 theorem shintani_weight_c2_iff : StandardLattice.SW1c2 F E σ M J ↔ UnusedSlot34.SWc2 F E σ M J := by
   unfold StandardLattice.SW1c2 UnusedSlot34.SWc2
@@ -1765,10 +1744,9 @@ theorem shintani_weight_c2_iff : StandardLattice.SW1c2 F E σ M J ↔ UnusedSlot
     forall_congr' fun Φ => forall_congr' fun Φi => forall_congr' fun Φf => forall_congr' fun Φv =>
     imp_congr_right fun _ => imp_congr_right fun _ => imp_congr_right fun _ =>
     imp_congr_right fun _ => ?_
-  refine Iff.trans (as_congr fun ψ _ => onH_congr F E σ M J fun μ 𝓕 =>
+  exact Iff.trans (as_congr fun ψ _ => onH_congr F E σ M J fun μ 𝓕 =>
     (onSD_iff F E σ M J ψ p _ _ _ _ _).trans (as_congr fun _ _ => as_congr fun _ _ =>
-      as_congr fun _ _ => as_congr fun _ _ => as_two)) ?_
-  exact onH_swap F E σ M J
+      as_congr fun _ _ => as_congr fun _ _ => as_two)) (onH_swap F E σ M J)
 
 theorem isDxDq_iff (ψ : AddChar (AF F) ℂ) (β : F) (ν : Measure (Fin 1 → Fin M → AF F ⊗[F] E)) :
     StandardLattice.IsDxDq F E σ M J ψ β ν ↔ IsXbetaMeasure F E σ M J ψ β ν :=

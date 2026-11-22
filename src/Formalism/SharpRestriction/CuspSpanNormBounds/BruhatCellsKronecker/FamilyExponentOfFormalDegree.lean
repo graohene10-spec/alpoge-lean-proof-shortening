@@ -41,12 +41,11 @@ theorem cfg_q (D : D7) (u u' : D.what₂.Word) (τ : D.what₂.Tau)
   rw [prod_Icc_one_eq_prod_fin_succ]
   congr 1
   refine Finset.prod_congr rfl fun i _ => ?_
-  have hi : i.1 < D.R.k := i.2
   have hu : ∀ w : D.what₂.Word, (cfgOf D τ).u (deOf D w) (i.1 + 1) = uS D w τ i := by
     intro w
-    rw [cfg_u D w τ (h5 w) (i.1 + 1) (by omega) (by omega)]
+    rw [cfg_u D w τ (h5 w) (i.1 + 1) (by omega) (Nat.succ_le_of_lt i.2)]
     unfold uOne
-    rw [dif_pos (show 1 ≤ i.1 + 1 ∧ i.1 + 1 ≤ D.R.k by omega)]
+    rw [dif_pos (show 1 ≤ i.1 + 1 ∧ i.1 + 1 ≤ D.R.k from ⟨by omega, Nat.succ_le_of_lt i.2⟩)]
     rfl
   rw [hu u, hu u']
 

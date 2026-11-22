@@ -114,17 +114,15 @@ theorem Pend.part_alg (hP : Pend D) {j : ℕ} {π : D.nbc.AU j} {Pa : List (Part
     refine ⟨(he τ).1, fun x hx => ?_⟩
     obtain ⟨k, hk⟩ := (he τ).2 x hx
     refine ⟨k + t, ?_⟩
-    have ht' : ((D.R.nV : ℂ) - p.d - p.a + 1) = (t : ℂ) + t := by exact_mod_cast ht
     push_cast
-    linear_combination hk + ht' / 2
+    linear_combination hk + (by exact_mod_cast ht : ((D.R.nV : ℂ) - p.d - p.a + 1) = (t : ℂ) + t) / 2
   · right
     intro τ
     refine ⟨(he τ).1, fun x hx => ?_⟩
     obtain ⟨k, hk⟩ := (he τ).2 x hx
     refine ⟨k + t, ?_⟩
-    have ht' : ((D.R.nV : ℂ) - p.d - p.a + 1) = 2 * (t : ℂ) + 1 := by exact_mod_cast ht
     push_cast
-    linear_combination hk + ht' / 2
+    linear_combination hk + (by exact_mod_cast ht : ((D.R.nV : ℂ) - p.d - p.a + 1) = 2 * (t : ℂ) + 1) / 2
 
 variable (D)
 

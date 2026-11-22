@@ -25,10 +25,9 @@ theorem one_lt_of {x : ℝ} (hx : Fm.x1 < x) : 1 < x := by
 
 theorem ev_rpow {c : ℝ} (hc : 0 < c) (K : ℝ) : ∃ x0 : ℝ, 1 < x0 ∧ ∀ x ≥ x0, K ≤ x ^ c := by
   refine ⟨max 2 (|K| ^ c⁻¹), by linarith [le_max_left 2 (|K| ^ c⁻¹)], fun x hx => ?_⟩
-  have h0 : 0 ≤ |K| ^ c⁻¹ := Real.rpow_nonneg (abs_nonneg K) _
   calc K ≤ |K| := le_abs_self K
     _ = (|K| ^ c⁻¹) ^ c := (Real.rpow_inv_rpow (abs_nonneg K) hc.ne').symm
-    _ ≤ x ^ c := Real.rpow_le_rpow h0 (le_trans (le_max_right _ _) hx) hc.le
+    _ ≤ x ^ c := Real.rpow_le_rpow (Real.rpow_nonneg (abs_nonneg K) _) (le_trans (le_max_right _ _) hx) hc.le
 
 theorem ev_L (K : ℝ) : ∃ x0 : ℝ, Fm.x1 < x0 ∧ ∀ x ≥ x0, ∀ i : Fm.Ix x, K ≤ (Fm.L x i).sc.L := by
   obtain ⟨x0, -, hx0⟩ := ev_rpow (eps_pos Fm) K
@@ -48,9 +47,7 @@ theorem m_ge {x : ℝ} (hx : Fm.x1 < x) (i : Fm.Ix x) : x ^ ((1 : ℝ) / 4) ≤ 
 
 theorem ev_m (K : ℝ) : ∃ x0 : ℝ, Fm.x1 < x0 ∧ ∀ x ≥ x0, ∀ i : Fm.Ix x, K ≤ ((Fm.D x i).R.m : ℝ) := by
   obtain ⟨x0, -, hx0⟩ := ev_rpow (by norm_num : (0 : ℝ) < 1 / 4) K
-  refine ⟨max x0 (Fm.x1 + 1), by linarith [le_max_right x0 (Fm.x1 + 1)], fun x hx i => ?_⟩
-  have hx1 : Fm.x1 < x := by linarith [le_max_right x0 (Fm.x1 + 1)]
-  exact le_trans (hx0 x (le_trans (le_max_left _ _) hx)) (m_ge Fm hx1 i)
+  refine ⟨max x0 (Fm.x1 + 1), by linarith [le_max_right x0 (Fm.x1 + 1)], fun x hx i => le_trans (hx0 x (le_trans (le_max_left _ _) hx)) (m_ge Fm (by linarith [le_max_right x0 (Fm.x1 + 1)]) i)⟩
 
 theorem m_le_k (D : D7) : (D.R.m : ℝ) ≤ D.R.k := by
   exact_mod_cast Nat.le_trans (Nat.le_add_right D.R.m 3) D.R.m_add_three_le_k

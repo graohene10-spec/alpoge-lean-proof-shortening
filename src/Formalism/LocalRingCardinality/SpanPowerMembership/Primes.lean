@@ -18,8 +18,7 @@ private theorem zmod_pow_eq_one_of_pow_mod_eq_one {n a e : ℕ} (h : a ^ e % n =
 private theorem zmod_pow_ne_one_of_pow_mod_ne_one {n a e : ℕ} (hn : 1 < n) (h : a ^ e % n ≠ 1) : (a : ZMod n) ^ e ≠ 1 := by
   intro hc
   apply h
-  have h2 := (ZMod.natCast_eq_natCast_iff' (a ^ e) 1 n).1 (by push_cast; exact hc)
-  rwa [Nat.mod_eq_of_lt hn] at h2
+  rwa [← Nat.cast_pow, ← Nat.cast_one, ZMod.natCast_eq_natCast_iff', Nat.mod_eq_of_lt hn] at hc
 
 private theorem pow_mod_of_two_pow_window {a n e e' r s : ℕ} (k w : ℕ) (h : a ^ e % n = r) (he : 2 ^ k * e + w = e')
     (hs : r ^ (2 ^ k) * a ^ w % n = s) : a ^ e' % n = s := by
@@ -81,13 +80,10 @@ theorem gA_prime : Nat.Prime 413718278401 := by
     rcases hp with rfl | rfl | rfl | rfl | rfl | rfl <;> first  | norm_num
   · intro p hp
     simp only [List.mem_cons, List.not_mem_nil, or_false] at hp
-    rcases hp with rfl | rfl | rfl | rfl | rfl | rfl
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_34_div_2_mod_413718278401]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_34_div_3_mod_413718278401]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_34_div_5_mod_413718278401]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_34_div_7_mod_413718278401]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_34_div_571_mod_413718278401]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_34_div_599_mod_413718278401]; decide)
+    rcases hp with rfl | rfl | rfl | rfl | rfl | rfl <;>
+      exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by
+        simp only [pow_34_div_2_mod_413718278401, pow_34_div_3_mod_413718278401, pow_34_div_5_mod_413718278401, pow_34_div_7_mod_413718278401, pow_34_div_571_mod_413718278401, pow_34_div_599_mod_413718278401]
+        decide)
 
 private theorem pow_17_mod_603339156001_eq_one : 17 ^ (603339156001 - 1) % 603339156001 = 1 := by
   have h : 17 ^ 140 % 603339156001 = 348356949902 := by decide
@@ -139,17 +135,13 @@ private theorem pow_17_div_599_mod_603339156001 : 17 ^ ((603339156001 - 1) / 599
 theorem gB_prime : Nat.Prime 603339156001 := by
   refine lucas_list 603339156001 17 [2, 3, 5, 7, 571, 599] 8 (by norm_num) ?_ (zmod_pow_eq_one_of_pow_mod_eq_one pow_17_mod_603339156001_eq_one) ?_
   · intro p hp
-    simp only [List.mem_cons, List.not_mem_nil, or_false] at hp
-    rcases hp with rfl | rfl | rfl | rfl | rfl | rfl <;> first  | norm_num
+    simp at hp
+    rcases hp with rfl | rfl | rfl | rfl | rfl | rfl <;> norm_num
   · intro p hp
-    simp only [List.mem_cons, List.not_mem_nil, or_false] at hp
+    simp at hp
     rcases hp with rfl | rfl | rfl | rfl | rfl | rfl
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_17_div_2_mod_603339156001]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_17_div_3_mod_603339156001]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_17_div_5_mod_603339156001]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_17_div_7_mod_603339156001]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_17_div_571_mod_603339156001]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_17_div_599_mod_603339156001]; decide)
+    all_goals
+      exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by simp only [pow_17_div_2_mod_603339156001, pow_17_div_3_mod_603339156001, pow_17_div_5_mod_603339156001, pow_17_div_7_mod_603339156001, pow_17_div_571_mod_603339156001, pow_17_div_599_mod_603339156001]; decide)
 
 private theorem pow_5_mod_large_prime_eq_one : 5 ^ (65794571027774832745588537266486439382601586586498771901135640963549130131839564588689999034983373394040350895271937 - 1) % 65794571027774832745588537266486439382601586586498771901135640963549130131839564588689999034983373394040350895271937 = 1 := by
   have h : 5 ^ 1 % 65794571027774832745588537266486439382601586586498771901135640963549130131839564588689999034983373394040350895271937 = 5 := by decide
@@ -503,13 +495,7 @@ theorem prime_large : Nat.Prime 657945710277748327455885372664864393826015865864
     rcases hp with rfl | rfl | rfl | rfl | rfl | rfl <;> first | exact gA_prime | exact gB_prime | norm_num
   · intro p hp
     simp only [List.mem_cons, List.not_mem_nil, or_false] at hp
-    rcases hp with rfl | rfl | rfl | rfl | rfl | rfl
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_5_div_2_mod_large_prime]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_5_div_3_mod_large_prime]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_5_div_571_mod_large_prime]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_5_div_599_mod_large_prime]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_5_div_413718278401_mod_large_prime]; decide)
-    · exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_5_div_603339156001_mod_large_prime]; decide)
+    rcases hp with rfl | rfl | rfl | rfl | rfl | rfl <;> first | exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_5_div_2_mod_large_prime]; decide) | exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_5_div_3_mod_large_prime]; decide) | exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_5_div_571_mod_large_prime]; decide) | exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_5_div_599_mod_large_prime]; decide) | exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_5_div_413718278401_mod_large_prime]; decide) | exact zmod_pow_ne_one_of_pow_mod_ne_one (by norm_num) (by rw [pow_5_div_603339156001_mod_large_prime]; decide)
 
 def prodPowSubOne (g : ℕ) : ℕ := ((List.range 9).map fun i => g ^ (i + 1) - 1).prod
 

@@ -224,23 +224,16 @@ theorem part_five_bound_of_explicit (D : D7) (sc : Scale) (C0 CY C : ℝ) (h : C
     Conclusion5 D sc C0 C := by
   intro Δ w hB u
   obtain ⟨h1, h2⟩ := h Δ w ⟨hB, hR Δ w hB⟩ u
-  have hL := scale_one_le_L sc
   refine ⟨le_trans (lowB_le_lowS D sc C w hC) h1, le_trans h2 ?_⟩
-  have hm : (0 : ℝ) ≤ D.R.m := Nat.cast_nonneg _
-  have : (15 + 3 * CY) * (D.R.m * sc.L) ≤ C * (D.R.m * sc.L) :=
-    mul_le_mul_of_nonneg_right hC' (by positivity)
-  nlinarith
+  exact mul_le_mul_of_nonneg_right
+    (mul_le_mul_of_nonneg_right hC' (by positivity : (0 : ℝ) ≤ D.R.m))
+    (by linarith [scale_one_le_L sc])
 
 theorem corollary_five_six_of_explicit (D : D7) (sc : Scale) (C0 CY : ℝ) (h : Conclusion5Sharp D sc C0 CY) : LogXuLowerBoundOfWeightFloor D sc C0 CY := by
   intro Δ w hA wpp hw0 hw hlog u
-  have hL := scale_one_le_L sc
-  have hA' := hA
-  obtain ⟨hB, -, -, h44, -⟩ := hA'
-  have hpi : Real.pi ≤ D.host.v := hB.1
   have hf : (0 : ℝ) < D.R.f := by
-    have h2 : 2 ≤ D.R.f := le_trans D.R.two_le_m D.R.m_le_f
-    exact_mod_cast lt_of_lt_of_le two_pos h2
-  have hm : (44 : ℝ) ≤ D.R.m := by exact_mod_cast h44
+    exact_mod_cast (lt_of_lt_of_le two_pos (le_trans D.R.two_le_m D.R.m_le_f))
+  have hm : (44 : ℝ) ≤ D.R.m := by exact_mod_cast hA.2.2.2.1
   refine ⟨le_trans ?_ (h Δ w hA u).1, ?_⟩
   · unfold lowS
     have key : (D.R.m : ℝ) * Real.log wpp ≤
@@ -253,19 +246,17 @@ theorem corollary_five_six_of_explicit (D : D7) (sc : Scale) (C0 CY : ℝ) (h : 
           intro ρ _
           apply Real.log_le_log hw0
           rw [le_div_iff₀ Real.pi_pos]
-          have := hw ρ j hj'
-          nlinarith [Real.pi_pos]
+          exact mul_le_mul (hw ρ j hj') hA.1.1 (le_of_lt Real.pi_pos)
+            (le_trans (le_of_lt hw0) (hw ρ j hj'))
         have e2 := Finset.card_nsmul_le_sum _ _ _ e1
         rw [Finset.card_univ, D.what₂.card_Tau, nsmul_eq_mul] at e2
         rw [one_div, ← div_eq_inv_mul, le_div_iff₀ hf]
         linarith
-      have e3 := Finset.card_nsmul_le_sum _ _ _ e
-      rw [Finset.card_range, nsmul_eq_mul] at e3
-      exact e3
+      simpa [Finset.card_range, nsmul_eq_mul] using Finset.card_nsmul_le_sum _ _ _ e
     linarith
   · have hg : 0 ≤ ∑ i : Fin 2, Real.log (D.host.g i : ℝ) :=
       Finset.sum_nonneg fun i _ => Real.log_nonneg (by exact_mod_cast (D.host.g_prime i).one_lt.le)
-    nlinarith
+    nlinarith [hlog, hg, hm, scale_one_le_L sc]
 
 theorem variation_bound_of_explicit (D : D7) (sc : Scale) (C0 CY C : ℝ) (h : VandermondeVariationExplicitBound D sc C0 CY)
     (hR : ∀ Δ w, DataB D sc C0 Δ w → RowsA D sc CY Δ) (hC : 3 ≤ C) : VandermondeVariationBound D sc C0 C := by
@@ -294,7 +285,7 @@ theorem part_five_count_of_explicit (D : D7) (sc : Scale) (C0 CY C : ℝ) (h5 : 
     have h1 : D.R.f ≤ D.R.k := D.R.f_le_k
     have h2 : D.R.k - 1 < 2 ^ (D.R.k - 1) := Nat.lt_two_pow_self
     omega
-  obtain ⟨⟨a1, a2⟩, b, c, -⟩ := h Δ w hA Γ hΓ u (D.mem u).A.T_prime.two_le hfk hT1 hT2
+  obtain ⟨⟨a1, a2⟩, b, _, _⟩ := h Δ w hA Γ hΓ u (D.mem u).A.T_prime.two_le hfk hT1 hT2
   have hm : (44 : ℝ) ≤ D.R.m := by exact_mod_cast hA.2.2.2.1
   refine ⟨?_, ?_, ?_⟩
   · set D' := DstarD D * Γ ^ (-(2 : ℝ)) with hD'
@@ -317,11 +308,8 @@ theorem part_five_count_of_explicit (D : D7) (sc : Scale) (C0 CY C : ℝ) (h5 : 
       constructor <;> linarith
   · have h2 := (h5 Δ w hA u).2
     have hmL : 1 ≤ (D.R.m : ℝ) * sc.L := by nlinarith
-    have : (16 + 3 * CY) * (D.R.m * sc.L) ≤ C * (D.R.m * sc.L) :=
-      mul_le_mul_of_nonneg_right hC' (by linarith)
-    nlinarith
-  · have := lowB_le_lowS D sc C w hC
-    linarith
+    nlinarith [h2, (mul_le_mul_of_nonneg_right hC' (by linarith) : (16 + 3 * CY) * (D.R.m * sc.L) ≤ C * (D.R.m * sc.L))]
+  · linarith [lowB_le_lowS D sc C w hC]
 
 theorem part_five_all_of_explicit (D : D7) (sc : Scale) (C0 CY C : ℝ) (h : VandermondeCountBound D sc C0 CY)
     (hR : ∀ Δ w, DataB D sc C0 Δ w → RowsA D sc CY Δ) (hC : 11 ≤ C) (hC' : 16 + 3 * CY ≤ C) :
@@ -376,7 +364,6 @@ theorem theorem_three_of_explicit_and_compact (D : D7) (C3 : ℝ) (hC : 8192 ≤
         show ((Finset.univ.filter (fun a => ε a = true)).card : ℝ) ≤ N
         exact_mod_cast h1
       linarith
-    have he : 0 < ep0 := lt_of_lt_of_le (Real.exp_pos _) he1
     have hm : 0 ≤ min p q := le_min (by linarith) (by linarith)
     have hl : 0 ≤ Real.log N := Real.log_nonneg hN
     have hyp : 8192 * min p q * (p * q) ^ 3 * Real.log N / ep0 ^ 2 ≤ h0 := by
@@ -393,9 +380,8 @@ theorem theorem_three_of_explicit_and_compact (D : D7) (C3 : ℝ) (hC : 8192 ≤
     have hla := lamAbs_nonneg lam
     have hb : 3 * p * q * lamAbs lam ≤ C3 * p * q * N * lamAbs lam := by
       have h3 : 3 ≤ C3 * N := by nlinarith
-      have : 3 * (p * q * lamAbs lam) ≤ C3 * N * (p * q * lamAbs lam) :=
-        mul_le_mul_of_nonneg_right h3 (by positivity)
-      nlinarith
+      nlinarith [mul_le_mul_of_nonneg_right h3
+        (mul_nonneg (show (0 : ℝ) ≤ p * q by positivity) hla)]
     exact mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (by positivity) hb (by positivity)) (by positivity)
 

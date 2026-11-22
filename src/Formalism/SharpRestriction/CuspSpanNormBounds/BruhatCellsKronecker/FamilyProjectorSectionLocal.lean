@@ -75,9 +75,7 @@ theorem projector_section_local (D : Formalism.BasicNotions.D7) : Formalism.Main
   have hdeg : fdegOf (Formalism.REAL.muG ε) σ w = d := fdegOf_eq hd hw.1
   have hph : phLoc ε σ w = phA d (homOf σ hU) w := by
     funext g
-    unfold phLoc phA
-    rw [hdeg]
-    rfl
+    simp [phLoc, phA, hdeg, homOf_apply, coefOn]
   have : (Formalism.REAL.muG ε).IsMulRightInvariant := ⟨fun g => Formalism.REAL.indefinite_unitary_unimodular n ε g⟩
   have hcoef : Integrable (fun g => ⟪w, homOf σ hU g w⟫_ℂ) (Formalism.REAL.muG ε) := by
     have h2 : Integrable (fun g => ((d : ℂ)⁻¹) * phLoc ε σ w g) (Formalism.REAL.muG ε) := hint.const_mul _
@@ -91,8 +89,7 @@ theorem projector_section_local (D : Formalism.BasicNotions.D7) : Formalism.Main
     (fun x y => schur_abs hd x y) w hw.1 hcoef
   refine ⟨hint, ?_, ?_, ?_⟩
   · intro g
-    rw [hph]
-    exact c1 g
+    simpa [hph] using c1 g
   · intro x y
     rw [hph]
     exact c2 x y

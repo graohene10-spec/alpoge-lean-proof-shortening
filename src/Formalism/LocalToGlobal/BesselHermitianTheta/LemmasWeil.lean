@@ -92,10 +92,8 @@ end Generic
 variable {D : D7}
 
 theorem cA_cA (a : AE D) : cA D (cA D a) = a := by
-  have hs : ∀ x : D.host.E, D.sp.cm.sig (D.sp.cm.sig x) = x := by
-    intro x
-    unfold Formalism.BasicNotions.CMData.sig
-    exact star_star x
+  have hs : ∀ x : D.host.E, D.sp.cm.sig (D.sp.cm.sig x) = x := fun x => by
+    simp [Formalism.BasicNotions.CMData.sig]
   unfold cA sigR
   induction a using TensorProduct.induction_on with
   | zero => simp

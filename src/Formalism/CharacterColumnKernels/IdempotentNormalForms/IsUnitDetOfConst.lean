@@ -18,11 +18,8 @@ def Fr (T' : Subalgebra O (X' → O)) : Subring (X' → FractionRing O) :=
 lemma mem_Fr {T' : Subalgebra O (X' → O)} {φ : X' → FractionRing O} :
     φ ∈ Fr T' ↔ ∃ f ∈ T', ∀ x', algebraMap O (FractionRing O) (f x') = φ x' := by
   simp only [Fr, Subring.mem_map, Subalgebra.mem_toSubring]
-  constructor
-  · rintro ⟨f, hf, rfl⟩
-    exact ⟨f, hf, fun x' => rfl⟩
-  · rintro ⟨f, hf, h⟩
-    exact ⟨f, hf, funext h⟩
+  exact ⟨fun ⟨f, hf, hφ⟩ => ⟨f, hf, fun x' => congrFun hφ x'⟩,
+    fun ⟨f, hf, h⟩ => ⟨f, hf, funext h⟩⟩
 
 def goodS (T' : Subalgebra O (X' → O)) : Subring (PowerSeries (X' → FractionRing O)) where
   carrier := {φ | ∀ n, PowerSeries.coeff n φ ∈ Fr T'}
@@ -245,8 +242,7 @@ variable {d : Type} [Fintype d] [DecidableEq d]
 lemma isUnit_det_of_const {ι : Type} [Fintype ι] [DecidableEq ι]
     (A : Matrix ι ι (PowerSeries (X' → FractionRing O)))
     (hA : (PowerSeries.constantCoeff).mapMatrix A = 1) : IsUnit A.det := by
-  rw [PowerSeries.isUnit_iff_constantCoeff, RingHom.map_det, hA, Matrix.det_one]
-  exact isUnit_one
+  simpa only [PowerSeries.isUnit_iff_constantCoeff, RingHom.map_det, hA, Matrix.det_one] using isUnit_one
 
 lemma invGood (R' : Subalgebra O (X' → Matrix d d (FractionRing O)))
     {A : Matrix d d (PowerSeries (X' → FractionRing O))} (hA : A ∈ goodM R')

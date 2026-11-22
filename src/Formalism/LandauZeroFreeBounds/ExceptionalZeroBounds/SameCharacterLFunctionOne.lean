@@ -90,8 +90,7 @@ theorem prod_one_add_mul_one_sub_le_one (S : Finset ℕ) (hS : ∀ p ∈ S, 2 �
     have h1 : (1 : ℝ) / p ≤ 1 := by rw [div_le_one (by linarith)]; linarith
     have h2 : (0 : ℝ) ≤ 1 / p := by positivity
     nlinarith
-  · have h2 : (0 : ℝ) ≤ 1 / (p : ℝ) := by positivity
-    nlinarith
+  · nlinarith [sq_nonneg (1 / (p : ℝ))]
 
 theorem lfunction_one_same_character : SameCharacterLFunctionOne := by
   intro q₁ q _ _ χ₁ χ hχ₁ hχ h

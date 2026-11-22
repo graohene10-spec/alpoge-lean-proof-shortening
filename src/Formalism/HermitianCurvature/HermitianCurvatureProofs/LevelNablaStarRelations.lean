@@ -68,16 +68,14 @@ theorem multiplierPair_mul (f fb g gb : Fn r) : fnP f fb * fnP g gb = fnP (f * g
   · show MulOpposite.op (mulOp gb * mulOp fb) = MulOpposite.op (mulOp (fb * gb))
     rw [mulOp_mul, mul_comm]
 theorem multiplierPair_add (f fb g gb : Fn r) : fnP f fb + fnP g gb = fnP (f + g) (fb + gb) := by
-  refine Prod.ext ?_ ?_
-  · exact mulOp_add f g
-  · show MulOpposite.op (mulOp fb + mulOp gb) = MulOpposite.op (mulOp (fb + gb))
-    rw [mulOp_add]
+  refine Prod.ext (mulOp_add f g) ?_
+  show MulOpposite.op (mulOp fb + mulOp gb) = MulOpposite.op (mulOp (fb + gb))
+  rw [mulOp_add]
 theorem multiplierPair_one : (fnP 1 1 : Pr r) = 1 := by
   have : mulOp (1 : Fn r) = 1 := by ext h : 1; simp [mulOp]
   refine Prod.ext ?_ ?_
   · exact this
-  · show MulOpposite.op (mulOp (1 : Fn r)) = 1
-    rw [this]; rfl
+  · exact congrArg MulOpposite.op this
 theorem multiplierPair_neg (f fb : Fn r) : -fnP f fb = fnP (-f) (-fb) := by
   rw [neg_eq_iff_add_eq_zero, multiplierPair_add]; simp
   refine Prod.ext ?_ ?_
@@ -138,8 +136,7 @@ theorem smul_fnP (a : ℝ) (f fb : Fn r) : (a : ℂ) • fnP f fb = fnP ((a : �
   · show algebraMap ℂ (Op r) a * mulOp f = mulOp ((a : ℂ) • f)
     ext h : 1; simp [mulOp]
   · show (algebraMap ℂ (Op r)ᵐᵒᵖ) (starRingEnd ℂ (a : ℂ)) * MulOpposite.op (mulOp fb) = MulOpposite.op (mulOp ((a : ℂ) • fb))
-    rw [Complex.conj_ofReal, ← Algebra.smul_def, ← MulOpposite.op_smul]
-    congr 1
+    rw [Complex.conj_ofReal, ← Algebra.smul_def, ← MulOpposite.op_smul, MulOpposite.op_inj]
     ext h : 1; simp [mulOp]
 
 noncomputable def nabE (a TT : ℝ) : Pr r := dzP + (a : ℂ) • (zbP * ggiP TT)
@@ -290,8 +287,7 @@ theorem comm_eu (v w : Var r) (f : Fn r) (h : euler v f = 0) :
 
 theorem mk_comm (X Xs Y Ys : Op r) (h1 : X * Y = Y * X) (h2 : Xs * Ys = Ys * Xs) : mk X Xs * mk Y Ys = mk Y Ys * mk X Xs := by
   refine Prod.ext h1 ?_
-  show MulOpposite.op (Ys * Xs) = MulOpposite.op (Xs * Ys)
-  rw [h2]
+  exact congrArg MulOpposite.op h2.symm
 
 theorem partialDeriv_commute_nab (l : Fin r) (a TT : ℝ) : pP l * nabE a TT = nabE a TT * pP l := by
   unfold nabE

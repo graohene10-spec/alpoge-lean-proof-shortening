@@ -85,17 +85,14 @@ lemma orthonormal_cons_iff {h : V →ₛₗ[σ] V →ₗ[K] K} (hh : Herm h) {n 
     Ortho h (Fin.cons v c : Fin (n + 1) → V) ↔ h v v = 1 ∧ (∀ i, h v (c i) = 0) ∧ Ortho h c := by
   constructor
   · intro H
-    refine ⟨by simpa using H 0 0, fun i => ?_, fun i j => ?_⟩
-    · have := H 0 i.succ
-      simpa [(Fin.succ_ne_zero i).symm] using this
-    · have := H i.succ j.succ
-      simpa using this
+    exact ⟨by simpa using H 0 0,
+      fun i => by simpa [(Fin.succ_ne_zero i).symm] using H 0 i.succ,
+      fun i j => by simpa using H i.succ j.succ⟩
   · rintro ⟨h1, h2, h3⟩ i j
     refine Fin.cases ?_ (fun i => ?_) i <;> refine Fin.cases ?_ (fun j => ?_) j
     · simpa using h1
     · simpa [(Fin.succ_ne_zero j).symm] using h2 j
-    · have : h (c i) v = 0 := by rw [← hh v (c i), h2 i, map_zero]
-      simpa [Fin.succ_ne_zero i] using this
+    · simp [Fin.succ_ne_zero i, ← hh v (c i), h2 i]
     · simpa using h3 i j
 
 end A1
@@ -207,7 +204,6 @@ def gramMatrix (h : V →ₛₗ[σ] V →ₗ[K] K) {ι : Type} (x : ι → V) : 
 
 lemma gram_mulVec_eq (h : V →ₛₗ[σ] V →ₗ[K] K) {ι : Type} [Fintype ι] (x : ι → V) (c : ι → K)
     (i : ι) : (gramMatrix h x).mulVec c i = h (x i) (∑ j, c j • x j) := by
-  rw [form_sum_right_alt]
   simp [gramMatrix, Matrix.mulVec, dotProduct, mul_comm]
 
 lemma form_functionals_surjective (hσ : Inv σ) (h : V →ₛₗ[σ] V →ₗ[K] K) (hn : Nondeg h) {ι : Type} [Fintype ι]
@@ -434,9 +430,7 @@ lemma witt_extension_induction (hσ : Inv σ) [FiniteDimensional K V] (h : V →
         intro i
         rw [← gram_mulVec_eq, hN]; rfl
       obtain ⟨m, -, -, hm⟩ := exists_isotropic_completion hσ h hh hn x hx N i0 hi0 hGN
-      have hli : LinearIndependent K (Fin.snoc x m : Fin (a + 1) → V) :=
-        linearIndependent_finSnoc.2 ⟨hx, hm⟩
-      have := hli.fintype_card_le_finrank
+      have := (linearIndependent_finSnoc.2 ⟨hx, hm⟩).fintype_card_le_finrank
       simp only [Fintype.card_fin] at this
       omega
   | succ d ih =>
@@ -451,10 +445,7 @@ lemma witt_extension_induction (hσ : Inv σ) [FiniteDimensional K V] (h : V →
         rw [← gram_mulVec_eq, hN]; rfl
       have hGN' : ∀ i, h (y i) (∑ j, N j • y j) = 0 := by
         intro i
-        rw [form_sum_right_alt]
-        have h1 := hGN i
-        rw [form_sum_right_alt] at h1
-        simpa only [hxy] using h1
+        simpa only [form_sum_right_alt, hxy] using hGN i
       obtain ⟨m, hm1, hm2, hm3⟩ := exists_isotropic_completion hσ h hh hn x hx N i0 hi0 hGN
       obtain ⟨m', hm1', hm2', hm3'⟩ := exists_isotropic_completion hσ h hh hn y hy N i0 hi0 hGN'
       obtain ⟨g, hg1, hg2⟩ := ih (a + 1) (Fin.snoc x m : Fin (a + 1) → V)
@@ -467,9 +458,7 @@ lemma witt_extension_induction (hσ : Inv σ) [FiniteDimensional K V] (h : V →
             rw [← hh, hm1, ← hh (y j), hm1']
           · simp only [Fin.snoc_last, Fin.snoc_castSucc, hm1, hm1']
           · simp only [Fin.snoc_castSucc, hxy])
-      refine ⟨g, hg1, fun i => ?_⟩
-      have := hg2 i.castSucc
-      simpa only [Fin.snoc_castSucc] using this
+      exact ⟨g, hg1, fun i => by simpa only [Fin.snoc_castSucc] using hg2 i.castSucc⟩
 
 end A2
 
@@ -758,9 +747,8 @@ lemma d_nondeg {n : ℕ} (J : Matrix (Fin n) (Fin n) K) (hJu : IsUnit J.det) : N
 lemma d_li_of_rank {n a : ℕ} (X : Matrix (Fin n) (Fin a) K) (hX : X.rank = a) :
     LinearIndependent K (fun (i : Fin a) (k : Fin n) => X k i) := by
   rw [linearIndependent_iff_card_eq_finrank_span, Fintype.card_fin]
-  have h1 := Matrix.range_mulVecLin X
   unfold Matrix.rank at hX
-  rw [h1] at hX
+  rw [Matrix.range_mulVecLin X] at hX
   exact hX.symm
 
 theorem d_wittHerm : WittHerm := by
@@ -774,9 +762,8 @@ theorem d_wittHerm : WittHerm := by
   have hcol : ∀ (α : Type) [Fintype α] (Z : Matrix (Fin n) α K) (i : α),
       (fun k => (LinearMap.toMatrix' g.toLinearMap * Z) k i) = g (fun k => Z k i) := by
     intro α _ Z i
-    have : g (fun k => Z k i) = LinearMap.toMatrix' g.toLinearMap *ᵥ (fun k => Z k i) := by
-      rw [LinearMap.toMatrix'_mulVec]; rfl
-    rw [this]
+    rw [show g (fun k => Z k i) = LinearMap.toMatrix' g.toLinearMap *ᵥ (fun k => Z k i) by
+      rw [LinearMap.toMatrix'_mulVec]; rfl]
     ext k
     simp [Matrix.mul_apply, Matrix.mulVec, dotProduct]
   refine ⟨LinearMap.toMatrix' g.toLinearMap, ?_, ?_⟩
@@ -786,9 +773,7 @@ theorem d_wittHerm : WittHerm := by
     rw [hcol, hcol, hg, ← d_gram_entry hσ, d_fconj_one hσ] at h1
     simpa using h1
   · ext k i
-    have := congrFun (hcol _ X i) k
-    rw [hgx] at this
-    exact this
+    simpa [hgx] using congrFun (hcol _ X i) k
 
 lemma d_densP (η : ℤ) (q b : ℕ) :
     densP η q 1 b = ∏ i ∈ Finset.range b, (1 - (η : ℝ) ^ (i + 1) * ((q : ℝ) ^ (i + 1))⁻¹) := by

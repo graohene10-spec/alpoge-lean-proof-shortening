@@ -143,25 +143,21 @@ theorem Formalism.FourierDecayAlt.P.takagi_factorization : Formalism.FourierDeca
   have h1 : star W * W = 1 := by
     ext i j
     have h := (orthonormal_iff_ite.1 he) i j
-    rw [PiLp.inner_apply] at h
-    simp only [RCLike.inner_apply] at h
+    simp only [PiLp.inner_apply, RCLike.inner_apply] at h
     rw [Matrix.mul_apply, Matrix.one_apply, ← h]
-    refine Finset.sum_congr rfl fun k _ => ?_
-    simp [hW, Matrix.star_apply, mul_comm]
+    exact Finset.sum_congr rfl fun k _ => by simp [hW, Matrix.star_apply, mul_comm]
   have h2 : W * star W = 1 := mul_eq_one_comm.1 h1
   have h3 : H * W.map conj = W * Matrix.diagonal (fun i => ((σ i : ℝ) : ℂ)) := by
     ext i j
-    have h := congrFun (congrArg WithLp.ofLp (hTe j)) i
-    have h' : Formalism.FourierDecayAlt.P.G9.takMap H (e j) i = (σ j : ℂ) * e j i := by simpa using h
+    have h' : Formalism.FourierDecayAlt.P.G9.takMap H (e j) i = (σ j : ℂ) * e j i := by
+      simpa using congrFun (congrArg WithLp.ofLp (hTe j)) i
     rw [Formalism.FourierDecayAlt.P.G9.takMap_apply] at h'
     rw [Matrix.mul_apply, Matrix.mul_diagonal]
     simp only [Matrix.map_apply, hW, Matrix.of_apply]
     rw [h', mul_comm]
   have h4 : W.map conj * W.transpose = 1 := by
-    have h := congrArg Matrix.transpose h2
-    rw [Matrix.transpose_mul, Matrix.transpose_one] at h
-    rw [← h]
-    congr 1
+    change (star W).transpose * W.transpose = 1
+    simpa only [Matrix.transpose_mul, Matrix.transpose_one] using congrArg Matrix.transpose h2
   refine ⟨W, Matrix.mem_unitaryGroup_iff.2 h2, σ, hσ, ?_⟩
   rw [← h3, Matrix.mul_assoc, h4, Matrix.mul_one]
 
@@ -176,10 +172,8 @@ namespace Formalism.FourierDecayAlt.P.G9
 theorem map_mul_vol (α : ℂ) (hα : α ≠ 0) :
     Measure.map (fun ρ : ℂ => α * ρ) (volume : Measure ℂ) = ENNReal.ofReal ((‖α‖ ^ 2)⁻¹) • volume := by
   have hdet : LinearMap.det (LinearMap.mulLeft ℝ α) = ‖α‖ ^ 2 := by
-    have h1 := Algebra.norm_complex_apply α
-    rw [Algebra.norm_apply] at h1
-    rw [← Complex.normSq_eq_norm_sq, ← h1]
-    rfl
+    change LinearMap.det (Algebra.lmul ℝ ℂ α) = ‖α‖ ^ 2
+    rw [← Algebra.norm_apply, Algebra.norm_complex_apply, Complex.normSq_eq_norm_sq]
   have h := Measure.map_linearMap_addHaar_eq_smul_addHaar (volume : Measure ℂ)
     (f := LinearMap.mulLeft ℝ α) (by rw [hdet]; positivity)
   rw [hdet, abs_of_nonneg (by positivity)] at h
@@ -452,18 +446,16 @@ theorem gaussHessOfMulti : GaussHessOfMulti := by
   intro hG hD m β t z hβ ht hz
   have hdet : (z⁻¹ • (1 + Matrix.of fun _ _ => (1 : ℂ)) : Matrix (Fin (m + 1)) (Fin (m + 1)) ℂ).det ≠ 0 := by
     rw [hD m z]
-    have : ((m:ℂ)+2) ≠ 0 := by
-      have : ((m:ℂ)+2) = ((m+2 : ℕ) : ℂ) := by push_cast; ring
-      rw [this]; exact_mod_cast (Nat.succ_ne_zero (m+1))
-    exact mul_ne_zero this (pow_ne_zero _ (inv_ne_zero hz))
+    refine mul_ne_zero ?_ (pow_ne_zero _ (inv_ne_zero hz))
+    rw [show ((m:ℂ)+2) = ((m+2 : ℕ) : ℂ) by push_cast; ring]; exact_mod_cast (Nat.succ_ne_zero (m+1))
   have hs : (z⁻¹ • (1 + Matrix.of fun _ _ => (1 : ℂ)) : Matrix (Fin (m + 1)) (Fin (m + 1)) ℂ).IsSymm := by
     ext i j; simp [Matrix.transpose_apply, Matrix.one_apply, eq_comm, mul_add]
   have h := hG (m+1) β t _ hβ ht hs hdet
   rw [hD m z] at h
   convert h using 3
   have h2 : ‖(m:ℂ)+2‖ = (m:ℝ)+2 := by
-    have : ((m:ℂ)+2) = (((m:ℝ)+2 : ℝ):ℂ) := by push_cast; ring
-    rw [this, Complex.norm_real, Real.norm_of_nonneg (by positivity)]
+    rw [show (m:ℂ)+2 = (((m:ℝ)+2 : ℝ):ℂ) by push_cast; ring,
+      Complex.norm_real, Real.norm_of_nonneg (by positivity)]
   rw [norm_mul, norm_pow, norm_inv, h2]
   have : 0 < ‖z‖ := norm_pos_iff.2 hz
   field_simp

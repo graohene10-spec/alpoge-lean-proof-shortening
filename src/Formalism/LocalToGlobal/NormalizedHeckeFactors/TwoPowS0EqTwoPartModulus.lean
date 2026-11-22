@@ -253,11 +253,8 @@ theorem span_pow_sub_one {A : Type} [CommRing A] (ζ : A) (n a : ℕ) (hn : ζ ^
       obtain ⟨m, hm⟩ : ∃ m, a * m % n = 1 := by
         refine ⟨((ZMod.unitOfCoprime a ha)⁻¹ : (ZMod n)ˣ).val.val, ?_⟩
         have h2 : ((a * ((ZMod.unitOfCoprime a ha)⁻¹ : (ZMod n)ˣ).val.val : ℕ) : ZMod n) = ((1 : ℕ) : ZMod n) := by
-          simp only [Nat.cast_mul, Nat.cast_one, ZMod.natCast_zmod_val]
-          have h3 := (ZMod.unitOfCoprime a ha).mul_inv
-          rwa [ZMod.coe_unitOfCoprime] at h3
-        rw [ZMod.natCast_eq_natCast_iff'] at h2
-        rw [h2, Nat.mod_eq_of_lt h1]
+          simpa only [Nat.cast_mul, Nat.cast_one, ZMod.natCast_zmod_val, ZMod.coe_unitOfCoprime] using (ZMod.unitOfCoprime a ha).mul_inv
+        rwa [ZMod.natCast_eq_natCast_iff', Nat.mod_eq_of_lt h1] at h2
       have hz : (ζ ^ a) ^ m = ζ := by
         rw [← pow_mul, ← Nat.div_add_mod (a * m) n, hm, pow_add, pow_mul, hn, one_pow, one_mul, pow_one]
       calc ζ ^ a - 1 ∣ (ζ ^ a) ^ m - 1 := by simpa [one_pow] using sub_dvd_pow_sub_pow (ζ ^ a) 1 m
@@ -312,11 +309,7 @@ def plGF (D : D7) (k : Fin 2) (v : D.nd.PlG k) : HeightOneSpectrum (𝓞 (maxima
 theorem plGF_over (D : D7) (k : Fin 2) (v : D.nd.PlG k) : NG.OverPl (D.naut.plGw k v) (plGF D k v) := rfl
 
 theorem plGF_mem (D : D7) (k : Fin 2) (v : D.nd.PlG k) : plGF D k v ∈ plF D k := by
-  have h := D.naut.plGw_over k v
-  show ((D.host.g k : ℕ) : 𝓞 (maximalRealSubfield D.host.E)) ∈
-    (D.naut.plGw k v).asIdeal.comap (algebraMap (𝓞 (maximalRealSubfield D.host.E)) (𝓞 D.host.E))
-  rw [Ideal.mem_comap, map_natCast]
-  exact h
+  simpa [plF, plGF, Ideal.mem_comap, map_natCast, placesOver] using D.naut.plGw_over k v
 
 def plGFs (D : D7) (k : Fin 2) (v : D.nd.PlG k) : plF D k := ⟨plGF D k v, plGF_mem D k v⟩
 
@@ -338,20 +331,14 @@ theorem embK_OtoLL_mem (D : D7) (i : D.nd.Loc) (y : D.what₂.O) :
   by_cases h0 : D.what₂.OtoLL y = 0
   · rw [h0, AddValuation.map_zero]; exact le_top
   · rw [D.val_eq _ _ h0]
-    have hint := D.O_int y
-    set x : 𝓞 D.what₂.LL := ⟨D.what₂.OtoLL y, hint⟩
+    set x : 𝓞 D.what₂.LL := ⟨D.what₂.OtoLL y, D.O_int y⟩
     have hx : (x : D.what₂.LL) = D.what₂.OtoLL y := rfl
-    have hle := (D.plEq (D.nd.w i)).valuation_le_one (K := D.what₂.LL) x
-    have hne : (D.plEq (D.nd.w i)).valuation D.what₂.LL (algebraMap (𝓞 D.what₂.LL) D.what₂.LL x) ≠ 0 := by
-      simpa [hx] using h0
+    have hle : (D.plEq (D.nd.w i)).valuation D.what₂.LL (D.what₂.OtoLL y) ≤ 1 := by
+      simpa [hx] using (D.plEq (D.nd.w i)).valuation_le_one (K := D.what₂.LL) x
     unfold vAdd
-    have : WithZero.log ((D.plEq (D.nd.w i)).valuation D.what₂.LL (D.what₂.OtoLL y)) ≤ 0 := by
-      have hne' : (D.plEq (D.nd.w i)).valuation D.what₂.LL (D.what₂.OtoLL y) ≠ 0 := by simpa [hx] using hne
-      have hle' : (D.plEq (D.nd.w i)).valuation D.what₂.LL (D.what₂.OtoLL y) ≤ 1 := by simpa [hx] using hle
-      have h2 : WithZero.exp (WithZero.log ((D.plEq (D.nd.w i)).valuation D.what₂.LL (D.what₂.OtoLL y))) ≤
-          WithZero.exp (0 : ℤ) := by
-        rw [WithZero.exp_log hne']; simpa using hle'
-      exact WithZero.exp_le_exp.mp h2
+    have hlog : WithZero.log ((D.plEq (D.nd.w i)).valuation D.what₂.LL (D.what₂.OtoLL y)) ≤ 0 := by
+      rw [← WithZero.exp_le_exp, WithZero.exp_log (by simpa [hx] using h0)]
+      simpa using hle
     exact_mod_cast (by omega : (0:ℤ) ≤ -WithZero.log ((D.plEq (D.nd.w i)).valuation D.what₂.LL (D.what₂.OtoLL y)))
 
 def fracRangeEquiv (O : Type) [CommRing O] [IsDomain O] :

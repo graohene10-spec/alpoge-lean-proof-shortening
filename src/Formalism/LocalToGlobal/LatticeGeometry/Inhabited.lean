@@ -138,11 +138,10 @@ theorem rkOf_dual {p : ℕ} [Fact p.Prime] (Ps : Set (DV.Emb D p)) (N j : ℕ) (
   classical
   unfold DV.rkOf
   by_cases h : τ ∈ Ps
-  · have h' : DV.cEmb D τ ∉ Ps := (hPs τ).1 h
-    simp [h, h']
+  · simp [h, (hPs τ).1 h]
   · have h' : DV.cEmb D τ ∈ Ps := by
-      by_contra h''; exact h ((hPs τ).2 h'')
-    simp [h, h']; omega
+      simpa using mt (hPs τ).2 h
+    simpa [h, h'] using Nat.sub_sub_self hj
 
 def mdlJunk (p : ℕ) [Fact p.Prime] (jc : DV.KW p →+* ℂ) (N j : ℕ) (hj : j ≤ N) :
     DV.Mdl D p N (DV.rkOf (DV.PsiOf D jc) N j) where
@@ -229,9 +228,7 @@ theorem flagDeg_intCast (lam : ι → Fin N → ℤ) :
     Formalism.DegreeFormula.flagDeg ι N (fun τ i => (lam τ i : ℝ)) = (flagDegZ ι N lam : ℝ) := by
   rw [Formalism.DegreeFormula.flagDeg, linRoot_intCast, Formalism.DegreeFormula.degFl, flagDegZ, degFlZ]
   push_cast
-  congr 1
-  refine Finset.sum_congr rfl fun σ _ => ?_
-  rw [← map_pow, MvPolynomial.coeff_map]
+  simp only [← map_pow, MvPolynomial.coeff_map]
   rfl
 
 end FlagZ
@@ -666,8 +663,7 @@ theorem recN_dat {Lev : Type} (w : Dat D Lev) : recN D w.S = w.N := by
   unfold recN; rw [if_pos w.two_le]; rfl
 
 theorem recJ_dat {Lev : Type} (w : Dat D Lev) (h : w.Indef) : recJ D w.S = w.j := by
-  have e : firstSignatureEntry D w.S = w.j := by unfold firstSignatureEntry; rw [w.hsig]
-  unfold recJ; rw [e, recN_dat, if_pos (show 1 ≤ w.j ∧ w.j < w.N from h)]
+  simp only [recJ, firstSignatureEntry, w.hsig, recN_dat, if_pos (show 1 ≤ w.j ∧ w.j < w.N from h)]
 
 variable (X0 : DivX D)
 

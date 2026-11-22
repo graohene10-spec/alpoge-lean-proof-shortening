@@ -56,8 +56,7 @@ theorem mp (F : Frame H Ep Em) : Emᴴ * Ep = 0 := by
   simpa using congrArg Matrix.conjTranspose F.pm
 
 theorem herm (F : Frame H Ep Em) : Hᴴ = H := by
-  rw [← F.diff]
-  simp only [Matrix.conjTranspose_sub, Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose]
+  simp only [← F.diff, Matrix.conjTranspose_sub, Matrix.conjTranspose_mul, Matrix.conjTranspose_conjTranspose]
 
 theorem H_Ep (F : Frame H Ep Em) : H * Ep = Ep := by
   simpa [Matrix.sub_mul, Matrix.mul_assoc, F.pp, F.mp] using congrArg (fun X => X * Ep) F.diff.symm
@@ -532,8 +531,7 @@ lemma lintegral_pi_congr_coord {ι : Type} [Fintype ι] [DecidableEq ι] {E : Ty
   rw [volume_pi, lintegral_eq_lmarginal_univ (fun _ => default), lintegral_eq_lmarginal_univ (fun _ => default),
     lmarginal_erase' _ hf (Finset.mem_univ i), lmarginal_erase' _ hf' (Finset.mem_univ i)]
   congr 2
-  funext x
-  exact h x
+  exact funext h
 
 lemma lin_subst {E : Type} [NormedAddCommGroup E] [NormedSpace ℝ E] [MeasurableSpace E] [BorelSpace E]
     [FiniteDimensional ℝ E] (μ : Measure E) [μ.IsAddHaarMeasure] (L L' : E →ₗ[ℝ] E) (h : L ∘ₗ L' = LinearMap.id) :
@@ -1052,13 +1050,8 @@ def adjF (g : m → m → ℂ) : m → m → ℂ := (Matrix.of g).adjugate
 def invF (g : m → m → ℂ) : m → m → ℂ := ((Matrix.of g)⁻¹ : Matrix m m ℂ)
 
 theorem invF_meas : Measurable (invF : (m → m → ℂ) → m → m → ℂ) := by
-  have h : (invF : (m → m → ℂ) → m → m → ℂ) =
-      fun g => ((((Matrix.of g).det)⁻¹ • (Matrix.of g).adjugate : Matrix m m ℂ) : m → m → ℂ) := by
-    funext g
-    simp only [invF, Matrix.inv_def, Ring.inverse_eq_inv']
-    rfl
-  rw [h]
   refine measurable_pi_lambda _ fun i => measurable_pi_lambda _ fun j => ?_
+  simp only [invF, Matrix.inv_def, Ring.inverse_eq_inv']
   exact det_cont.measurable.inv.mul (adj_cont.matrix_elem i j).measurable
 
 theorem bet_cont : Continuous (fun g : m → m → ℂ => bet Ep Em (Matrix.of g)) := by
@@ -1142,13 +1135,10 @@ theorem act_meas : Measurable (fun p : (m → m → ℂ) × (Q → m → ℂ) =>
   exact act_cont.measurable
 
 theorem act_inv_meas : Measurable (fun p : (m → m → ℂ) × (Q → m → ℂ) => act (invF p.1) p.2) := by
-  have key : ∀ φ : (m → m → ℂ) → m → m → ℂ, Measurable φ →
-      Measurable (fun p : (m → m → ℂ) × (Q → m → ℂ) => act (φ p.1) p.2) := by
-    intro φ hφ
-    have hp : Measurable (fun p : (m → m → ℂ) × (Q → m → ℂ) => (φ p.1, p.2)) :=
-      Measurable.prod (f := fun p : (m → m → ℂ) × (Q → m → ℂ) => (φ p.1, p.2)) (hφ.comp measurable_fst) measurable_snd
-    exact act_meas.comp hp
-  exact key invF invF_meas
+  have hp : Measurable (fun p : (m → m → ℂ) × (Q → m → ℂ) => (invF p.1, p.2)) :=
+    Measurable.prod (f := fun p : (m → m → ℂ) × (Q → m → ℂ) => (invF p.1, p.2))
+      (invF_meas.comp measurable_fst) measurable_snd
+  exact act_meas.comp hp
 
 def Lv (H : Matrix m m ℂ) (Ep : Matrix m P ℂ) (Q : Type) [Fintype Q] [DecidableEq Q] (ρ : ℝ) : ℝ≥0∞ :=
   ∫⁻ Y : Q → m → ℂ, Ff H Ep ρ Y
@@ -1353,8 +1343,7 @@ theorem Kf_slice_zero {T : Q → Q → ℂ} (hT : ¬ ((Matrix.of T).PosDef ∧ (
     (B : Q → P → ℂ) : Kf P Q σ (T, B) = 0 := by
   unfold Kf
   rw [Set.indicator_apply_eq_zero]
-  intro h
-  exact absurd ⟨h.1, h.2.1⟩ hT
+  exact fun h => absurd ⟨h.1, h.2.1⟩ hT
 
 theorem slice_scale (T : Q → Q → ℂ) {ρ : ℝ} (hρ : 0 ≤ ρ) :
     ∫⁻ B : Q → P → ℂ, Kf P Q ρ (T, B) =

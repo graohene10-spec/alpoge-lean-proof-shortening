@@ -87,13 +87,9 @@ theorem iSup_isoC_map (LL : Letters N) (j : ℕ) (Cs : Finset (Fin r)) (Q : (Fin
     (hA : ∀ la, ∀ x ∈ IsoC p LL j Cs la, A x ∈ IsoC p LL j Cs la) :
     ∀ x ∈ (⨆ (la : Fin r → ℤ) (_ : Q la), IsoC p LL j Cs la),
       A x ∈ (⨆ (la : Fin r → ℤ) (_ : Q la), IsoC p LL j Cs la) := by
-  have hle : (⨆ (la : Fin r → ℤ) (_ : Q la), IsoC p LL j Cs la) ≤
-      (⨆ (la : Fin r → ℤ) (_ : Q la), IsoC p LL j Cs la).comap A := by
-    refine iSup_le fun la => iSup_le fun hla => ?_
-    intro x hx
-    rw [Submodule.mem_comap]
-    exact (le_iSup_of_le la (le_iSup_of_le hla le_rfl) :
-      IsoC p LL j Cs la ≤ ⨆ (la : Fin r → ℤ) (_ : Q la), IsoC p LL j Cs la) (hA la x hx)
+  have hle : (⨆ (la : Fin r → ℤ) (_ : Q la), IsoC p LL j Cs la) ≤ (⨆ (la : Fin r → ℤ) (_ : Q la), IsoC p LL j Cs la).comap A := iSup_le fun la => iSup_le fun hla => fun x hx =>
+    Submodule.mem_comap.mpr ((le_iSup_of_le la (le_iSup_of_le hla le_rfl) :
+      IsoC p LL j Cs la ≤ ⨆ (la : Fin r → ℤ) (_ : Q la), IsoC p LL j Cs la) (hA la x hx))
   exact fun x hx => hle hx
 
 theorem typeProj_comm (LL : Letters N) (j : ℕ) (Cs : Finset (Fin r)) (T : Set (Fin r → ℤ))

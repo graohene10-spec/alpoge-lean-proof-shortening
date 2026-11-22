@@ -26,8 +26,7 @@ lemma pl_contDiff (a b k : ℝ) : ContDiff ℝ 2 (pl a b k) := by
     (Real.smoothTransition.contDiff.comp (contDiff_const.mul (contDiff_const.sub contDiff_id)))
 
 lemma pl_eq_zero {a b k x : ℝ} (hk : 0 ≤ k) (hx : x ∉ Ioo a b) : pl a b k x = 0 := by
-  unfold pl
-  rw [Set.mem_Ioo, not_and_or, not_lt, not_lt] at hx
+  simp only [pl, Set.mem_Ioo, not_and_or, not_lt, not_lt] at hx ⊢
   rcases hx with hx | hx
   · rw [Real.smoothTransition.zero_of_nonpos (show k * (x - a) ≤ 0 by nlinarith), zero_mul]
   · rw [Real.smoothTransition.zero_of_nonpos (show k * (b - x) ≤ 0 by nlinarith), mul_zero]
@@ -47,9 +46,8 @@ lemma pl_isTest {a b k : ℝ} (ha : 0 < a) (hk : 0 ≤ k) : IsTest (pl a b k) :=
 
 lemma pl_big {a b x : ℝ} (ha : 0 < a) (hx : x ∈ Ioo a b) : pl (a / 2) (b + 1) (2 / a + 1) x = 1 := by
   have hpos : 0 < 2 / a := div_pos two_pos ha
-  have h2a : 2 / a * (a / 2) = 1 := by field_simp
   apply pl_eq_one
-  · nlinarith [mul_nonneg hpos.le (by linarith [hx.1] : (0:ℝ) ≤ x - a / 2 - a / 2), hx.1]
+  · nlinarith [(show 2 / a * (a / 2) = 1 by field_simp), mul_nonneg hpos.le (by linarith [hx.1] : (0:ℝ) ≤ x - a / 2 - a / 2), hx.1]
   · nlinarith [mul_nonneg hpos.le (by linarith [hx.2] : (0:ℝ) ≤ b + 1 - x), hx.2]
 
 lemma pl_eventually {a b x : ℝ} (hx : x ∈ Ioo a b) : ∀ᶠ n : ℕ in atTop, pl a b n x = 1 := by
@@ -97,9 +95,8 @@ def FinT (f : ℝ × ℝ → ℝ≥0∞) : Prop :=
 lemma box_bound (f : ℝ × ℝ → ℝ≥0∞) {a₁ b₁ a₂ b₂ : ℝ} (h₁ : 0 < a₁) (h₂ : 0 < a₂) (τ : ℝ × ℝ) :
     (Ioo a₁ b₁ ×ˢ Ioo a₂ b₂).indicator f τ ≤
       ENNReal.ofReal (pl (a₁ / 2) (b₁ + 1) (2 / a₁ + 1) τ.1 * pl (a₂ / 2) (b₂ + 1) (2 / a₂ + 1) τ.2) * f τ := by
-  by_cases hτ : τ ∈ Ioo a₁ b₁ ×ˢ Ioo a₂ b₂
-  · rw [Set.indicator_of_mem hτ, pl_big h₁ hτ.1, pl_big h₂ hτ.2, mul_one, ENNReal.ofReal_one, one_mul]
-  · simp [Set.indicator, hτ]
+  exact (Classical.em (τ ∈ Ioo a₁ b₁ ×ˢ Ioo a₂ b₂)).elim (fun hτ => by simp [Set.indicator_of_mem hτ, pl_big h₁ hτ.1, pl_big h₂ hτ.2])
+    (fun hτ => by simp [Set.indicator, hτ])
 
 lemma bound_fin {f : ℝ × ℝ → ℝ≥0∞} (hfin : FinT f) {a₁ a₂ : ℝ} (b₁ b₂ : ℝ) (h₁ : 0 < a₁) (h₂ : 0 < a₂) :
     (∫⁻ τ, ENNReal.ofReal (pl (a₁ / 2) (b₁ + 1) (2 / a₁ + 1) τ.1 * pl (a₂ / 2) (b₂ + 1) (2 / a₂ + 1) τ.2) * f τ
@@ -241,8 +238,7 @@ lemma lintegral_test_cont {w₁ w₂ : ℝ → ℝ} (h₁ : IsTest w₁) (h₂ :
       ENNReal.ofReal (∫ τ, w₁ τ.1 * w₂ τ.2 * h τ ∂(volume.restrict Quad)) := by
   rw [ofReal_integral_eq_lintegral_ofReal (by simpa using integrable_test h₁ h₂ hh)
     (Eventually.of_forall fun τ => mul_nonneg (mul_nonneg (p₁ _) (p₂ _)) (h0 τ))]
-  refine lintegral_congr fun τ => ?_
-  rw [ENNReal.ofReal_mul (mul_nonneg (p₁ _) (p₂ _))]
+  exact lintegral_congr fun τ => (ENNReal.ofReal_mul (mul_nonneg (p₁ _) (p₂ _))).symm
 
 lemma contOn_pos {h : ℝ × ℝ → ℝ} (hh : ContinuousOn h Quad) : ContinuousOn (fun τ => max (h τ) 0) Quad := by
   exact (continuous_id.max continuous_const : Continuous fun y : ℝ => max y 0).comp_continuousOn hh
@@ -258,8 +254,7 @@ lemma integral_test_parts {w₁ w₂ : ℝ → ℝ} (h₁ : IsTest w₁) (h₂ :
   rw [← integral_sub (by simpa using integrable_test h₁ h₂ (contOn_pos hh))
     (by simpa using integrable_test h₁ h₂ (contOn_neg hh))]
   refine integral_congr_ae (Eventually.of_forall fun τ => ?_)
-  simp only
-  rw [← mul_sub, max_zero_sub_max_neg_zero_eq_self]
+  simp only [← mul_sub, max_zero_sub_max_neg_zero_eq_self]
 
 end Formalism.FourierDecayAlt.P.B3
 

@@ -14,9 +14,7 @@ def a (m : ℕ) (δ : ℝ) (j : ℕ) : ℝ := (m.choose j : ℝ) * δ ^ j * (1 -
 def A (m : ℕ) (δ : ℝ) (K : ℕ) : ℝ := ∑ j ∈ range K, a m δ j
 
 lemma a_nonneg {m : ℕ} {δ : ℝ} (h0 : 0 ≤ δ) (h1 : δ ≤ 1) (j : ℕ) : 0 ≤ a m δ j := by
-  unfold a
-  have : 0 ≤ 1 - δ := by linarith
-  positivity
+  simpa only [a] using mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (pow_nonneg h0 _)) (pow_nonneg (sub_nonneg.mpr h1) _)
 
 lemma A_succ (m : ℕ) (δ : ℝ) (K : ℕ) : A m δ (K + 1) = A m δ K + a m δ K := by
   unfold A; rw [sum_range_succ]

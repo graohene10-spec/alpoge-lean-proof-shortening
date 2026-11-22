@@ -55,11 +55,9 @@ theorem lattice_path_zero_prefix {n N : ℕ} {LL : Letters (Fin N)} {B : Fin N �
     have h2 : P.mu (Fin.castSucc ⟨s, hsN⟩) = 0 := ih (by omega) (fun i hi => hv i (by omega))
     obtain ⟨g1, _, g3⟩ := h1
     have g4 := (Finset.sum_eq_zero_iff_of_nonneg (fun a _ => sub_nonneg.2 (g1 a))).1 (by simpa using g3)
+    simp only [h2, Pi.zero_apply, sub_zero] at g4
     funext a
-    have g5 := g4 a (Finset.mem_univ a)
-    rw [h2] at g5
-    have g6 : P.mu (Fin.succ ⟨s, hsN⟩) a = 0 := by simpa using g5
-    exact g6
+    exact g4 a (Finset.mem_univ a)
 
 section Fr
 

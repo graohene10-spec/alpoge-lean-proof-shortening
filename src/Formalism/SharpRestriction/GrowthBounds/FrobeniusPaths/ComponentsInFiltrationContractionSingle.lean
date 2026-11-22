@@ -157,8 +157,7 @@ theorem support_degrees_add_subset {R : Type*} [CommRing R] {ι : Type*} {n : �
   rw [mem_support_degrees_iff] at hk
   obtain ⟨m, hm⟩ := hk
   by_contra hcon
-  rw [not_or, mem_support_degrees_iff, mem_support_degrees_iff] at hcon
-  push Not at hcon
+  simp only [not_or, mem_support_degrees_iff, not_exists, not_not] at hcon
   apply hm
   rw [map_add, MvPolynomial.coeff_add, AddMonoidAlgebra.coeff_add, Finsupp.add_apply, hcon.1 m, hcon.2 m, add_zero]
 
@@ -170,8 +169,7 @@ theorem support_degrees_smul_subset {R : Type*} [CommRing R] {ι : Type*} {n : �
   refine ⟨m, fun h0 => hm ?_⟩
   rw [MvPolynomial.smul_eq_C_mul, map_mul, twist_substitution_eq_action, twisted_action_C, MvPolynomial.coeff_C_mul]
   rw [twist_substitution_eq_action] at h0
-  have hc : coefL R n a = AddMonoidAlgebra.single 0 ((algebraMap (MvPolynomial (Fin n × Fin n) R) (GLCoord R n)) (C a)) := rfl
-  rw [hc, AddMonoidAlgebra.coeff_single_zero_mul, h0, mul_zero]
+  rw [show coefL R n a = AddMonoidAlgebra.single 0 ((algebraMap (MvPolynomial (Fin n × Fin n) R) (GLCoord R n)) (C a)) from rfl, AddMonoidAlgebra.coeff_single_zero_mul, h0, mul_zero]
 
 theorem support_degrees_zero {R : Type*} [CommRing R] {ι : Type*} {n : ℕ} (LL : Letters ι) (S : Set ι) (j : Fin n) :
     sDegs LL S j (0 : MvPolynomial (ι × Fin n) R) = ∅ := by
@@ -828,9 +826,8 @@ theorem componentsInFiltration_totalWedge {s : ℤ} {K : Finset (Fin n) → Q} (
   unfold totalWedge
   rw [LinearMap.sum_apply, Finset.sum_apply]
   refine (Fl.F s).sum_mem fun m _ => ?_
-  have := Fl.mul_mem (hv m) (components_in_filtration_wedge Fl h m J)
-  rw [zero_add] at this
-  exact this
+  simpa only [zero_add, LinearMap.smul_apply, Pi.smul_apply, smul_eq_mul] using
+    Fl.mul_mem (hv m) (components_in_filtration_wedge Fl h m J)
 
 theorem components_in_filtration_contraction {s : ℤ} {K : Finset (Fin n) → Q} (u : Fin n → Q) (hu : ∀ m, u m ∈ Fl.F 0) (h : ComponentsInFiltration Fl s K) :
     ComponentsInFiltration Fl s (totalContraction u K) := by
@@ -838,9 +835,7 @@ theorem components_in_filtration_contraction {s : ℤ} {K : Finset (Fin n) → Q
   unfold totalContraction
   rw [LinearMap.sum_apply, Finset.sum_apply]
   refine (Fl.F s).sum_mem fun m _ => ?_
-  have := Fl.mul_mem (hu m) (components_in_filtration_contraction_single Fl h m J)
-  rw [zero_add] at this
-  exact this
+  simpa only [zero_add, LinearMap.smul_apply, Pi.smul_apply, smul_eq_mul] using Fl.mul_mem (hu m) (components_in_filtration_contraction_single Fl h m J)
 
 theorem right_wedge_eq_total (x : Fin n → Q) (K : Finset (Fin n) → Q) : wedgeR x K = totalWedge x K := by
   rw [right_wedge_eq_sum]; simp [totalWedge, LinearMap.sum_apply]
@@ -874,9 +869,7 @@ theorem components_in_filtration_lambda {K : Finset (Fin n) → Q} (u v : Fin n 
 theorem components_in_filtration_smul {K : Finset (Fin n) → Q} {θ : Q} {a : ℤ} (hθ : θ ∈ Fl.F a) (h : ComponentsInFiltration Fl 0 K) :
     ComponentsInFiltration Fl a (θ • K) := by
   intro J
-  have := Fl.mul_mem hθ (h J)
-  rw [add_zero] at this
-  exact this
+  simpa only [Pi.smul_apply, smul_eq_mul, add_zero] using Fl.mul_mem hθ (h J)
 
 end filt
 

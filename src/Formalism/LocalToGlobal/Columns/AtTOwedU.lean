@@ -40,9 +40,7 @@ theorem SameAt.sup {Q : HeightOneSpectrum (𝓞 E)} {N N' : Submodule (𝓞 E) (
     simpa [smul_add] using Submodule.add_mem_sup (h2 y hy) (S.smul_mem a' hz)
 
 theorem conjP_conjP_eq (P : HeightOneSpectrum (𝓞 E)) : conjPrime₂ (conjPrime₂ P) = P := by
-  apply HeightOneSpectrum.ext
-  ext r
-  rw [mem_conjP, mem_conjP, cO_cO]
+  exact HeightOneSpectrum.ext (by ext r; rw [mem_conjP, mem_conjP, cO_cO])
 
 theorem mem_one_of_forall_heightOne {a : E}
     (h : ∀ Q : HeightOneSpectrum (𝓞 E), ∃ s : 𝓞 E, s ∉ Q.asIdeal ∧ s • a ∈ (1 : Submodule (𝓞 E) E)) :
@@ -81,9 +79,7 @@ theorem sameAt_upA_upN {N : Submodule (𝓞 E) (Sp E n)} (hlat : Submodule.IsLat
     (huni : IsUnimodular (hStd E n) N) (P : HeightOneSpectrum (𝓞 E)) (hne : conjPrime₂ P ≠ P)
     {x : Sp E n} (hx : x ∈ N) : SameAt P (upA P.asIdeal N x) (upN P.asIdeal N x) := by
   obtain ⟨-, -, -, h4, h5⟩ := upN_spec hlat huni P hne hx
-  obtain ⟨a, ha, haP⟩ := exists_mem_notMem hne
-  exact ⟨1, one_notMem P, a, haP, fun y hy => by rw [one_smul]; exact h4 hy,
-    fun y hy => h5 (Submodule.smul_mem_smul ha hy)⟩
+  exact (exists_mem_notMem hne).elim fun a ha => ⟨1, one_notMem P, a, ha.2, fun y hy => by simpa using h4 hy, fun y hy => h5 (Submodule.smul_mem_smul (ha.1) hy)⟩
 
 theorem upN_upN_comm {N : Submodule (𝓞 E) (Sp E n)} (hlat : Submodule.IsLattice E N)
     (huni : IsUnimodular (hStd E n) N) {P P' : HeightOneSpectrum (𝓞 E)} (hne : conjPrime₂ P ≠ P)

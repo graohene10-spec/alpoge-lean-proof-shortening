@@ -41,27 +41,19 @@ theorem gram_det_unit_outside [IsTotallyComplex K] {Df : DefSide Bs} (wf : Df.WF
   have hμ : S.μ y = Bs.μ0 := by
     by_contra h
     exact hy.1 ((hH0.2 y).2 h)
-  rw [hμ]
-  exact hy.2
+  simpa only [hμ, GmOf] using hy.2
 
 theorem vw_nat_le_of_dvd (w : HeightOneSpectrum (𝓞 K)) {a b : ℕ} (hb : 0 < b) (h : a ∣ b) :
     vw w (a : K) ≤ vw w (b : K) := by
   obtain ⟨c, rfl⟩ := h
-  have ha0 : a ≠ 0 := by
-    rintro rfl
-    simp at hb
-  have hc0 : c ≠ 0 := by
-    rintro rfl
-    simp at hb
-  have ha : (a : K) ≠ 0 := by exact_mod_cast ha0
-  have hc : (c : K) ≠ 0 := by exact_mod_cast hc0
+  have ha : (a : K) ≠ 0 := by
+    exact_mod_cast (Nat.pos_of_mul_pos_right hb).ne'
+  have hc : (c : K) ≠ 0 := by
+    exact_mod_cast (Nat.pos_of_mul_pos_left hb).ne'
   have hcnn : 0 ≤ FractionalIdeal.count K w
       (FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 K)) (c : K)) := by
-    have e : FractionalIdeal.spanSingleton (nonZeroDivisors (𝓞 K)) (c : K) =
-        ((Ideal.span {(c : 𝓞 K)} : Ideal (𝓞 K)) : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) := by
-      rw [FractionalIdeal.coeIdeal_span_singleton, map_natCast]
-    rw [e]
-    exact FractionalIdeal.count_coe_nonneg K w _
+    simpa only [FractionalIdeal.coeIdeal_span_singleton, map_natCast] using
+      FractionalIdeal.count_coe_nonneg K w (Ideal.span {(c : 𝓞 K)} : Ideal (𝓞 K))
   unfold vw
   rw [Nat.cast_mul, ← FractionalIdeal.spanSingleton_mul_spanSingleton,
     FractionalIdeal.count_mul K w (FractionalIdeal.spanSingleton_ne_zero_iff.mpr ha)
@@ -109,10 +101,8 @@ theorem bi_def [IsTotallyComplex K] (A : FamIn K G Pl0 T m) {s : ℕ} (hOk : A.f
     (ψ0 : P0 →* Kˣ) (Zs : DefSub A.fam.amb) (S : IndefRows (A.side P0 ψ0 Zs)) (y : HeightOneSpectrum (𝓞 K)) :
     (vw y ((A.side P0 ψ0 Zs).Gm (ebOf (A.side P0 ψ0 Zs)) (S.μ y) y) : ℝ) ≤
       (S.D : ℝ) * (vw y ((Fintype.card G * s : ℕ) : K) : ℝ) := by
-  have h : vw y (GmOf (A.side P0 ψ0 Zs) (S.μ y) y) ≤
-      (((A.side P0 ψ0 Zs).dQ (S.μ y) : ℕ) : ℤ) * vw y ((Fintype.card G * s : ℕ) : K) :=
-    A.fam.GmOf_le hOk P0 ψ0 Zs (S.μ y) y
-  rw [S.dQ_eq] at h
+  have h := A.fam.GmOf_le hOk P0 ψ0 Zs (S.μ y) y
+  rw [show (A.fam.side P0 ψ0 Zs).dQ (S.μ y) = S.D from S.dQ_eq (S.μ y)] at h
   exact_mod_cast h
 
 theorem bLG_def {J Pl : Type} [Fintype J] [Fintype Pl] [DecidableEq Pl] (R : RecNums J Pl) {s : ℕ} (hs : 0 < s)
@@ -185,8 +175,7 @@ theorem twisted_place_eta_sum_le (A : FamIn K G Pl0 T m) (P0 : Subgroup G) (ψ0 
 
 theorem exists_dg (A : FamIn K G Pl0 T m) {s : ℕ} (hOk : A.fam.Ok s) (P0 : Subgroup G) (ψ0 : P0 →* Kˣ) :
     ∃ dg : ℕ, 0 < dg ∧ ∀ j t, (A.fam.L j t).DG (A.fam.lvlA P0 ψ0) ∣ dg := by
-  have : Finite T := hOk.tup_fin
-  have := Fintype.ofFinite T
+  have : Fintype T := @Fintype.ofFinite T hOk.tup_fin
   have hpos : ∀ j t, 0 < (A.fam.L j t).DG (A.fam.lvlA P0 ψ0) := by
     intro j t
     unfold BlockDat.DG

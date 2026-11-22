@@ -32,8 +32,7 @@ theorem smul_mem_ballC {C : Type} [NormedField C] [IsUltrametricDist C] (a v : C
 theorem span_intCast (C : Type) [Field C] : Submodule.span C (Set.range (Int.castAddHom C)) = ⊤ := by
   rw [eq_top_iff]
   intro x _
-  have h1 : (1 : C) ∈ Submodule.span C (Set.range (Int.castAddHom C)) := Submodule.subset_span ⟨1, by simp⟩
-  simpa using Submodule.smul_mem _ x h1
+  simpa using Submodule.smul_mem _ x (Submodule.subset_span (show (1 : C) ∈ Set.range (Int.castAddHom C) from ⟨1, by simp⟩))
 
 theorem ballC_eq_inf {C : Type} [NormedField C] [IsUltrametricDist C] (a : C) :
     ballC C = ballC C ⊓ (Ospan (C := C) (Set.range (Int.castAddHom C)) ⊔

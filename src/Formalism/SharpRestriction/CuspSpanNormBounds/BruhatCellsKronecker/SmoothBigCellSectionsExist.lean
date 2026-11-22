@@ -344,15 +344,13 @@ theorem massData_const {P : Type} [Fintype P] (B : MassData P) (hP : B.Pos) (hI 
       show B.c0 * B.c0' * (B.IntN / (B.c0 * B.c0')) ≤ (1 + 0) * B.IntN
       rw [mul_div_cancel₀ _ (mul_pos hc0 hc0').ne']; linarith)
     h2 h3 h4 h5 h6 h7 h8 h9 h10 h11
-  have h := hmain.2.1
+  have h : B.tt * (B.d / B.dimπ) * (B.n0c * (B.IntN / (B.c0 * B.c0'))) ≤ (1 + 0) * 1 * B.tt * (B.d * B.d' / B.Dstar) := hmain.2.1
   have htt : 0 < B.tt := Finset.prod_pos fun p _ => by
     have := (hp p).1
     positivity
-  have h' : B.tt * (B.d / B.dimπ) * (B.n0c * (B.IntN / (B.c0 * B.c0'))) ≤
-      (1 + 0) * 1 * B.tt * (B.d * B.d' / B.Dstar) := h
   have h'' : B.tt * (B.d / B.dimπ * (B.n0c * (B.IntN / (B.c0 * B.c0')))) ≤ B.tt * (B.d * B.d' / B.Dstar) := by
     calc _ = B.tt * (B.d / B.dimπ) * (B.n0c * (B.IntN / (B.c0 * B.c0'))) := by ring
-      _ ≤ _ := h'
+      _ ≤ _ := h
       _ = _ := by ring
   exact le_of_mul_le_mul_left h'' htt
 

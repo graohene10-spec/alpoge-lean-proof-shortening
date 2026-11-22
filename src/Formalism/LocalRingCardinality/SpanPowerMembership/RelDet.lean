@@ -25,8 +25,7 @@ theorem smulLat_one {N : ℕ} (L : Submodule (𝓞 E) (Fin N → E)) :
 theorem smulLat_mul {N : ℕ} (A B : Matrix (Fin N) (Fin N) E) (L : Submodule (𝓞 E) (Fin N → E)) :
     SDLat.smulLat (A * B) L = SDLat.smulLat A (SDLat.smulLat B L) := by
   unfold SDLat.smulLat
-  rw [← Submodule.map_comp, Matrix.toLin'_mul]
-  rfl
+  rw [← Submodule.map_comp, Matrix.toLin'_mul, LinearMap.restrictScalars_comp]
 
 def orbRel (N : ℕ) : Setoid (SDLat E N) where
   r L L' := ∃ γ : Matrix.unitaryGroup (Fin N) E, L'.1 = SDLat.smulLat (γ : Matrix (Fin N) (Fin N) E) L.1
@@ -112,7 +111,7 @@ theorem relDetGen_smul (hstar : ∀ (φ : E →+* ℂ) (x : E), φ (star x) = st
   set δ : Matrix.unitaryGroup (Fin N) E := (γ * gL)⁻¹ * gL'
   have hδ : SDLat.smulLat (δ : Matrix (Fin N) (Fin N) E) r.1 = r.1 := by
     have e1 : SDLat.smulLat ((γ * gL : Matrix.unitaryGroup (Fin N) E) : Matrix (Fin N) (Fin N) E) r.1 =
-        SDLat.smulLat (gL' : Matrix (Fin N) (Fin N) E) r.1 := by
+        SDLat.smulLat (gL' : Matrix.unitaryGroup (Fin N) E) r.1 := by
       rw [Submonoid.coe_mul, smulLat_mul, ← hL, ← h, hL']
     show SDLat.smulLat (((γ * gL)⁻¹ * gL' : Matrix.unitaryGroup (Fin N) E) : Matrix (Fin N) (Fin N) E) r.1 = r.1
     rw [Submonoid.coe_mul, smulLat_mul, ← e1, ← smulLat_mul, ← Submonoid.coe_mul, inv_mul_cancel]
@@ -121,10 +120,9 @@ theorem relDetGen_smul (hstar : ∀ (φ : E →+* ℂ) (x : E), φ (star x) = st
   have hg : gL' = (γ * gL) * δ := by
     show gL' = (γ * gL) * ((γ * gL)⁻¹ * gL')
     rw [← mul_assoc, mul_inv_cancel, one_mul]
-  have : potGen emb L' = inverseEmbeddingProduct emb (detU γ) * potGen emb L := by
-    simp only [potGen]
-    rw [show orbGam L' = gL' from rfl, hg, detU_mul, detU_mul, map_mul, map_mul, hs, mul_one, mul_comm]
-  simp only [relDetGen, this]
+  simp only [relDetGen, potGen]
+  rw [show orbGam L = gL from rfl, show orbGam L' = gL' from rfl, hg, detU_mul, detU_mul,
+    map_mul, map_mul, hs, mul_one]
   rw [mul_comm (inverseEmbeddingProduct emb (detU γ)), ← mul_assoc, inv_mul_cancel, one_mul]
   rfl
 

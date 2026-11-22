@@ -299,17 +299,14 @@ theorem diagEmb_injective {r : ℕ} (h : r ≤ n) : Function.Injective (diagEmb 
   intro i j
   have e' := congrArg (fun X : GL (Fin n) κ => (X : Matrix (Fin n) (Fin n) κ) (Fin.castLE h i) (Fin.castLE h j)) e
   beta_reduce at e'
-  rw [diagEmb_val, diagEmb_val, diagMat_of_lt _ (show (Fin.castLE h i).val < r from i.2)
-    (show (Fin.castLE h j).val < r from j.2), diagMat_of_lt _ (show (Fin.castLE h i).val < r from i.2)
-    (show (Fin.castLE h j).val < r from j.2)] at e'
+  rw [diagEmb_val, diagEmb_val, diagMat_of_lt (i := Fin.castLE h i) (j := Fin.castLE h j) _ i.2 j.2, diagMat_of_lt (i := Fin.castLE h i) (j := Fin.castLE h j) _ i.2 j.2] at e'
   exact e'
 
 theorem diagEmb_mem_blockUT {r : ℕ} (h : r ≤ n) (bl : List ℕ) (g : GL (Fin r) κ) : diagEmb κ h g ∈ blockUT n κ r bl := by
   intro i j hij
-  have hij' : coarse r bl j.val < coarse r bl i.val := hij
-  have hi : ¬ i.val < r := fun hi => by rw [coarse_of_lt hi] at hij'; omega
+  have hi : ¬ i.val < r := fun hi => by beta_reduce at hij; rw [coarse_of_lt hi] at hij; omega
   rw [diagEmb_val, diagMat_of_not_left _ _ hi]
-  exact Matrix.one_apply_ne fun e => by rw [e] at hij'; omega
+  exact Matrix.one_apply_ne fun e => by rw [e] at hij; beta_reduce at hij; omega
 
 def fixCol (n : ℕ) (κ : Type) [CommRing κ] (c : ℕ) : Subgroup (GL (Fin n) κ) where
   carrier := {M | ∀ i j : Fin n, j.val = c → (M : Matrix (Fin n) (Fin n) κ) i j = (1 : Matrix (Fin n) (Fin n) κ) i j}
@@ -336,14 +333,12 @@ theorem mem_HK {r : ℕ} {bl : List ℕ} {M : GL (Fin n) κ} :
     refine ⟨hM, fun i j hi hj => ?_⟩
     have h1 := congrArg (fun X : Matrix {i : Fin n // coarse r bl i.val = 0} {i : Fin n // coarse r bl i.val = 0} κ =>
       X ⟨i, coarse_of_lt hi⟩ ⟨j, coarse_of_lt hj⟩) (MonoidHom.mem_ker.mp hk)
-    show (M : Matrix (Fin n) (Fin n) κ) i j = _
-    simpa only [blkHom_apply, Matrix.one_apply, Subtype.mk.injEq] using h1
+    simpa only [blkHom_apply, Matrix.one_apply, Subtype.mk.injEq, Subgroup.coe_subtype, Subtype.coe_mk] using h1
   · rintro ⟨hM, h⟩
     refine ⟨⟨M, hM⟩, ?_, rfl⟩
     rw [SetLike.mem_coe, MonoidHom.mem_ker]
     ext i j
-    have h1 := h i.1 j.1 (coarse_eq_zero.mp i.2) (coarse_eq_zero.mp j.2)
-    rw [blkHom_apply, h1]
+    rw [blkHom_apply, h i.1 j.1 (coarse_eq_zero.mp i.2) (coarse_eq_zero.mp j.2)]
     simp only [Matrix.one_apply, Subtype.ext_iff]
 
 theorem HK_le_blockUT (n : ℕ) (κ : Type) [CommRing κ] (r : ℕ) (bl : List ℕ) : HK n κ r bl ≤ blockUT n κ r bl :=

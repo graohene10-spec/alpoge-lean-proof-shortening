@@ -26,13 +26,10 @@ def lin (g : HA R σ J) : (Fin n → R ⊗[F] E) →ₗ[R ⊗[F] E] (Fin n → R
 theorem lin_mul (g h : HA R σ J) (x : Fin n → R ⊗[F] E) :
     lin R σ J (g * h) x = lin R σ J g (lin R σ J h x) := by
   simp only [lin, Matrix.mulVecLin_apply]
-  show ((HA.mat R σ J g * HA.mat R σ J h : GL (Fin n) (R ⊗[F] E)) :
-    Matrix (Fin n) (Fin n) (R ⊗[F] E)).mulVec x = _
-  rw [Units.val_mul, ← Matrix.mulVec_mulVec]
+  rw [(show HA.mat R σ J (g * h) = HA.mat R σ J g * HA.mat R σ J h from rfl), Units.val_mul, ← Matrix.mulVec_mulVec]
 
 theorem lin_one (x : Fin n → R ⊗[F] E) : lin R σ J 1 x = x := by
-  simp only [lin, Matrix.mulVecLin_apply]
-  show ((1 : GL (Fin n) (R ⊗[F] E)) : Matrix (Fin n) (Fin n) (R ⊗[F] E)).mulVec x = x
+  change ((1 : GL (Fin n) (R ⊗[F] E)) : Matrix (Fin n) (Fin n) (R ⊗[F] E)).mulVec x = x
   simp
 
 theorem lin_inv_lin (g : HA R σ J) (x : Fin n → R ⊗[F] E) : lin R σ J g⁻¹ (lin R σ J g x) = x := by
@@ -88,17 +85,15 @@ theorem uni_le_map (hg : UniC R σ J Y g) (s : Set (Fin m))
   rintro _ ⟨b, hb, rfl⟩
   induction b using WellFoundedLT.induction with
   | _ b ih =>
-  have hmem : ratV (F := F) R (Y b) ∈
-      Submodule.span (R ⊗[F] E) ((fun a => ratV (F := F) R (Y a)) '' s) :=
-    Submodule.subset_span ⟨b, hb, rfl⟩
-  have h1 := Submodule.mem_map_of_mem (f := lin R σ J g) hmem
   have h2 : Submodule.span (R ⊗[F] E) ((fun a => ratV (F := F) R (Y a)) '' {a | a < b}) ≤
       (Submodule.span (R ⊗[F] E) ((fun a => ratV (F := F) R (Y a)) '' s)).map (lin R σ J g) := by
     rw [Submodule.span_le]
     rintro _ ⟨a, ha, rfl⟩
     exact ih a ha (hs b hb a ha)
-  have := Submodule.sub_mem _ h1 (h2 (hg b))
-  simpa using this
+  simpa using Submodule.sub_mem _
+    (Submodule.mem_map_of_mem (f := lin R σ J g)
+      (Submodule.subset_span (⟨b, hb, rfl⟩ : ratV (F := F) R (Y b) ∈ (fun a => ratV (F := F) R (Y a)) '' s)))
+    (h2 (hg b))
 
 end UniLemmas
 

@@ -35,8 +35,7 @@ theorem elim_cls {m : ℕ} (x : Fin (m + 1) → ℂ) (y : UT (m + 2) → ℂ) (i
   · exact (tri_lt x y _).symm
 
 theorem succ_le_castSucc {m : ℕ} {i j : Fin (m + 1)} (h : i < j) : i.succ ≤ j.castSucc := by
-  rw [Fin.le_iff_val_le_val, Fin.val_succ, Fin.val_castSucc]
-  exact h
+  rwa [Fin.le_iff_val_le_val, Fin.val_succ, Fin.val_castSucc]
 
 def idx (m : ℕ) : Tgt m → FinalTheorems m
   | Sum.inl _ => Sum.inr ⟨(0, Fin.last (m + 1)), Fin.last_pos⟩
@@ -105,9 +104,7 @@ theorem comp_bijective (m : ℕ) : Function.Bijective (fun v : FinalTheorems m �
   refine ⟨fun v w h => funext fun s => ?_, fun u => ⟨u ∘ (idxE m).symm, funext fun t => ?_⟩⟩
   · obtain ⟨t, rfl⟩ := idx_surjective m s
     exact congrFun h t
-  · simp only [Function.comp_apply]
-    congr 1
-    exact (idxE m).symm_apply_apply t
+  · simpa only [Function.comp_apply, idxE, Equiv.ofBijective_apply] using congrArg u ((idxE m).symm_apply_apply t)
 
 theorem redOf_bijective (m : ℕ) : Function.Bijective (redOf m) := by
   rw [show redOf m = split m ∘ (fun v : FinalTheorems m → ℂ => v ∘ idx m) ∘
@@ -146,12 +143,7 @@ theorem rhs_succ {m : ℕ} (t ρ₁ : ℂ) (x : Fin (m + 1) → ℂ) (y : UT (m 
       (if (j : ℕ) = i then t else 0) + triXY x y i.succ j := by
   simp only [triXY, subShift, Matrix.add_apply, Matrix.smul_apply, Matrix.of_apply,
     Matrix.diagonal_apply, Fin.val_succ, smul_eq_mul, Fin.cons_succ]
-  have hiff : ((j : ℕ) + 1 = (i : ℕ) + 1) ↔ ((j : ℕ) = i) := by omega
-  by_cases hj : (j : ℕ) = i
-  · rw [if_pos (hiff.mpr hj), if_pos hj]
-    ring
-  · rw [if_neg (fun h => hj (hiff.mp h)), if_neg hj]
-    ring
+  by_cases hj : (j : ℕ) = i <;> simp [hj, add_assoc]
 
 theorem wMat_mulVec_apply {n : ℕ} (B : Fin n → ℂ) (i : Fin n) : (wMat n *ᵥ B) i = B i.rev := by
   simp [wMat, Matrix.mulVec, dotProduct]
@@ -218,8 +210,7 @@ theorem strictUpper_injective {d : ℕ} {y y' : UT d → ℂ} {a b : Fin d → �
     (h : Matrix.diagonal a + strictUpper y = Matrix.diagonal b + strictUpper y') : y = y' := by
   funext q
   obtain ⟨⟨i, j⟩, hij⟩ := q
-  have h' := congrArg (fun M : Matrix (Fin d) (Fin d) ℂ => M i j) h
-  simpa [strictUpper, hij, Matrix.diagonal_apply_ne _ hij.ne] using h'
+  simpa [strictUpper, hij, Matrix.diagonal_apply_ne _ hij.ne] using congrArg (fun M : Matrix (Fin d) (Fin d) ℂ => M i j) h
 
 theorem diag_const (m : ℕ) (z : ℂ) :
     Matrix.diagonal (Fin.cons z (fun _ : Fin (m + 1) => z) : Fin (m + 2) → ℂ) =

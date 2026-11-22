@@ -91,9 +91,7 @@ theorem jac_2d : jacobiSym ((2 : ℕ) : ℤ) d = 1 := by
   have h16 := hH.2.2.2.1
   have hd : Odd d := Nat.odd_iff.mpr (by omega)
   rw [show ((2 : ℕ) : ℤ) = 2 by norm_num, jacobiSym.at_two hd, ZMod.χ₈_nat_eq_if_mod_eight]
-  have h2 : d % 2 ≠ 0 := by omega
-  have h8 : d % 8 = 7 := by omega
-  simp [h2, h8]
+  simp [(by omega : d % 2 = 1), (by omega : d % 8 = 7)]
 
 theorem ordCompl_two : ordCompl[2] (2 ^ (e + 2) * q * d) = q * d := by
   rw [mul_assoc]

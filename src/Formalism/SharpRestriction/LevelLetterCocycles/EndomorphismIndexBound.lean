@@ -76,15 +76,11 @@ variable {O : Type*} [CommRing O] [IsDomain O] {X : Type*} [Fintype X] [Decidabl
 
 theorem coe_prod' {ι : Type*} (s : Finset ι) (h : ι → T) (z : X) :
     ((∏ y ∈ s, h y : T) : X → O) z = ∏ y ∈ s, ((h y : T) : X → O) z := by
-  first
-  | rw [SubmonoidClass.coe_finsetProd, Finset.prod_apply]
-  | simp [Finset.prod_apply]
+  simp only [SubmonoidClass.coe_finsetProd, Finset.prod_apply]
 
 theorem coe_sum' {ι : Type*} (s : Finset ι) (h : ι → T) (z : X) :
     ((∑ y ∈ s, h y : T) : X → O) z = ∑ y ∈ s, ((h y : T) : X → O) z := by
-  first
-  | rw [AddSubmonoidClass.coe_finset_sum, Finset.sum_apply]
-  | simp [Finset.sum_apply]
+  rw [AddSubmonoidClass.coe_finsetSum, Finset.sum_apply]
 
 theorem exists_bump (hsep : ∀ x y : X, x ≠ y → ∃ f ∈ T, f x ≠ f y) (x : X) :
     ∃ g : T, (g : X → O) x ≠ 0 ∧ ∀ y, y ≠ x → (g : X → O) y = 0 := by
@@ -142,19 +138,16 @@ theorem heckeEig_eq (x : X) :
   unfold Formalism.BasicNotions.heckeEig Formalism.NG.Vx
   refine iInf_congr fun f => ?_
   ext v
-  rw [Module.End.mem_eigenspace_iff, LinearMap.mem_ker]
   simp [actK_apply, sub_eq_zero]
 
 theorem mul_ind [DecidableEq X] {C : O} {x : X} {e : T}
     (he : ∀ y, (e : X → O) y = if y ∈ ({x} : Finset X) then C else 0) (f : T) :
     f * e = ((f : X → O) x) • e := by
-  apply Subtype.ext
-  funext y
+  ext y
   show (f : X → O) y * (e : X → O) y = (f : X → O) x * (e : X → O) y
-  rw [he y]
-  split_ifs with h
-  · rw [Finset.mem_singleton.mp h]
-  · simp
+  by_cases h : y = x
+  · rw [h]
+  · simp [he, h]
 
 theorem eigSpan (hsep : ∀ x y : X, x ≠ y → ∃ f ∈ T, f x ≠ f y) :
     (⨆ x, Vx T (actK T act).toRingHom x) = ⊤ := by
@@ -379,8 +372,7 @@ theorem span_latIn : Submodule.span (FractionRing O) (latIn O M : Set (TensorPro
 
 theorem fg_latIn : (latIn O M).FG := by
   unfold latIn
-  rw [LinearMap.range_eq_map]
-  exact (Module.Finite.fg_top).map _
+  simpa only [LinearMap.range_eq_map] using (Module.Finite.fg_top).map (TensorProduct.mk O (FractionRing O) M 1)
 
 theorem hecke_length_bound [IsLocalRing T] (l : ℕ) [Fact l.Prime]
     (hsep : ∀ x y : X, x ≠ y → ∃ f ∈ T, f x ≠ f y) (Z Z' : Finset X) (hZ' : Z' ⊆ Z)

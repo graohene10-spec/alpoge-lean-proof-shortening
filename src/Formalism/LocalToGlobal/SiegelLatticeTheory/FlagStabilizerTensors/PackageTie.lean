@@ -136,9 +136,7 @@ theorem summable_ind (hT : TieAt s u u' X e J) (habs : KAbsConv s u u') (S : Set
   have h2 := (h1.indicator S).map J (continuous_J J)
   convert h2 using 1
   funext t
-  by_cases ht : t ∈ S
-  · simp [ht, hT.2.1 t]
-  · simp [ht]
+  by_cases ht : t ∈ S <;> simp [ht, hT.2.1 t]
 
 theorem summable_norm_op (hT : TieAt s u u' X e J) (habs : KAbsConv s u u') : Summable (fun t => ‖X.op t‖) := by
   have h1 : Summable (fun t => ‖s.aTerm u u' (e t)‖) :=

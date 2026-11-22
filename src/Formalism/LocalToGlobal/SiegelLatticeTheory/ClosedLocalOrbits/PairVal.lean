@@ -225,9 +225,7 @@ def ptOf (t : Term D u u' F0 what₂) : Point D.host.E (D.R.rS + 1) :=
   if h : ∃ w, t.atPt w ∧ t.relevant then h.choose else junkPoint D u u'
 
 theorem ptOf_spec (t : Term D u u' F0 what₂) (h : ∃ w, t.atPt w ∧ t.relevant) : t.atPt (ptOf t) := by
-  unfold ptOf
-  rw [dif_pos h]
-  exact h.choose_spec.1
+  simpa only [ptOf, dif_pos h] using h.choose_spec.1
 
 theorem ptOf_GPoint_iff (hA : ∀ t : Term D u u' F0 what₂, t.G ≠ 0 → t.relevant → ∃ w, t.atPt w)
     (hB : ∀ (t : Term D u u' F0 what₂) w, t.atPt w → Formalism.MainNotions.S.LocalSplitGroups.Gpt (D.mem u).A.T (D.mem u').A.T w ≠ 0)
@@ -242,9 +240,7 @@ theorem ptOf_GPoint_iff (hA : ∀ t : Term D u u' F0 what₂, t.G ≠ 0 → t.re
     · exact ⟨hC t _ (ptOf_spec t h), h.choose_spec.2⟩
     · exfalso
       apply hne
-      unfold ptOf
-      rw [dif_neg h]
-      exact Gpt_junkPoint_eq_zero D u u'
+      simpa only [ptOf, dif_neg h] using Gpt_junkPoint_eq_zero D u u'
 
 def cTerm (vR : Term D u u' F0 what₂ → ℝ) (t : Term D u u' F0 what₂) : ℂ :=
   if h : ∃ w, t.atPt w then cAt vR t h.choose else 0

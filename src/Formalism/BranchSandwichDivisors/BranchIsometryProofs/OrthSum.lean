@@ -44,14 +44,12 @@ theorem degD_eq (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ)
   by_cases h0 : L = ⊥
   · subst h0
     simp [degD, rkK_bot, deg_bot b X hX]
-  · have hr : Formalism.HN.rkK L ≠ 0 := fun h => h0 (eq_bot_of_rkK b h)
-    have hrk := (Formalism.HN.plLat K V ι b X hX L hL).2.1
-    have hs : Formalism.HN.slope (Formalism.HermitianLatticesTheory.realize b X) L =
-        Formalism.HN.deg (Formalism.HermitianLatticesTheory.realize b X) L / (Formalism.HN.rk (Formalism.HermitianLatticesTheory.realize b X) L : ℝ) := rfl
+  · have hs : Formalism.HN.slope (Formalism.HermitianLatticesTheory.realize b X) L = Formalism.HN.deg (Formalism.HermitianLatticesTheory.realize b X) L / (Formalism.HN.rk (Formalism.HermitianLatticesTheory.realize b X) L : ℝ) := rfl
     have hn : (Module.finrank ℚ K : ℝ) ≠ 0 := by
       exact_mod_cast (finrank_pos' (K := K)).ne'
-    have hr' : (Formalism.HN.rkK L : ℝ) ≠ 0 := by exact_mod_cast hr
-    rw [degD, Formalism.HN.muDef, hs, hrk]
+    have hr' : (Formalism.HN.rkK L : ℝ) ≠ 0 := by
+      exact_mod_cast fun h => h0 (eq_bot_of_rkK b h)
+    rw [degD, Formalism.HN.muDef, hs, (Formalism.HN.plLat K V ι b X hX L hL).2.1]
     push_cast
     field_simp
     ring
@@ -60,8 +58,7 @@ theorem orth_inner (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ)
     {A B : Submodule (𝓞 K) V} (h : OrthAt b X A B) :
     ∀ x ∈ A, ∀ y ∈ B, inner ℝ (Formalism.HermitianLatticesTheory.realize b X x) (Formalism.HermitianLatticesTheory.realize b X y) = 0 := by
   intro x hx y hy
-  rw [Formalism.HN.HeightGram.inner_realize]
-  exact Finset.sum_eq_zero fun v _ => by rw [h v x hx y hy]; simp
+  simpa [Formalism.HN.HeightGram.inner_realize] using (Finset.sum_eq_zero fun v _ => by rw [h v x hx y hy]; simp)
 
 theorem main (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ)
     (hX : ∀ v, IsUnit (X v).det) {S : Type} (A : S → Submodule (𝓞 K) V) (hA : ∀ s, (A s).FG)
@@ -84,8 +81,7 @@ theorem main (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ)
       intro x hx y hy
       obtain ⟨μ, hμ⟩ := (Submodule.mem_iSup_finset_iff_exists_sum A y).1 hy
       rw [← hμ, map_sum, inner_sum]
-      refine Finset.sum_eq_zero fun i hi => ?_
-      exact orth_inner b X (horth a i (fun h => ha (h ▸ hi))) x hx _ (μ i).2
+      exact Finset.sum_eq_zero fun i hi => orth_inner b X (horth a i (fun h => ha (h ▸ hi))) x hx _ (μ i).2
     have hlA := (Formalism.HN.plLat K V ι b X hX (A a) (hA a)).1
     have hlB := (Formalism.HN.plLat K V ι b X hX B ihfg).1
     obtain ⟨hl, hdeg, hmu⟩ :=
@@ -102,9 +98,8 @@ theorem main (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ)
       (Formalism.HN.plLat K V ι b X hX _ ihfg).2.1,
       (Formalism.HN.plLat K V ι b X hX _ Submodule.fg_bot).2.1, rkK_bot, mul_zero, add_zero,
       ← mul_add] at hrk
-    have hrk' := Nat.eq_of_mul_eq_mul_left (finrank_pos' (K := K)) hrk
     refine ⟨hfg, ?_, ?_, ?_⟩
-    · rw [hrk', Finset.sum_insert ha, ihrk]
+    · rw [Nat.eq_of_mul_eq_mul_left (finrank_pos' (K := K)) hrk, Finset.sum_insert ha, ihrk]
     · rw [hdeg, Finset.sum_insert ha, ihdeg]
     · intro c hc hne
       have hcs : ∀ i ∈ s, A i ≠ ⊥ → Formalism.HN.muMax (Formalism.HermitianLatticesTheory.realize b X) (A i) ≤ c :=
@@ -113,8 +108,7 @@ theorem main (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ)
       · rw [h1, bot_sup_eq] at hne ⊢
         exact ihmu c hcs hne
       · by_cases h2 : B = ⊥
-        · rw [h2, sup_bot_eq]
-          exact hc a (Finset.mem_insert_self a s) h1
+        · simpa [h2, sup_bot_eq] using hc a (Finset.mem_insert_self a s) h1
         · rw [(hmu h1 h2).1]
           exact max_le (hc a (Finset.mem_insert_self a s) h1) (ihmu c hcs h2)
 
@@ -202,11 +196,8 @@ theorem rkK_map {W : Type} [AddCommGroup W] [Module K W] [Module (𝓞 K) W]
     (A : Submodule (𝓞 K) V) :
     Formalism.HN.rkK (A.map (ψ.restrictScalars (𝓞 K))) = Formalism.HN.rkK A := by
   unfold Formalism.HN.rkK
-  have h : Submodule.span K ((A.map (ψ.restrictScalars (𝓞 K)) : Submodule (𝓞 K) W) : Set W) =
-      (Submodule.span K (A : Set V)).map ψ := by
-    rw [Submodule.map_span]
-    rfl
-  rw [h]
+  change Module.finrank K ↥(Submodule.span K ((ψ : V → W) '' (A : Set V))) = Module.finrank K ↥(Submodule.span K (A : Set V))
+  rw [← Submodule.map_span]
   exact (LinearEquiv.finrank_eq (Submodule.equivMapOfInjective ψ hψ _)).symm
 
 theorem muMax_mono (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ)

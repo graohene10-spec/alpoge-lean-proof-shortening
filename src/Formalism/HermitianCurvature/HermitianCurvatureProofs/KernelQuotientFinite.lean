@@ -120,8 +120,7 @@ theorem integral_points_finite : Formalism.FourierDecayAlt.A5.IntFinite := by
     (Formalism.DoubleCosetMeasures.P.isOpen_intSub R hL.isOpen _) (Formalism.DoubleCosetMeasures.P.isOpen_intSub R hL.isOpen _) ℝ f hinv hc).1
   refine key.subset ?_
   intro q hq
-  have hq' : IsInt R (orbZ w (q.1.out, q.2.out)) := hq
-  simp [f, hq']
+  simpa [f, rep] using hq
 
 theorem kernel_quotient_finite : Formalism.FourierDecayAlt.A5.KpFinite := by
   intro K _ _ _ R ψ hL w w'

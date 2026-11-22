@@ -63,8 +63,7 @@ theorem formGSD_smul (a : (formGSD C Λ).G) (d : (formGSD C Λ).D) :
 theorem FormG.incl_injective : Function.Injective (FormG.incl Λ) := by
   intro a b h
   have h1 := congrArg Prod.fst h
-  have h2 := congrArg Prod.snd h
-  exact Prod.ext h1 (Subtype.ext h2)
+  exact Prod.ext h1 (Subtype.ext (congrArg Prod.snd h))
 
 theorem formGSD_rho (a : (formGSD C Λ).G) (x : C.V) :
     (formGSD C Λ).ρ a x = ((Λ.chr a.2 : X.Kˣ) : X.K) • C.rho a.1 x := rfl

@@ -359,8 +359,7 @@ theorem isD_inv {D : Matrix (Fin n) (Fin n) K} (hD : IsD R k D) : IsD R k D⁻¹
 theorem isD_mulVec_int {D : Matrix (Fin n) (Fin n) K} (hD : IsD R k D) {y : Fin n → K}
     (hy : ∀ j, y j ∈ R) : ∀ j, (D *ᵥ y) j ∈ R := by
   intro j
-  simp only [Matrix.mulVec, dotProduct]
-  exact R.sum_mem fun l _ => R.mul_mem (hD.2.1 j l) (hy l)
+  simpa only [Matrix.mulVec, dotProduct] using (R.sum_mem fun l _ => R.mul_mem (hD.2.1 j l) (hy l))
 
 theorem isD_mulVec_msk {D : Matrix (Fin n) (Fin n) K} (hD : IsD R k D) (y : Fin n → K) :
     D *ᵥ msk k y = msk k (D *ᵥ y) := by
@@ -503,10 +502,7 @@ theorem Lam_colSpan (Z₀ : Matrix (Fin n) (Fin n) K) (hd : IsUnit Z₀.det) (x 
   obtain ⟨t, ht, e⟩ := (mem_colSpan R k Z₀ x).1 hx
   rw [Lam_apply, ← e, Matrix.mulVec_mulVec, Matrix.nonsing_inv_mul _ hd, Matrix.one_mulVec]
   funext j
-  simp only [msk, Pi.zero_apply]
-  split_ifs with hj
-  · rw [coeLin_apply, ht j hj]; rfl
-  · rfl
+  by_cases hj : k < j.val <;> simp [msk, hj, coeLin_apply, ht j]
 
 theorem mat_det_mul (Z₀ p : Matrix (Fin n) (Fin n) K) (hd : IsUnit Z₀.det) (hp : IsPP R k p) :
     IsUnit (Z₀ * p).det := by
@@ -1429,18 +1425,15 @@ def base (w : Point K) (y : Quotient (QuotientGroup.rightRel (intSub R (lowW K w
 
 theorem grp_orbZ_det (w : Point K) (p : lowW K w.1 w.2 × upUniG K w.1.sum) :
     IsUnit (orbZ w p).det := by
-  unfold orbZ
-  rw [Matrix.det_mul, Matrix.det_mul, isLowUni_det K p.1.2.1, isUpUni_det K p.2.2, one_mul,
-    mul_one]
-  exact Matrix.isUnit_det_of_right_inverse (Formalism.DoubleCosetMeasures.P.Phase.pt_mul_ptI w.1 w.2)
+  simpa only [orbZ, Matrix.det_mul, isLowUni_det K p.1.2.1, isUpUni_det K p.2.2, one_mul, mul_one]
+    using Matrix.isUnit_det_of_right_inverse (Formalism.DoubleCosetMeasures.P.Phase.pt_mul_ptI w.1 w.2)
 
 theorem base_det (w : Point K) (y) : IsUnit (base R k w y).det := grp_orbZ_det w _
 
 theorem base_last (h : Point K) (s : ℕ) (t : Kˣ) (hs : 1 ≤ s) (hk : h.1.sum ≤ k) (y)
     (a b : Fin (addBlock h s t).1.sum) (ha : k < a.val) (hb : b.val + 1 = (addBlock h s t).1.sum) :
     (base R k (addBlock h s t) y)⁻¹ a b = 0 := by
-  have hsum : (addBlock h s t).1.sum = h.1.sum + s := by simp [addBlock]
-  let c : Fin (addBlock h s t).1.sum := ⟨h.1.sum, by omega⟩
+  let c : Fin (addBlock h s t).1.sum := ⟨h.1.sum, by simp [addBlock]; omega⟩
   exact (inverse_last_column_formula K h s t hs _ _ (y.1.out).2.1 (y.2.out).2 a b c hb rfl).2.1
     (by rw [Fin.lt_def]; show h.1.sum < a.val; omega)
 
@@ -1460,8 +1453,7 @@ theorem grp_sUp_mul {N : ℕ} (a b : upUniG K N) :
     sUp (((a * b : upUniG K N) : GL (Fin N) K) : Matrix (Fin N) (Fin N) K) =
       sUp ((a : GL (Fin N) K) : Matrix (Fin N) (Fin N) K) +
         sUp ((b : GL (Fin N) K) : Matrix (Fin N) (Fin N) K) := by
-  rw [Subgroup.coe_mul, Units.val_mul]
-  exact (Formalism.DoubleCosetMeasures.P.simpleAdd K N _ _).2 a.2 b.2
+  simpa only [Subgroup.coe_mul, Units.val_mul] using (Formalism.DoubleCosetMeasures.P.simpleAdd K N _ _).2 a.2 b.2
 
 theorem grp_sUp_one {N : ℕ} :
     sUp (((1 : upUniG K N) : GL (Fin N) K) : Matrix (Fin N) (Fin N) K) = 0 := by

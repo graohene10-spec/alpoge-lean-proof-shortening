@@ -107,8 +107,7 @@ theorem derivative_kills_degree_zero (a : Fin (s + 1)) : ∀ x ∈ XSp p (setLas
   have hnv : (Fin.last K, a) ∉ x.vars := by
     rw [MvPolynomial.mem_vars]
     rintro ⟨d, hd, hda⟩
-    have h1 : MultiDeg (setLast LL 0) d := hP hd
-    have h2 : ∑ b, d (Fin.last K, b) = 0 := by simpa [setLast] using h1 (Fin.last K)
+    have h2 : ∑ b, d (Fin.last K, b) = 0 := by simpa [setLast] using hP hd (Fin.last K)
     exact (Finsupp.mem_support_iff.1 hda) (Finset.sum_eq_zero_iff.1 h2 a (Finset.mem_univ _))
   first
   | exact MvPolynomial.pderiv_eq_zero_of_notMem_vars hnv
@@ -191,10 +190,7 @@ theorem wtot_monomial (hs : 1 ≤ s) (hv : LL.vec (Fin.last K) = true) (k0 : Fin
       rw [MvPolynomial.mem_restrictSupport_iff]
       intro m hm
       exact ⟨o, ho, hP hm⟩
-  intro x hx m hm
-  have h := hle hx
-  rw [MvPolynomial.mem_restrictSupport_iff] at h
-  exact h hm
+  exact fun x hx m hm => (MvPolynomial.mem_restrictSupport_iff ℚ_[p]).1 (hle hx) hm
 
 theorem wtot_fd (hs : 1 ≤ s) (hv : LL.vec (Fin.last K) = true) (k0 : Fin q) (hk0 : K + 1 ≤ J k0)
     (hc : M k0 = ((c : ℤ) : WithTop ℤ)) : FiniteDimensional ℚ_[p] (Wtot p LL J M (Fin.last s)) := by
@@ -399,9 +395,8 @@ theorem hw_deg_zero (G : GlW ℚ_[p] (MvPolynomial (Fin (K + 1) × Fin (s + 1)) 
     (hW : h ∈ Wtot p LL J M (Fin.last s)) : h ∈ XSp p (setLast LL 0) J M (Fin.last s) := by
   by_cases h0 : h = 0
   · rw [h0]; exact Submodule.zero_mem _
-  obtain ⟨m0, hm0⟩ : h.support.Nonempty := by
-    rw [Finset.nonempty_iff_ne_empty]
-    exact fun h' => h0 (support_eq_empty.mp h')
+  obtain ⟨m0, hm0⟩ : h.support.Nonempty :=
+    Finset.nonempty_iff_ne_empty.2 fun h' => h0 (support_eq_empty.mp h')
   obtain ⟨o0, ho0⟩ : ∃ o0 : ℕ, o0 = ∑ a : Fin (s + 1), m0 (Fin.last K, a) := ⟨_, rfl⟩
   have hdeg : ∀ m ∈ h.support, ∑ a : Fin (s + 1), m (Fin.last K, a) = o0 := by
     intro m hm
@@ -442,23 +437,20 @@ theorem hw_deg_zero (G : GlW ℚ_[p] (MvPolynomial (Fin (K + 1) × Fin (s + 1)) 
   have hX : h ∈ XSp p (setLast LL o0) J M (Fin.last s) := by
     have := hall hW
     rwa [Submodule.mem_comap, hfix] at this
-  have hF := ((mem_xsp _ J M _ h).mp hX).2.1
   have e1 := euler_last_letter_eigen LL J M o0 h hX
   have e2 : eulW p K (s + 1) h = 0 := by
     rw [eulW_eq, ProjS.eulL_apply]
     refine Finset.sum_eq_zero fun a _ => ?_
     have e3 : pderiv (Fin.last K, a) h = 0 := by
       refine Fin.lastCases ?_ (fun j => ?_) a
-      · exact pderiv_free _ h hF
+      · exact pderiv_free _ h ((mem_xsp _ J M _ h).mp hX).2.1
       · have h5 := hh.2 0 j.succ (Fin.succ_pos j)
         rw [hE, EX_zero_succ] at h5
         exact h5
     rw [e3, mul_zero]
   rw [e2] at e1
-  have h6 : ((o0 : ℕ) : ℚ_[p]) = 0 := (smul_eq_zero.mp e1.symm).resolve_right h0
-  have h7 : o0 = 0 := Nat.cast_eq_zero.mp h6
-  rw [h7] at hX
-  exact hX
+  have h7 : o0 = 0 := Nat.cast_eq_zero.mp ((smul_eq_zero.mp e1.symm).resolve_right h0)
+  simpa [h7] using hX
 
 end LatW
 

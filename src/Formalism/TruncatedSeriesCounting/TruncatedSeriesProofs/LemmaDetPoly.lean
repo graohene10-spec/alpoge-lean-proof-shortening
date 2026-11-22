@@ -172,8 +172,7 @@ lemma base (ρ : G →* Matrix n n R) (l : List (R × ℕ × G)) (hl : ∀ L ∈
 lemma letter_mem (ρ : G →* Matrix n n R) (hS : ∀ g k, (Matrix.charpolyRev (ρ g)).coeff k ∈ S)
     (L : R × ℕ × G) (hc : L.1 ∈ S) : piN N (Matrix.det (1 - term ρ L)) ∈ SQ N S := by
   rw [charpoly_comp]
-  exact ⟨_, comp_mem_polyS (fun k => hS _ k)
-    ((polyS S).mul_mem (C_mem_polyS hc) ((polyS S).pow_mem X_mem_polyS _)), rfl⟩
+  exact ⟨_, comp_mem_polyS (hS _) ((polyS S).mul_mem (C_mem_polyS hc) ((polyS S).pow_mem X_mem_polyS _)), rfl⟩
 
 def Valid (S : Subring R) (D : ℕ) (l : List (R × ℕ × G)) : Prop := ∀ L ∈ l, L.1 ∈ S ∧ D ≤ L.2.1
 

@@ -185,8 +185,7 @@ theorem goodPart_le_typeSubspace (D : D7) (i : D.ntw.Tw) (j : ℕ) (b : Bool) : 
   have hy : y ∈ NForms.Fm0 D i j b := hy0
   simp only [NForms.Fm0, Submodule.mem_iInf, LinearMap.mem_ker, LinearMap.sub_apply, LinearMap.smul_apply,
     LinearMap.id_apply, LinearEquiv.coe_coe, sub_eq_zero] at hy ⊢
-  intro u
-  rw [← eG_actG, hy u, map_smul]
+  exact fun u => by rw [← eG_actG, hy u, map_smul]
 
 theorem V0_eq_type_inf_range (D : D7) (i : D.ntw.Tw) (j : ℕ) (b : Bool) :
     NForms.V0 D i j b = NForms.Fm0 D i j b ⊓ LinearMap.range (NForms.eG D i j b) := by

@@ -24,8 +24,7 @@ lemma mem_hcompl (w : HeightOneSpectrum (𝓞 K)) (x : 𝓞 K) (h1 : x ∉ w.asI
   have hct : cO K t = x := by
     apply RingOfIntegers.ext
     change star (t : K) = (x : K)
-    have ht' : (t : K) = star (x : K) := ht
-    rw [ht', star_star]
+    simpa using congrArg star ht
   rw [← hct]
   exact Ideal.mem_map_of_mem _ htw
 

@@ -147,8 +147,7 @@ theorem Read.frob_eq {A K L : Type} [CommRing A] [CommRing K] [CommRing L]
   obtain ⟨α, hα, x, hx, hs⟩ := hB P (fun h => hP (Finset.mem_union_left _ h))
   obtain ⟨α', hα', x', hx', hs'⟩ := hB' P (fun h => hP (Finset.mem_union_right _ h))
   have e : α = α' := hα.unique hα'
-  have ex : x = x' := hC (by rw [hx, hx', e])
-  rw [hs σ hσ, hs' σ hσ, ex]
+  rw [hs σ hσ, hs' σ hσ, hC (show embC x = embC x' by rw [hx, hx', e])]
 
 theorem val_root_one (A : ValuationSubring Ω) {x : Ω} {N : ℕ} (hN : N ≠ 0) (hx : x ^ N = 1) : A.valuation x = 1 := by
   have h := congrArg A.valuation hx

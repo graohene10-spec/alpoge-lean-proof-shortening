@@ -35,12 +35,7 @@ lemma dvd_of_norm_lt (k : ℤ) (i : ℕ) (hk : ‖(k : ℚ_[p])‖ < (p : ℝ) ^
   have hle : ‖(k : ℚ_[p])‖ ≤ (p : ℝ) ^ (-(i : ℤ)) := by
     rw [hz]
     exact zpow_le_zpow_right₀ hp1.le (by omega)
-  have hiff : ‖(k : ℚ_[p])‖ ≤ (p : ℝ) ^ (-(i : ℤ)) ↔ (p ^ i : ℤ) ∣ k := by
-    first
-      | exact padicNormE.norm_int_le_pow_iff_dvd k i
-      | exact Padic.norm_int_le_pow_iff_dvd k i
-      | (have h0 := padicNormE.norm_int_le_pow_iff_dvd (p := p) k i; push_cast at h0; exact h0)
-  exact hnd (hiff.mp hle)
+  exact hnd (by simpa only [Nat.cast_pow] using (Padic.norm_int_le_pow_iff_dvd (p := p) k i).mp hle)
 
 omit [NormedAlgebra ℚ_[p] K] in
 lemma vmin_le (h : ℕ) (x : K) :

@@ -88,9 +88,7 @@ theorem haar_map (hE : UJEmb) (hU : Unimodular) (hC : UHConj) (hP : IsUnit P.det
   have hcl : IsClosed (Set.range (phi ε P)) := hce.isClosed_range
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · rw [← hr, Measure.map_apply hm hcl.measurableSet.compl]
-    have : phi ε P ⁻¹' (Set.range (phi ε P))ᶜ = ∅ := by
-      ext u; simp
-    rw [this, measure_empty]
+    simp
   · intro a ha
     rw [← hr] at ha
     obtain ⟨u, rfl⟩ := ha
@@ -222,14 +220,10 @@ theorem shell_int : ShellInt :=
 
 theorem gN_meas (k r : ℕ) : Measurable fun g : Mt k r => gN (Matrix.of g) := by
   unfold gN
-  apply Measurable.sqrt
-  refine Finset.measurable_sum _ fun i _ => Finset.measurable_sum _ fun j _ => ?_
-  have : Measurable fun g : Mt k r => g i j := (measurable_pi_apply j).comp (measurable_pi_apply i)
-  exact Complex.continuous_normSq.measurable.comp this
+  exact Measurable.sqrt (Finset.measurable_sum _ fun i _ => Finset.measurable_sum _ fun j _ => Complex.continuous_normSq.measurable.comp ((measurable_pi_apply j).comp (measurable_pi_apply i)))
 
 theorem ae_mem {U : Set (Mat k r)} {μ : Measure (Mt k r)} (h : IsHaarOn U μ) : ∀ᵐ g ∂μ, Matrix.of g ∈ U := by
-  rw [ae_iff]
-  exact h.conc
+  exact ae_iff.mpr h.conc
 
 theorem gnLower : GNLower := fun _ _ _ hg => Formalism.FourierDecayAlt.P.BetaSesquilinearity.gN_ge_one hg
 

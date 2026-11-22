@@ -230,8 +230,7 @@ theorem kernelAtPrime_pairCondition_of_lifts {D : D7} {cc : Ideal (𝓞 D.host.K
     (Kp : LocalToGlobal₂ D Gt c Tw u w h Ch) {O : LiftObj D (D.chTw u (D.what₂.muAt w))} (A : ∀ j, AdLift D cc δ e Q O j)
     (hA : ∀ j < D.R.m, (A j).kjPair) : kjAtP Kp A := by
   intro j hj c0 hc0 hd ht x y hxy
-  refine ⟨(Kp.cmp_K j hj x y hxy).symm, fun Qc hQ a' L' y' => ?_⟩
-  exact kjForm_of Tw (A j) ((A j).kjSum_of (hA j hj)) c0 hc0 hd ht x y hxy Qc hQ _ y'
+  exact ⟨(Kp.cmp_K j hj x y hxy).symm, fun Qc hQ a' L' y' => kjForm_of Tw (A j) ((A j).kjSum_of (hA j hj)) c0 hc0 hd ht x y hxy Qc hQ _ y'⟩
 
 def liftTieH (D : D7) {u : D.what₂.Word} {C : ColumnChain D.R D.what₂.Tau (D.hcW u)} (O : LiftObj D C) (i : ℕ)
     (dg : D.what₂.Tau → ℕ) : Prop :=
@@ -242,17 +241,14 @@ theorem liftTieH_of {D : D7} {cc : Ideal (𝓞 D.host.K)} {δ : ℂ} {e : FamE D
     {C : ColumnChain D.R D.what₂.Tau (D.hcW u)} {O : LiftObj D C} {i : ℕ} (hi : i < D.R.m) (A : AdLift D cc δ e Q O i)
     (h : A.kjPair) (c0 : ℂ) (h0 : A.Θ.IsResidueClassZero c0) (hd : A.IsDef c0) (ht : A.ThIs) : liftTieH D O i A.dg := by
   intro c c' Qp hQ y'
-  have hsh : ∀ y, (∏ τ, (C.de i y τ) ^ (C.sSharp i τ)) ≠ 0 := fun y =>
-    Finset.prod_ne_zero_iff.mpr fun τ _ => zpow_ne_zero _ (C.de_ne i y τ)
   have hf : C.sharp i (fun y => (∏ τ, (C.de i y τ) ^ (C.sSharp i τ))⁻¹ * evFr D Qp (O.frm i y)) =
       fun y => evFr D Qp (O.frm i y) := by
     funext y
     simp only [ColumnChain.sharp, Formalism.BasicNotions.mulFun, LinearMap.coe_mk, AddHom.coe_mk]
-    rw [← mul_assoc, mul_inv_cancel₀ (hsh y), one_mul]
+    rw [← mul_assoc, mul_inv_cancel₀ (Finset.prod_ne_zero_iff.mpr fun τ _ => zpow_ne_zero _ (C.de_ne i y τ)), one_mul]
   have h1 := h c0 h0 hd c c' (O.Th i c c') (ht c c') Qp hQ _ y' hf
   simp only [ColumnChain.Kmap, LinearMap.smul_apply, LinearMap.comp_apply, hf, ColumnChain.divDe,
-    Formalism.BasicNotions.mulFun, LinearMap.coe_mk, AddHom.coe_mk, Pi.smul_apply, smul_eq_mul, termO] at h1
-  rw [(O.c13 i hi).1 c, (O.c13 i hi).2 c'] at h1
+    Formalism.BasicNotions.mulFun, LinearMap.coe_mk, AddHom.coe_mk, Pi.smul_apply, smul_eq_mul, termO, (O.c13 i hi).1 c, (O.c13 i hi).2 c'] at h1
   have hρ : (((rhoOf D O.mt i (O.dt i c) : ℂˣ) : ℂ) * ((rhoOf' D O.mt i (O.dt (i + 1) c') : ℂˣ) : ℂ)) ≠ 0 :=
     mul_ne_zero (Units.ne_zero _) (Units.ne_zero _)
   have hde : (∏ τ, (C.de (i + 1) y' τ) ^ (C.sDiv i τ))⁻¹ ≠ 0 :=
@@ -381,8 +377,7 @@ def ThetaUnitAbsoluteValue (D : D7) (cc : Ideal (𝓞 D.host.K)) (δ : ℂ) : Pr
 private lemma unit_abs_of_normalisation_lemma (D : D7) (T : Tor D) {N N' : ℕ} (La' : AddSubgroup (VC D N N')) (c : ℂ)
     (G : VC D N N' → ℂ) : normSq D T La' (c • G) = ‖c‖ ^ 2 * normSq D T La' G := by
   unfold Formalism.MainNotions.TaylorLogMetric.normSq
-  simp only [Pi.smul_apply, smul_eq_mul, norm_mul, mul_pow, mul_assoc, MeasureTheory.average]
-  exact MeasureTheory.integral_const_mul _ _
+  simp only [Pi.smul_apply, smul_eq_mul, norm_mul, mul_pow, mul_assoc, MeasureTheory.average, MeasureTheory.integral_const_mul]
 
 theorem unit_abs_of_normalisation {D : D7} {cc : Ideal (𝓞 D.host.K)} {δ : ℂ} (h : kjOne D cc δ) : ThetaUnitAbsoluteValue D cc δ := by
   intro N N' e0 he Θ hWB
@@ -886,17 +881,12 @@ theorem wtI_thm (D : D7) : wtI D := by
 theorem wtRec_thm (D : D7) : wtRec D := by
   intro u τ i hi
   refine ⟨fun C => ⟨?_, ?_⟩, fun r hr => ?_⟩
-  · rw [C.sSharp_eq i hi τ]
-    simp only [sJ', eJ, dif_pos hi]
-  · rw [C.sDiv_eq i hi τ]
-    simp only [sJ, eJ, dif_pos hi]
-  · have hi1 : 1 ≤ i + 1 ∧ i + 1 ≤ D.R.m := ⟨by omega, by omega⟩
-    have hw : Formalism.BasicNotions.DV.wSz D (i + 1) τ = (((D.hc τ).e ⟨i, hi⟩ : ℚ) : ℝ) := by
-      simp only [Formalism.BasicNotions.DV.wSz, dif_pos hi1, Nat.add_sub_cancel]
-    have key : Formalism.BasicNotions.DV.nuRow D u (i + 1) τ r = (((Formalism.BasicNotions.DV.srcPar D u τ r + (D.hc τ).e ⟨i, hi⟩ -
+  · simp only [C.sSharp_eq i hi τ, sJ', eJ, dif_pos hi]
+  · simp only [C.sDiv_eq i hi τ, sJ, eJ, dif_pos hi]
+  · have key : Formalism.BasicNotions.DV.nuRow D u (i + 1) τ r = (((Formalism.BasicNotions.DV.srcPar D u τ r + (D.hc τ).e ⟨i, hi⟩ -
         (((D.R.N i : ℚ) + (D.R.N (i + 1) : ℚ) - 1 - 2 * (r : ℚ)) / 2)) : ℚ) : ℝ) := by
-      unfold Formalism.BasicNotions.DV.nuRow
-      rw [hw, Nat.add_sub_cancel]
+      simp only [Formalism.BasicNotions.DV.nuRow, Formalism.BasicNotions.DV.wSz,
+        dif_pos (by omega : 1 ≤ i + 1 ∧ i + 1 ≤ D.R.m), Nat.add_sub_cancel]
       push_cast
       ring
     rw [key]
@@ -986,17 +976,15 @@ def ClsInt.cnt {D : D7} {N : ℕ} (X : ClsInt D N) (g h : GA D N) : ℕ :=
 theorem ClsInt.cnt_eq {D : D7} {N : ℕ} (X : ClsInt D N) (g h γ0 : GA D N) (h0 : IsRatU D γ0) (hJ : g⁻¹ * (γ0 * h) ∈ X.J) :
     X.cnt g h = X.gam g := by
   unfold ClsInt.cnt ClsInt.gam
-  exact Nat.card_congr
-    { toFun := fun x => ⟨x.1 * γ0⁻¹, x.2.1.mul h0.inv, by
-        have h1 := X.J.mul_mem x.2.2 (X.J.inv_mem hJ)
-        convert h1 using 1
-        group⟩
-      invFun := fun y => ⟨y.1 * γ0, y.2.1.mul h0, by
-        have h1 := X.J.mul_mem y.2.2 hJ
-        convert h1 using 1
-        group⟩
-      left_inv := fun x => Subtype.ext (by simp)
-      right_inv := fun y => Subtype.ext (by simp) }
+  refine Nat.card_congr (Equiv.subtypeEquiv (Equiv.mulRight γ0⁻¹) ?_)
+  intro x
+  constructor
+  · rintro ⟨hx, hJx⟩
+    exact ⟨hx.mul h0.inv, by
+      simpa [mul_assoc, mul_inv_rev, inv_inv] using X.J.mul_mem hJx (X.J.inv_mem hJ)⟩
+  · rintro ⟨hx, hJx⟩
+    exact ⟨by simpa using hx.mul h0, by
+      simpa [mul_assoc] using X.J.mul_mem hJx hJ⟩
 
 theorem ClsInt.cnt_zero {D : D7} {N : ℕ} (X : ClsInt D N) (g h : GA D N)
     (hn : ¬ ∃ γA : GA D N, IsRatU D γA ∧ g⁻¹ * (γA * h) ∈ X.J) : X.cnt g h = 0 := by
@@ -1078,9 +1066,8 @@ def csII (D : D7) (cc : Ideal (𝓞 D.host.K)) (δ : ℂ) : Prop :=
 
 theorem csII_of {D : D7} {cc : Ideal (𝓞 D.host.K)} {δ : ℂ} (h : oddRat D cc δ) : csII D cc δ := by
   intro N N' S γ γ' γA γA' hγ hγ' g g' F hF
-  rw [S.W.mul _ _ _ _ F hF]
-  exact h N N' S.posN S.posN' S.ev S.e0 S.unitaryTransvection_zero_first_mem_closure S.W.nz S.W S.ep S.ep' S.a S.a' S.a_eq S.a'_eq
-    γ γ' γA γA' hγ hγ' (S.W.Om g g' F) (S.W.maps g g' F hF)
+  simpa only [← S.W.mul _ _ _ _ F hF] using
+    h N N' S.posN S.posN' S.ev S.e0 S.unitaryTransvection_zero_first_mem_closure S.W.nz S.W S.ep S.ep' S.a S.a' S.a_eq S.a'_eq γ γ' γA γA' hγ hγ' (S.W.Om g g' F) (S.W.maps g g' F hF)
 
 def actS (D : D7) {N N' : ℕ} (γ : Matrix (Fin N) (Fin N) D.host.E) (P : MvPolynomial (Idx D N N') ℂ) : MvPolynomial (Idx D N N') ℂ :=
   MvPolynomial.aeval (fun k : Idx D N N' => ∑ a' : Fin N,

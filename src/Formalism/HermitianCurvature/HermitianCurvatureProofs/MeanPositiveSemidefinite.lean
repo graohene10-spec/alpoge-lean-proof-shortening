@@ -62,14 +62,11 @@ theorem finite_classes {K : Type} [AddCommGroup K] (R P : AddSubgroup K) (h : R.
     (fun q : P ⧸ R.addSubgroupOf P => (((Quotient.out q : P) : K) : K ⧸ R))).subset ?_
   intro x hx
   refine ⟨((⟨Quotient.out x, hx⟩ : P) : P ⧸ R.addSubgroupOf P), ?_⟩
-  have h1 : ((Quotient.out ((⟨Quotient.out x, hx⟩ : P) : P ⧸ R.addSubgroupOf P) : P) :
-      P ⧸ R.addSubgroupOf P) = ((⟨Quotient.out x, hx⟩ : P) : P ⧸ R.addSubgroupOf P) :=
-    QuotientAddGroup.out_eq' _
+  have h1 := QuotientAddGroup.out_eq' ((⟨Quotient.out x, hx⟩ : P) : P ⧸ R.addSubgroupOf P)
   rw [QuotientAddGroup.eq, AddSubgroup.mem_addSubgroupOf] at h1
-  have h2 : (((Quotient.out ((⟨Quotient.out x, hx⟩ : P) : P ⧸ R.addSubgroupOf P) : P) : K) :
-      K ⧸ R) = ((Quotient.out x : K) : K ⧸ R) := by
-    rw [QuotientAddGroup.eq]; simpa using h1
-  exact h2.trans (QuotientAddGroup.out_eq' x)
+  trans ((Quotient.out x : K) : K ⧸ R)
+  · rw [QuotientAddGroup.eq]; simpa using h1
+  · exact QuotientAddGroup.out_eq' x
 
 theorem finsum_ite_eq {α : Type} (S : Finset α) (p : α → Prop) [DecidablePred p] (f : α → ℂ)
     (hS : ∀ x, p x → x ∈ S) :

@@ -30,8 +30,7 @@ def Tw (w : HeightOneSpectrum (𝓞 K)) : Submonoid (𝓞 K) where
 theorem cO_coe (x : 𝓞 K) : ((cO K x : 𝓞 K) : K) = star (x : K) := rfl
 
 theorem cO_cO (x : 𝓞 K) : cO K (cO K x) = x := by
-  apply RingOfIntegers.ext
-  rw [cO_coe, cO_coe, star_star]
+  exact RingOfIntegers.ext (by rw [cO_coe, cO_coe, star_star])
 
 theorem cO_mem_Tw {w : HeightOneSpectrum (𝓞 K)} {s : 𝓞 K} (hs : s ∈ Tw w) : cO K s ∈ Tw w :=
   ⟨hs.2, by rw [cO_cO]; exact hs.1⟩
@@ -85,8 +84,7 @@ theorem vw_pow (w : HeightOneSpectrum (𝓞 K)) (a : K) (m : ℕ) :
 
 theorem vw_int_nonneg (w : HeightOneSpectrum (𝓞 K)) (r : 𝓞 K) : 0 ≤ vw w (r : K) := by
   unfold vw
-  rw [show (r : K) = algebraMap (𝓞 K) K r from rfl, ← FractionalIdeal.coeIdeal_span_singleton]
-  exact FractionalIdeal.count_coe_nonneg K w _
+  simpa [← FractionalIdeal.coeIdeal_span_singleton] using FractionalIdeal.count_coe_nonneg K w (Ideal.span {r})
 
 theorem vw_unit (w : HeightOneSpectrum (𝓞 K)) (r : 𝓞 K) (hr : r ∉ w.asIdeal) :
     vw w (r : K) = 0 := by

@@ -12,7 +12,6 @@ theorem coeff_expand_eq_zero {R : Type*} [CommRing R] {τ : Type*} (q : ℕ) (hq
     (hq2 : 2 ≤ q) (φ : MvPowerSeries τ R) (N : ℕ) (hN : 1 ≤ N)
     (hlow : ∀ m : τ →₀ ℕ, m.degree < N → MvPowerSeries.coeff m φ = 0)
     (d : τ →₀ ℕ) (hd : d.degree = N) : MvPowerSeries.coeff d (MvPowerSeries.expand q hq φ) = 0 := by
-
   classical
   by_cases hdiv : ∀ i, q ∣ d i
   · let m : τ →₀ ℕ := d.mapRange (fun k => k / q) (by simp)
@@ -24,11 +23,10 @@ theorem coeff_expand_eq_zero {R : Type*} [CommRing R] {τ : Type*} (q : ℕ) (hq
     rw [hdm, MvPowerSeries.coeff_expand_smul]
     apply hlow
     have h1 : q * m.degree = N := by rw [← hdeg, hd]
-    have h2 : 0 < m.degree := by
-      rcases Nat.eq_zero_or_pos m.degree with h | h
-      · rw [h, mul_zero] at h1
-        omega
-      · exact h
+    have h2 : 0 < m.degree := Nat.pos_of_ne_zero (by
+      intro h0
+      rw [h0, mul_zero] at h1
+      omega)
     nlinarith
   · push_neg at hdiv
     obtain ⟨i, hi⟩ := hdiv

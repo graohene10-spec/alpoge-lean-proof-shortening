@@ -39,16 +39,15 @@ theorem Closed.large {𝒞 : FamClass} {P Q : ∀ {eps : ℝ}, FamP eps → ℝ 
   obtain ⟨K1, hK1⟩ := h1 eps h0 hle
   refine ⟨⟨max K0.pre K1.pre, fun l => max (K0.t l) (K1.t l), fun l => max (K0.mid l) (K1.mid l),
     fun l => max (K0.last l) (K1.last l)⟩, fun Fm CH hc hL => ?_⟩
-  unfold FamP.Large at hL
-  obtain ⟨hA, -, hC, hD⟩ := hL
+  simp only [FamP.Large, max_le_iff] at hL
   have hL0 : Fm.Large K0 CH := by
     unfold FamP.Large
-    exact ⟨fun c hc' => le_trans (le_max_left _ _) (hA c hc'), trivial,
-      fun c hc' => le_trans (le_max_left _ _) (hC c hc'), fun c hc' => le_trans (le_max_left _ _) (hD c hc')⟩
+    exact ⟨fun c hc' => (hL.1 c hc').1, trivial,
+      fun c hc' => (hL.2.2.1 c hc').1, fun c hc' => (hL.2.2.2 c hc').1⟩
   have hL1 : Fm.Large K1 CH := by
     unfold FamP.Large
-    exact ⟨fun c hc' => le_trans (le_max_right _ _) (hA c hc'), trivial,
-      fun c hc' => le_trans (le_max_right _ _) (hC c hc'), fun c hc' => le_trans (le_max_right _ _) (hD c hc')⟩
+    exact ⟨fun c hc' => (hL.1 c hc').2, trivial,
+      fun c hc' => (hL.2.2.1 c hc').2, fun c hc' => (hL.2.2.2 c hc').2⟩
   exact h Fm CH hL0 (hK1 Fm CH hc hL1)
 
 end Formalism.MainNotions.Pk

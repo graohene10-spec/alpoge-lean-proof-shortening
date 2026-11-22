@@ -20,14 +20,13 @@ theorem dividedPowerMonomial_eq_sum (k : ℕ) :
   have sum_support_single_eq_lemma {σ ι : Type _} [Fintype ι] (f : ι →₀ ℕ) (g : ι → σ) :
       ∑ l ∈ f.support, Finsupp.single (g l) (f l) = ∑ l, Finsupp.single (g l) (f l) :=
     Finset.sum_subset (Finset.subset_univ _) fun l _ hl => by
-      have h0 : f l = 0 := by simpa using hl
-      rw [h0, Finsupp.single_zero]
+      rw [show f l = 0 by simpa using hl, Finsupp.single_zero]
   simp only [Formalism.MainNotions.G.divPowMono, shiftedExponent, rootShiftCoefficient, sourceVar, targetVar]
   refine Finset.sum_congr rfl fun f _ => ?_
-  rw [sum_support_single_eq_lemma f, sum_support_single_eq_lemma f, Finset.prod_subset (Finset.subset_univ f.support)]
+  rw [sum_support_single_eq_lemma f, sum_support_single_eq_lemma f,
+    Finset.prod_subset (Finset.subset_univ f.support)]
   intro l _ hl
-  have h0 : f l = 0 := by simpa using hl
-  simp [h0]
+  simp [show f l = 0 by simpa using hl]
 
 open Classical in
 theorem sum_finsuppAntidiag_eq_sum_piFinset (k : ℕ) :
@@ -127,10 +126,8 @@ theorem map_dividedPowerMonomial (k : ℕ) :
   unfold Formalism.MainNotions.G.divPowMono
   rw [map_sum]
   refine Finset.sum_congr rfl fun f _ => ?_
-  have h : ∀ l, φ (if LL.vec l then ((m (l, b)).choose (f l) : R) else (-1 : R) ^ (f l) * ((m (l, a)).choose (f l) : R)) =
-      (if LL.vec l then ((m (l, b)).choose (f l) : B) else (-1 : B) ^ (f l) * ((m (l, a)).choose (f l) : B)) :=
-    fun l => by split_ifs <;> simp
-  simp only [MvPolynomial.map_monomial, map_prod, h]
+  simp only [MvPolynomial.map_monomial, map_prod]
+  exact congrArg (monomial _) (Finset.prod_congr rfl fun l _ => by split_ifs <;> simp)
 
 theorem dividedPower_monomial (k : ℕ) (c : R) :
     divPow R LL S a b k (monomial m c) = c • divPowMono R LL S a b k m := by

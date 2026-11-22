@@ -91,8 +91,6 @@ theorem mem_gLat (g : GL (Fin n) K) (M : Submodule (𝓞 K) (Fin n → K)) (x : 
 
 theorem dualFr_gLat (g : GL (Fin n) K) (M : Submodule (𝓞 K) (Fin n → K)) :
     dualFr (gLat g M) = gLat (inside₂ K n g) (dualFr M) := by
-  have hinv : (((g⁻¹ : GL (Fin n) K) : Matrix (Fin n) (Fin n) K))ᵀ * (g : Matrix (Fin n) (Fin n) K)ᵀ = 1 := by
-    rw [← Matrix.transpose_mul, Units.mul_inv, Matrix.transpose_one]
   ext φ
   rw [mem_dualFr, mem_gLat]
   constructor
@@ -102,23 +100,20 @@ theorem dualFr_gLat (g : GL (Fin n) K) (M : Submodule (𝓞 K) (Fin n → K)) :
       have := h ((g : Matrix (Fin n) (Fin n) K) *ᵥ x) ((mem_gLat g M _).2 ⟨x, hx, rfl⟩)
       rwa [Matrix.dotProduct_mulVec, ← Matrix.mulVec_transpose] at this
     · show (((g⁻¹ : GL (Fin n) K) : Matrix (Fin n) (Fin n) K))ᵀ *ᵥ ((g : Matrix (Fin n) (Fin n) K)ᵀ *ᵥ φ) = φ
-      rw [Matrix.mulVec_mulVec, hinv, Matrix.one_mulVec]
+      rw [Matrix.mulVec_mulVec, ← Matrix.transpose_mul, Units.mul_inv, Matrix.transpose_one, Matrix.one_mulVec]
   · rintro ⟨ψ, hψ, rfl⟩ y hy
     obtain ⟨x, hx, rfl⟩ := (mem_gLat g M y).1 hy
-    have := (mem_dualFr M ψ).1 hψ x hx
     show (((g⁻¹ : GL (Fin n) K) : Matrix (Fin n) (Fin n) K))ᵀ *ᵥ ψ ⬝ᵥ ((g : Matrix (Fin n) (Fin n) K) *ᵥ x) ∈ _
-    rwa [Matrix.dotProduct_mulVec, Matrix.mulVec_transpose, Matrix.vecMul_vecMul, Units.inv_mul,
-      Matrix.vecMul_one]
+    simpa only [Matrix.dotProduct_mulVec, Matrix.mulVec_transpose, Matrix.vecMul_vecMul, Units.inv_mul, Matrix.vecMul_one] using (mem_dualFr M ψ).1 hψ x hx
 
 variable {ι : Type} [Fintype ι]
 
 theorem nabK_gLat (lam : ι → DomWeight n) (M : ι → Submodule (𝓞 K) (Fin n → K)) (g : ι → GL (Fin n) K) :
     nabK lam (fun τ => gLat (g τ) (M τ)) = (nabK lam M).map ((rhoK lam g).restrictScalars (𝓞 K)) := by
-  have hE := (nabDelEquiv K ι n lam M g).1
   ext x
   simp only [nabK, Submodule.mem_comap, Submodule.mem_map,
     LinearMap.coe_restrictScalars, Submodule.subtype_apply]
-  rw [hE, Submodule.mem_map]
+  rw [(nabDelEquiv K ι n lam M g).1, Submodule.mem_map]
   constructor
   · rintro ⟨y, hy, hyx⟩
     have hyV : y ∈ VV K lam := by
@@ -126,8 +121,7 @@ theorem nabK_gLat (lam : ι → DomWeight n) (M : ι → Submodule (𝓞 K) (Fin
         rw [← hyx]
         show y = actP lam g⁻¹ (actP lam g y)
         rw [← polyAction_mul, inv_mul_cancel, polyAction_one₂]
-      rw [this]
-      exact polyAction_mem_VV lam g⁻¹ x.2
+      simpa [this] using polyAction_mem_VV lam g⁻¹ x.2
     exact ⟨⟨y, hyV⟩, hy, Subtype.ext (by rw [rhoK_coe]; exact hyx)⟩
   · rintro ⟨y, hy, rfl⟩
     exact ⟨y.1, hy, (rhoK_coe lam g y).symm⟩

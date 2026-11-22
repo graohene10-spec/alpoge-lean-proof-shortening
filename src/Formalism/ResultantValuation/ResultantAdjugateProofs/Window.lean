@@ -24,9 +24,8 @@ lemma emultiplicity_eq_valuation {x : ℤ_[l]} (hx : x ≠ 0) :
 
 private theorem not_dvd_one'_lemma_2 : ¬ (l : ℤ_[l]) ∣ 1 := by
   intro h
-  have h1 := (pow_dvd_iff_le_valuation_lemma (one_ne_zero : (1 : ℤ_[l]) ≠ 0) 1).1 (by rwa [pow_one])
-  rw [PadicInt.valuation_one] at h1
-  omega
+  have h1 := (pow_dvd_iff_le_valuation_lemma (one_ne_zero : (1 : ℤ_[l]) ≠ 0) 1).1 (by simpa using h)
+  simp [PadicInt.valuation_one] at h1
 
 private theorem prime_l_lemma_3 : Prime (l : ℤ_[l]) := by
   exact PadicInt.prime_p (p := l)

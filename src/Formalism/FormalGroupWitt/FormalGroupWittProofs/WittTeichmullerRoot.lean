@@ -6,8 +6,7 @@ namespace Formalism.FG.WittVectorsCharZero
 
 theorem zlToW_injective (l : ℕ) [Fact l.Prime] : Function.Injective (zlToW l) := by
   intro a b h
-  have h1 := WittVector.map_injective _ (algebraMap (ZMod l) (AlgebraicClosure (ZMod l))).injective h
-  exact (WittVector.equiv l).symm.injective h1
+  exact (WittVector.equiv l).symm.injective (WittVector.map_injective _ (algebraMap (ZMod l) (AlgebraicClosure (ZMod l))).injective h)
 
 theorem neZero_cast (l : ℕ) [Fact l.Prime] (d : ℕ) (hd : 1 ≤ d) :
     NeZero (((l ^ d - 1 : ℕ) : ZMod l)) := by

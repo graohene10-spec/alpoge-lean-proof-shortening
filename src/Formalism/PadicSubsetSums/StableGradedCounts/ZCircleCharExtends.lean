@@ -7,9 +7,8 @@ theorem circle_pow_surjective {n : ℤ} (hn : n ≠ 0) :
   intro z
   obtain ⟨θ, rfl⟩ := Circle.exp_surjective z
   refine ⟨Circle.exp (θ / n), ?_⟩
-  have hn' : (n : ℝ) ≠ 0 := by exact_mod_cast hn
   show Circle.exp (θ / n) ^ n = Circle.exp θ
-  rw [← Circle.exp_zsmul, zsmul_eq_mul, mul_div_cancel₀ _ hn']
+  rw [← Circle.exp_zsmul, zsmul_eq_mul, mul_div_cancel₀ _ (by exact_mod_cast hn)]
 
 theorem circle_character_extends : CircleCharExtends := by
   intro A _ H χ

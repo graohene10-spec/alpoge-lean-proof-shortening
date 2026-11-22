@@ -60,19 +60,14 @@ theorem qb_Mpi_eq (hA : LemmaA) {M : GLMod n} (CF : ColFam M) (pi : Set (Fin n �
     rw [Submodule.span_le]
     rintro x ⟨j, hj, I, rfl⟩
     exact qb_mem_std hA CF pi hpi _ fun mu hmu hout => qb_ev_zero_of_mem CF ℚ hpi hj I hmu hout
-  · apply Submodule.span_mono
-    rintro x ⟨j, hj, I, -, rfl⟩
-    exact ⟨j, hj, I, rfl⟩
+  · exact Submodule.span_mono fun x ⟨j, hj, I, _, hx⟩ => ⟨j, hj, I, hx⟩
 
 theorem qb_Mpi_eq_image (hA : LemmaA) {M : GLMod n} (CF : ColFam M) (pi : Set (Fin n → ℤ)) (hpi : DomLowerSet pi) :
     CF.Mpi pi = Submodule.span ℤ (qb_basis hA CF ℤ '' {y | CF.mu y.1 ∈ pi}) := by
   rw [qb_Mpi_eq hA CF pi hpi]
   congr 1
   ext x
-  constructor
-  · rintro ⟨j, hj, I, hI, rfl⟩
-    exact ⟨⟨j, I, hI⟩, hj, by rw [qb_basis_apply, qb_vecF_int]⟩
-  · rintro ⟨y, hy, rfl⟩
-    exact ⟨y.1, hy, y.2.1, y.2.2, by rw [qb_basis_apply, qb_vecF_int]⟩
+  exact ⟨fun ⟨j, hj, I, hI, hx⟩ => ⟨⟨j, I, hI⟩, hj, by simpa [qb_basis_apply, qb_vecF_int] using hx.symm⟩,
+    fun ⟨y, hy, hx⟩ => ⟨y.1, hy, y.2.1, y.2.2, by simpa [qb_basis_apply, qb_vecF_int] using hx.symm⟩⟩
 
 end Formalism.InvariantFactorPaths.ColumnFamilies

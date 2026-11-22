@@ -353,9 +353,7 @@ abbrev wt (e : LVar ι ζ n →₀ ℕ) : Fin n → ℤ := Finsupp.weight (wV is
 
 theorem weight_pi_apply {σ : Type*} (W : σ → Fin n → ℤ) (e : σ →₀ ℕ) (m : Fin n) (w : σ → ℤ)
     (hw : ∀ x, W x m = w x) : Finsupp.weight W e m = Finsupp.weight w e := by
-  rw [Finsupp.weight_apply, Finsupp.weight_apply, Finsupp.sum, Finsupp.sum, Finset.sum_apply]
-  refine Finset.sum_congr rfl fun x _ => ?_
-  rw [Pi.smul_apply, hw]
+  simp [Finsupp.weight_apply, Finsupp.sum, Finset.sum_apply, hw]
 
 theorem wt_apply (e : LVar ι ζ n →₀ ℕ) (m : Fin n) (w : LVar ι ζ n → ℤ) (hw : ∀ x, wV isVec S x m = w x) :
     wt isVec S e m = Finsupp.weight w e := weight_pi_apply _ e m w hw

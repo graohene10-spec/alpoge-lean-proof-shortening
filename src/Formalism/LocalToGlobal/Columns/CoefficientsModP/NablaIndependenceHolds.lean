@@ -416,11 +416,9 @@ theorem nb_entries (w : HeightOneSpectrum (𝓞 K)) (M : Submodule (𝓞 K) (Fin
   have h0 : IsBasisAt w (colLat (1 : GL (Fin n) K)) 1 := rfl
   constructor
   · intro a b
-    have := lc_entries w hB h0 d (fun x hx => lc_le_locP w _ (h1 x hx)) a b
-    rwa [inv_one, one_mul] at this
+    simpa [inv_one] using lc_entries w hB h0 d (fun x hx => lc_le_locP w _ (h1 x hx)) a b
   · intro a b
-    have := lc_entries w h0 hB d (fun x hx => lc_le_locP w _ (h2 x hx)) a b
-    rwa [mul_one] at this
+    simpa using lc_entries w h0 hB d (fun x hx => lc_le_locP w _ (h2 x hx)) a b
 
 end Sandwich
 

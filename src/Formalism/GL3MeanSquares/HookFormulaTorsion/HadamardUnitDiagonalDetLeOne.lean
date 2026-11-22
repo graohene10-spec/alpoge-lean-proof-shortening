@@ -290,8 +290,7 @@ theorem third_zeta_arithmetic_bound : InterlacingLogSquareBound := by
   rw [e1]; nlinarith
 
 theorem weight_positive_part_nonneg {κ : ℕ} (lam : Fin (κ + 1) → ℤ) (h : Antitone lam) : 0 ≤ wt (plus lam) := by
-  unfold wt plus
-  exact Finset.sum_nonneg fun i _ => by have := h (Fin.le_last i); linarith
+  simpa only [wt, plus] using (Finset.sum_nonneg fun i _ => sub_nonneg.mpr (h (Fin.le_last i)))
 
 theorem fourth_zeta_arithmetic_bound : MuMaxBoundOfAntitoneWeight := by
   intro κ lam muMax dmin cc hA hcc hd hdm hc hmu

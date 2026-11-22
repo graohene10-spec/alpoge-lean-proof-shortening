@@ -110,8 +110,7 @@ private theorem coeff_pderiv_eq_coeff_add_single_mul' (v : σ) (h : MvPolynomial
     coeff m (pderiv v h) = coeff (m + Finsupp.single v 1) h * ((m v : k) + 1) := by
   have h1 := Formalism.GM.coeff_X_mul_pderiv' v h (m + Finsupp.single v 1)
   rw [mul_comm (X v), MvPolynomial.coeff_mul_X] at h1
-  rw [h1]
-  simp
+  simpa using h1
 
 theorem fockK_X_mul (v : σ) (g h : MvPolynomial σ k) :
     M.fockK (X v * g) h = M.fockK g (pderiv v h) := by
@@ -166,8 +165,7 @@ theorem eulL_apply {s : ℕ} (t : Fin s → σ) (g : MvPolynomial σ k) :
 
 theorem coeff_eulL {s : ℕ} (t : Fin s → σ) (g : MvPolynomial σ k) (m : σ →₀ ℕ) :
     coeff m (eulL t g) = coeff m g * ∑ c, (m (t c) : k) := by
-  rw [eulL_apply, MvPolynomial.coeff_sum, Finset.mul_sum]
-  exact Finset.sum_congr rfl (fun c _ => Formalism.GM.coeff_X_mul_pderiv' (t c) g m)
+  simpa only [eulL_apply, MvPolynomial.coeff_sum, Finset.mul_sum] using Finset.sum_congr rfl (fun c _ => Formalism.GM.coeff_X_mul_pderiv' (t c) g m)
 
 theorem eulL_of_support {s : ℕ} (t : Fin s → σ) (a : ℕ) (g : MvPolynomial σ k)
     (h : ∀ m ∈ g.support, ∑ c, m (t c) = a) : eulL t g = (a : k) • g := by

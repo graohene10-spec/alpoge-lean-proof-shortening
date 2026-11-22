@@ -63,13 +63,9 @@ theorem qn_deriv_rowGen (n : ℕ) (a b : Fin n) (hab : a ≠ b) (f : MvPolynomia
     · simp [rowGen, hc]
   induction f using MvPolynomial.induction_on with
   | C r =>
-    have hD : qn_D n a b (C r) = 0 := by
-      rw [qn_D_apply]
-      simp
-    rw [hD]
     simp [transposeVariables, rowGen]
   | add p q hp hq =>
-    simp only [map_add, Polynomial.derivative_add, hp, hq]
+    simp only [map_add, hp, hq]
   | mul_X p i hp =>
     have hL : qn_D n a b (p * X i) = p * qn_D n a b (X i) + X i * qn_D n a b p := by
       rw [Derivation.leibniz]
@@ -92,13 +88,9 @@ theorem qn_deriv_rowGen_diag (n : ℕ) (a : Fin n) (f : MvPolynomial (Fin n × F
     · simp [rowGen, hc]
   induction f using MvPolynomial.induction_on with
   | C r =>
-    have hD : qn_D n a a (C r) = 0 := by
-      rw [qn_D_apply]
-      simp
-    rw [hD]
     simp [transposeVariables, rowGen]
   | add p q hp hq =>
-    simp only [map_add, Polynomial.derivative_add, mul_add, hp, hq]
+    simp only [map_add, mul_add, hp, hq]
   | mul_X p i hp =>
     have hL : qn_D n a a (p * X i) = p * qn_D n a a (X i) + X i * qn_D n a a p := by
       rw [Derivation.leibniz]

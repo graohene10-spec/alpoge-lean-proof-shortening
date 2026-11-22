@@ -79,8 +79,7 @@ variable {O : Type} [CommRing O] [IsDomain O] [IsDiscreteValuationRing O]
 
 theorem length_residue (π : O) (hπ : Irreducible π) :
     Module.length O (O ⧸ Ideal.span {π}) = 1 := by
-  rw [Module.length_eq_one_iff, isSimpleModule_iff_isCoatom]
-  exact (PrincipalIdealRing.isMaximal_of_irreducible hπ).out
+  simpa [Module.length_eq_one_iff, isSimpleModule_iff_isCoatom] using (PrincipalIdealRing.isMaximal_of_irreducible hπ).out
 
 private theorem length_sup_span_le_add_one_of_smul_mem (π : O) (hπ : Irreducible π) {X : Type} [AddCommGroup X]
     [Module O X] (W : Submodule O X) (z : X) (hz : π • z ∈ W) :
@@ -261,9 +260,8 @@ theorem pw_le_span {M : Type} [AddCommGroup M] [Module O M] (π : O) (P : Submod
   intro y hy
   obtain ⟨y0, rfl⟩ := mem_pw.mp hy
   obtain ⟨x, rfl⟩ := P.mkQ_surjective y0
-  have hx := hC x Submodule.mem_top
   rw [Finset.coe_image, Submodule.span_image]
-  obtain ⟨p, hp, t, ht, hpt⟩ := Submodule.mem_sup.mp hx
+  obtain ⟨p, hp, t, ht, hpt⟩ := Submodule.mem_sup.mp (hC x Submodule.mem_top)
   refine Submodule.mem_map.mpr ⟨t, ht, ?_⟩
   have hp0 : P.mkQ p = 0 := (Submodule.Quotient.mk_eq_zero P).mpr hp
   rw [← map_smul, ← hpt, map_add, hp0, zero_add]

@@ -23,8 +23,7 @@ lemma Hdet (k r : ℕ) : IsUnit (Hpk k r).det := by
   exact Matrix.isUnit_det_of_right_inverse (Hsq k r)
 
 lemma gv_one : (1 : Mat k r) ∈ GV k r := by
-  show (1 : Mat k r)ᴴ * Hpk k r * 1 = Hpk k r
-  simp
+  simp [GV, UH]
 
 lemma gv_mul {a b : Mat k r} (ha : a ∈ GV k r) (hb : b ∈ GV k r) : a * b ∈ GV k r := by
   have ha' : aᴴ * Hpk k r * a = Hpk k r := ha
@@ -324,8 +323,7 @@ lemma CkOn_smul {m : ℕ∞} {UU : Set (Mat k r)} (c : ℂ) {f : Mat k r → E} 
   intro g₀ hg₀
   obtain ⟨U, f', hU, hgU, hc, he⟩ := hf g₀ hg₀
   exact ⟨U, fun g => c • f' g, hU, hgU, hc.const_smul c, fun g hg hgG => by
-    show c • f g = c • f' g
-    rw [he g hg hgG]⟩
+    simpa using congrArg (fun z => c • z) (he g hg hgG)⟩
 
 lemma CkOn_add {m : ℕ∞} {UU : Set (Mat k r)} {f₁ f₂ : Mat k r → E} (h₁ : CkOn m UU f₁)
     (h₂ : CkOn m UU f₂) : CkOn m UU (fun g => f₁ g + f₂ g) := by
@@ -888,15 +886,13 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E]
 
 lemma aesm_of_continuousOn (D : RealPlaceData k r Wp Wq) {f : Mat k r → E} (hf : ContinuousOn f (GV k r)) :
     AEStronglyMeasurable (fun g : Mt k r => f (Matrix.of g)) D.μG := by
-  have hcl : IsClosed (GV k r : Set (Mt k r)) := gv_closed
   have h1 : AEStronglyMeasurable (fun g : Mt k r => f (Matrix.of g)) (D.μG.restrict (GV k r : Set (Mt k r))) :=
     ContinuousOn.aestronglyMeasurable (α := Mt k r) (f := fun g : Mt k r => f (Matrix.of g))
-      (s := (GV k r : Set (Mt k r))) hf (IsClosed.measurableSet (α := Mt k r) hcl)
+      (s := (GV k r : Set (Mt k r))) hf (IsClosed.measurableSet (α := Mt k r) gv_closed)
   have h2 : D.μG.restrict (GV k r : Set (Mt k r)) = D.μG :=
     Measure.restrict_eq_self_of_ae_mem (by
-      have := D.haarG.conc
       rw [ae_iff]
-      exact this)
+      exact D.haarG.conc)
   rwa [h2] at h1
 
 end weaken

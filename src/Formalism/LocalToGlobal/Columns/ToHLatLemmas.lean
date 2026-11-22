@@ -318,9 +318,7 @@ theorem pairAt_of_rat (v : InfinitePlace K) (x y : S.V) (hx : ∀ i, S.bV.repr x
     Finset.mul_sum]
   rw [Finset.sum_comm]
   refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
-  have h1 : v.embedding ((starRingEnd K) (S.bV.repr x i)) = starRingEnd ℂ (v.embedding (S.bV.repr x i)) :=
-    hx i v.embedding
-  rw [h1, RingHom.id_apply]
+  rw [(show v.embedding ((starRingEnd K) (S.bV.repr x i)) = (starRingEnd ℂ) (v.embedding (S.bV.repr x i)) from hx i v.embedding), RingHom.id_apply]
   simp only [gramV, Matrix.of_apply]
   ring
 
@@ -389,9 +387,8 @@ theorem Rat.maj_eq {S : GSD K} (R : S.Rat) (h : S.Ok) (v : InfinitePlace K) (φ 
   rw [sesq_eq_sum (isSesq_maj (S.hB h) (stdFrame (S.hGram h))) (S.hB h) v φ ψ,
     sesq_eq_sum (S.isSesq_ipAt h) (S.hB h) v φ ψ, gramOf_maj,
     S.gram_ipAt h (csd_hasRatBasis _ (S.toCSDOf_rat h R S.outSec)) v]
-  have := (R.posH h).met v
-  unfold metOf at this
-  rw [this]
+  rw [show (stdFrame (S.hGram h) v)⁻¹ᴴ * (stdFrame (S.hGram h) v)⁻¹ = (S.hGram h).map v.embedding by
+    simpa only [metOf] using (R.posH h).met v]
 
 end GSD
 
@@ -559,9 +556,7 @@ theorem MramH_muMax_le (hPr : Pr.Ok) (hbig : 2 * X.f * R.k < Pr.g 0 - 1) (u : Pr
   have := hX.cplxK
   refine (colPosH W Ch hX u 0).muMax_sub_le (thl_ColL_isLattice W Ch hX u 0) (MramV W Ch u) ?_
   intro h0
-  have h1 := finrank_MramV_pos W Ch hX hPr hbig u hT
-  rw [h0, finrank_bot] at h1
-  exact lt_irrefl _ h1
+  exact (ne_of_gt (finrank_MramV_pos W Ch hX hPr hbig u hT)) (by rw [h0, finrank_bot])
 
 theorem MramH_numbers (u : Pr.Word) :
     (MramH W Ch hX u).mu = (withL (Mu0H W Ch hX u) (ramifiedSublattice W Ch u)).mu ∧

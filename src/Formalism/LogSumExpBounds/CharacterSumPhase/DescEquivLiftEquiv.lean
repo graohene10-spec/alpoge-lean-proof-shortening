@@ -73,8 +73,7 @@ theorem liftMap_spec (hinj : Function.Injective (algebraMap RR K)) (T : A₁ →
 
 theorem descend_wd (S : M₁ →ₗ[RR] M₂) (hS : S P₁.p = P₂.p) {x x' : M₁}
     (h : P₁.π x = P₁.π x') : P₂.π (S x) = P₂.π (S x') := by
-  have h3 : P₁.π (x - x') = 0 := by rw [map_sub, h, sub_self]
-  obtain ⟨r, hr⟩ := (P₁.ker _).1 h3
+  obtain ⟨r, hr⟩ := (P₁.ker (x - x')).1 (by rw [map_sub, h, sub_self])
   have h4 : P₂.π (S (x - x')) = 0 := by
     rw [hr, map_smul, hS]; exact (P₂.ker _).2 ⟨r, rfl⟩
   rwa [map_sub, map_sub, sub_eq_zero] at h4
@@ -285,16 +284,14 @@ def aK (Z : Matrix (Fin (m+1)) (Fin (m+1)) RR) : Fin m → K :=
 theorem alpha_mk (Z : Matrix (Fin (m+1)) (Fin (m+1)) RR) (hZ : IsUnit (toK K (blk Z)).det)
     (v : Fin m → RR) : alpha K Z (Submodule.Quotient.mk v) =
       Submodule.Quotient.mk (aK Z ⬝ᵥ ((toK K (blk Z))⁻¹ *ᵥ vk v)) := by
-  have hle : LinearMap.range (blk Z).mulVecLin ≤ LinearMap.ker (rowInvMod K (blk Z) (aK Z)) := by
+  have hle : LinearMap.range (blk Z).mulVecLin ≤ LinearMap.ker (rowInvMod K (blk Z) (fun j => algebraMap RR K (Z (Fin.last m) (Fin.castSucc j)))) := by
     rintro _ ⟨y, rfl⟩
     rw [LinearMap.mem_ker, mulVecLin_apply, rowInvMod_apply, vk_mulVec, mulVec_mulVec,
       nonsing_inv_mul _ hZ, one_mulVec, Submodule.Quotient.mk_eq_zero]
     refine ⟨(fun j => Z (Fin.last m) (Fin.castSucc j)) ⬝ᵥ y, ?_⟩
     rw [Algebra.linearMap_apply, RingHom.map_dotProduct]; rfl
   unfold alpha descend
-  split_ifs with h
-  · rw [Submodule.liftQ_apply, rowInvMod_apply]; rfl
-  · exact absurd hle h
+  rw [dif_pos hle, Submodule.liftQ_apply, rowInvMod_apply]; rfl
 
 def eN : Fin (m+1) → RR := Pi.single (Fin.last m) 1
 
@@ -303,8 +300,7 @@ theorem key_cval (Z : Matrix (Fin (m+1)) (Fin (m+1)) RR) (hZ : IsUnit (toK K Z).
     algebraMap RR K (v (Fin.last m)) - aK Z ⬝ᵥ ((toK K (blk Z))⁻¹ *ᵥ vk (fun i => v (Fin.castSucc i)))
       = cval K Z * fV Z v := by
   have h := key (toK K Z) hZ' ((toK K Z)⁻¹ *ᵥ vk v)
-  rw [mulVec_mulVec, mul_nonsing_inv _ hZ, one_mulVec] at h
-  exact h
+  rwa [mulVec_mulVec, mul_nonsing_inv _ hZ, one_mulVec] at h
 
 theorem cval_mul_kappa (Z : Matrix (Fin (m+1)) (Fin (m+1)) RR) (hZ : IsUnit (toK K Z).det)
     (hZ' : IsUnit (toK K (blk Z)).det) : cval K Z * kappa K Z = 1 := by
@@ -460,8 +456,7 @@ theorem PB_π_bbar (Z : Matrix (Fin (m+1)) (Fin (m+1)) RR) (hZ : IsUnit (toK K Z
   unfold bbar
   congr 1
   funext i
-  rw [Pcs, LinearMap.funLeft_apply, eN, mulVec_single_one]
-  rfl
+  simp [Pcs, LinearMap.funLeft_apply, eN]
 
 noncomputable def midEquiv {m₁ m₂ : ℕ} (Z₁ : Matrix (Fin (m₁+1)) (Fin (m₁+1)) RR)
     (Z₂ : Matrix (Fin (m₂+1)) (Fin (m₂+1)) RR) (h1 : IsUnit (toK K Z₁).det)

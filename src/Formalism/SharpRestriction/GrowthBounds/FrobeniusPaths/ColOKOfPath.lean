@@ -112,14 +112,12 @@ lemma costly_iff (mu : Fin (N + 1) → Fin (r + K) → ℤ) (c : ℤ) (j : ℕ) 
 
 lemma nomL_ne {R : Type} [CommRing R] (LL : LiftLetters (Fin N)) (mu : Fin (N + 1) → Fin (r + K) → ℤ) (c : ℤ)
     (i : Fin N) (m : Fin (r + K)) (h : nomL R LL mu c i m ≠ 0) : condUS LL i m ↔ IsCostly mu c i := by
-  classical
   by_contra hh
-  exact h (by unfold nomL; rw [if_neg hh])
+  exact h (by simp [nomL, hh])
 
 lemma wedgeR_ne {R : Type} [CommRing R] {k : ℕ} (x : Fin k → R) (Kv : Finset (Fin k) → R) (J : Finset (Fin k))
     (h : wedgeR x Kv J ≠ 0) : ∃ m ∈ J, x m ≠ 0 ∧ Kv (J.erase m) ≠ 0 := by
-  obtain ⟨m, hm, hne⟩ := Finset.exists_ne_zero_of_sum_ne_zero h
-  refine ⟨m, hm, fun e => hne (by rw [e]; simp), fun e => hne (by rw [e]; simp)⟩
+  exact (Finset.exists_ne_zero_of_sum_ne_zero h).imp fun m hm => ⟨hm.1, fun e => hm.2 (by rw [e]; simp), fun e => hm.2 (by rw [e]; simp)⟩
 
 lemma contrR_ne {R : Type} [CommRing R] {k : ℕ} (x : Fin k → R) (Kv : Finset (Fin k) → R) (J : Finset (Fin k))
     (h : contrR x Kv J ≠ 0) : ∃ m, m ∉ J ∧ x m ≠ 0 ∧ Kv (insert m J) ≠ 0 := by

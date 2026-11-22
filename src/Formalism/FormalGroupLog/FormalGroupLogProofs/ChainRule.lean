@@ -90,23 +90,20 @@ theorem pderiv_subst [Fintype σ] [Finite τ] {a : σ → MvPowerSeries τ R}
     have := agree_truncTotal N (a j) 0 (by simp [hN])
     rw [coeff_zero_eq_constantCoeff_apply, coeff_zero_eq_constantCoeff_apply, ha j] at this
     exact this.symm
-  have hfP : Agree N f (P : MvPowerSeries σ R) := agree_truncTotal N f
-  have haA : ∀ j, Agree N (a j) (A j) := fun j => agree_truncTotal N (a j)
   have h1 : Agree (d.degree + 1) (MvPowerSeries.pderiv R i (f.subst a))
       (MvPowerSeries.pderiv R i ((P : MvPowerSeries σ R).subst A)) :=
-    (Agree.subst ha hA0 hfP haA).pderiv i
+    (Agree.subst ha hA0 (agree_truncTotal N f) (fun j => agree_truncTotal N (a j))).pderiv i
   have h2 : ∀ j, Agree (d.degree + 1)
       ((MvPowerSeries.pderiv R j f).subst a * MvPowerSeries.pderiv R i (a j))
       ((MvPowerSeries.pderiv R j (P : MvPowerSeries σ R)).subst A *
         MvPowerSeries.pderiv R i (A j)) := fun j =>
-    Agree.mul (Agree.subst ha hA0 (hfP.pderiv j) fun k => (haA k).mono (by omega))
-      ((haA j).pderiv i)
+    Agree.mul (Agree.subst ha hA0 ((agree_truncTotal N f).pderiv j) fun k => (agree_truncTotal N (a k)).mono (by omega))
+      ((agree_truncTotal N (a j)).pderiv i)
   have key : MvPowerSeries.pderiv R i ((P : MvPowerSeries σ R).subst A) =
       ∑ j, (MvPowerSeries.pderiv R j (P : MvPowerSeries σ R)).subst A *
         MvPowerSeries.pderiv R i (A j) := by
     rw [subst_coe, pderiv_aeval]
-    refine Finset.sum_congr rfl fun j _ => ?_
-    rw [MvPowerSeries.pderiv_coe P, subst_coe]
+    exact Finset.sum_congr rfl fun j _ => by rw [MvPowerSeries.pderiv_coe P, subst_coe]
   rw [h1 d (by omega), key, map_sum, map_sum]
   exact Finset.sum_congr rfl fun j _ => (h2 j d (by omega)).symm
 
@@ -114,7 +111,6 @@ theorem pderiv_psubst [Finite τ] {a : MvPowerSeries τ R} (ha : constantCoeff a
     (f : PowerSeries R) (i : τ) :
     MvPowerSeries.pderiv R i (f.subst a) =
       (PowerSeries.derivative R f).subst a * MvPowerSeries.pderiv R i a := by
-  have := pderiv_subst (σ := Unit) (a := fun _ => a) (fun _ => ha) f i
-  simpa [PowerSeries.subst_def, PowerSeries.derivative] using this
+  simpa [PowerSeries.subst_def, PowerSeries.derivative] using pderiv_subst (σ := Unit) (a := fun _ => a) (fun _ => ha) f i
 
 end Formalism.G.LogCR

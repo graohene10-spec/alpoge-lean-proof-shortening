@@ -10,9 +10,8 @@ open Formalism.G0
 variable {L : Type} [Field L] {r : ℕ}
 
 lemma lastIdx_iff (hr : 0 < r) (a : Fin r) : a.val + 1 = r ↔ a = ⟨r - 1, by omega⟩ := by
-  constructor
-  · intro h; ext; simp; omega
-  · intro h; subst h; simp; omega
+  refine ⟨fun h => ?_, by rintro rfl; simp; omega⟩
+  ext; simp; omega
 
 lemma prod_lastX (hr : 0 < r) {R : Type} [CommRing R] (u : R) :
     (∏ a : Fin r, if a.val + 1 = r then u else 1) = u := by
@@ -68,9 +67,8 @@ lemma msMat_eval0 (g : GL (Fin r) L) :
   unfold msMat
   rw [Matrix.map_mul, Matrix.map_mul, Matrix.map_map, Matrix.map_map, Matrix.diagonal_map (by simp)]
   congr 2
-  · ext i j; simp
-  · congr 1; funext a; split_ifs <;> simp
-  · ext i j; simp
+  all_goals (ext i j; simp [Matrix.diagonal_apply])
+  all_goals (split_ifs <;> simp)
 
 end Formalism.G0.DetDividesP
 
@@ -413,10 +411,8 @@ lemma rho_Tm (A : Fin r → ι) (l : Fin r) : (rho K A l).mapMatrix (Tm K A) = T
   ext i j; simp [rho, Tm]
 
 lemma rho_adj (A : Fin r → ι) (l i j : Fin r) : rho K A l ((Tm K A).adjugate i j) = (Tm K A).adjugate i j := by
-  have := RingHom.map_adjugate (rho K A l).toRingHom (Tm K A)
-  have h2 : (rho K A l).toRingHom.mapMatrix (Tm K A) = Tm K A := rho_Tm A l
-  rw [h2] at this
-  exact congrFun (congrFun this i) j
+  have := congrFun (congrFun (RingHom.map_adjugate (rho K A l).toRingHom (Tm K A)) i) j
+  rwa [show (rho K A l).toRingHom.mapMatrix (Tm K A) = Tm K A from rho_Tm A l] at this
 
 lemma rho_cc (A : Fin r → ι) (hA : Function.Injective A) (lst l : Fin r) :
     rho K A l (((Tm K A).adjugate.mulVec (Wv K A)) lst) = (Tm K A).adjugate lst l := by

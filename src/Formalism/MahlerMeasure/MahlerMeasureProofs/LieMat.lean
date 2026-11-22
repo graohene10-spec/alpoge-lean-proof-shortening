@@ -66,8 +66,7 @@ theorem gaussR_prod_le {ι : Type*} (ρ : NNReal) (s : Finset ι) (f : ι → K[
   induction s using Finset.induction_on with
   | empty => simp only [prod_empty]; rw [← C_1, gaussR_C]; simp
   | insert a s ha ih =>
-    rw [prod_insert ha, prod_insert ha]
-    exact (gaussR_mul_le _ _ _).trans (by gcongr)
+    simpa [prod_insert ha] using (gaussR_mul_le ρ (f a) (∏ i ∈ s, f i)).trans (mul_le_mul' le_rfl ih)
 
 theorem gaussR_det_le (ρ : NNReal) {n : ℕ} (M : Matrix (Fin n) (Fin n) K[X]) (b : Fin n → NNReal)
     (hb : ∀ i j, gaussR ρ (M i j) ≤ b i) : gaussR ρ M.det ≤ ∏ i, b i := by
@@ -97,16 +96,14 @@ theorem norm_det_le_one {n : ℕ} (M : Matrix (Fin n) (Fin n) K) (hM : ∀ i j, 
     ‖M.det‖ ≤ 1 := by
   have h := gaussR_det_le 1 (M.map C) (fun _ => 1) (fun i j => by
     rw [Matrix.map_apply, gaussR_C, ← NNReal.coe_le_coe]; simpa using hM i j)
-  have e : (M.map C).det = C M.det := (RingHom.map_det C M).symm
-  rw [e, gaussR_C, prod_const_one, ← NNReal.coe_le_coe] at h
+  rw [show (M.map C).det = C M.det from (RingHom.map_det C M).symm, gaussR_C, prod_const_one, ← NNReal.coe_le_coe] at h
   simpa using h
 
 theorem norm_inv_entry_le {n : ℕ} (U : Matrix (Fin n) (Fin n) K) (hU : ∀ i j, ‖U i j‖ ≤ 1)
     (hdet : ‖U.det‖ = 1) (i j : Fin n) : ‖U⁻¹ i j‖ ≤ 1 := by
   rw [Matrix.inv_def, Matrix.smul_apply, Ring.inverse_eq_inv, smul_eq_mul, norm_mul, norm_inv, hdet,
     inv_one, one_mul, Matrix.adjugate_apply]
-  apply norm_det_le_one
-  intro k l
+  refine norm_det_le_one _ fun k l => ?_
   rw [Matrix.updateRow_apply]
   split_ifs
   · rw [Pi.single_apply]; split_ifs <;> simp

@@ -19,9 +19,7 @@ variable {K : Type} [Field K] [StarRing K] {n : ℕ}
 theorem subE_mulVec (Z : Submodule K (Fin n → K)) (x : Fin (subDim Z) → K) :
     (subE Z).mulVec x = (((subBasis Z).equivFun.symm x : Z) : Fin n → K) := by
   ext i
-  simp only [Matrix.mulVec, dotProduct, subE, Matrix.of_apply, Basis.equivFun_symm_apply,
-    Submodule.coe_sum, Submodule.coe_smul, Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
-  exact Finset.sum_congr rfl fun j _ => mul_comm _ _
+  simp [Matrix.mulVec, dotProduct, subE, Matrix.of_apply, Basis.equivFun_symm_apply, Finset.sum_apply, Pi.smul_apply, smul_eq_mul, mul_comm]
 
 theorem subspace_image_spec : SubESpec := by
   intro K _ _ n Z
@@ -54,12 +52,8 @@ theorem subHasRat_of_span (Z : Submodule K (Fin n → K)) (T : Set (Fin n → K)
 theorem subE_rat (Z : Submodule K (Fin n → K)) (h : SubHasRatBasis Z) (i : Fin n)
     (j : Fin (subDim Z)) : subE Z i j ∈ cmMax K := by
   have e : subBasis Z = h.choose := by
-    first
-    | exact dif_pos h
-    | (unfold subBasis; exact dif_pos h)
-    | (rw [subBasis, dif_pos h])
-    | (simp only [subBasis, h, dite_true])
-    | (unfold subBasis; simp [h])
+    unfold subBasis
+    exact dif_pos h
   show ((subBasis Z j : Fin n → K) i) ∈ cmMax K
   rw [e]
   exact h.choose_spec j i
@@ -356,8 +350,7 @@ theorem eq_sum_single (a : MonoidAlgebra K G) : a = ∑ t : G, MonoidAlgebra.sin
 
 theorem gaStar_add [StarRing K] (a b : MonoidAlgebra K G) : gaStar (a + b) = gaStar a + gaStar b := by
   unfold gaStar
-  simp only [MonoidAlgebra.coeff_add, Finsupp.add_apply, star_add, MonoidAlgebra.single_add,
-    Finset.sum_add_distrib]
+  simp [Finset.sum_add_distrib]
 
 theorem gaStar_zero [StarRing K] : gaStar (0 : MonoidAlgebra K G) = 0 := by
   simp [gaStar]
@@ -508,10 +501,7 @@ private theorem int_iff_lemma {K : Type} [Field K] [NumberField K] (x : K) :
     (∃ b : 𝓞 K, (b : K) = x) ↔ IsIntegral ℤ x := by
   constructor
   · rintro ⟨b, rfl⟩
-    first
-    | exact NumberField.RingOfIntegers.isIntegral_coe b
-    | exact b.2
-    | exact (mem_integralClosure_iff ℤ K).mp b.2
+    exact NumberField.RingOfIntegers.isIntegral_coe b
   · intro h
     first
     | exact ⟨⟨x, h⟩, rfl⟩
@@ -1428,15 +1418,13 @@ theorem reg_V0dim_pos (ψ : (⊥ : Subgroup G) →* Kˣ) :
 
 theorem mem_dual_one (y : K) :
     y ∈ Formalism.HermitianLatticesTheory.dual (stdPair K) (1 : Submodule (𝓞 K) K) ↔ y ∈ (1 : Submodule (𝓞 K) K) := by
-  have key : y ∈ Formalism.HermitianLatticesTheory.dual (stdPair K) (1 : Submodule (𝓞 K) K) ↔
-      ∀ z ∈ (1 : Submodule (𝓞 K) K), stdPair K z y ∈ (1 : Submodule (𝓞 K) K) := by
+  rw [show y ∈ Formalism.HermitianLatticesTheory.dual (stdPair K) (1 : Submodule (𝓞 K) K) ↔
+      ∀ z ∈ (1 : Submodule (𝓞 K) K), stdPair K z y ∈ (1 : Submodule (𝓞 K) K) by
     unfold Formalism.HermitianLatticesTheory.dual Formalism.E.hdual
-    simp only [Submodule.mem_iInf, Submodule.mem_comap, LinearMap.restrictScalars_apply]
-  rw [key]
+    simp only [Submodule.mem_iInf, Submodule.mem_comap, LinearMap.restrictScalars_apply]]
   constructor
   · intro h
-    have h1 := h 1 (by rw [Submodule.mem_one]; exact ⟨1, map_one _⟩)
-    rwa [stdPair_apply, star_one, one_mul] at h1
+    simpa [stdPair_apply] using h 1 (by rw [Submodule.mem_one]; exact ⟨1, map_one _⟩)
   · intro hy z hz
     rw [stdPair_apply]
     rw [Submodule.mem_one] at hy hz ⊢
@@ -1444,9 +1432,7 @@ theorem mem_dual_one (y : K) :
     obtain ⟨b, rfl⟩ := hy
     have ha : IsIntegral ℤ (algebraMap (𝓞 K) K a) := (int_iff_lemma _).mp ⟨a, rfl⟩
     have hb : IsIntegral ℤ (algebraMap (𝓞 K) K b) := (int_iff_lemma _).mp ⟨b, rfl⟩
-    have hs : IsIntegral ℤ (star (algebraMap (𝓞 K) K a)) := ha.map (starRingEnd K).toIntAlgHom
-    obtain ⟨c, hc⟩ := (int_iff_lemma _).mpr (hs.mul hb)
-    exact ⟨c, hc⟩
+    exact (int_iff_lemma _).mpr ((ha.map (starRingEnd K).toIntAlgHom).mul hb)
 
 theorem reg_good : (regCSD K G).Good 1 where
   symm := ⟨fun x y => by
@@ -1524,8 +1510,7 @@ theorem aug_eq_sum (a : MonoidAlgebra K G) : aug K G a = ∑ t : G, a.coeff t :=
   · intro; simp
 
 theorem aug_idemOf_one : aug K G (idemOf ({fun _ : G => (1 : K)} : Finset (G → K))) = 1 := by
-  rw [aug_eq_sum]
-  simp only [idemOf_one_coeff, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+  simp only [aug_eq_sum, idemOf_one_coeff, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
   rw [one_div, mul_inv_cancel₀ (Nat.cast_ne_zero.mpr Fintype.card_ne_zero)]
 
 theorem aug_lvlIdem_one (P : Subgroup G) : aug K G (lvlIdem P (1 : P →* Kˣ)) = 1 := by

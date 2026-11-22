@@ -14,8 +14,7 @@ lemma continuous_ee (σ : Fin d → ℤ) : Continuous (fun y : Fin d → ℝ => 
   unfold ee; fun_prop
 
 lemma continuous_tp (B : Finset (Fin d → ℤ)) (c : (Fin d → ℤ) → ℂ) : Continuous (tp B c) := by
-  unfold tp
-  exact continuous_finsetSum _ (fun σ _ => continuous_const.mul (continuous_ee σ))
+  exact continuous_finsetSum B (fun σ _ => continuous_const.mul (continuous_ee σ))
 
 lemma normSq_tp (B : Finset (Fin d → ℤ)) (c : (Fin d → ℤ) → ℂ) (y : Fin d → ℝ) :
     ((‖tp B c y‖ ^ 2 : ℝ) : ℂ) =
@@ -324,10 +323,9 @@ lemma upper_pk {N : (Fin d → ℝ) → ℝ} {A : (Fin d → ℤ) → ℂ} (hint
 
 lemma integrable_mul_pk {N : (Fin d → ℝ) → ℝ} (hint : Integrable N) (z₀ : Fin d → ℝ) (n : ℕ) :
     Integrable (fun z => N z * pk (z - z₀) ^ n) := by
-  refine hint.mul_bdd (c := (4 ^ d) ^ n) ?_ (Eventually.of_forall (fun z => ?_))
-  · exact ((continuous_pk.comp (continuous_id.sub continuous_const)).pow n).aestronglyMeasurable
-  · rw [Real.norm_of_nonneg (pow_nonneg (pk_nonneg _) n)]
-    exact pow_le_pow_left₀ (pk_nonneg _) (pk_le _) n
+  refine hint.mul_bdd (c := (4 ^ d) ^ n)
+    ((continuous_pk.comp (continuous_id.sub continuous_const)).pow n).aestronglyMeasurable
+    (Eventually.of_forall fun z => (le_of_eq (Real.norm_of_nonneg (pow_nonneg (pk_nonneg (z - z₀)) n))).trans (pow_le_pow_left₀ (pk_nonneg (z - z₀)) (pk_le (z - z₀)) n))
 
 lemma lower_pk {N : (Fin d → ℝ) → ℝ} (hN0 : ∀ z, 0 ≤ N z) (hint : Integrable N)
     (z₀ : Fin d → ℝ) (S : Finset (Fin d → ℤ)) (η : ℝ) (U : Set (Fin d → ℝ)) (hUo : IsOpen U)

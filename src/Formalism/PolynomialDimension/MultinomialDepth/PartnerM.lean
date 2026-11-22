@@ -416,17 +416,15 @@ theorem ycond_keep {N r : ℕ} [NeZero r] (LL : Letters N) (j : ℕ) (Mt : WithT
     sSup_le fun S hS => hS.1
   have hst : GlStable p LL j (sSup F) := by
     intro c d
-    have : sSup F ≤ (sSup F).comap (glAct p LL j c d) :=
-      sSup_le fun S hS x hx => le_sSup hS (hS.2 c d x hx)
-    exact fun x hx => this hx
+    change sSup F ≤ (sSup F).comap (glAct p LL j c d)
+    exact sSup_le fun S hS x hx => le_sSup hS (hS.2 c d x hx)
   have hmap : (sSup F).map T ∈ F := by
     refine ⟨Submodule.map_le_iff_le_comap.mpr (fun x hx => hw x (hle hx)), ?_⟩
     intro c d y hy
     obtain ⟨x, hx, rfl⟩ := Submodule.mem_map.mp hy
     rw [← hc]
     exact Submodule.mem_map_of_mem (hst c d x hx)
-  intro x hx
-  exact le_sSup hmap (Submodule.mem_map_of_mem hx)
+  exact fun x hx => le_sSup hmap (Submodule.mem_map_of_mem hx)
 
 theorem phi_keeps {N r : ℕ} [NeZero r] (LL : Letters N) (T : TieData) (hadm : T.Admissible LL) (i j : Fin T.t)
     (hij : i < j) : ∀ u ∈ Y p (r := r) LL T.J (T.thrUpTo i), T.phi p LL j u ∈ Y p (r := r) LL T.J (T.thrUpTo i) := by
@@ -815,12 +813,10 @@ theorem comm_preserves_weight_le [NeZero r] (LL : Letters N) (j : ℕ) (Mt : Wit
     rw [← hT, hmon, map_smul]
   have h2 := eig_supp LL j 0 _ _ h1
   rw [mem_restrictSupport_iff] at h2 ⊢
+  rw [mem_restrictSupport_iff] at hx
   intro m' hm'
   have h3 : wt LL j 0 m' = wt LL j 0 m := h2 hm'
-  rw [mem_restrictSupport_iff] at hx
-  have h4 := hx (Finset.mem_coe.mpr hm)
-  simp only [Set.mem_ofPred_eq] at h4 ⊢
-  rw [h3]; exact h4
+  simpa only [Set.mem_ofPred_eq, h3] using hx (Finset.mem_coe.mpr hm)
 
 def shiftW {r : ℕ} (μ : Fin r → ℤ) (c d : Fin r) : Fin r → ℤ :=
   fun c' => μ c' + (if c = c' then 1 else 0) - (if d = c' then 1 else 0)
@@ -1103,18 +1099,13 @@ theorem typeProj_comm (LL : Letters N) (j : ℕ) (T : Set (Fin r → ℤ))
     (Q : MvPolynomial (Fin N × Fin r) ℚ_[p] →ₗ[ℚ_[p]] MvPolynomial (Fin N × Fin r) ℚ_[p])
     (hQ : ∀ la, ∀ x ∈ IsoC p LL j univ la, Q x ∈ IsoC p LL j univ la) : ∀ x, P (Q x) = Q (P x) := by
   obtain ⟨hPP, hran, hker⟩ := hP
-  have hsup : ∀ S : Set (Fin r → ℤ), ∀ x ∈ (⨆ (la : Fin r → ℤ) (_ : la ∈ S), IsoC p LL j univ la),
-      Q x ∈ (⨆ (la : Fin r → ℤ) (_ : la ∈ S), IsoC p LL j univ la) := by
+  have hsup : ∀ S : Set (Fin r → ℤ), (⨆ (la : Fin r → ℤ) (_ : la ∈ S), IsoC p LL j univ la) ≤
+      (⨆ (la : Fin r → ℤ) (_ : la ∈ S), IsoC p LL j univ la).comap Q := by
     intro S
-    have : (⨆ (la : Fin r → ℤ) (_ : la ∈ S), IsoC p LL j univ la) ≤
-        (⨆ (la : Fin r → ℤ) (_ : la ∈ S), IsoC p LL j univ la).comap Q := by
-      refine iSup₂_le fun la hla => ?_
-      intro x hx
-      exact (le_iSup₂ (f := fun la (_ : la ∈ S) => IsoC p LL j univ la) la hla) (hQ la x hx)
-    exact fun x hx => this hx
+    exact iSup₂_le fun la hla x hx => le_iSup₂ (f := fun la (_ : la ∈ S) => IsoC p LL j univ la) la hla (hQ la x hx)
   refine comm_of_stable P Q hPP ?_ ?_
-  · rw [hran]; exact hsup T
-  · rw [hker]; exact hsup Tᶜ
+  · rw [hran]; exact fun x hx => hsup T hx
+  · rw [hker]; exact fun x hx => hsup Tᶜ hx
 
 end Rep
 

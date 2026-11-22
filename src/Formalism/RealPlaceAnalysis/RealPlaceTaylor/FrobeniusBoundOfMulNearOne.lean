@@ -125,10 +125,9 @@ lemma frobenius_bound_of_mul_near_one {n : ℕ} {k u v : Matrix (Fin n) (Fin n) 
     calc ‖k‖ = ‖v + k * (1 - u)‖ := by rw [← e]
       _ ≤ ‖v‖ + ‖k * (1 - u)‖ := norm_add_le _ _
       _ ≤ _ := by gcongr; exact Matrix.frobenius_norm_mul _ _
-  rw [norm_sub_rev] at h1
-  have h2 := norm_sub_one_lt_half hu
-  have h3 := norm_le_of_near_one hv
-  have hk : ‖k‖ ≤ 2 * Real.sqrt n + 1 := by nlinarith [norm_nonneg k, norm_nonneg (u - 1)]
+  have hk : ‖k‖ ≤ 2 * Real.sqrt n + 1 := by
+    nlinarith [norm_sub_one_lt_half hu, norm_le_of_near_one hv, norm_nonneg k,
+      norm_nonneg (u - 1), norm_sub_rev (1 : Matrix (Fin n) (Fin n) ℂ) u]
   rw [frobenius_eq_norm_sq]
   exact pow_le_pow_left₀ (norm_nonneg _) hk 2
 

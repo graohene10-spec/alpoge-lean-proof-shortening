@@ -16,9 +16,8 @@ open Formalism Formalism.D5 Formalism.RankGapBounds.WeightedMeanData Formalism.L
 
 theorem periodicity_of_text : PerOfText := by
   intro U0 W Top m f D Pl Emb _ hne logOmτ logOm hT
-  refine ⟨fun hM => ?_, fun ρ => hT ρ⟩
   obtain ⟨ρ⟩ := hne
-  exact (hM ρ).symm.trans (hT ρ)
+  exact ⟨fun hM => (hM ρ).symm.trans (hT ρ), hT⟩
 
 theorem divisibility_iff_free : DivIffFree := by
   intro U0 W Top _ m f D C
@@ -98,11 +97,9 @@ theorem free_count_of_count : CountFreeOfCount := by
   have e : ∀ u0 j ρ, Real.log (D.w u0 j ρ * D.v / Real.pi)
       = Real.log (D.w u0 j ρ) + (D.gam - D.LpL - logOm) := by
     intro u0 j ρ
-    have hp' : logOm = D.gam + Real.log (Real.pi / D.v) - D.LpL := hp
-    rw [Real.log_div Real.pi_pos.ne' hv.ne'] at hp'
-    rw [Real.log_div (mul_pos (hw u0 j ρ) hv).ne' Real.pi_pos.ne',
-      Real.log_mul (hw u0 j ρ).ne' hv.ne']
-    linarith
+    rw [(show logOm = D.gam + Real.log (Real.pi / D.v) - D.LpL from hp), Real.log_div Real.pi_pos.ne' hv.ne',
+      Real.log_div (mul_pos (hw u0 j ρ) hv).ne' Real.pi_pos.ne', Real.log_mul (hw u0 j ρ).ne' hv.ne']
+    ring
   unfold CountFree
   simp only [e]
 
@@ -176,15 +173,13 @@ theorem construct_parameter_definitions : MkParDefs := by
     rw [Real.log_exp]
   refine ⟨hL, ?_, rfl, rfl, ?_, ?_, ?_⟩
   · rw [hL]; rfl
-  · have h1 : (Fintype.card (E0 × H) : ℂ) = 2 * ((PhiSet (H := H)).card : ℂ) := Formalism.D5.Bal.card_G_eq
-    have h2 : Fintype.card (E0 × H) = 2 * (PhiSet (H := H)).card := by exact_mod_cast h1
+  · have h2 : Fintype.card (E0 × H) = 2 * (PhiSet (H := H)).card := by
+      exact_mod_cast Formalism.D5.Bal.card_G_eq
     have h3 : Fintype.card (E0 × H) = 4 * Fintype.card H := by
       simp [Fintype.card_prod]
     have h4 : (PhiSet (H := H)).card = 2 * Fintype.card H := by omega
     exact_mod_cast h4
   · intro hx hk
-    show 0 ≤ (T2.card : ℝ) * G.k * bTx G.x G.ε * G.x ^ G.ε
-      / ((Fintype.card H : ℝ) * ((Fintype.card H : ℝ) * G.x ^ (-G.ε)))
     have hb : 0 ≤ bTx G.x G.ε := (Real.exp_pos _).le
     exact div_nonneg
       (mul_nonneg (mul_nonneg (mul_nonneg (Nat.cast_nonneg _) hk) hb) (Real.rpow_nonneg hx _))
@@ -196,8 +191,7 @@ theorem exponent_comparison_of_constant : TypePrimeCostOfDeviationBound := by
   intro U0 W Top _ m f D C C0 Pl e aP sE haP hE hC hB h
   have hsum : (∑ t ∈ Finset.univ.map e, aP t) = D.sumA := by
     rw [Finset.sum_map]
-    simp only [haP]
-    rfl
+    exact Finset.sum_congr rfl fun t _ => haP t
   constructor
   · intro u0 u j
     have h1 := (h u0 u).1 j
@@ -603,22 +597,18 @@ theorem joint_sat :
     StepHyp satD satP 1 (satD.x ^ (satC.eDiv * satD.ε))
       (Finset.univ.map (Function.Embedding.refl (Fin 1))) (fun _ => 0) () () satSt ∧
     Per satD 1 ∧ 0 < satD.v ∧ satC.cDiv = 50 * satP.C0 + 10 ∧ satD.Fo () = 2 * satSt.FoP := by
-  have e2 : (2 : ℝ) ≤ Real.exp 1 := by linarith [Real.add_one_le_exp (1 : ℝ)]
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
-  · simp only [ParHyp, satD, satP, satC]
-    norm_num
+  · norm_num [ParHyp, satD, satP, satC]
     repeat' apply And.intro
-    all_goals linarith
-  · simp only [StepHyp, satD, satP, satC, satSt, Formalism.LatticeIndexTer.ph]
-    norm_num
+    all_goals linarith [Real.add_one_le_exp (1 : ℝ)]
+  · norm_num [StepHyp, satD, satP, satC, satSt, Formalism.LatticeIndexTer.ph]
     repeat' apply And.intro
-    all_goals linarith
+    all_goals linarith [Real.add_one_le_exp (1 : ℝ)]
   · simp only [Per, satD]
     rw [Real.log_div Real.pi_pos.ne' (mul_pos Real.pi_pos (Real.exp_pos _)).ne',
       Real.log_mul Real.pi_pos.ne' (Real.exp_pos _).ne', Real.log_exp]
     ring
   · exact mul_pos Real.pi_pos (Real.exp_pos _)
-  · simp only [satC, satP]; norm_num
-  · simp only [satD, satSt]; norm_num
+  all_goals norm_num [satC, satP, satD, satSt]
 
 end Formalism.LFunctionChainParameters.LBrDiv

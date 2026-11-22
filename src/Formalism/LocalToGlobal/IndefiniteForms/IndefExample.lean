@@ -91,9 +91,7 @@ theorem one_quot (n : ℕ) : IsQuotMetric (1 : Matrix (Fin n) (Fin n) K) 1 (fr K
 
 theorem indep_unit {V : Type} [AddCommGroup V] [Module K V] (A : Unit → Submodule K V) : iSupIndep A := by
   intro i
-  have h : (⨆ (j : Unit) (_ : j ≠ i), A j) = ⊥ := by simp
-  rw [h]
-  exact disjoint_bot_right
+  simp
 
 def conjLinearRankOne (r : ℝ) : (Fin 1 → ℂ) →ₗ⋆[ℂ] ℂ where
   toFun y := (r : ℂ) * star (y 0)
@@ -718,9 +716,7 @@ theorem two.Iw_true {K : Type} [Field K] [NumberField K] [StarRing K] (v0 : Infi
     exact hlin.span_eq_top_of_card_eq_finrank (by simp)
   have hidx := (index_change_formula K 1 _ hlat (sb K 1) (locB K 1 w).1 w (a • 1)
     ⟨hf ▸ hlin, by rw [hf, hmat]⟩).1
-  have h2 : (two.dat K v0 S a kap l).Iw () true w =
-      vw w (a • (1 : Matrix (Fin 1) (Fin 1) K)).det := hidx
-  rw [h2, Matrix.det_smul, Matrix.det_one]
+  rw [show (two.dat K v0 S a kap l).Iw () true w = vw w (a • (1 : Matrix (Fin 1) (Fin 1) K)).det from hidx, Matrix.det_smul, Matrix.det_one]
   simp
 
 section Pair

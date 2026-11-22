@@ -220,14 +220,12 @@ theorem letter_labels_finite : LabFinite7 := by
   rintro ⟨s0, j⟩ ⟨_, _, _, hp, hn⟩
   simp only at hp hn
   refine ⟨Set.mem_univ _, ?_, ?_⟩
-  · show -(M : ℤ) ≤ j
-    by_cases hj : j < 0
+  · by_cases hj : j < 0
     · have h1 := hn hj
       have h2 : (-j).toNat < l ^ (-j).toNat := Nat.lt_pow_self (by omega)
       omega
     · omega
-  · show j ≤ (M : ℤ)
-    by_cases hj : 0 < j
+  · by_cases hj : 0 < j
     · have h1 := hp hj
       have h2 : j.toNat < l ^ j.toNat := Nat.lt_pow_self (by omega)
       have h3 : nu1 s0 ≤ Finset.univ.sup nu1 := Finset.le_sup (f := nu1) (Finset.mem_univ s0)

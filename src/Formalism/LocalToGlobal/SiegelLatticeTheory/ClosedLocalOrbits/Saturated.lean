@@ -83,17 +83,13 @@ private theorem lflag_ext_lemma_2 {T : E} {F₁ F₂ : LFlag S r T} (h1 : F₁.f
 
 theorem mapL_eq_self (β : S.V ≃ₗ[E] S.V) (hβ : β ∈ Formalism.HermitianLatticesTheory.isom S.hT) {T : E} (F : LFlag S r T)
     (hf : ∀ a, β (frame F a) = frame F a) (hz : β F.zt = F.zt) : mapL β hβ F = F := by
-  have he : ∀ a, β (F.fl.e a) = F.fl.e a := fun a => by
-    have h := hf (Fin.castSucc a)
-    simpa [frame, FlagG.fvec] using h
-  have hz' : β F.fl.z = F.fl.z := by
-    have h := hf (Fin.last r)
-    simpa [frame, FlagG.fvec] using h
   apply lflag_ext_lemma_2
   · apply flag_ext_lemma
     · funext a
-      exact he a
-    · exact hz'
+      change β (F.fl.e a) = F.fl.e a
+      simpa [frame, FlagG.fvec] using hf (Fin.castSucc a)
+    · change β F.fl.z = F.fl.z
+      simpa [frame, FlagG.fvec] using hf (Fin.last r)
   · exact hz
 
 def AutF {T : E} (Λ : Submodule (𝓞 E) S.V) (F : LFlag S r T) : Set (S.V ≃ₗ[E] S.V) :=
@@ -114,10 +110,9 @@ theorem AutF.lam (β : AutF Λ F) : Formalism.HermitianLatticesTheory.gmap (β :
 def act (β : AutF Λ F) (F' : LFlag S r T') : LFlag S r T' := mapL β.1 (AutF.isom β) F'
 
 theorem one_mem_AutF : (1 : S.V ≃ₗ[E] S.V) ∈ AutF Λ F := by
-  refine mem_AutF.mpr (And.intro (And.intro (Subgroup.one_mem _) ?_) (And.intro (fun a => rfl) rfl))
+  refine mem_AutF.mpr ⟨⟨Subgroup.one_mem _, ?_⟩, fun a => rfl, rfl⟩
   ext x
-  rw [mem_gmap_iff]
-  exact Iff.rfl
+  exact mem_gmap_iff (1 : S.V ≃ₗ[E] S.V) Λ x
 
 theorem act_one (F' : LFlag S r T') : act (⟨1, one_mem_AutF⟩ : AutF Λ F) F' = F' := by
   exact mapL_eq_self _ _ _ (fun _ => rfl) rfl
@@ -266,8 +261,7 @@ theorem mem_famOf_mk {Q : LFlag S r T' → Prop} (hF : QFun Λ F P Q) (x : Carri
 theorem sat_famOf {Q : LFlag S r T' → Prop} (hQ : Inv Λ F Q) (hF : QFun Λ F P Q) :
     IsSat Λ F P (famOf Λ F P Q) := by
   intro β x h hx
-  rw [mem_famOf_mk hF] at hx ⊢
-  exact (hQ β x.1).mpr hx
+  exact (mem_famOf_mk hF ⟨act β x.1, h⟩).mpr ((hQ β x.1).mpr ((mem_famOf_mk hF x).mp hx))
 
 theorem sat_famOf_compl {Q : LFlag S r T' → Prop} (hQ : Inv Λ F Q) (hF : QFun Λ F P Q) :
     IsSat Λ F P (famOf Λ F P Q)ᶜ := by
@@ -381,8 +375,7 @@ def TSat (TT : Set (Term D u u' F0 what₂)) : Prop :=
 theorem tsat_of (fam : ∀ Λ : Submodule (𝓞 D.host.E) (VS D).V, Set (TermsOf D u' F0 Λ))
     (h : ∀ Λ ∈ what₂, IsSat Λ (lf D F0) (PD D Λ (lf D F0) u') (fam Λ)) :
     TSat (u' := u') (what₂ := what₂) {t | t.cls ∈ fam t.lam} := by
-  intro t ht β x hp hx
-  exact h t.lam t.mem β x hp (by rw [hx]; exact ht)
+  exact fun t ht β x hp hx => h t.lam t.mem β x hp (by rw [hx]; exact ht)
 
 theorem sat_BBF (p : HeightOneSpectrum (𝓞 D.host.F)) {Λ : Submodule (𝓞 D.host.E) (VS D).V}
     (hI : BBIso (VS D) D.R.rS (gS D))

@@ -27,17 +27,10 @@ theorem Low.mul {m k : ℕ} {x y : MvPowerSeries σ K} (hx : Low m x) (hy : Low 
   intro d hd
   rw [MvPowerSeries.coeff_mul]
   refine Finset.sum_eq_zero fun p hp => ?_
-  have hp' : p.1 + p.2 = d := by
-    first
-      | exact Finset.HasAntidiagonal.mem_antidiagonal.mp hp
-      | exact (_root_.Finset.mem_antidiagonal).mp hp
-      | simpa using hp
+  have hp' : p.1 + p.2 = d := by simpa using hp
   have hdeg : p.1.degree + p.2.degree = d.degree := by
     rw [← hp']
-    first
-      | exact (Finsupp.degree_add p.1 p.2).symm
-      | exact (map_add Finsupp.degree p.1 p.2).symm
-      | simp
+    simp
   by_cases h1 : p.1.degree < m
   · rw [hx _ h1, zero_mul]
   · rw [hy _ (by omega), mul_zero]
@@ -59,8 +52,7 @@ theorem low_one {x : MvPowerSeries σ K} (hx : MvPowerSeries.constantCoeff x = 0
   simpa using hx
 
 theorem low_of_agree {N : ℕ} {a b : MvPowerSeries σ K} (hab : Agree N a b) : Low N (a - b) := by
-  intro d hd
-  rw [map_sub, hab d hd, sub_self]
+  exact fun d hd => by rw [map_sub, hab d hd, sub_self]
 
 end Basic
 

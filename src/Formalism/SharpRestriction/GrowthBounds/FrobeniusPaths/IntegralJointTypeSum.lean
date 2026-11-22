@@ -25,9 +25,7 @@ lemma glOpsE_mul (a b : Fin m) (f g : MvPolynomial (Fin N × Fin k) F) :
 
 lemma glOpsE_C (a b : Fin m) (c : F) : glOpsE F LL S e a b (C c) = 0 := by
   simp only [glOpsE, LinearMap.sum_apply]
-  apply Finset.sum_eq_zero
-  intro l _
-  split_ifs <;> simp
+  exact Finset.sum_eq_zero (fun l _ => by split_ifs <;> simp)
 
 open Classical in
 lemma glOpsE_X (a b : Fin m) (v : Fin N × Fin k) :
@@ -107,14 +105,11 @@ lemma coeff_XDii {σ : Type*} (i : σ) (f : MvPolynomial σ F) (mm : σ →₀ �
   by_cases h : mm i = 0
   · rw [if_pos h, h]; simp
   · rw [if_neg h]
-    have h1 : Finsupp.single i 1 ≤ mm := Finsupp.single_le_iff.2 (Nat.one_le_iff_ne_zero.2 h)
-    rw [tsub_add_cancel_of_le h1]
+    rw [tsub_add_cancel_of_le (Finsupp.single_le_iff.2 (Nat.one_le_iff_ne_zero.2 h))]
     have h2 : ((mm - Finsupp.single i 1 : σ →₀ ℕ) i : ℕ) + 1 = mm i := by
       simp only [Finsupp.coe_tsub, Pi.sub_apply, Finsupp.single_eq_same]
       omega
-    have h3 : (((mm - Finsupp.single i 1 : σ →₀ ℕ) i : ℕ) + 1 : F) = (mm i : F) := by
-      rw [← h2, Nat.cast_add, Nat.cast_one]
-    rw [h3, mul_comm]
+    rw [← h2, Nat.cast_add, Nat.cast_one, mul_comm]
 
 open Classical in
 
@@ -148,16 +143,10 @@ lemma tot_single (he : Function.Injective e) (l : Fin N) (c : Fin m) :
   rw [Finset.sum_eq_single c, Finset.sum_eq_single l]
   · simp
   · intro l' _ hl'
-    have : (Finsupp.single (l, e c) 1 : Fin N × Fin k →₀ ℕ) (l', e c) = 0 := by
-      rw [Finsupp.single_apply, if_neg]; intro h; exact hl' (congrArg Prod.fst h).symm
-    rw [this]; simp
+    simp [hl']
   · intro h; exact absurd (Finset.mem_univ _) h
   · intro a _ ha
-    apply Finset.sum_eq_zero
-    intro l' _
-    have : (Finsupp.single (l, e c) 1 : Fin N × Fin k →₀ ℕ) (l', e a) = 0 := by
-      rw [Finsupp.single_apply, if_neg]; intro h; exact ha (he (congrArg Prod.snd h)).symm
-    rw [this]; simp
+    simp [he.eq_iff, ha]
   · intro h; exact absurd (Finset.mem_univ _) h
 
 def TotSub (F : Type*) [Field F] {N m k : ℕ} (LL : Letters (Fin N)) (S : Set (Fin N)) (e : Fin m → Fin k) (s : ℤ) :
@@ -405,29 +394,22 @@ def dcdTan (r K : ℕ) : Fin (r + K) → Option (Fin K) := fun c =>
 
 lemma dcdPl_1 (r K : ℕ) (a : Fin r) : dcdPl r K (Fin.castAdd K a) = some a := by
   unfold dcdPl
-  rw [dif_pos (show (Fin.castAdd K a).val < r from a.2)]
-  rfl
+  exact dif_pos (show (Fin.castAdd K a).val < r from a.2)
 
 lemma dcdPl_2 (r K : ℕ) (c : Fin (r + K)) (a : Fin r) (h : dcdPl r K c = some a) : c = Fin.castAdd K a := by
   unfold dcdPl at h
-  by_cases hc : c.val < r
-  · rw [dif_pos hc] at h
-    rw [← Option.some.inj h]
+  split_ifs at h with hc
+  · rw [← Option.some.inj h]
     ext; rfl
-  · rw [dif_neg hc] at h
-    exact absurd h (by simp)
 
 lemma dcdTan_1 (r K : ℕ) (a : Fin K) : dcdTan r K (Fin.natAdd r a) = some a := by
   simp [dcdTan]
 
 lemma dcdTan_2 (r K : ℕ) (c : Fin (r + K)) (a : Fin K) (h : dcdTan r K c = some a) : c = Fin.natAdd r a := by
   unfold dcdTan at h
-  by_cases hc : r ≤ c.val
-  · rw [dif_pos hc] at h
-    rw [← Option.some.inj h]
+  split_ifs at h with hc
+  · rw [← Option.some.inj h]
     ext; simp; omega
-  · rw [dif_neg hc] at h
-    exact absurd h (by simp)
 
 theorem hjc_pf (D : Formalism.BasicNotions.D7) (h14 : JointComponentsPaths D) : HJc D := by
   intro F _ _ N r K _ _ LL nu ka hne

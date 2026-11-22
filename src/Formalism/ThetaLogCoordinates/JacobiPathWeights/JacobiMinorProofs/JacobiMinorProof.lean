@@ -257,9 +257,8 @@ lemma brk_eq {μ : Fin n → ℤ} {lo hi : ℤ} (hlo : lo ≤ 0) (hhi : 0 ≤ hi
   · intro c hc
     by_contra hcn
     apply hc
-    have hcn' : c ∉ Finset.Ioc lo hi := hcn
     show minorF _ (canIdx μ c) (I c) = 1
-    rw [idx_out hlo hhi hb hI hcn', idx_out hlo hhi hb (canIdx_isIndex μ) hcn', minorF_empty]
+    rw [idx_out hlo hhi hb hI hcn, idx_out hlo hhi hb (canIdx_isIndex μ) hcn, minorF_empty]
 
 lemma semi_colT {μ : Fin n → ℤ} {I : ℤ → Finset (Fin n)} (h : IsStd μ I) (lo : ℤ) (C : ℕ) :
     SemiStd (colT lo C I) := by

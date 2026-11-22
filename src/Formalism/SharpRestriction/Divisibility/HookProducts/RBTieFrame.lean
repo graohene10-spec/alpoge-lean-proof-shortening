@@ -115,8 +115,7 @@ theorem cU_conj_eq (h : ∀ v x y, Formalism.HermitianLatticesTheory.majAt b XA 
     (hXA : IsUnit (XA v).det) (hX : IsUnit (X v).det) : (cU b XA X e v)ᴴ = cV b XA X e v := by
   calc (cU b XA X e v)ᴴ = (cU b XA X e v)ᴴ * (cU b XA X e v * cV b XA X e v) := by
         rw [cU_mul_cV b XA X e v hXA hX, Matrix.mul_one]
-    _ = ((cU b XA X e v)ᴴ * cU b XA X e v) * cV b XA X e v := (Matrix.mul_assoc _ _ _).symm
-    _ = cV b XA X e v := by rw [cU_conj_mul b XA X e v h hX, Matrix.one_mul]
+    _ = cV b XA X e v := by rw [← Matrix.mul_assoc, cU_conj_mul b XA X e v h hX, Matrix.one_mul]
 
 theorem cU_mul_conj (h : ∀ v x y, Formalism.HermitianLatticesTheory.majAt b XA v (e x) (e y) = Formalism.HermitianLatticesTheory.majAt (Pi.basisFun K (Fin d)) X v x y)
     (hXA : IsUnit (XA v).det) (hX : IsUnit (X v).det) : cU b XA X e v * (cU b XA X e v)ᴴ = 1 := by

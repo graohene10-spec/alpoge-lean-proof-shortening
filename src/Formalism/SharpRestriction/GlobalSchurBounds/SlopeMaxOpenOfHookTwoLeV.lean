@@ -42,9 +42,8 @@ def SlopeMaxC (D : D7) : Prop :=
 
 theorem natWeight_cast_eq_sub_last {N : ℕ} (lam : DomWeight N) (hN : 0 < N) (i : Fin N) :
     ((lam.natW i : ℕ) : ℝ) = (lam.w i : ℝ) - (lam.w ⟨N - 1, by omega⟩ : ℝ) := by
-  have hle : lam.w ⟨N - 1, by omega⟩ ≤ lam.w i := lam.anti (Fin.le_def.mpr (by simp; omega))
   have h1 : ((lam.w i - lam.w ⟨N - 1, by omega⟩).toNat : ℤ) = lam.w i - lam.w ⟨N - 1, by omega⟩ :=
-    Int.toNat_of_nonneg (by omega)
+    Int.toNat_of_nonneg (sub_nonneg.mpr (lam.anti (Fin.le_def.mpr (by simp; omega))))
   unfold DomWeight.natW DomWeight.detShift
   rw [dif_pos hN]
   have h2 : (((lam.w i - lam.w ⟨N - 1, by omega⟩).toNat : ℕ) : ℝ) =
@@ -96,9 +95,8 @@ theorem firstColumnSpread_nonneg (D : D7) (u : D.what₂.Word) (τ : D.what₂.T
 
 theorem log_hookConst_le_sq_mul_log (hH : HookBound) (D : D7) (u : D.what₂.Word) (τ : D.what₂.Tau) :
     Real.log (cNu ((D.fm u).lam 0 τ).natW) ≤ (D.R.k : ℝ) ^ 2 * Real.log (firstColumnSpread D u τ + D.R.k) := by
-  have hN := rank_zero_pos D
   have hanti := antitone_natWeight ((D.fm u).lam 0 τ)
-  obtain ⟨h1, h2⟩ := hH (D.R.N 0) hN _ hanti
+  obtain ⟨h1, h2⟩ := hH (D.R.N 0) (rank_zero_pos D) _ hanti
   rw [natWeight_zero_eq_firstSpread] at h2
   have hNk : (D.R.N 0 : ℝ) = D.R.k := by simp [Formalism.BasicNotions.Ranks.N]
   rw [hNk] at h2
@@ -108,13 +106,12 @@ theorem log_hookConst_le_sq_mul_log (hH : HookBound) (D : D7) (u : D.what₂.Wor
     have h4 : (1 : ℝ) ≤ D.R.k := by exact_mod_cast columnCount_pos D
     linarith
   have hlog0 : 0 ≤ Real.log (firstColumnSpread D u τ + D.R.k) := Real.log_nonneg hb
-  have hN' : D.R.N 0 = D.R.k := by simp [Formalism.BasicNotions.Ranks.N]
   calc Real.log (cNu ((D.fm u).lam 0 τ).natW)
       ≤ Real.log ((firstColumnSpread D u τ + D.R.k) ^ (D.R.N 0 * (D.R.N 0 - 1) / 2)) := Real.log_le_log hpos h2
     _ = ((D.R.N 0 * (D.R.N 0 - 1) / 2 : ℕ) : ℝ) * Real.log (firstColumnSpread D u τ + D.R.k) := Real.log_pow _ _
     _ ≤ (D.R.k : ℝ) ^ 2 * Real.log (firstColumnSpread D u τ + D.R.k) := by
         apply mul_le_mul_of_nonneg_right _ hlog0
-        rw [hN']
+        rw [show D.R.N 0 = D.R.k by simp [Formalism.BasicNotions.Ranks.N]]
         have h5 : D.R.k * (D.R.k - 1) / 2 ≤ D.R.k ^ 2 := by
           calc D.R.k * (D.R.k - 1) / 2 ≤ D.R.k * (D.R.k - 1) := Nat.div_le_self _ _
             _ ≤ D.R.k * D.R.k := Nat.mul_le_mul_left _ (Nat.sub_le _ _)
@@ -163,10 +160,9 @@ theorem two_le_half_rootDiscr (D : D7) : 2 ≤ D.host.v := by
   unfold Host.v
   have h := (factRd D.R D.host).2.2
   have h0 : 0 ≤ D.host.rdE := le_trans (by positivity) (factRd D.R D.host).1
-  have he : 2 ≤ D.R.e := D.host.two_le_e
   have hn : 4 ≤ D.R.n := by
     have h1 : 2 ^ D.R.e ≤ D.R.ord := Nat.le_of_dvd D.R.ord_pos D.R.two_pow_dvd_ord
-    have h2 : 2 ^ 2 ≤ 2 ^ D.R.e := Nat.pow_le_pow_right (by norm_num) he
+    have h2 : 2 ^ 2 ≤ 2 ^ D.R.e := Nat.pow_le_pow_right (by norm_num) D.host.two_le_e
     show 4 ≤ D.R.ord
     omega
   have hf : (8 : ℝ) ≤ D.R.f := by
@@ -175,9 +171,7 @@ theorem two_le_half_rootDiscr (D : D7) : 2 ≤ D.host.v := by
       omega
     exact_mod_cast this
   have h4 : (4 : ℝ) ≤ D.host.rdE := by
-    by_contra hlt
-    push Not at hlt
-    nlinarith
+    nlinarith [h0, h, hf]
   linarith
 
 theorem slopeMaxOpen_of_hook (hH : HookBound) (D : D7) (hR : SlopeMaxC D) : SlopeMaxOpenPart D 4 := slopeMaxOpen_of_hook_two_le_v hH D (two_le_half_rootDiscr D) hR

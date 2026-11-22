@@ -63,11 +63,8 @@ theorem q_M_ge : (32 : ℝ) ≤ (D.R.m : ℝ) ^ 5 * D.R.f * large₂.sc.L := by
   have hm : (2 : ℝ) ≤ D.R.m := by exact_mod_cast D.R.two_le_m
   have hf := q_one_le_f D
   have hL := q_one_le_L D large₂
-  have h5 : (32 : ℝ) ≤ (D.R.m : ℝ) ^ 5 := by
-    have := pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 2) hm 5
-    norm_num at this
-    linarith
-  calc (32 : ℝ) ≤ (D.R.m : ℝ) ^ 5 := h5
+  calc (32 : ℝ) = 2 ^ 5 := by norm_num
+    _ ≤ (D.R.m : ℝ) ^ 5 := pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 2) hm 5
     _ = (D.R.m : ℝ) ^ 5 * 1 * 1 := by ring
     _ ≤ (D.R.m : ℝ) ^ 5 * D.R.f * large₂.sc.L := by gcongr
 
@@ -426,9 +423,7 @@ variable {E : Type} [Field E] [NumberField E] [StarRing E] {S : HSpace E} {r : �
 
 theorem r_Xa_mono {T : E} (F : FlagG S r T) {i j : ℕ} (h : i ≤ j) : F.Xa i ≤ F.Xa j := by
   unfold FlagG.Xa
-  refine Submodule.span_mono (Set.image_mono fun x hx => ?_)
-  simp only [Set.mem_setOf_eq] at hx ⊢
-  omega
+  exact Submodule.span_mono (Set.image_mono fun _ hx => lt_of_lt_of_le hx h)
 
 theorem r_e_mem {T : E} (F : FlagG S r T) (a : Fin r) {j : ℕ} (h : a.1 < j) : F.e a ∈ F.Xa j := by
   unfold FlagG.Xa
@@ -440,8 +435,7 @@ theorem r_Xa_le_X {T : E} (F : FlagG S r T) (j : ℕ) : F.Xa j ≤ F.X := by
 
 theorem r_Xa_r {T : E} (F : FlagG S r T) : F.Xa r = F.X := by
   unfold FlagG.Xa FlagG.X
-  have h : {i : Fin r | i.1 < r} = Set.univ := Set.eq_univ_of_forall fun i => i.2
-  rw [h, Set.image_univ]
+  rw [(show {i : Fin r | i.1 < r} = Set.univ from (Set.eq_univ_of_forall (fun i : Fin r => i.2) : {i : Fin r | i.1 < r} = Set.univ)), Set.image_univ]
 
 def InSF {T T' : E} (F : LFlag S r T) (F' : LFlag S r T') : Prop :=
   (∀ a : Fin r, F'.fl.e a - F.fl.e a ∈ Xflag F a.val) ∧ F'.fl.z - F.fl.z ∈ Xsp F
@@ -567,10 +561,7 @@ theorem r_shape_of_sameFlag {T T' : E} {F : LFlag S r T} {F' : LFlag S r T'} (h 
   have hP' : F'.fl.Xplus = F.fl.Xplus := hP
   have hmem : ∀ a : Fin r, ∃ c : E, F'.fl.e a - c • F.fl.e a ∈ Xflag F a.val := by
     intro a
-    have h1 : F'.fl.e a ∈ F.fl.Xa (a.val + 1) := by
-      rw [← hX' (a.val + 1)]
-      exact r_e_mem F'.fl a (Nat.lt_succ_self a.val)
-    have h2 := r_Xa_succ F.fl a h1
+    have h2 := r_Xa_succ F.fl a ((hX' (a.val + 1)) ▸ r_e_mem F'.fl a (Nat.lt_succ_self a.val))
     obtain ⟨y, hy, w, hw, hyw⟩ := Submodule.mem_sup.mp h2
     obtain ⟨c, rfl⟩ := Submodule.mem_span_singleton.mp hw
     refine ⟨c, ?_⟩
@@ -588,8 +579,7 @@ theorem r_shape_of_sameFlag {T T' : E} {F : LFlag S r T} {F' : LFlag S r T'} (h 
   · have h0 : F'.fl.e a ∈ F'.fl.Xa a.val := by
       have := hc a
       rw [hca, zero_smul, sub_zero] at this
-      rw [hX' a.val]
-      exact this
+      simpa [hX' a.val] using this
     unfold FlagG.Xa at h0
     exact F'.fl.e_indep.notMem_span_image (s := {i : Fin r | i.1 < a.1}) (x := a) (by simp) h0
   · rw [← hyw]

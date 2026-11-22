@@ -51,8 +51,7 @@ theorem mul_eU_apply (a : S) (i j : Fin 2) (B : SlopeTestRemainingChoices S A) (
 theorem eU_mul_eU (a : S) (i j k l : Fin 2) :
     (eU a i j : SlopeTestRemainingChoices S A) * eU a k l = if j = k then eU a i l else 0 := by
   ext x y
-  rw [eU_mul_apply]
-  by_cases hx : x a = i <;> by_cases hjk : j = k <;> simp [hx, hjk, eU_apply, Function.update_idem]
+  by_cases hx : x a = i <;> by_cases hjk : j = k <;> simp [eU_mul_apply, eU_apply, hx, hjk, Function.update_idem]
 
 theorem sum_eU_diag (a : S) : ∑ i, (eU a i i : SlopeTestRemainingChoices S A) = 1 := by
   ext x y
@@ -78,14 +77,9 @@ theorem star_eU [StarRing A] (a : S) (i j : Fin 2) :
     star (eU a i j : SlopeTestRemainingChoices S A) = eU a j i := by
   ext x y
   rw [Matrix.star_eq_conjTranspose, Matrix.conjTranspose_apply]
-  simp only [eU, Matrix.of_apply]
+  simp only [eU_apply]
   rw [apply_ite star, star_one, star_zero]
-  refine if_congr ?_ rfl rfl
-  constructor
-  · rintro ⟨h1, h2, h3⟩
-    exact ⟨h2, h1, fun b hb => (h3 b hb).symm⟩
-  · rintro ⟨h1, h2, h3⟩
-    exact ⟨h2, h1, fun b hb => (h3 b hb).symm⟩
+  exact if_congr ((cond_iff a i j y x).symm.trans (cond_iff' a i j y x)) rfl rfl
 
 theorem ins_mul (a : S) (M N : M2 (SlopeTestRemainingChoices S A)) (hM : FreeOf2 a M) :
     ins a (M * N) = ins a M * ins a N := by

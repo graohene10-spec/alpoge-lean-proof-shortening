@@ -185,13 +185,7 @@ theorem du_DB (hBA : BasisAtEx) (M : Submodule (𝓞 K) (Fin n → K)) (hM : Sub
   have hg : ∀ i, ∃ x ∈ M, ∃ φ ∈ dualFr M, (g i : Matrix (Fin n) (Fin n) K) = Matrix.vecMulVec x φ := fun i => (g i).2
   choose x hx φ hφ hxφ using hg
   refine ⟨m, fun i => f i • x i, φ, fun i => Submodule.smul_mem _ _ (hx i), hφ, fun a b => ?_⟩
-  have := congrFun (congrFun hfg a) b
-  rw [Matrix.sum_apply, Matrix.one_apply] at this
-  rw [← this]
-  refine Finset.sum_congr rfl fun i _ => ?_
-  rw [Matrix.smul_apply, hxφ, Matrix.vecMulVec_apply]
-  show (f i • x i) a * φ i b = _
-  rw [Pi.smul_apply, smul_mul_assoc]
+  simpa only [Matrix.sum_apply, Matrix.one_apply, hxφ, Matrix.smul_apply, Matrix.vecMulVec_apply, Pi.smul_apply, smul_mul_assoc] using congrFun (congrFun hfg a) b
 
 end DB
 
@@ -212,13 +206,10 @@ theorem du_expand_left {m : ℕ} (x φ : Fin m → Fin n → K)
 theorem du_expand_right {m : ℕ} (x φ : Fin m → Fin n → K)
     (h : ∀ a b, ∑ i, x i a * φ i b = if a = b then 1 else 0) (y : Fin n → K) :
     y = ∑ i, (φ i ⬝ᵥ y) • x i := by
-  funext a
-  rw [Finset.sum_apply]
-  simp only [Pi.smul_apply, smul_eq_mul, dotProduct, Finset.sum_mul]
-  rw [Finset.sum_comm]
-  have : ∀ b i, φ i b * y b * x i a = y b * (x i a * φ i b) := fun b i => by ring
-  simp only [this, ← Finset.mul_sum, h]
-  simp
+  have h' : ∀ a b, ∑ i, φ i a * x i b = if a = b then 1 else 0 := by
+    intro a b
+    simpa [mul_comm, eq_comm] using h b a
+  simpa [dotProduct_comm] using du_expand_left φ x h' y
 
 theorem du_smul_of_mem_one {W : Type} [AddCommGroup W] [Module K W] [Module (𝓞 K) W] [IsScalarTower (𝓞 K) K W]
     (N : Submodule (𝓞 K) W) {c : K} (hc : c ∈ (1 : Submodule (𝓞 K) K)) {z : W} (hz : z ∈ N) : c • z ∈ N := by
@@ -347,14 +338,11 @@ variable [StarRing K]
 theorem du_mem_hdualFr (G : Matrix (Fin n) (Fin n) K) (M : Submodule (𝓞 K) (Fin n → K)) (x : Fin n → K) :
     x ∈ hdualFr G M ↔ G *ᵥ x ∈ dualFr (du_tl (starRingEnd K) M) := by
   rw [du_mem_dualFr_tl]
-  constructor
-  · intro h y hy
-    rw [dotProduct_comm]
+  constructor <;> intro h y hy
+  · rw [dotProduct_comm]
     exact h y hy
-  · intro h y hy
-    have := h y hy
-    rw [dotProduct_comm] at this
-    exact this
+  · rw [dotProduct_comm]
+    exact h y hy
 
 theorem du_hdualFr_eq (G : GL (Fin n) K) (M : Submodule (𝓞 K) (Fin n → K)) :
     hdualFr (G : Matrix (Fin n) (Fin n) K) M = gLat G⁻¹ (dualFr (du_tl (starRingEnd K) M)) := by
@@ -367,9 +355,7 @@ theorem dualFrLattice_of (hBA : BasisAtEx) : DualFrLattice := by
   intro K _ _ _ n G M hG hM
   refine ⟨du_dualFr_lattice hBA M hM, ?_⟩
   have hu : IsUnit G := (Matrix.isUnit_iff_isUnit_det G).2 hG
-  have := du_hdualFr_eq hu.unit M
-  rw [IsUnit.unit_spec] at this
-  rw [this]
+  rw [← IsUnit.unit_spec hu, du_hdualFr_eq hu.unit M]
   exact du_gLat_lattice _ _ (du_dualFr_lattice hBA _ (du_tl_lattice _ M hM))
 
 theorem dualFrHdual_of (hBA : BasisAtEx) : DualFrHdual := by

@@ -30,19 +30,14 @@ theorem prV_hat {Λ : Submodule (𝓞 E) (n → E)} (u : n → 𝒜) (hu : u ∈
     obtain ⟨x, hx, rfl⟩ := hu
     exact Submodule.subset_span ⟨x, hx, rfl⟩
   | zero =>
-    have : (fun i => prV (E := E) v ((0 : n → 𝒜) i)) = 0 := by funext i; simp
-    rw [this]; exact zero_mem _
+    simpa only [Pi.zero_def, Pi.zero_apply, map_zero] using zero_mem (lv v Λ)
   | add u w _ _ hu hw =>
-    have : (fun i => prV (E := E) v ((u + w) i)) =
-        (fun i => prV (E := E) v (u i)) + (fun i => prV (E := E) v (w i)) := by funext i; simp
-    rw [this]; exact add_mem hu hw
+    simpa only [Pi.add_def, Pi.add_apply, map_add] using add_mem hu hw
   | smul s u _ hu =>
     have hs := afsplit_prV_int (E := E) v (s : 𝒜) s.2
-    have : (fun i => prV (E := E) v ((s • u) i)) =
-        (⟨_, hs⟩ : intV E v) • (fun i => prV (E := E) v (u i)) := by
-      funext i
-      simp [Subring.smul_def, map_mul]
-    rw [this]; exact Submodule.smul_mem _ _ hu
+    convert Submodule.smul_mem (lv v Λ) (⟨_, hs⟩ : intV E v) hu using 1
+    funext i
+    simp [Subring.smul_def, map_mul]
 
 theorem bc_mulVec_vi (k : GL n 𝒜) (x : n → E) :
     ((bc (prV (E := E) v) k : GL n (E ⊗[F] v.adicCompletion F)) : Matrix n n _) *ᵥ

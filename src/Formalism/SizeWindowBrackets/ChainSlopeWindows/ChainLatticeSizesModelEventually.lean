@@ -96,8 +96,7 @@ theorem prBelow_prime (w : slopeLatticeData.FinPl K) : (prBelow w).Prime := by
 end Places
 
 theorem unit_rule_over_places : UnitRulePl := by
-  intro K _ _
-  exact ⟨fun w => ⟨prBelow_prime w, ramE_pos w⟩, fun S p hp hS => sum_log_norm_over_prime S p hp hS⟩
+  exact fun K _ _ => ⟨fun w => ⟨prBelow_prime w, ramE_pos w⟩, sum_log_norm_over_prime⟩
 
 namespace Fam
 
@@ -419,11 +418,9 @@ theorem askD_eq (D : ArithData H) (hD : HostFacts D) (N : ℕ) (a : ℝ) (t : H)
   classical
   unfold askD DeficitSplitLemmas.askAt
   refine Finset.sum_congr rfl fun i _ => ?_
-  refine Finset.sum_eq_single (gD D i) (fun g hg hne => ?_) (fun hn => ?_)
-  · rw [Finset.mem_filter] at hg
-    exact absurd ((double_coset_singleton D hD i).unique hg.2 (gD_spec D hD i)) hne
-  · rw [Finset.mem_filter] at hn
-    exact absurd ⟨Finset.mem_univ _, gD_spec D hD i⟩ hn
+  refine Finset.sum_eq_single_of_mem (a := gD D i) (Finset.mem_filter.2 ⟨Finset.mem_univ _, gD_spec D hD i⟩) (fun g hg hne => ?_)
+  rw [Finset.mem_filter] at hg
+  exact absurd ((double_coset_singleton D hD i).unique hg.2 (gD_spec D hD i)) hne
 
 theorem ASK_eq (D : ArithData H) (hD : HostFacts D) (N : ℕ) (a : ℝ) (t : H) (w : E0 × H → ℝ) :
     ASK D N a t w = (∑ p ∈ inertPs D N, 2 * Real.log p *
@@ -590,10 +587,7 @@ theorem inclL_ht (κ κ₁ : Type) [Fintype κ] [Fintype κ₁] [DecidableEq κ]
   unfold htMap
   refine mul_nonpos_of_nonneg_of_nonpos (by positivity) (Finset.sum_nonpos fun v _ => ?_)
   refine Real.log_nonpos (sq_nonneg _) ?_
-  unfold opNormAt
-  rw [inclL_matrix]
-  simp only [inv_one, Matrix.one_mul, Matrix.mul_one]
-  exact pow_le_one₀ (norm_nonneg _) (inclMat_norm κ κ₁)
+  simpa [opNormAt, inclL_matrix] using inclMat_norm κ κ₁
 
 theorem muMax_incl (κ κ₁ : Type) [Fintype κ] [Fintype κ₁] [DecidableEq κ] [DecidableEq κ₁] [Nonempty κ] :
     muMaxDef (Pi.basisFun K κ) (fun _ => 1) (stdLat K κ)
@@ -756,11 +750,9 @@ variable (v : InfinitePlace K) (m f T p₁ t₁ Mw : ℕ) (hb : ℝ)
 theorem model_card (hT : 4 ≤ T) :
     0 < (T - 2) ^ f ∧ (T - 2) ^ f ≤ (T - 1) ^ f ∧
     Fintype.card (Fin ((T - 2) ^ f) ⊕ Fin ((T - 1) ^ f - (T - 2) ^ f)) = (T - 1) ^ f := by
-  have h1 : 0 < (T - 2) ^ f := Nat.pow_pos (by omega)
-  have h2 : (T - 2) ^ f ≤ (T - 1) ^ f := Nat.pow_le_pow_left (by omega) f
-  refine ⟨h1, h2, ?_⟩
+  refine ⟨Nat.pow_pos (by omega), Nat.pow_le_pow_left (by omega) f, ?_⟩
   rw [Fintype.card_sum, Fintype.card_fin, Fintype.card_fin]
-  omega
+  exact Nat.add_sub_of_le (Nat.pow_le_pow_left (by omega) f)
 
 theorem model_lat (sg : ℝ) (hT : 4 ≤ T) (hsg : 0 < sg) (hsg20 : sg ≤ 1 / 20) (hMw : 1 / sg ≤ (Mw : ℝ)) :
     (modelFam K v m f T p₁ t₁ Mw hb).LatHyp sg := by
@@ -1839,8 +1831,7 @@ theorem coll_h_le (hT : 4 ≤ T) (hs : ℝ) (hs0 : 0 ≤ hs)
 theorem coll_du (hT : 4 ≤ T) (u : Fin Mw) : 0 < (collFam K v m f T Mw hb gG gE).du u := by
   obtain ⟨ha, -, -⟩ := model_card f T hT
   show (0 : ℝ) < ((Fintype.card (Fin ((T - 2) ^ f)) : ℕ) : ℝ)
-  rw [Fintype.card_fin]
-  exact_mod_cast ha
+  simpa only [Fintype.card_fin] using (Nat.cast_pos.mpr ha : (0 : ℝ) < (((T - 2) ^ f : ℕ) : ℝ))
 
 theorem collection_family_slope_gap (hT : 4 ≤ T) (hMpos : 0 < Mw) :
     wmean (collFam K v m f T Mw (hbT K f T) gG gE).du
@@ -1849,23 +1840,19 @@ theorem collection_family_slope_gap (hT : 4 ≤ T) (hMpos : 0 < Mw) :
       - muMinDef (collFam K v m f T Mw (hbT K f T) gG gE).b' (collFam K v m f T Mw (hbT K f T) gG gE).X'
           (collFam K v m f T Mw (hbT K f T) gG gE).cc ≤ 0 := by
   set F := collFam K v m f T Mw (hbT K f T) gG gE with hF
-  have hN' : ∀ u, F.N' u = stdLat K (Fin ((T - 2) ^ f)) :=
-    fun u => modLat_cancel K (tau0 K 2 0) (stdLat K (Fin ((T - 2) ^ f)))
-  have hsum : ∑ u : Fin Mw, F.du u ≠ 0 := by
-    have : 0 < ∑ u : Fin Mw, F.du u :=
-      Finset.sum_pos (fun u _ => coll_du K v m f T Mw _ gG gE hT u) ⟨⟨0, hMpos⟩, Finset.mem_univ _⟩
-    exact this.ne'
+  have hsum : ∑ u : Fin Mw, F.du u ≠ 0 :=
+    (Finset.sum_pos (fun u _ => coll_du K v m f T Mw _ gG gE hT u)
+      ⟨⟨0, hMpos⟩, Finset.mem_univ _⟩).ne'
   have hfun : (fun u : Fin Mw => muDef (F.b u) (F.X u) (F.N' u) - F.h u) = fun _ =>
       muDef (Pi.basisFun K (Fin ((T - 2) ^ f)))
         (fun _ => ((Real.exp (-(dT f T) / 2) : ℝ) : ℂ) • 1) (stdLat K _) - F.h ⟨0, hMpos⟩ := by
     funext u
     exact congrArg (fun L => muDef (Pi.basisFun K (Fin ((T - 2) ^ f)))
-        (fun _ => ((Real.exp (-(dT f T) / 2) : ℝ) : ℂ) • 1) L - F.h ⟨0, hMpos⟩) (hN' u)
+        (fun _ => ((Real.exp (-(dT f T) / 2) : ℝ) : ℂ) • 1) L - F.h ⟨0, hMpos⟩)
+      (modLat_cancel K (tau0 K 2 0) (stdLat K (Fin ((T - 2) ^ f))))
   rw [hfun, wmean_const _ _ hsum]
   have hh : hbT K f T ≤ F.h ⟨0, hMpos⟩ := le_max_right _ _
-  have hmin : muMinDef F.b' F.X' F.cc
-      = muMinDef (Pi.basisFun K (Fin ((T - 2) ^ f))) (fun _ => 1) (stdLat K _) := rfl
-  rw [hmin]
+  rw [show muMinDef F.b' F.X' F.cc = muMinDef (Pi.basisFun K (Fin ((T - 2) ^ f))) (fun _ => 1) (stdLat K _) from rfl]
   unfold hbT at hh
   linarith
 
@@ -1885,7 +1872,6 @@ theorem coll_tr (bb sg : ℝ) (hm : 1 ≤ m) (hf : 1 ≤ f) (hTp : T.Prime) (hT4
   have hde : 1 - F.du ⟨0, hMpos⟩ / F.dM ⟨0, hMpos⟩ ≤ 2 * (f : ℝ) / (T : ℝ) :=
     (UnitWeightPartition.deficit_bounds _ (T : ℝ) _ _ hdM0 (by linarith)
       ((hPl.2.2.2.2.2 ⟨0, hMpos⟩).2.2.2.2.2.2.2.2.2.2.1)).2.2.2
-  have hdel : F.del = 1 - F.du ⟨0, hMpos⟩ / F.dM ⟨0, hMpos⟩ := rfl
   have hdeF : F.deF = 1 - F.du ⟨0, hMpos⟩ / F.dM ⟨0, hMpos⟩ := by
     have h1 : MatrixLatticeEstimates.RsG F.ι = (Mw : ℝ) * F.du ⟨0, hMpos⟩ := by
       show ∑ _u : Fin Mw, F.du ⟨0, hMpos⟩ = _
@@ -1897,14 +1883,13 @@ theorem coll_tr (bb sg : ℝ) (hm : 1 ≤ m) (hf : 1 ≤ f) (hTp : T.Prime) (hT4
     unfold Fam.deF
     rw [h1, h2, mul_div_mul_left _ _ h3]
   have hsmallde : 2 * (f : ℝ) / (T : ℝ) ≤ (sg / 3) ^ 2 := by
-    have hsq : 0 < sg ^ 2 := by positivity
-    rw [div_le_iff₀ hsq] at h18
+    rw [div_le_iff₀ (by positivity : (0 : ℝ) < sg ^ 2)] at h18
     rw [div_le_iff₀ (by linarith)]
     nlinarith
   refine ⟨?_, ?_, ?_⟩
-  · rw [hdel]
-    have h1 : 3 / 4 ≤ F.du ⟨0, hMpos⟩ / F.dM ⟨0, hMpos⟩ := by
-      rw [le_div_iff₀ hdM0]; exact (hrk ⟨0, hMpos⟩).1
+  · show 1 - F.du ⟨0, hMpos⟩ / F.dM ⟨0, hMpos⟩ ≤ 1 / 4
+    have h1 : 3 / 4 ≤ F.du ⟨0, hMpos⟩ / F.dM ⟨0, hMpos⟩ :=
+      (le_div_iff₀ hdM0).2 (hrk ⟨0, hMpos⟩).1
     linarith
   · have h1 : Real.sqrt F.deF ≤ sg / 3 := by
       rw [hdeF]
@@ -2306,8 +2291,7 @@ def evC : Consts := ⟨1, 1, 1, 1, 4, 1, 4, 1, 1, 1⟩
 theorem ev_top_arith' (c m A lA lT lg γ lx xe l2 : ℝ) (hc : 0 ≤ c) (hm : 0 ≤ m) (hA : 0 ≤ A)
     (hlg : m * lg = lT - m * (l2 + xe)) (hlA : lA = lx + xe) (h : 2 + γ + l2 ≤ lx) :
     c * (m * A) ≤ c * (m * ((A * lA - A) - A * γ) - A * lT) + m * (c * A) * lg := by
-  have := ev_top_arith c m A lA lT lg γ lx xe l2 0 0 hc hm hA hlg hlA h le_rfl le_rfl
-  linarith
+  simpa using ev_top_arith c m A lA lT lg γ lx xe l2 0 0 hc hm hA hlg hlA h le_rfl le_rfl
 
 theorem ev_logW (x k : ℝ) (Mw : ℕ) (h48 : 48 ≤ x) (hk2 : x ^ 2 ≤ k) (hM0 : 0 < Mw) (hMx : (Mw : ℝ) < x + 1) :
     Real.log (Mw : ℝ) ≤ (k - 3) * Real.log 2 := by
@@ -2452,9 +2436,7 @@ theorem ev_topW (x ε lg : ℝ) (m T N : ℕ) (TT T2 : Finset H) (h48 : 48 ≤ x
     unfold ph
     refine ev_top_arith' _ _ _ _ _ _ _ (Real.log x) (x ^ ε) (Real.log 2) (Nat.cast_nonneg _) (Nat.cast_nonneg _) ha0.le
       hmlg hloga ?_
-    have h1 := Real.eulerMascheroniConstant_lt_two_thirds
-    have h2 : Real.log 2 ≤ 2 - 1 := Real.log_le_sub_one_of_pos (by norm_num)
-    linarith
+    linarith [Real.eulerMascheroniConstant_lt_two_thirds, Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 2)]
   · exact mul_nonneg (mul_nonneg (mul_nonneg zero_le_one (Nat.cast_nonneg _)) ha0.le) hLa
   · show 0 ≤ (1 : ℝ) * (m : ℝ) * ((2 * (Fintype.card H : ℝ)) * m * bTx x ε * x ^ ε
           + (T2.card : ℝ) * ModelText.kTx x ε * bTx x ε * x ^ ε

@@ -24,9 +24,7 @@ lemma shape_prod_eq {R : Type u} [CommRing R] {ι : Type*} (g : (σ →₀ ℕ) 
   | empty =>
     intro _ mono hm
     rw [Finset.prod_empty, MvPolynomial.mem_support_iff, MvPolynomial.coeff_one] at hm
-    split_ifs at hm with h0
-    · rw [← h0, hg0, Finset.sum_empty]
-    · exact absurd rfl hm
+    split_ifs at hm with h0 <;> simp_all
   | insert c s hc ih =>
     intro h mono hm
     rw [Finset.prod_insert hc] at hm

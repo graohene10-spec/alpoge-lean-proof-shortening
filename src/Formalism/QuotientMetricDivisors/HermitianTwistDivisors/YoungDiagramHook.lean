@@ -113,8 +113,7 @@ lemma phRows_cons (a : ℕ) (s : Multiset ℕ) : phRows (a ::ₘ s) = ph (a : �
 
 lemma phRows_univ {n : ℕ} (g : Fin n → ℕ) :
     phRows (Finset.univ.val.map g) = ∑ i, ph (g i : ℝ) := by
-  unfold phRows
-  rw [Multiset.map_map]
+  simp only [phRows, Multiset.map_map]
   rfl
 
 lemma logFactRows_add (s t : Multiset ℕ) :
@@ -123,16 +122,13 @@ lemma logFactRows_add (s t : Multiset ℕ) :
 
 lemma logFactRows_univ {n : ℕ} (g : Fin n → ℕ) :
     logFactRows (Finset.univ.val.map g) = ∑ i, Real.log ((g i).factorial : ℝ) := by
-  unfold logFactRows
-  rw [Multiset.map_map]
+  simp only [logFactRows, Multiset.map_map]
   rfl
 
 lemma logFactRows_nonneg (s : Multiset ℕ) : 0 ≤ logFactRows s := by
   unfold logFactRows
-  apply Multiset.sum_nonneg
-  intro x hx
-  rw [Multiset.mem_map] at hx
-  obtain ⟨r, -, rfl⟩ := hx
+  refine Multiset.sum_nonneg fun x hx => ?_
+  obtain ⟨r, -, rfl⟩ := Multiset.mem_map.mp hx
   exact Real.log_nonneg (Nat.one_le_cast.mpr (Nat.factorial_pos r))
 
 private lemma ph_natCast_le_log_factorial (n : ℕ) : ph (n : ℝ) ≤ Real.log (n.factorial : ℝ) := by
@@ -179,8 +175,7 @@ lemma phRows_blk {A Bl : ℝ} (blk : Multiset ℕ) (hA : 1 ≤ Real.log A) (hb :
 
 lemma sum_univ_cast {n : ℕ} (g : Fin n → ℕ) :
     (((Finset.univ.val.map g).sum : ℕ) : ℝ) = ∑ i, (g i : ℝ) := by
-  have h : (Finset.univ.val.map g).sum = ∑ i, g i := rfl
-  rw [h, Nat.cast_sum]
+  exact Nat.cast_sum (Finset.univ : Finset (Fin n)) g
 
 private lemma sum_castSucc_sub_succ_eq_sub_last {n : ℕ} (c : Fin (n + 1) → ℝ) :
     ∑ i : Fin n, (c i.castSucc - c i.succ) = c 0 - c (Fin.last n) := by

@@ -236,15 +236,12 @@ theorem additive_character_holds : PsiChar := by
   intro k r z c hz g hg
   refine ⟨fun h hh => ?_, ?_⟩
   · unfold psi
-    rw [WeylGroupFacts.ell_mul z hz ((WeylGroupFacts.nset_iff g).1 hg).2 ((WeylGroupFacts.nset_iff h).1 hh).2]
-    rw [← Complex.exp_add]
+    rw [WeylGroupFacts.ell_mul z hz ((WeylGroupFacts.nset_iff g).1 hg).2 ((WeylGroupFacts.nset_iff h).1 hh).2, ← Complex.exp_add]
     congr 1
     simp only [mul_add, Complex.add_re, Complex.ofReal_add]
   · unfold psi
     rw [mul_comm Complex.I]
-    first
-      | exact Complex.norm_exp_ofReal_mul_I _
-      | simp [Complex.norm_exp]
+    exact Complex.norm_exp_ofReal_mul_I _
 
 namespace WeylGroupFacts
 
@@ -263,16 +260,8 @@ theorem row_of_fixed_col {h : Matrix (Fin (2 * r + k + 1)) (Fin (2 * r + k + 1))
     h (tau k r c) j = if tau k r c = j then 1 else 0 := by
   have h1 : hᴴ * Hpk k r * h = Hpk k r := hU
   have h2 := congrFun (congrFun h1 c) j
-  have h3 : ∀ q, (hᴴ * Hpk k r) c q = Hpk k r c q := by
-    intro q
-    rw [Matrix.mul_apply, Fintype.sum_eq_single c]
-    · rw [Matrix.conjTranspose_apply, hc c, if_pos rfl, star_one, one_mul]
-    · intro p hp
-      rw [Matrix.conjTranspose_apply, hc p, if_neg hp, star_zero, zero_mul]
-  rw [Matrix.mul_apply] at h2
-  simp only [h3] at h2
-  rw [Fintype.sum_eq_single (tau k r c)] at h2
-  · rw [hpk_row, if_pos rfl, hpk_row] at h2
+  rw [mul_assoc, Matrix.mul_apply, Fintype.sum_eq_single c] at h2
+  · rw [Matrix.conjTranspose_apply, hc c, if_pos rfl, star_one, one_mul, hpk_mul_apply, hpk_row] at h2
     have hs : sgn k r c * sgn k r c = 1 := sgn_mul_self c
     calc h (tau k r c) j = (sgn k r c * sgn k r c) * h (tau k r c) j := by rw [hs, one_mul]
       _ = sgn k r c * (sgn k r c * h (tau k r c) j) := by ring
@@ -282,7 +271,7 @@ theorem row_of_fixed_col {h : Matrix (Fin (2 * r + k + 1)) (Fin (2 * r + k + 1))
           · rw [if_pos hj, if_pos hj.symm, hs]
           · rw [if_neg hj, if_neg (Ne.symm hj), mul_zero]
   · intro q hq
-    rw [hpk_row, if_neg hq, zero_mul]
+    rw [Matrix.conjTranspose_apply, hc q, if_neg hq, star_zero, zero_mul]
 
 theorem uw_fixed_col {z : Fin (2 * r + k + 1) → ℂ}
     {h : Matrix (Fin (2 * r + k + 1)) (Fin (2 * r + k + 1)) ℂ} (hh : h ∈ UWset k r z)
@@ -392,17 +381,14 @@ theorem mul_apply_of_row {h : Matrix (Fin (2 * r + k + 1)) (Fin (2 * r + k + 1))
 theorem mul_apply_of_col {h : Matrix (Fin (2 * r + k + 1)) (Fin (2 * r + k + 1)) ℂ}
     (M : Matrix (Fin (2 * r + k + 1)) (Fin (2 * r + k + 1)) ℂ) (i j : Fin (2 * r + k + 1))
     (hcol : ∀ q, h q j = if q = j then 1 else 0) : (M * h) i j = M i j := by
-  rw [Matrix.mul_apply, Fintype.sum_eq_single j]
-  · rw [hcol j, if_pos rfl, mul_one]
-  · intro q hq
-    rw [hcol q, if_neg hq, mul_zero]
+  rw [Matrix.mul_apply]
+  refine (Fintype.sum_eq_single j (fun q hq => by rw [hcol q, if_neg hq, mul_zero])).trans ?_
+  rw [hcol j, if_pos rfl, mul_one]
 
 theorem mulVec_apply_of_row {h : Matrix (Fin (2 * r + k + 1)) (Fin (2 * r + k + 1)) ℂ}
     (v : Fin (2 * r + k + 1) → ℂ) (i : Fin (2 * r + k + 1))
     (hrow : ∀ p, h i p = if i = p then 1 else 0) : (h *ᵥ v) i = v i := by
-  first
-    | simp only [Matrix.mulVec, dotProduct]
-    | simp only [Matrix.mulVec, Matrix.dotProduct]
+  simp only [Matrix.mulVec, dotProduct]
   rw [Fintype.sum_eq_single i]
   · rw [hrow i, if_pos rfl, one_mul]
   · intro p hp

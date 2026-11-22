@@ -15,8 +15,7 @@ lemma in_reindex (x : ZMod d → ℕ → ℝ) :
       ∑ s : ZMod d, ∑ i ∈ oddLevels d, x s i := by
   rw [Finset.sum_comm]
   conv_rhs => rw [Finset.sum_comm]
-  refine Finset.sum_congr rfl fun i _ => ?_
-  exact Fintype.sum_equiv (Equiv.subRight (i : ZMod d)) _ _ (fun s => rfl)
+  exact Finset.sum_congr rfl fun i _ => Fintype.sum_equiv (Equiv.subRight (i : ZMod d)) _ _ (fun s => rfl)
 
 lemma in_reindex_mul (sig : ZMod d → ℝ) (x : ZMod d → ℕ → ℝ) :
     ∑ s : ZMod d, sig s * ∑ i ∈ oddLevels d, x (s - (i : ZMod d)) i =
@@ -145,16 +144,13 @@ lemma fd_part1 (hl : 3 ≤ l) (D sig : ZMod d → ℝ) (hopt : IsOptDual l d D s
   have hl' : (3 : ℝ) ≤ l := by exact_mod_cast hl
   have hlpos : (0 : ℝ) < l := by linarith
   have hsig := hopt.1.1
-  have hl2 : (l : ℝ) * (2 / l) = 2 := by field_simp
-  have h2l : 2 ≤ (l : ℝ) * sig s := by
-    have := mul_le_mul_of_nonneg_left hs hlpos.le
-    linarith
+  have h2l : (2 : ℝ) ≤ (l : ℝ) * sig s := by
+    simpa [mul_comm] using (div_le_iff₀ hlpos).1 hs
   have hout : ∀ i ∈ oddLevels d, x s i = 0 := by
     intro i hi
     have hpow := self_le_pow_of_mem_oddLevels (l := l) (by linarith) hi
     have hred : 0 < (l : ℝ) ^ i * sig s + sig (s + (i : ZMod d)) - 1 := by
-      have := mul_le_mul_of_nonneg_right hpow (hsig s).1
-      linarith [(hsig (s + (i : ZMod d))).1]
+      linarith [h2l, mul_le_mul_of_nonneg_right hpow (hsig s).1, (hsig (s + (i : ZMod d))).1]
     rcases mul_eq_zero.1 (h2 s i hi) with h | h
     · exact h
     · linarith

@@ -13,10 +13,8 @@ lemma chebPt_eq (α β : ℝ) (n : ℕ) (j : Fin (n + 1)) :
 lemma lagCo_affine {d : ℕ} (c h : ℝ) (x : Fin (d + 1) → ℝ) (j : Fin (d + 1)) :
     lagCo (fun i => c + h * x i) j = (h⁻¹) ^ d * lagCo x j := by
   unfold lagCo
-  have : ∀ i ∈ univ.erase j, ((c + h * x j) - (c + h * x i))⁻¹ = h⁻¹ * (x j - x i)⁻¹ := by
-    intro i _
-    rw [← mul_inv]; congr 1; ring
-  rw [prod_congr rfl this, prod_mul_distrib, prod_const, card_erase_of_mem (mem_univ j)]
+  rw [show (∏ i ∈ univ.erase j, ((c + h * x j) - (c + h * x i))⁻¹) = (∏ i ∈ univ.erase j, h⁻¹ * (x j - x i)⁻¹) from
+    prod_congr rfl (fun i _ => by rw [← mul_inv]; congr 1; ring), prod_mul_distrib, prod_const, card_erase_of_mem (mem_univ j)]
   simp
 
 noncomputable def nd (n : ℕ) (j : Fin (n + 1)) : ℝ := Chebyshev.node n j

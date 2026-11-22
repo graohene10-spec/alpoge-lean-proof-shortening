@@ -84,8 +84,7 @@ lemma val_zeta_sub_one {ℓ j : ℕ} (hℓ : ℓ.Prime) (hj : 1 ≤ j) (hv : v (
 lemma val_sum_eq_of_lt {ι : Type*} [DecidableEq ι] {s : Finset ι} {g : ι → L} {i₀ : ι}
     (hi : i₀ ∈ s) (h0 : v (g i₀) ≠ ⊤) (hlt : ∀ i ∈ s.erase i₀, v (g i₀) < v (g i)) :
     v (∑ i ∈ s, g i) = v (g i₀) := by
-  rw [← add_sum_erase s g hi]
-  exact AddValuation.map_add_eq_of_lt_left v (AddValuation.map_lt_sum v h0 hlt)
+  simpa [add_sum_erase s g hi] using AddValuation.map_add_eq_of_lt_left v (AddValuation.map_lt_sum v h0 hlt)
 
 lemma wt_lt_add {a : WithTop ℝ} {x y : ℝ} (h : ∀ r : ℝ, a = r → x < r + y) :
     (x : WithTop ℝ) < a + y := by

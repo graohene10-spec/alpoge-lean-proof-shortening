@@ -26,12 +26,10 @@ private lemma pderiv_mul_of_pderiv_eq_zero (i : σ) (q f : MvPolynomial σ k) (h
 
 theorem tieF_mul_free (q f : MvPolynomial σ k) (hw : ∀ c, pderiv (w c) q = 0) (he : ∀ c, pderiv (e c) q = 0) :
     tieF w e (q * f) = q * tieF w e f := by
-  have key : ∀ g : MvPolynomial σ k, tieF w e g = ∑ c, pderiv (w c) (pderiv (e c) g) := by
-    intro g
-    simp [tieF]
+  have key : ∀ g : MvPolynomial σ k, tieF w e g = ∑ c, pderiv (w c) (pderiv (e c) g) :=
+    fun g => by simp [tieF]
   rw [key, key, Finset.mul_sum]
-  refine Finset.sum_congr rfl fun c _ => ?_
-  rw [pderiv_mul_of_pderiv_eq_zero _ _ _ (he c), pderiv_mul_of_pderiv_eq_zero _ _ _ (hw c)]
+  exact Finset.sum_congr rfl fun c _ => by rw [pderiv_mul_of_pderiv_eq_zero _ _ _ (he c), pderiv_mul_of_pderiv_eq_zero _ _ _ (hw c)]
 
 theorem tieF_pow_mul_free (q f : MvPolynomial σ k) (hw : ∀ c, pderiv (w c) q = 0)
     (he : ∀ c, pderiv (e c) q = 0) (m : ℕ) :
@@ -99,14 +97,11 @@ theorem tieF_pow_apply_eq_zero_of_min_lt [CharZero k] (hw : Function.Injective w
     induction j with
     | zero =>
       intro t ht
-      have ht' : t ∈ x.support := by simpa using ht
-      simpa using hx t ht'
+      simpa using hx t (by simpa using ht)
     | succ j ih =>
       intro t ht
-      have ht' : t ∈ (tieF w e ((tieF w e ^ j) x)).support := by
-        rw [pow_succ'] at ht
-        exact ht
-      obtain ⟨c, hc⟩ := hsupp _ t ht'
+      rw [pow_succ'] at ht
+      obtain ⟨c, hc⟩ := hsupp _ t ht
       obtain ⟨h1, h2⟩ := ih _ hc
       rw [hW1] at h1
       rw [hE1] at h2

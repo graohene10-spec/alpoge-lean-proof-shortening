@@ -60,8 +60,7 @@ theorem idxChange_cnt_mem (v : HeightOneSpectrum R) {a : R} (ha : a ≠ 0) (hp :
 
 theorem idxChange_cnt_nonneg (v : HeightOneSpectrum R) (a : R) :
     0 ≤ FractionalIdeal.count K v (FractionalIdeal.spanSingleton R⁰ (algebraMap R K a)) := by
-  rw [idxChange_span_alg]
-  exact FractionalIdeal.count_coe_nonneg K v _
+  simpa only [idxChange_span_alg] using FractionalIdeal.count_coe_nonneg K v (Ideal.span {a})
 
 theorem idxChange_unif (v : HeightOneSpectrum R) :
     ∃ ϖ : R, ϖ ∈ v.asIdeal ∧ ϖ ≠ 0 ∧

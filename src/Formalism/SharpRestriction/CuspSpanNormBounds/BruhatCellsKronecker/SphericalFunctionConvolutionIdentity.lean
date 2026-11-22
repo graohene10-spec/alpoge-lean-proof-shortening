@@ -306,13 +306,9 @@ theorem convolution_kernel_prod_integrable [μ.IsMulLeftInvariant] [SigmaFinite 
     hφi.mul_prod (hφi.comp_mul_left x⁻¹)
   have hF2 : Integrable (fun z : G × G => φ z.1 * φ (x⁻¹ * (z.1⁻¹ * z.2))) (μ.prod μ) :=
     (hmp.integrable_comp hF.aestronglyMeasurable).2 hF
-  have h1 : Continuous fun z : G × G => φ z.1 := hφc.comp continuous_fst
-  have h2' : Continuous fun z : G × G => x⁻¹ * z.1⁻¹ * z.2 := by fun_prop
-  have h2 : Continuous fun z : G × G => φ (x⁻¹ * z.1⁻¹ * z.2) := hφc.comp h2'
-  have h3 : Continuous fun z : G × G => π z.2 y := (hc y).comp continuous_snd
-  have h4 : Continuous fun z : G × G => ⟪u, π z.2 y⟫_ℂ := continuous_const.inner h3
   have h5 : Continuous fun z : G × G => φ z.1 * φ (x⁻¹ * z.1⁻¹ * z.2) * ⟪u, π z.2 y⟫_ℂ :=
-    (h1.mul h2).mul h4
+    ((hφc.comp continuous_fst).mul (hφc.comp (by fun_prop))).mul
+      (continuous_const.inner ((hc y).comp continuous_snd))
   refine Integrable.mono' (hF2.norm.mul_const (‖u‖ * ‖y‖)) h5.aestronglyMeasurable
     (ae_of_all _ fun z => ?_)
   show ‖φ z.1 * φ (x⁻¹ * z.1⁻¹ * z.2) * ⟪u, π z.2 y⟫_ℂ‖ ≤ ‖φ z.1 * φ (x⁻¹ * (z.1⁻¹ * z.2))‖ * (‖u‖ * ‖y‖)
@@ -329,14 +325,11 @@ theorem convolution_operator_sandwich_eq [μ.IsMulLeftInvariant] [SigmaFinite μ
   have step : ∀ h : G, ⟪u, π h (π x (P y))⟫_ℂ = ∫ g, φ (x⁻¹ * h⁻¹ * g) * ⟪u, π g y⟫_ℂ ∂μ := by
     intro h
     rw [← rep_mul_apply', ← hinv, hP.2]
-    calc ∫ g, φ g * ⟪π (h * x)⁻¹ u, π g y⟫_ℂ ∂μ
-        = ∫ g, (fun g' => φ (x⁻¹ * h⁻¹ * g') * ⟪u, π g' y⟫_ℂ) (h * x * g) ∂μ := by
-          congr 1
-          funext g
-          simp only [hinv, ← rep_mul_apply']
-          rw [show x⁻¹ * h⁻¹ * (h * x * g) = g by group]
-      _ = ∫ g, φ (x⁻¹ * h⁻¹ * g) * ⟪u, π g y⟫_ℂ ∂μ :=
-          integral_mul_left_eq_self (fun g' => φ (x⁻¹ * h⁻¹ * g') * ⟪u, π g' y⟫_ℂ) (h * x)
+    rw [← integral_mul_left_eq_self (fun g => φ (x⁻¹ * h⁻¹ * g) * ⟪u, π g y⟫_ℂ) (h * x)]
+    congr 1
+    funext g
+    simp only [hinv, ← rep_mul_apply']
+    rw [show x⁻¹ * h⁻¹ * (h * x * g) = g by group]
   rw [ContinuousLinearMap.comp_apply, ContinuousLinearMap.comp_apply, ContinuousLinearMap.smul_apply,
     inner_smul_right, hP.2 u (π x (P y)), hP.2 u y]
   calc ∫ h, φ h * ⟪u, π h (π x (P y))⟫_ℂ ∂μ

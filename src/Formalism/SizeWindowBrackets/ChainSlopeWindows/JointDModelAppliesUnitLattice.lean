@@ -143,16 +143,14 @@ theorem first_family_transfer_holds : FrameTraceRatioFinEquiv := by
   intro I α _ _ ι _ _ B ga η
   classical
   obtain ⟨-, -, h3, h4, -⟩ := transfer_fin_index_holds I α ι B ga
-  obtain ⟨q1, q2⟩ := quadratic_transfer_holds I α ι B ga
   unfold HilbertSchmidtNormSquare.F1 FrameTraceRatioLinear
-  rw [h3, h4, q1, q2]
+  rw [h3, h4, (quadratic_transfer_holds I α ι B ga).1, (quadratic_transfer_holds I α ι B ga).2]
 
 theorem second_family_transfer_holds : FrameDeviationFinEquiv := by
   intro I α _ _ ι _ _ B ga e hga
   obtain ⟨-, h2, -, -, h5⟩ := transfer_fin_index_holds I α ι B ga
   unfold HilbertSchmidtNormSquare.F2 FrameDeviationLinear
-  rw [h5]
-  simp only [h2, fun i => hilbert_schmidt_transfer_holds I α ι B ga i (hga i)]
+  simp only [h5, h2, fun i => hilbert_schmidt_transfer_holds I α ι B ga i (hga i)]
   rfl
 
 theorem transfer_conclusion_holds : BridgeConcl := by
@@ -260,9 +258,8 @@ theorem slope_le_max_slope {K V ι : Type} [Field K] [NumberField K] [StarRing K
     muDef b X N ≤ muMaxDef b X N := by
   have hne : N ≠ ⊥ := by
     rintro rfl
-    have h0 : (⊥ : Submodule K V) = ⊤ := by rw [← hsp]; simp
-    have : Subsingleton (Submodule K V) := subsingleton_of_bot_eq_top h0
-    have : Subsingleton V := (Submodule.subsingleton_iff K).1 inferInstance
+    have : Subsingleton V :=
+      (Submodule.subsingleton_iff K).1 (subsingleton_of_bot_eq_top (by rw [← hsp]; simp))
     have := Module.finrank_eq_card_basis b
     rw [Module.finrank_zero_of_subsingleton] at this
     omega
@@ -274,16 +271,11 @@ theorem slope_le_max_slope {K V ι : Type} [Field K] [NumberField K] [StarRing K
 theorem word_count_bound_holds : WordsR := by
   intro I _ ιf _ Dstar sg C0 Gam hD hsg hC hG hI hd
   have h1 : (Fintype.card I : ℝ) * (Dstar * (Gam ^ 2)⁻¹ / C0) ≤ RsG ιf := by
-    unfold RsG
-    calc (Fintype.card I : ℝ) * (Dstar * (Gam ^ 2)⁻¹ / C0)
-        = ∑ _i : I, Dstar * (Gam ^ 2)⁻¹ / C0 := by
-          rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
-      _ ≤ ∑ i, (Fintype.card (ιf i) : ℝ) := Finset.sum_le_sum fun i _ => hd i
-  have h2 : 0 ≤ Dstar * (Gam ^ 2)⁻¹ / C0 := by positivity
-  have h3 : C0 * Gam ^ 2 / sg * (Dstar * (Gam ^ 2)⁻¹ / C0) = Dstar / sg := by
-    field_simp
-  calc Dstar / sg = C0 * Gam ^ 2 / sg * (Dstar * (Gam ^ 2)⁻¹ / C0) := h3.symm
-    _ ≤ (Fintype.card I : ℝ) * (Dstar * (Gam ^ 2)⁻¹ / C0) := mul_le_mul_of_nonneg_right hI h2
+    rw [show (Fintype.card I : ℝ) = ((Finset.univ : Finset I).card : ℝ) by rw [Finset.card_univ]]
+    simpa only [RsG, Finset.sum_const, nsmul_eq_mul] using Finset.sum_le_sum fun i _ => hd i
+  calc Dstar / sg = C0 * Gam ^ 2 / sg * (Dstar * (Gam ^ 2)⁻¹ / C0) := by field_simp
+    _ ≤ (Fintype.card I : ℝ) * (Dstar * (Gam ^ 2)⁻¹ / C0) :=
+        mul_le_mul_of_nonneg_right hI (by positivity)
     _ ≤ RsG ιf := h1
 
 end Formalism.LFunctionChainParameters.MatrixLatticeEstimates

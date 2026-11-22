@@ -14,9 +14,8 @@ private theorem UpperTheory.GL.df_mem_local {N : ℕ} [NeZero N] (p : ℕ) (u : 
 
 private theorem UpperTheory.GL.df_mem_frob {N : ℕ} [NeZero N] (p : ℕ) (hp : p.Prime) (u : (ZMod N)ˣ) :
     u * (frobUnit N p)⁻¹ ∈ Formalism.LFunctionChainParameters.LHost.localUnits N p ↔ (u : ZMod N).val ≡ p [MOD ordCompl[p] N] := by
-  have hw := (frobenius_unit_spec N p (NeZero.ne N) hp).1.1
   rw [UpperTheory.GL.df_modEq_iff, Formalism.LFunctionChainParameters.LHost.localUnits, MonoidHom.mem_ker, map_mul, map_inv, mul_inv_eq_one,
-    Units.ext_iff, ZMod.unitsMap_val, ZMod.unitsMap_val, hw]
+    Units.ext_iff, ZMod.unitsMap_val, ZMod.unitsMap_val, (frobenius_unit_spec N p (NeZero.ne N) hp).1.1]
 
 private theorem UpperTheory.GL.df_inertia {φ : Frame} (H : HostRaw φ) (p : ℕ) (g : φ.GG) :
     (toE φ g).toAdd ∈ (arith H).inertia p ↔ ∃ u ∈ Formalism.LFunctionChainParameters.LHost.localUnits H.condN p, g = H.art u := by

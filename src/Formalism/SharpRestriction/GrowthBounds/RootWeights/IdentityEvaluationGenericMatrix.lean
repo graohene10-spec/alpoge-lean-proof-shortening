@@ -10,12 +10,9 @@ open Formalism.MainNotions.G Formalism.MainNotions.CovariantDegrees
 
 private theorem mapRingHom_laurent_C' {A B : Type*} [CommRing A] [CommRing B] (f : A →+* B) (a : A) :
     AddMonoidAlgebra.mapRingHom ℤ f (LaurentPolynomial.C a) = LaurentPolynomial.C (f a) := by
-  first
-  | simp [LaurentPolynomial.C_apply, AddMonoidAlgebra.mapRingHom_single]
-  | simp [LaurentPolynomial.C_apply, Finsupp.mapRange_single]
-  | (ext k; simp [LaurentPolynomial.C_apply, Finsupp.single_apply]; split_ifs <;> simp)
-  | (ext k; simp [LaurentPolynomial.C_apply, AddMonoidAlgebra.coeff_single]; split_ifs <;> simp)
-  | rfl
+  ext k
+  simp [LaurentPolynomial.C_apply, Finsupp.single_apply]
+  split_ifs <;> simp
 
 private theorem mapRingHom_laurent_T {A B : Type*} [CommRing A] [CommRing B] (f : A →+* B) (k : ℤ) :
     AddMonoidAlgebra.mapRingHom ℤ f (LaurentPolynomial.T k : LaurentPolynomial A) = LaurentPolynomial.T k := by
@@ -58,10 +55,9 @@ theorem mul_ev_alg (R : Type*) [CommRing R] (n : ℕ) (a : MvPolynomial (Fin n �
 
 theorem mul_ev_inv (R : Type*) [CommRing R] (n : ℕ) :
     mul_ev R n (IsLocalization.Away.invSelf (S := GLCoord R n) (genMat R n).det) = 1 := by
-  have h := congrArg (mul_ev R n)
-    (IsLocalization.Away.mul_invSelf (S := GLCoord R n) (genMat R n).det)
-  rw [map_mul, map_one, mul_ev_alg, identity_evaluation_generic_det, one_mul] at h
-  exact h
+  simpa only [map_mul, map_one, mul_ev_alg, identity_evaluation_generic_det, one_mul] using
+    congrArg (mul_ev R n)
+      (IsLocalization.Away.mul_invSelf (S := GLCoord R n) (genMat R n).det)
 
 def mul_ph (R : Type*) [CommRing R] (n : ℕ) : GLLaurent R n →+* LaurentPolynomial R :=
   AddMonoidAlgebra.mapRingHom ℤ (mul_ev R n)

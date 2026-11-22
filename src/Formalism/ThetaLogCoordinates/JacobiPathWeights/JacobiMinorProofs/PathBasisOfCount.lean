@@ -57,10 +57,8 @@ theorem rows_indep (m : X → σ →₀ ℕ) (hm : Function.Injective m) (F : X 
   intro g hg
   apply h g
   simp only [expand m hm F hF S, sum_smul_sum_smul_eq_sum_mul_smul]
-  have hy : ∀ y, ∑ x, g x * ((cmat m F).map (Int.castRingHom S)) x y = 0 := by
-    intro y
-    have := congrFun hg y
-    simpa [Finset.sum_apply, Matrix.row] using this
+  have hy : ∀ y, ∑ x, g x * ((cmat m F).map (Int.castRingHom S)) x y = 0 := fun y => by
+    simpa [Finset.sum_apply, Matrix.row] using congrFun hg y
   refine Finset.sum_eq_zero fun y _ => ?_
   rw [hy y, zero_smul]
 
@@ -78,9 +76,8 @@ theorem det_unit (m : X → σ →₀ ℕ) (hm : Function.Injective m) (F : X �
     Matrix.linearIndependent_rows_iff_isUnit.mp (by simpa [Matrix.row] using hrows)
   rw [Matrix.isUnit_iff_isUnit_det, isUnit_iff_ne_zero] at hu
   apply hu
-  have hdet : ((cmat m F).map (Int.castRingHom (ZMod p))).det = Int.castRingHom (ZMod p) (cmat m F).det :=
-    (RingHom.map_det _ _).symm
-  rw [hdet, eq_intCast]
+  rw [(show ((cmat m F).map (Int.castRingHom (ZMod p))).det =
+      Int.castRingHom (ZMod p) (cmat m F).det from (RingHom.map_det _ _).symm), eq_intCast]
   exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ p).mpr (Int.ofNat_dvd_left.mpr hpd)
 
 theorem basis_of (m : X → σ →₀ ℕ) (hm : Function.Injective m) (F : X → MvPolynomial σ ℤ)
@@ -169,8 +166,7 @@ theorem psi_support (hr : PolBRank) {n N : ℕ} {isVec : ℕ → Bool} {B : ℕ 
     {I : ℤ → Finset (Fin n)} (hμ : IsPath n isVec B μ N) (hI : IsIndex (μ N) I) :
     ∀ d ∈ (psiPath ℤ isVec μ N I).support, d ∈ expSet n N B := by
   intro d hd i
-  rw [← weight_indicator_fst_eq_sum]
-  exact (pathProductDegrees ℤ n N isVec B μ I hμ hI).2 i (mem_support_iff.mp hd)
+  simpa [weight_indicator_fst_eq_sum] using (pathProductDegrees ℤ n N isVec B μ I hμ hI).2 i (mem_support_iff.mp hd)
 
 end MinorDeterminantBasis
 

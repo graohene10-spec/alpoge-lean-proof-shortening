@@ -626,9 +626,8 @@ open Matrix
 private theorem UpperTheory.Reformulated.B.placeRankTwoOne.Jm_sq {n : ℕ} (ε : Fin n → Bool) : Jm ε * Jm ε = 1 := by
   unfold Jm
   rw [Matrix.diagonal_mul_diagonal, ← Matrix.diagonal_one]
-  congr 1
-  funext a
-  split_ifs <;> simp
+  ext a b
+  by_cases h : ε a = true <;> simp [Matrix.diagonal, h]
 
 private theorem UpperTheory.Reformulated.B.placeRankTwoOne.normSq_det {n : ℕ} {ε : Fin n → Bool}
     {g : Matrix (Fin n) (Fin n) ℂ} (hg : inUJ ε g) : Complex.normSq g.det = 1 := by
@@ -908,8 +907,7 @@ private theorem UpperTheory.Reformulated.B.placeRankTwoOne.act_mul {n : ℕ} (g 
   simp [act, Matrix.mulVec_mulVec]
 
 private theorem UpperTheory.Reformulated.B.placeRankTwoOne.act_one {n : ℕ} (x : Fin n → Fin n → ℂ) : act 1 x = x := by
-  funext j
-  simp [act]
+  exact funext (fun j => Matrix.one_mulVec (x j))
 
 private theorem UpperTheory.Reformulated.B.placeRankTwoOne.act_sub {n : ℕ} (g : Matrix (Fin n) (Fin n) ℂ)
     (x y : Fin n → Fin n → ℂ) : act g (x - y) = act g x - act g y := by
@@ -966,10 +964,8 @@ private theorem UpperTheory.Reformulated.B.placeRankTwoOne.norm_le_two {n : ℕ}
   have h3 : ‖v - e‖ < 1 / (2 * n + 2) := by rwa [mem_ball_iff_norm] at hv
   have h4 : (1 : ℝ) / (2 * n + 2) ≤ 1 := by
     rw [div_le_one (by positivity)]
-    have : (0 : ℝ) ≤ n := by positivity
-    linarith
-  have h5 := norm_sub_norm_le v e
-  linarith
+    nlinarith [show (0 : ℝ) ≤ n by positivity]
+  nlinarith [norm_sub_norm_le v e]
 
 end Helpers
 

@@ -38,8 +38,7 @@ theorem mp_mulVec (β : ℂ) {ι : Type} [Fintype ι] [DecidableEq ι] (M : Matr
 
 theorem mp_vecMul (β : ℂ) {ι : Type} [Fintype ι] [DecidableEq ι] (M : Matrix ι ι ℂ) (h : ‖M.det‖ = 1) :
     MeasurePreserving (fun x : ι → ℂ => x ᵥ* M) (muPi β ι) (muPi β ι) := by
-  have := mp_mulVec β Mᵀ (by rwa [Matrix.det_transpose])
-  simpa only [Matrix.mulVec_transpose] using this
+  simpa only [Matrix.mulVec_transpose] using mp_mulVec β Mᵀ (by rwa [Matrix.det_transpose])
 
 theorem mp_add_const (β : ℂ) {ι : Type} [Fintype ι] (c : ι → ℂ) :
     MeasurePreserving (fun x : ι → ℂ => x + c) (muPi β ι) (muPi β ι) := by
@@ -85,8 +84,7 @@ theorem det_upper {d : ℕ} (v : UT d → ℂ) : (upper v).det = 1 := by
     intro i j hij
     have hij' : j < i := hij
     simp [upper, strictUpper, hij'.ne', not_lt.2 hij'.le]
-  rw [Matrix.det_of_isUpperTriangular h]
-  simp [upper, strictUpper]
+  simpa [upper, strictUpper] using Matrix.det_of_isUpperTriangular h
 
 theorem continuous_upper (d : ℕ) : Continuous (upper : (UT d → ℂ) → Matrix (Fin d) (Fin d) ℂ) := by
   refine continuous_matrix fun i j => ?_
@@ -286,15 +284,13 @@ theorem mp_joinU (β : ℂ) (n : ℕ) :
       ((muPi β (UT n)).prod (muPi β (Fin n))) (muPi β (UT (n + 1))) := by
   have h1 := measurePreserving_sumPiEquivProdPi_symm (X := fun _ : UT n ⊕ Fin n => ℂ) (fun _ => mu β)
   have h2 := mp_comp_equiv β (idxEquiv n).symm
-  have h3 := h2.comp h1
   have he : (joinU : (UT n → ℂ) × (Fin n → ℂ) → UT (n + 1) → ℂ) =
       (fun v : UT n ⊕ Fin n → ℂ => v ∘ (idxEquiv n).symm) ∘
         (MeasurableEquiv.sumPiEquivProdPi (fun _ : UT n ⊕ Fin n => ℂ)).symm := by
     funext q p
     simp only [joinU, Function.comp]
     rcases (idxEquiv n).symm p with s | s <;> rfl
-  rw [he]
-  exact h3
+  simpa [he, muPi] using h2.comp h1
 
 theorem mp_of_comp {α β γ : Type*} [MeasurableSpace α] [MeasurableSpace β] [MeasurableSpace γ]
     {ν : Measure α} {μ : Measure β} {μ' : Measure γ} {J : α → β} {F : β → γ}
@@ -450,7 +446,6 @@ theorem quotient_measure : Formalism.FourierDecayAlt.G.QuotientMeasure := by
     simp only [quotMap, Function.comp]
     rw [lowRow_mul, blk_transpose, coordU_blk, blk_mul_upper, coordU_blk, add_zero]
     rfl
-  rw [he]
-  exact hall
+  simpa [he] using hall
 
 end Formalism.FourierDecayAlt.P

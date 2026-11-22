@@ -76,13 +76,11 @@ theorem mem_Yset (j : Fin D.J) (m : Fin D.r) (z : D.ML) :
 
 theorem mlab_notMem_chainSet (j : Fin D.J) (i : Fin (D.nch j)) (t : D.Tau) :
     D.mlab t ∉ D.chainSet j i := by
-  rw [D.mem_chainSet]
-  rintro (⟨b, _, h⟩ | ⟨m, h⟩) <;> simp [mlab, mb, mw] at h
+  simp [D.mem_chainSet, mlab, mb, mw]
 
 theorem mtp_notMem_chainSet (j : Fin D.J) (i : Fin (D.nch j)) (t : D.Tau) :
     D.mtp t ∉ D.chainSet j i := by
-  rw [D.mem_chainSet]
-  rintro (⟨b, _, h⟩ | ⟨m, h⟩) <;> simp [mtp, mb, mw] at h
+  simp [D.mem_chainSet, mtp, mb, mw]
 
 theorem chainSet_mono (j : Fin D.J) (i i' : Fin (D.nch j)) (h : D.chain j i ⊆ D.chain j i') :
     D.chainSet j i ⊆ D.chainSet j i' := by

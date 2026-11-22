@@ -24,9 +24,8 @@ theorem ramified_places_weighted_sum_le_one (K : Type) [Field K] [NumberField K]
     ∑ y ∈ S, lw y * ((ramw y : ℝ) * (2 / (plc y : ℝ) ^ 2)) ≤ 1 := by
   have h1 := Formalism.EigenvalueLevelCeiling.place_sum K S (fun p => 2 / (p : ℝ) ^ 2) (fun p => by positivity)
   have h2 := Formalism.DivisionValues.prime_mod_six_of_large.1 (S.image plc) (by
-    intro p hp
-    obtain ⟨y, -, rfl⟩ := Finset.mem_image.mp hp
-    exact (Formalism.EigenvalueLevelCeiling.ramified_basic_bound K y).1)
+    rw [Finset.forall_mem_image]
+    exact fun y _ => (Formalism.EigenvalueLevelCeiling.ramified_basic_bound K y).1)
   have h3 : ∑ p ∈ S.image plc, Real.log (p : ℝ) * (2 / (p : ℝ) ^ 2) =
       ∑ p ∈ S.image plc, 2 * Real.log (p : ℝ) / (p : ℝ) ^ 2 :=
     Finset.sum_congr rfl (fun p _ => by ring)

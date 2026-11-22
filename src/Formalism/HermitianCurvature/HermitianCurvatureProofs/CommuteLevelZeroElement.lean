@@ -393,8 +393,7 @@ theorem comm_kapL {y : SlopeTestRemainingChoices S A} (hy : ∀ g ∈ zfns L, Co
 
 theorem commute_level_zero_element {y : SlopeTestRemainingChoices S A} (hy : ∀ g ∈ zfns L, Commute y (io g)) (hn : Commute y (io L.nab)) (Y : ℂ) :
     Commute y (io (L.l0 Y)) := by
-  rw [l0_eq_neg_nabla_sub, io_sub, Wd11.io_neg, io_smul, Wd11.io_mul]
-  exact hn.neg_right.sub_right (((hy _ (mζb L)).mul_right (hy _ (mGi L))).smul_right _)
+  simpa [l0_eq_neg_nabla_sub, io_sub, Wd11.io_neg, io_smul, Wd11.io_mul] using hn.neg_right.sub_right (((hy _ (mζb L)).mul_right (hy _ (mGi L))).smul_right _)
 
 theorem io_fn_comm {g g' : A} (hg : g ∈ zfns L) (hg' : g' ∈ zfns L) : Commute (io g : SlopeTestRemainingChoices S A) (io g') :=
   io_comm (zc L hg hg')

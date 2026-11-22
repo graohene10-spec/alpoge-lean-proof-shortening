@@ -282,16 +282,14 @@ private lemma finite_euler_product_le_zeta (M : ℕ) (hM : 2 ≤ M) (S : Finset 
     (summable_inv_pow_of_two_le M hM).congr fun n => by rw [hF, Real.norm_of_nonneg (by positivity)]
   have ht := EulerProduct.eulerProduct_completely_multiplicative hsum
   have htsum : ∑' n, F n = zetaR M := by
-    simp only [hF]
-    exact tsum_inv_pow_eq_zeta M hM
+    simpa only [hF] using tsum_inv_pow_eq_zeta M hM
   rw [htsum] at ht
   have hfac : ∀ p : ℕ, p.Prime → 1 ≤ (1 - F p)⁻¹ := by
     intro p hp
-    rw [hF]
     have hp1 : (1 : ℝ) < p := by exact_mod_cast hp.one_lt
     have h1 : 0 ≤ ((p : ℝ)⁻¹) ^ M := by positivity
     have h2 : ((p : ℝ)⁻¹) ^ M < 1 := pow_lt_one₀ (by positivity) (inv_lt_one_of_one_lt₀ hp1) hM0
-    rw [one_le_inv₀ (by linarith)]
+    rw [hF, one_le_inv₀ (by linarith)]
     linarith
   change ∏ p ∈ S, (1 - F p)⁻¹ ≤ zetaR M
   refine ge_of_tendsto ht (Filter.eventually_atTop.2 ⟨S.sup id + 1, fun n hn => ?_⟩)
@@ -299,15 +297,11 @@ private lemma finite_euler_product_le_zeta (M : ℕ) (hM : 2 ≤ M) (S : Finset 
     intro p hp
     rw [Nat.mem_primesBelow]
     refine ⟨?_, hS p hp⟩
-    have := Finset.le_sup (f := id) hp
-    simp only [id] at this
+    have hpS : p ≤ S.sup id := by simpa only [id] using Finset.le_sup (f := id) hp
     omega
   rw [← Finset.prod_sdiff hsub]
-  apply le_mul_of_one_le_left
-  · exact Finset.prod_nonneg fun p hp => le_trans zero_le_one (hfac p (hS p hp))
-  · exact Finset.prod_induction _ (fun x => 1 ≤ x)
-      (fun a b ha hb => one_le_mul_of_one_le_of_one_le ha hb) le_rfl
-      fun p hp => hfac p (Nat.prime_of_mem_primesBelow (Finset.mem_sdiff.1 hp).1)
+  exact le_mul_of_one_le_left (Finset.prod_nonneg fun p hp => le_trans zero_le_one (hfac p (hS p hp)))
+    (by simpa using Finset.prod_le_prod (s := n.primesBelow \ S) (f := fun _ => (1 : ℝ)) (g := fun p => (1 - F p)⁻¹) (fun _ _ => zero_le_one) (fun p hp => hfac p (Nat.prime_of_mem_primesBelow (Finset.mem_sdiff.1 hp).1)))
 
 private lemma abs_log_inv_one_sub_le (s y x : ℝ) (hs : s = 1 ∨ s = -1) (hy : 0 ≤ y) (hyx : y ≤ x) (hx : x < 1) :
     |Real.log ((1 - s * y)⁻¹)| ≤ -Real.log (1 - x) := by

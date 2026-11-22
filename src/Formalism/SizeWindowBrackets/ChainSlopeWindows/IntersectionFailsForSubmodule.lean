@@ -256,8 +256,7 @@ theorem claim1 (hϖ : Irreducible ϖ) (τ : ℕ) (M N : Submodule R W) (V : Subm
 
 theorem smul_latV_le (τ : ℕ) (M : Submodule R W) (V : Submodule K W) :
     ϖ ^ τ • latV M V ≤ latV M V := by
-  intro x hx
-  obtain ⟨y, hy, rfl⟩ := (Submodule.mem_smul_pointwise_iff_exists _ _ _).1 hx
+  rintro x ⟨y, hy, rfl⟩
   exact (latV M V).smul_mem _ hy
 
 theorem latV_free {d : ℕ} (M : Submodule R W) (b : Basis (Fin d) R M) (V : Submodule K W) :

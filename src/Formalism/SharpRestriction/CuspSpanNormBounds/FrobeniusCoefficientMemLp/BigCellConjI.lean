@@ -47,9 +47,7 @@ theorem Hpk_mid_col {k r : ℕ} (i j : Fin (2 * r + k + 1)) (hj1 : r ≤ j.val) 
 
 theorem UH_entry {m : ℕ} {H h : Matrix (Fin m) (Fin m) ℂ} (hUH : hᴴ * H * h = H) {c : Fin m}
     (hc : ∀ p, h p c = if p = c then 1 else 0) (j : Fin m) : ∑ q, H c q * h q j = H c j := by
-  have key := congrArg (fun M : Matrix (Fin m) (Fin m) ℂ => M c j) hUH
-  simp only [Matrix.mul_apply, Matrix.conjTranspose_apply, hc] at key
-  simpa [apply_ite star, star_one, star_zero, ite_mul, one_mul, zero_mul, Finset.sum_ite_eq, Finset.mem_univ] using key
+  simpa [Matrix.mul_apply, Matrix.conjTranspose_apply, hc, apply_ite star, star_one, star_zero, ite_mul, one_mul, zero_mul, Finset.sum_ite_eq, Finset.mem_univ] using congrArg (fun M : Matrix (Fin m) (Fin m) ℂ => M c j) hUH
 
 theorem fix_dT {k r : ℕ} {h : Matrix (Fin (2 * r + k + 1)) (Fin (2 * r + k + 1)) ℂ}
     (hU : h ∈ UH (Hpk k r))

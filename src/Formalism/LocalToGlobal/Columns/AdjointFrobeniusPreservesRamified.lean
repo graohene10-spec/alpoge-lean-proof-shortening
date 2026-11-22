@@ -101,9 +101,7 @@ variable {E : Type} [Field E] [NumberField E] [StarRing E] {n : ℕ}
 
 theorem intAt_algebraMap_ow (P : HeightOneSpectrum (𝓞 E)) (r : Ow P) : IntAt P (algebraMap (Ow P) E r) := by
   obtain ⟨a, t, rfl⟩ := IsLocalization.exists_mk'_eq P.asIdeal.primeCompl r
-  refine ⟨a, t, t.2, ?_⟩
-  rw [IsScalarTower.algebraMap_apply (𝓞 E) (Ow P) E, ← map_mul, mul_comm, IsLocalization.mk'_spec,
-    ← IsScalarTower.algebraMap_apply]
+  exact ⟨a, t, t.2, by rw [IsScalarTower.algebraMap_apply (𝓞 E) (Ow P) E, ← map_mul, mul_comm, IsLocalization.mk'_spec, ← IsScalarTower.algebraMap_apply]⟩
 
 theorem exists_locBasis (P : HeightOneSpectrum (𝓞 E)) {N : Submodule (𝓞 E) (Sp E n)}
     (hN : Submodule.IsLattice E N) :

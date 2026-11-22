@@ -86,9 +86,7 @@ lemma abs_main_term_second_difference_le {y h γ : ℝ} (hy : 0 < y) (hh : 0 < h
 
 lemma exp_neg_sqrt_log_le_sq {cs c₀ y z : ℝ} (hc0 : 0 ≤ c₀) (hcs : c₀ ≤ cs) (hy : 1 ≤ y) (hyz : y ≤ z) :
     Real.exp (-cs * Real.sqrt (Real.log z)) ≤ Real.exp (-(c₀ / 2) * Real.sqrt (Real.log y)) ^ 2 := by
-  have hlyz : Real.log y ≤ Real.log z := Real.log_le_log (by linarith) hyz
-  have hs : Real.sqrt (Real.log y) ≤ Real.sqrt (Real.log z) := Real.sqrt_le_sqrt hlyz
   rw [sq, ← Real.exp_add, Real.exp_le_exp]
-  nlinarith [mul_le_mul hcs hs (Real.sqrt_nonneg _) (le_trans hc0 hcs)]
+  nlinarith [mul_le_mul hcs (Real.sqrt_le_sqrt (Real.log_le_log (by linarith) hyz)) (Real.sqrt_nonneg _) (le_trans hc0 hcs)]
 
 end Formalism.ZeroFreeDirichlet

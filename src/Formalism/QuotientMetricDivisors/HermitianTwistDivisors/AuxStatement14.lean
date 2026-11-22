@@ -123,9 +123,7 @@ theorem isOrthProj_unique {n d : ℕ} {H : Matrix (Fin n) (Fin n) K} {E : Matrix
     {Pr : Matrix (Fin d) (Fin n) K} (hZ : IsUnit (Eᴴ * H * E).det) (hO : IsOrthProj H E Pr) :
     Pr = (Eᴴ * H * E)⁻¹ * (Eᴴ * H) := by
   have h2 : Eᴴ * H = Eᴴ * H * E * Pr := by
-    have h := hO.2
-    rw [Matrix.mul_sub, Matrix.mul_one, sub_eq_zero, ← Matrix.mul_assoc (Eᴴ * H) E Pr] at h
-    exact h
+    simpa only [Matrix.mul_sub, Matrix.mul_one, sub_eq_zero, ← Matrix.mul_assoc] using hO.2
   calc Pr = (Eᴴ * H * E)⁻¹ * (Eᴴ * H * E) * Pr := by rw [Matrix.nonsing_inv_mul _ hZ, Matrix.one_mul]
     _ = (Eᴴ * H * E)⁻¹ * (Eᴴ * H) := by rw [Matrix.mul_assoc (Eᴴ * H * E)⁻¹ (Eᴴ * H * E) Pr, ← h2]
 

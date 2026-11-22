@@ -391,11 +391,9 @@ theorem sharp_bijective : SharpBij := by
   funext x
   apply ext_inner_right ℂ
   intro ξ
-  have h1 := inner_sharpFun (toEqui ιf K ιi ψ π (c • T)) x ξ
-  have h2 := inner_sharpFun (toEqui ιf K ιi ψ π T) x ξ
   show inner ℂ (sharpFun (toEqui ιf K ιi ψ π (c • T)) x) ξ =
     inner ℂ ((starRingEnd ℂ c) • sharpFun (toEqui ιf K ιi ψ π T) x) ξ
-  rw [h1, inner_smul_left, Complex.conj_conj, h2]
+  rw [inner_sharpFun, inner_smul_left, Complex.conj_conj, inner_sharpFun]
   rfl
 
 theorem columns_decomposition : ColsDecomp := by

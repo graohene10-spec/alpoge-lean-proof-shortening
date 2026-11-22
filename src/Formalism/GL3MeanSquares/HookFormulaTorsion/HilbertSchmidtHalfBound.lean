@@ -365,8 +365,7 @@ theorem charsumB (p : ℕ) [Fact p.Prime] (t : ZMod p) :
   split_ifs <;> ring
 
 theorem charsums : Formalism.HermitianLattices.CumulantEstimateDefs.SW_hecke_charsums := by
-  unfold Formalism.HermitianLattices.CumulantEstimateDefs.SW_hecke_charsums
-  exact ⟨fun n inst t => @charsumA n inst t, fun p inst t => @charsumB p inst t⟩
+  exact ⟨charsumA, charsumB⟩
 
 lemma factIneq (n : ℕ) : 6 ^ n * n ! ≤ (2 * n + 1)! := by
   induction n with

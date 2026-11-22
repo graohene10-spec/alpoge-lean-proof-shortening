@@ -40,9 +40,7 @@ private lemma star_bvec' {m : ℕ} (p : Fin m) : star (bvec p) = bvec p := by
 
 private lemma herm_bvec_right_eq_mulVec_apply {m : ℕ} (H : Matrix (Fin m) (Fin m) ℂ) (u : Fin m → ℂ) (p : Fin m) :
     herm H u (bvec p) = (H *ᵥ u) p := by
-  unfold herm
-  rw [star_bvec']
-  simp [bvec, dotProduct, Pi.single_apply]
+  simp [herm, bvec, dotProduct, Pi.single_apply]
 
 lemma hermitian_form_base_vector_right (u : Fin (2 * (1 + r') + k + 1) → ℂ) : herm (Hpk k (1 + r')) u (e0 k r') = u (iL k r') := by
   rw [show e0 k r' = bvec (iF k r') from rfl, herm_bvec_right_eq_mulVec_apply]
@@ -196,14 +194,12 @@ lemma levPos_mid (i : Fin (2 * r' + k + 1)) : 1 ≤ (levPos k 1 r' i).val ∧ (l
 
 private lemma iotaLev_levPos_apply_of_col_outside (g : Mat k r') (i : Fin (2 * r' + k + 1)) (m : Fin (2 * (1 + r') + k + 1))
     (hm : ¬ (1 ≤ m.val ∧ m.val < 2 * r' + k + 1 + 1)) : ιLev k 1 r' g (levPos k 1 r' i) m = 0 := by
-  unfold ιLev
-  rw [dif_pos (levPos_mid i), dif_neg hm]
+  simp only [ιLev, dif_pos (levPos_mid i), dif_neg hm]
 
 private lemma iotaLev_apply_of_first_index_outside (g : Mat k r') (p : Fin (2 * (1 + r') + k + 1))
     (hp : ¬ (1 ≤ p.val ∧ p.val < 2 * r' + k + 1 + 1)) (m : Fin (2 * (1 + r') + k + 1)) :
     ιLev k 1 r' g p m = if p = m then 1 else 0 := by
-  unfold ιLev
-  rw [dif_neg hp]
+  simp only [ιLev, dif_neg hp]
 
 lemma lev_mul (g h : Mat k r') : ιLev k 1 r' (g * h) = ιLev k 1 r' g * ιLev k 1 r' h := by
   ext p q
@@ -667,9 +663,8 @@ lemma II_inv (HIv : HaarInv) (hG : ClosedG) (HA : HeisAct) (HI : HeisInv) (OM : 
 lemma Ff_ind (μP : Measure (Mt k (1 + r'))) (S : Set (Mt k (1 + r'))) (hS : MeasurableSet S) (g : Mt k (1 + r')) :
     Ff μP (S.indicator 1) g = μP ((fun q => mulM (g, q)) ⁻¹' S) := by
   unfold Ff
-  have hm : MeasurableSet ((fun q => mulM (g, q)) ⁻¹' S) :=
-    (mulM_cont.comp (continuous_const.prodMk continuous_id)).measurable hS
-  rw [← lintegral_indicator_one hm]
+  rw [← lintegral_indicator_one (show MeasurableSet ((fun q => mulM (g, q)) ⁻¹' S) from
+    (mulM_cont.comp (continuous_const.prodMk continuous_id)).measurable hS)]
   first | rfl | (congr 1; ext q; simp [Set.indicator_apply])
 
 def nu (μG₁ : Measure (Mt k r')) : Measure (Mt k (1 + r')) :=
@@ -828,10 +823,8 @@ lemma prod_ne {α β : Type*} [MeasurableSpace α] [MeasurableSpace β] (μ : Me
   exact hz.elim h1 h2
 
 lemma vol_ne : (volume : Measure (HPar k r' × HPar k r')) ≠ 0 := by
-  first
-    | exact NeZero.ne _
-    | exact prod_ne _ _ (NeZero.ne _) (NeZero.ne _)
-    | simp
+  simpa only [Measure.volume_eq_prod] using
+    (prod_ne (volume : Measure (HPar k r')) (volume : Measure (HPar k r')) (NeZero.ne _) (NeZero.ne _))
 
 lemma nu_ne (μG₁ : Measure (Mt k r')) [SFinite μG₁] (h0 : μG₁ ≠ 0) : nu μG₁ ≠ 0 := by
   unfold nu
@@ -863,8 +856,7 @@ open Formalism.REAL Formalism.QuantumDeterminants Formalism.FourierDecayAlt.B Fo
 variable {k r' : ℕ}
 
 lemma herm_bvec {m : ℕ} (H : Matrix (Fin m) (Fin m) ℂ) (p q : Fin m) : herm H (bvec q) (bvec p) = H p q := by
-  rw [herm_bvec_right_eq_mulVec_apply]
-  simp [bvec, mulVec, dotProduct, Pi.single_apply]
+  exact (herm_bvec_right_eq_mulVec_apply H (bvec q) p).trans (by simp [bvec, mulVec, dotProduct, Pi.single_apply])
 
 lemma base_vector_levi_coordinate_zero (i : Fin (2 * r' + k + 1)) : e0 k r' (levPos k 1 r' i) = 0 := by
   simp [e0_eq, Pi.single_apply, levPos_ne_first]
@@ -897,14 +889,13 @@ lemma lev_off (g : Mat k r') (m : Fin (2 * (1 + r') + k + 1)) (hm : m ∉ Set.ra
 
 lemma prod_block (x : HPar k r') (g : Mat k r') (i j : Fin (2 * r' + k + 1)) :
     (heis0 k r' x * ιLev k 1 r' g) (levPos k 1 r' i) (levPos k 1 r' j) = g i j := by
-  rw [Matrix.mul_apply, Finset.sum_eq_single (levPos k 1 r' i)]
+  rw [Matrix.mul_apply, Finset.sum_eq_single_of_mem (a := levPos k 1 r' i) (Finset.mem_univ (levPos k 1 r' i))]
   · rw [heis_block, if_pos rfl, one_mul, lev_block]
   · intro m _ hm
     by_cases hr : m ∈ Set.range (levPos k 1 r')
     · obtain ⟨l, rfl⟩ := hr
       rw [heis_block, if_neg (fun h => hm (by rw [h])), zero_mul]
     · rw [lev_off g m hr, mul_zero]
-  · intro h; exact absurd (Finset.mem_univ _) h
 
 def rho (k r' : ℕ) (g : Mt k (1 + r')) : Mt k (1 + r') :=
   ιLev k 1 r' (fun i j => g (levPos k 1 r' i) (levPos k 1 r' j))

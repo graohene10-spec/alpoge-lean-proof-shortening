@@ -454,9 +454,8 @@ theorem exists_mem_notMem {P Q : HeightOneSpectrum (𝓞 E)} (h : P ≠ Q) :
 theorem exists_coprime {P Q : HeightOneSpectrum (𝓞 E)} (h : P ≠ Q) :
     ∃ e ∈ P.asIdeal, ∃ e' ∈ Q.asIdeal, e + e' = 1 := by
   have hne : P.asIdeal ≠ Q.asIdeal := fun e => h (HeightOneSpectrum.ext e)
-  have h1 : P.asIdeal ⊔ Q.asIdeal = ⊤ := Ideal.IsMaximal.coprime_of_ne P.isMaximal Q.isMaximal hne
   have h2 : (1 : 𝓞 E) ∈ P.asIdeal ⊔ Q.asIdeal := by
-    rw [h1]
+    rw [Ideal.IsMaximal.coprime_of_ne P.isMaximal Q.isMaximal hne]
     exact Submodule.mem_top
   obtain ⟨e, he, e', he', hsum⟩ := Submodule.mem_sup.mp h2
   exact ⟨e, he, e', he', hsum⟩
@@ -706,14 +705,11 @@ theorem smul_upA_mem {P : Ideal (𝓞 E)} {N : Submodule (𝓞 E) (Sp E n)} {x :
     obtain ⟨r, hr⟩ := (neighbourConstruct_mem_inv.mp ha) p hp
     have e : p • a • x = r • x := by
       rw [← algebraMap_smul E r x, hr, ← algebraMap_smul E p (a • x), smul_smul]
-    rw [e]
-    exact Submodule.smul_mem _ r hx
+    simpa only [e] using Submodule.smul_mem _ r hx
   | zero =>
-    rw [smul_zero]
-    exact Submodule.zero_mem _
+    exact Submodule.smul_mem _ p (Submodule.zero_mem N)
   | add v v' _ _ hv hv' =>
-    rw [smul_add]
-    exact Submodule.add_mem _ hv hv'
+    simpa only [smul_add] using Submodule.add_mem _ hv hv'
   | smul c v _ hv =>
     rw [smul_comm]
     exact Submodule.smul_mem _ c hv

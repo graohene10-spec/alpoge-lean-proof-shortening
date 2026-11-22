@@ -313,14 +313,12 @@ theorem dataA_fam {eps : ℝ} (Fm : FamP eps) (x : ℝ) (h3 : (44 : ℝ) ^ 4 ≤
 theorem rowsA_of_dataB {D : D7} (L : SizeData₂ D) (P : ParameterChoice' D L) (S : SizesAt L) (hx : (44 : ℝ) ^ 4 ≤ L.sc.x)
     (C0 Δ : ℝ) (w : ℕ → D.what₂.Tau → ℝ) (hB : StandardLattice.DataB D L.sc C0 Δ w) : StandardLattice.RowsA D L.sc C0 Δ := by
   obtain ⟨-, -, -, -, -, h6, -, -, h9, -⟩ := hB
-  obtain ⟨c8, c9, c10, c12⟩ := db_cloud L P
+  obtain ⟨-, c9, -, -⟩ := db_cloud L P
   have hk := D.R.k_ge
   obtain ⟨ρ⟩ : Nonempty D.what₂.Tau := ⟨D.eTau.symm (Classical.arbitrary _)⟩
-  have e1 := h9 ρ 0 (by omega)
-  have e2 := c9 ρ 0 (by omega)
-  have hΔ : Δ = ((D.s.Del : ℚ) : ℝ) := by linarith
-  rw [hΔ]
-  exact rowsA_of' L P S hx C0 fun i => (h6 i).2
+  have hΔ : Δ = ((D.s.Del : ℚ) : ℝ) := by
+    linarith [h9 ρ 0 (by omega), c9 ρ 0 (by omega)]
+  simpa [hΔ] using rowsA_of' L P S hx C0 fun i => (h6 i).2
 
 theorem rowsA_of_dataB_fam {eps : ℝ} (Fm : FamP eps) (x : ℝ) (h3 : (44 : ℝ) ^ 4 ≤ x) (hx : Fm.x1 < x) (i : Fm.Ix x)
     (C0 Δ : ℝ) (w : ℕ → (Fm.D x i).what₂.Tau → ℝ) (hB : StandardLattice.DataB (Fm.D x i) (Fm.L x i).sc C0 Δ w) :

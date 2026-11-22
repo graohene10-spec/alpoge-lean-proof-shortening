@@ -133,10 +133,8 @@ theorem span_idealSmul {I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K} (hI : 
   apply le_antisymm
   · exact Submodule.span_le.2 (fun x hx => idealSmul_le_span _ _ hx)
   · refine Submodule.span_le.2 (fun x hx => ?_)
-    have h := idealSmul_le_span ((I⁻¹ : FractionalIdeal (nonZeroDivisors (𝓞 K)) K) :
-      Submodule (𝓞 K) K) (idealSmul (I : Submodule (𝓞 K) K) L)
-    rw [idealSmul_inv_cancel hI] at h
-    exact h hx
+    rw [← idealSmul_inv_cancel hI L] at hx
+    exact idealSmul_le_span _ _ hx
 
 theorem rkK_idealSmul {I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K} (hI : I ≠ 0)
     (L : Submodule (𝓞 K) V) : rkK (idealSmul (I : Submodule (𝓞 K) K) L) = rkK L := by
@@ -146,18 +144,14 @@ theorem rkK_idealSmul {I : FractionalIdeal (nonZeroDivisors (𝓞 K)) K} (hI : I
 theorem rkK_pos [FiniteDimensional K V] {L : Submodule (𝓞 K) V} (hL : L ≠ ⊥) : 0 < rkK L := by
   unfold rkK
   rw [Nat.pos_iff_ne_zero, Ne, Submodule.finrank_eq_zero]
-  intro h
-  apply hL
-  rw [eq_bot_iff]
-  intro x hx
-  have : x ∈ Submodule.span K (L : Set V) := Submodule.subset_span hx
-  rw [h] at this
-  exact this
+  exact fun h => hL (eq_bot_iff.2 fun x hx => by
+    have : x ∈ Submodule.span K (L : Set V) := Submodule.subset_span hx
+    rw [h] at this
+    exact this)
 
 theorem ne_bot_of_rkK_pos {L : Submodule (𝓞 K) V} (h : 0 < rkK L) : L ≠ ⊥ := by
   rintro rfl
-  rw [rkK, Submodule.bot_coe, Submodule.span_zero_singleton, finrank_bot] at h
-  exact lt_irrefl _ h
+  exact h.ne' (by rw [rkK, Submodule.bot_coe, Submodule.span_zero_singleton, finrank_bot])
 
 theorem fg_of_le {N M : Submodule (𝓞 K) V} (hM : M.FG) (h : N ≤ M) : N.FG := by
   have : Module.Finite (𝓞 K) M := Module.Finite.iff_fg.mpr hM
@@ -651,13 +645,11 @@ theorem slope_via_lengths : SlopeRelationsLength := by
   intro K V ι _ _ _ _ _ _ _ _ _ _ b X hX σ τ M N β hM hM0 hN hrk hβ
   have hfd : FiniteDimensional K V := Module.Finite.of_basis b
   obtain ⟨h1, h2⟩ := slope_formula K V ι b X hX σ τ M N hM hM0 hN hrk
-  have hτ := idealPow_ne_zero τ
   have hidx := relIndex_ne_zero b X hX (idealSmul_fg (idealPow τ) hM) hN
-    (hrk.trans (rkK_idealSmul hτ M).symm)
+    (hrk.trans (rkK_idealSmul (idealPow_ne_zero τ) M).symm)
   obtain ⟨k, hk, hc⟩ := index_finsupp _ N hidx
   have hd : (rkK M : ℝ) ≠ 0 := by exact_mod_cast (rkK_pos hM0).ne'
-  have hq : (Module.finrank ℚ K : ℝ) ≠ 0 := by
-    exact_mod_cast (Module.finrank_pos : 0 < Module.finrank ℚ K).ne'
+  have hq : (Module.finrank ℚ K : ℝ) ≠ 0 := (finrank_pos' (K := K)).ne'
   have hkβ : ∀ w, (k w : ℝ) = (rkK M : ℝ) * β w := fun w => by
     rw [← hβ w, hk, ENat.toNat_natCast]
   have hsupp : Function.support β ⊆ (k.support : Set (FinPl K)) := by
@@ -714,23 +706,20 @@ theorem length_at_span_localized {R V : Type} [CommRing R] [AddCommGroup V] [Mod
   have hB : (B.comap A.subtype).localized' (Localization.AtPrime w) w.primeCompl f1 =
       (Submodule.span (Localization.AtPrime w) (B : Set V)).comap
         (A.localized' (Localization.AtPrime w) w.primeCompl LinearMap.id).subtype := by
-    have hspan : Submodule.span (Localization.AtPrime w) (B : Set V) =
-        B.localized' (Localization.AtPrime w) w.primeCompl LinearMap.id := by
-      rw [Submodule.localized'_eq_span]; simp
-    rw [hspan]
+    rw [show Submodule.span (Localization.AtPrime w) (B : Set V) =
+        B.localized' (Localization.AtPrime w) w.primeCompl LinearMap.id from by
+      rw [Submodule.localized'_eq_span]; simp]
     ext x
     rw [Submodule.mem_localized', Submodule.mem_comap, Submodule.mem_localized']
     constructor
     · rintro ⟨m, hm, s, hx⟩
       refine ⟨(m : V), hm, s, ?_⟩
       rw [IsLocalizedModule.mk'_eq_iff] at hx ⊢
-      have := congrArg Subtype.val hx
-      simpa [hf1c] using this
+      simpa [hf1c] using congrArg Subtype.val hx
     · rintro ⟨m, hm, s, hx⟩
       refine ⟨⟨m, hBA hm⟩, hm, s, ?_⟩
       rw [IsLocalizedModule.mk'_eq_iff] at hx ⊢
-      apply Subtype.ext
-      simpa [hf1c] using hx
+      exact Subtype.ext (by simpa [hf1c] using hx)
   rw [← hB]
   exact ((IsLocalizedModule.iso w.primeCompl ((B.comap A.subtype).toLocalizedQuotient'
     (Localization.AtPrime w) w.primeCompl f1)).extendScalarsOfIsLocalization w.primeCompl
@@ -844,9 +833,8 @@ theorem wUnit_inv (w : Ideal (𝓞 K)) {I : FI} (hI : WUnit w I) : WUnit w I⁻�
 
 theorem wUnit_pow (w : Ideal (𝓞 K)) [w.IsPrime] {I : FI} (hI : WUnit w I) (k : ℕ) :
     WUnit w (I ^ k) := by
-  induction k with
-  | zero => rw [pow_zero]; exact wUnit_one w
-  | succ k ih => rw [pow_succ]; exact wUnit_mul w ih hI
+  refine Nat.rec (motive := fun k => WUnit w (I ^ k)) (by rw [pow_zero]; exact wUnit_one w) (fun k ih => ?_) k
+  rw [pow_succ]; exact wUnit_mul w ih hI
 
 theorem wUnit_zpow (w : Ideal (𝓞 K)) [w.IsPrime] {I : FI} (hI : WUnit w I) (k : ℤ) :
     WUnit w (I ^ k) := by
@@ -863,8 +851,7 @@ theorem wUnit_other (w w' : FinPl K) (h : w' ≠ w) : WUnit w.1 (w'.1 : FI) := b
   refine ⟨t, htw, fun x hx => ?_⟩
   have hmem : algebraMap (𝓞 K) K t * x ∈ (w'.1 : FI) * (w'.1 : FI)⁻¹ :=
     FractionalIdeal.mul_mem_mul ((FractionalIdeal.mem_coeIdeal _).2 ⟨t, htw', rfl⟩) hx
-  rw [mul_inv_cancel₀ h0] at hmem
-  exact (FractionalIdeal.mem_one_iff _).1 hmem
+  exact (FractionalIdeal.mem_one_iff _).1 (by rwa [mul_inv_cancel₀ h0] at hmem)
 
 theorem wUnit_self (w : FinPl K) {ϖ : 𝓞 K} (h1 : ϖ ∈ w.1) (h2 : ϖ ∉ w.1 ^ 2) :
     WUnit w.1 ((w.1 : FI) *
@@ -1140,7 +1127,6 @@ theorem weighted_mean_lemma_of_slopes : LemmaUFinitePlaceFamily := by
   intro K _ _ _ _ J _ _ V ι _ _ _ _ _ _ b X hX σ τ M N β Sg0 dr h hM hM0 hN hrk hβ hSg hdr
   refine Formalism.LFunctionChainParameters.WeightedMeanLemmas.weighted_mean_claimU J _ _ _ _ _ h dr _ Sg0 (fun u => ?_) hdr
     (slope_pair_of_slopes K J V ι b X hX σ τ M N β Sg0 dr hM hM0 hN hrk hβ hSg)
-  have hfd : FiniteDimensional K (V u) := Module.Finite.of_basis (b u)
-  exact_mod_cast rkK_pos (hM0 u)
+  exact_mod_cast (@rkK_pos K (V u) _ _ _ _ _ _ (Module.Finite.of_basis (b u)) (M u) (hM0 u))
 
 end Formalism.LFunctionChainParameters.slopeLatticeData

@@ -376,9 +376,7 @@ theorem isClosed_UWset (k r : ℕ) (z : Fin (2 * r + k + 1) → ℂ) : IsClosed 
 theorem inv_eq_hermitian_form_conjTranspose {g : Mat k r} (hg : g ∈ GV k r) : g⁻¹ = Hpk k r * gᴴ * Hpk k r := by
   apply Matrix.inv_eq_left_inv
   have hg' : gᴴ * Hpk k r * g = Hpk k r := hg
-  calc Hpk k r * gᴴ * Hpk k r * g = Hpk k r * (gᴴ * Hpk k r * g) := by
-        simp only [Matrix.mul_assoc]
-    _ = 1 := by rw [hg', WeylGroupFacts.hpk_sq]
+  rw [Matrix.mul_assoc, Matrix.mul_assoc, ← Matrix.mul_assoc gᴴ (Hpk k r) g, hg', WeylGroupFacts.hpk_sq]
 
 theorem inv_continuousOn (k r : ℕ) : ContinuousOn (fun g : Mat k r => g⁻¹) (GV k r) := by
   have h : Continuous fun g : Mat k r => Hpk k r * gᴴ * Hpk k r :=
@@ -447,21 +445,18 @@ theorem admissible_constant_nonneg {E : Type*} [NormedAddCommGroup E] [NormedSpa
 
 theorem admissible_norm_bound {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] {α c : ℝ} {f : Mat k r → E}
     (hf : admitted α c f) {g : Mat k r} (hg : g ∈ GV k r) : ‖f g‖ ≤ c * gN g ^ (-α) := by
-  have hp : 0 < gN g ^ α := Real.rpow_pos_of_pos (gN_pos hg) _
-  rw [Real.rpow_neg (gN_nonneg g), ← div_eq_mul_inv, le_div_iff₀ hp, mul_comm]
+  rw [Real.rpow_neg (gN_nonneg g), ← div_eq_mul_inv, le_div_iff₀ (Real.rpow_pos_of_pos (gN_pos hg) _), mul_comm]
   exact hf.2 g hg
 
 theorem admissible_ae_strongly_measurable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] {α c : ℝ} {f : Mat k r → E}
     (hf : admitted α c f) {μ : Measure (Mt k r)} (h : IsHaarOn (GV k r) μ) :
     AEStronglyMeasurable (fun g : Mt k r => f (Matrix.of g)) μ := by
   have hcl : IsClosed {x : Mt k r | (Matrix.of x : Mat k r) ∈ GV k r} := isClosed_GV k r
-  have hm : MeasurableSet {x : Mt k r | (Matrix.of x : Mat k r) ∈ GV k r} := hcl.measurableSet
-  have hc : ContinuousOn (fun g : Mt k r => f (Matrix.of g)) {x : Mt k r | (Matrix.of x : Mat k r) ∈ GV k r} :=
-    hf.1
-  have h1 := hc.aestronglyMeasurable (μ := μ) hm
-  have h2 : μ.restrict {x : Mt k r | (Matrix.of x : Mat k r) ∈ GV k r} = μ :=
-    Measure.restrict_eq_self_of_ae_mem (haar_ae h)
-  rwa [h2] at h1
+  have hc : ContinuousOn (fun g : Mt k r => f (Matrix.of g))
+      {x : Mt k r | (Matrix.of x : Mat k r) ∈ GV k r} := hf.1
+  have h1 := hc.aestronglyMeasurable (μ := μ) hcl.measurableSet
+  rwa [show μ.restrict {x : Mt k r | (Matrix.of x : Mat k r) ∈ GV k r} = μ from
+    Measure.restrict_eq_self_of_ae_mem (haar_ae h)] at h1
 
 end basic
 
@@ -532,13 +527,9 @@ theorem dilationAction_continuousOn (k r : ℕ) :
       (fun q => q.2.2) (continuous_snd.comp continuous_snd) (fun q hq => hq.2.2)
 
 theorem dilationAction_one (p : SS k r) : dilation₂ (1, 1) p = p := by
-  have h : ∀ x : Mt k r, conjM (aDil k r 1) x = x := by
-    intro x
-    unfold conjM
-    rw [aDil_one, inv_one, Matrix.one_mul, Matrix.mul_one]
-    rfl
   unfold dilation₂
-  simp only [h]
+  simp [conjM, aDil_one]
+  rfl
 
 theorem inSS_mem (D : RealPlaceData k r Wp Wq) {p : SS k r} (hp : D.inSS p) :
     (Matrix.of p.1.2 * Matrix.of p.1.1 : Mat k r) ∈ GV k r ∧ (Matrix.of p.2.2 * Matrix.of p.2.1 : Mat k r) ∈ GV k r :=
@@ -808,11 +799,8 @@ theorem hsInner_hasDerivAt {u v : ℝ → (Wq →L[ℂ] Wp)} {u' v' : Wq →L[�
     HasDerivAt (fun s => hsInner (u s) (v s)) (hsInner u' (v y) + hsInner (u y) v') y := by
   simp only [hilbert_schmidt_inner_basis_sum, ← Finset.sum_add_distrib]
   refine HasDerivAt.fun_sum fun i _ => ?_
-  have h1 : HasDerivAt (fun s => u s (stdOrthonormalBasis ℂ Wq i)) (u' (stdOrthonormalBasis ℂ Wq i)) y := by
-    exact ((ContinuousLinearMap.apply ℂ Wp (stdOrthonormalBasis ℂ Wq i)).restrictScalars ℝ).hasFDerivAt.comp_hasDerivAt y hu
-  have h2 : HasDerivAt (fun s => v s (stdOrthonormalBasis ℂ Wq i)) (v' (stdOrthonormalBasis ℂ Wq i)) y := by
-    exact ((ContinuousLinearMap.apply ℂ Wp (stdOrthonormalBasis ℂ Wq i)).restrictScalars ℝ).hasFDerivAt.comp_hasDerivAt y hv
-  exact h2.inner ℂ h1
+  exact (((ContinuousLinearMap.apply ℂ Wp (stdOrthonormalBasis ℂ Wq i)).restrictScalars ℝ).hasFDerivAt.comp_hasDerivAt y hv).inner ℂ
+    (((ContinuousLinearMap.apply ℂ Wp (stdOrthonormalBasis ℂ Wq i)).restrictScalars ℝ).hasFDerivAt.comp_hasDerivAt y hu)
 
 def Sd (D : RealPlaceData k r Wp Wq) (p : SS k r) : (Wq →L[ℂ] Wp) →L[ℂ] (Wq →L[ℂ] Wp) :=
   (ContinuousLinearMap.compL ℂ Wq Wp Wp (D.π (Matrix.of p.1.1))).comp
@@ -2171,8 +2159,7 @@ theorem Et_eq (D : RealPlaceData k r Wp Wq) (F F' : Mat k r → (Wq →L[ℂ] Wp
   unfold Et
   by_cases ht : t ∈ Quad
   · rw [Set.indicator_of_mem (show (p, t) ∈ {p | D.inSS p} ×ˢ Quad from ⟨hp, ht⟩)]
-  · rw [Set.indicator_of_notMem (fun h => ht h.2)]
-    exact (Ef_zero D F F' p (fun h => ht (box_subset_quadrant h))).symm
+  · rw [Set.indicator_of_notMem (fun h => ht h.2), Ef_zero D F F' p (fun h => ht (box_subset_quadrant h))]
 
 theorem Et_zero (D : RealPlaceData k r Wp Wq) (F F' : Mat k r → (Wq →L[ℂ] Wp)) (p : SS k r) {t : ℝ × ℝ}
     (ht : t ∉ Set.Ioo (1 / 2 : ℝ) 2 ×ˢ Set.Ioo (1 / 2 : ℝ) 2) : Et D F F' (p, t) = 0 := by
@@ -2243,10 +2230,8 @@ theorem Et_continuous (H : Hyp D Ξ α) {F F' : Mat k r → (Wq →L[ℂ] Wp)} {
     rw [e]
     unfold Ef
     refine continuous_finsetSum _ fun m hm => continuous_finsetSum _ fun l hl => ?_
-    have hm' : m ≤ 2 := by have := Finset.mem_range.1 hm; omega
-    have hl' : l ≤ 2 := by have := Finset.mem_range.1 hl; omega
     refine continuous_mul_of_vanishing_outside_box (cutoff_gamma_product_continuous D m l) (fun t ht => ?_)
-      (regularised_pairing_continuous_in_t H (admissibleWeight_mono hF hl' hm') (admissibleWeight_mono hF' hl' hm') hp)
+      (regularised_pairing_continuous_in_t H (admissibleWeight_mono hF (Nat.le_of_lt_succ (Finset.mem_range.1 hl)) (Nat.le_of_lt_succ (Finset.mem_range.1 hm))) (admissibleWeight_mono hF' (Nat.le_of_lt_succ (Finset.mem_range.1 hl)) (Nat.le_of_lt_succ (Finset.mem_range.1 hm))) hp)
     rw [cutoff_gamma_product_zero D m l ht]; simp
   · have e : (fun t : ℝ × ℝ => Et D F F' (p, t)) = fun _ => 0 := funext (Et_zero' D F F' hp)
     rw [e]
@@ -2275,8 +2260,7 @@ theorem Bt_eq (D : RealPlaceData k r Wp Wq) (F F' : Mat k r → (Wq →L[ℂ] Wp
   unfold Bt
   by_cases ht : t ∈ Quad
   · rw [Set.indicator_of_mem (show (p, t) ∈ {p | D.inSS p} ×ˢ Quad from ⟨hp, ht⟩)]
-  · rw [Set.indicator_of_notMem (fun h => ht h.2)]
-    exact (regularized_bracket_zero_off_box D F F' p (fun h => ht (box_subset_quadrant h))).symm
+  · rw [Set.indicator_of_notMem (fun h => ht h.2), regularized_bracket_zero_off_box D F F' p (fun h => ht (box_subset_quadrant h))]
 
 theorem Bt_zero (D : RealPlaceData k r Wp Wq) (F F' : Mat k r → (Wq →L[ℂ] Wp)) (p : SS k r) {t : ℝ × ℝ}
     (ht : t ∉ Set.Ioo (1 / 2 : ℝ) 2 ×ˢ Set.Ioo (1 / 2 : ℝ) 2) : Bt D F F' (p, t) = 0 := by
@@ -2301,16 +2285,11 @@ theorem Bt_measurable (H : Hyp D Ξ α) {F F' : Mat k r → (Wq →L[ℂ] Wp)} {
 theorem Bt_continuous (H : Hyp D Ξ α) {F F' : Mat k r → (Wq →L[ℂ] Wp)} {c c' : ℝ} (hF : AdmW α c 2 2 F)
     (hF' : AdmW α c' 2 2 F') (p : SS k r) : Continuous (fun t : ℝ × ℝ => Bt D F F' (p, t)) := by
   by_cases hp : D.inSS p
-  · have e : (fun t : ℝ × ℝ => Bt D F F' (p, t)) =
-        fun t => ((Wd D t.1 * Wd D t.2 : ℝ) : ℂ) * QR D p 0 0 F F' t.1 t.2 :=
-      funext fun t => (Bt_eq D F F' hp t).trans (regBracket_eq D F F' p t.1 t.2)
-    rw [e]
-    refine continuous_mul_of_vanishing_outside_box (cutoff_square_product_continuous D) (fun t ht => ?_)
-      (regularised_pairing_continuous_in_t H (admissibleWeight_mono hF (by omega) (by omega)) (admissibleWeight_mono hF' (by omega) (by omega)) hp)
-    rw [cutoff_square_product_zero D ht]; simp
-  · have e : (fun t : ℝ × ℝ => Bt D F F' (p, t)) = fun _ => 0 := funext (Bt_zero' D F F' hp)
-    rw [e]
-    exact continuous_const
+  · simpa only [Bt_eq D F F' hp, regBracket_eq] using
+      continuous_mul_of_vanishing_outside_box (cutoff_square_product_continuous D)
+        (fun t ht => by simp [cutoff_square_product_zero D ht])
+        (regularised_pairing_continuous_in_t H (admissibleWeight_mono hF (by omega) (by omega)) (admissibleWeight_mono hF' (by omega) (by omega)) hp)
+  · simpa only [Bt_zero' D F F' hp] using continuous_const
 
 theorem Bt_bound (H : Hyp D Ξ α) : ∃ K : ℝ, 0 ≤ K ∧ ∀ (F F' : Mat k r → (Wq →L[ℂ] Wp)) (c c' : ℝ),
     AdmW α c 2 2 F → AdmW α c' 2 2 F' → ∀ p t, ‖Bt D F F' (p, t)‖ ≤ K * c * c' * XX Ξ p := by
@@ -2368,11 +2347,9 @@ theorem Gt_measurable (H : Hyp D Ξ α) {F F' : Mat k r → (Wq →L[ℂ] Wp)} {
   have h1 : StronglyMeasurable (fun x : (ℝ × ℝ) × SS k r => ((wt D x.1 x.2 : ℝ) : ℂ)) :=
     (Complex.continuous_ofReal.comp (wt_continuous D)).stronglyMeasurable
   have h2 : StronglyMeasurable (fun y : ((ℝ × ℝ) × SS k r) × (ℝ × ℝ) =>
-      Et D F F' (y.1.2, y.2) * Complex.exp (Complex.I * (phase D y.1.1 y.1.2 y.2 : ℂ))) := by
-    refine StronglyMeasurable.mul ((Et_measurable H hF hF').comp_measurable (by fun_prop))
-      (Continuous.stronglyMeasurable ?_)
-    exact Complex.continuous_exp.comp
-      (continuous_const.mul (Complex.continuous_ofReal.comp (phase_continuous D)))
+      Et D F F' (y.1.2, y.2) * Complex.exp (Complex.I * (phase D y.1.1 y.1.2 y.2 : ℂ))) :=
+    StronglyMeasurable.mul ((Et_measurable H hF hF').comp_measurable (by fun_prop))
+      (Continuous.stronglyMeasurable (Complex.continuous_exp.comp (continuous_const.mul (Complex.continuous_ofReal.comp (phase_continuous D)))))
   exact h1.mul h2.integral_prod_right'
 
 theorem Gt_bound (H : Hyp D Ξ α) : ∃ K : ℝ, 0 ≤ K ∧ ∀ (F F' : Mat k r → (Wq →L[ℂ] Wp)) (c c' : ℝ),
@@ -2467,11 +2444,9 @@ theorem weight_dominated_near_quadrant (D : RealPlaceData k r Wp Wq) {τ₀ : �
 
 theorem half_quadrant_neighbourhood {τ₀ : ℝ × ℝ} (h₀ : τ₀ ∈ Quad) :
     {τ : ℝ × ℝ | τ₀.1 / 2 < τ.1 ∧ τ₀.2 / 2 < τ.2} ∈ 𝓝 τ₀ := by
-  have a1 : 0 < τ₀.1 := h₀.1
-  have a2 : 0 < τ₀.2 := h₀.2
   have ho : IsOpen {τ : ℝ × ℝ | τ₀.1 / 2 < τ.1 ∧ τ₀.2 / 2 < τ.2} :=
     (isOpen_lt continuous_const continuous_fst).inter (isOpen_lt continuous_const continuous_snd)
-  exact ho.mem_nhds ⟨by linarith, by linarith⟩
+  exact ho.mem_nhds ⟨half_lt_self h₀.1, half_lt_self h₀.2⟩
 
 theorem aestronglyMeasurable_beta_integrand (H : Hyp D Ξ α) {F F' : Mat k r → (Wq →L[ℂ] Wp)} {c c' : ℝ} (hF : AdmW α c 2 2 F)
     (hF' : AdmW α c' 2 2 F') (τ : ℝ × ℝ) : AEStronglyMeasurable (Gt D F F' τ) D.μSS :=
@@ -2481,8 +2456,6 @@ theorem pairing_kernel_integrable (H : Hyp D Ξ α) {F F' : Mat k r → (Wq →L
     (hF' : AdmW α c' 2 2 F') {τ : ℝ × ℝ} (hτ : τ ∈ Quad) : Integrable (Gt D F F' τ) D.μSS := by
   obtain ⟨K, hK, hb⟩ := Gt_bound H
   obtain ⟨M, hM, hw⟩ := weight_dominated_near_quadrant D hτ
-  have a1 : 0 < τ.1 := hτ.1
-  have a2 : 0 < τ.2 := hτ.2
   refine Integrable.mono' ((xi_integrable H).const_mul (M * (K * c * c'))) (aestronglyMeasurable_beta_integrand H hF hF' τ) ?_
   refine Filter.Eventually.of_forall fun p => ?_
   have hc := admissible_constant_nonneg (admissible_of_weighted hF)
@@ -2490,7 +2463,7 @@ theorem pairing_kernel_integrable (H : Hyp D Ξ α) {F F' : Mat k r → (Wq →L
   have hX := XX_nonneg Ξ p
   calc ‖Gt D F F' τ p‖ ≤ wt D τ p * (K * c * c' * XX Ξ p) := hb F F' c c' hF hF' τ p
     _ ≤ (M * LL D p) * (K * c * c' * XX Ξ p) := by
-        apply mul_le_mul_of_nonneg_right (hw τ (by linarith) (by linarith) p)
+        apply mul_le_mul_of_nonneg_right (hw τ (by linarith [show (0 : ℝ) < τ.1 from hτ.1]) (by linarith [show (0 : ℝ) < τ.2 from hτ.2]) p)
         positivity
     _ = M * (K * c * c') * (XX Ξ p * LL D p) := by ring
 
@@ -2624,8 +2597,7 @@ theorem phase_function_smul_right (D : RealPlaceData k r Wp Wq) (a : ℂ) (A B :
   rw [Pi.smul_apply, hsInner_smul_right]
 
 theorem cutoff_support_positive (D : RealPlaceData k r Wp Wq) {t : ℝ} (h : D.χ t ≠ 0) : 0 < t := by
-  have h1 := (D.χ_supp (subset_tsupport _ (Function.mem_support.2 h))).1
-  linarith
+  linarith [(D.χ_supp (subset_tsupport _ (Function.mem_support.2 h))).1]
 
 theorem regularized_bracket_additive (H : Hyp D Ξ α) {X Y X₁ Y₁ X₂ Y₂ : Mat k r → (Wq →L[ℂ] Wp)}
     (h : ∀ q, D.inSS q → Ph D X Y q = Ph D X₁ Y₁ q + Ph D X₂ Y₂ q) {p : SS k r} (hp : D.inSS p) :
@@ -2896,12 +2868,11 @@ theorem fourier_transform_quadratic_decay {w : ℝ → ℝ} (hw : IsTest w) :
 theorem scaled_decay_weight_bound {t : ℝ} (ht : 1 / 2 ≤ t) (x : ℝ) :
     (1 + |t * x|) ^ (-2 : ℝ) ≤ 4 * (1 + |x|) ^ (-2 : ℝ) := by
   rw [rpow_neg_two_eq_inv_sq (by positivity), rpow_neg_two_eq_inv_sq (by positivity)]
-  have h0 : 0 ≤ |x| := abs_nonneg x
   have h1 : |t * x| = t * |x| := by rw [abs_mul, abs_of_nonneg (by linarith)]
-  rw [h1, ← div_eq_mul_inv, inv_eq_one_div, div_le_div_iff₀ (by positivity) (by positivity)]
-  have h2 : 1 + |x| ≤ 2 * (1 + t * |x|) := by nlinarith
-  have h3 : 0 ≤ 1 + |x| := by positivity
-  nlinarith
+  have hA : 0 < 1 + t * |x| := by nlinarith [mul_nonneg (by linarith : (0:ℝ) ≤ t) (abs_nonneg x)]
+  have h2 : 1 + |x| ≤ 2 * (1 + t * |x|) := by nlinarith [mul_nonneg (by linarith : (0:ℝ) ≤ 2 * t - 1) (abs_nonneg x)]
+  rw [h1, ← div_eq_mul_inv, inv_eq_one_div, div_le_div_iff₀ (pow_pos hA 2) (by positivity)]
+  nlinarith [pow_le_pow_left₀ (by positivity : (0:ℝ) ≤ 1 + |x|) h2 2]
 
 end avg2pre
 
@@ -3105,9 +3076,7 @@ theorem integrand_slice_formula (H : Hyp D Ξ α) (hJ : DilJac D) {F F' : Mat k 
 
 theorem integral_cutoff_product_eq_one (D : RealPlaceData k r Wp Wq) : (∫ t : ℝ × ℝ, ((D.χ t.1 * D.χ t.2 : ℝ) : ℂ)) = 1 := by
   rw [integral_complex_ofReal]
-  have : (∫ t : ℝ × ℝ, D.χ t.1 * D.χ t.2) = (∫ x, D.χ x) * ∫ y, D.χ y :=
-    integral_prod_mul (μ := volume) (ν := volume) D.χ D.χ
-  rw [this, D.χ_int]
+  rw [show (∫ t : ℝ × ℝ, D.χ t.1 * D.χ t.2) = (∫ x, D.χ x) * ∫ y, D.χ y from integral_prod_mul (μ := volume) (ν := volume) D.χ D.χ, D.χ_int]
   simp
 
 theorem regAverage_of_hyp (H : Hyp D Ξ α) (hJ : DilJac D) : RegAverage D α := by

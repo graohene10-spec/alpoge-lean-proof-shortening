@@ -84,12 +84,7 @@ theorem sm_ind {X Y : Type*} [TopologicalSpace X] [MeasurableSpace X] [BorelSpac
 theorem continuous_ell (z : Fin (2 * r + k + 1) → ℂ) : Continuous fun x : Mt k r => ell k r z (Matrix.of x) := by
   unfold ell
   refine continuous_finset_sum _ fun a _ => ?_
-  first
-    | (split_ifs <;> fun_prop)
-    | (by_cases h : a.val + 1 < r <;> simp [h] <;> fun_prop)
-    | (split_ifs
-       · exact (continuous_apply _).comp (continuous_apply _)
-       · exact (continuous_apply _).comp (Continuous.matrix_mulVec continuous_id continuous_const))
+  split_ifs <;> fun_prop
 
 theorem continuous_lam (z : Fin (2 * r + k + 1) → ℂ) : Continuous fun x : Mt k r => lam k r z (Matrix.of x) := by
   exact Complex.continuous_re.comp (continuous_const.mul (continuous_ell z))
@@ -346,11 +341,9 @@ def hsL : (Wq →L[ℂ] Wp) →L[ℂ] PiLp 2 (fun _ : Fin (Module.finrank ℂ Wq
 theorem hsL_apply (A : Wq →L[ℂ] Wp) : hsL A = hsVec A := rfl
 
 theorem measurable_xi (D : RealPlaceData k r Wp Wq) : Measurable fun a : (ℝ × ℝ) × SS k r => xiTau D a.1 a.2 := by
-  have h : Measurable fun a : (ℝ × ℝ) × SS k r =>
-      (a.1.1 * lam k r D.z (Matrix.of a.2.1.2) - a.1.2 * lam k r D.z' (Matrix.of a.2.2.2)) :=
-    (measurable_fst.fst.mul ((continuous_lam D.z).measurable.comp measurable_snd.fst.snd)).sub
-      (measurable_fst.snd.mul ((continuous_lam D.z').measurable.comp measurable_snd.snd.snd))
-  exact Complex.measurable_exp.comp (measurable_const.mul (Complex.measurable_ofReal.comp h))
+  refine Complex.measurable_exp.comp (measurable_const.mul (Complex.measurable_ofReal.comp ?_))
+  exact (measurable_fst.fst.mul ((continuous_lam D.z).measurable.comp measurable_snd.fst.snd)).sub
+    (measurable_fst.snd.mul ((continuous_lam D.z').measurable.comp measurable_snd.snd.snd))
 
 def JM (D : RealPlaceData k r Wp Wq) (F : Mat k r → (Wq →L[ℂ] Wp)) (τ : ℝ × ℝ) (q : (Fin r → ℂ) × ℂ) :
     Wq →L[ℂ] Wp := ∫ p, xiTau D τ p • RM D F p (gqM D q) ∂D.μSS
@@ -1022,9 +1015,7 @@ theorem al_rho_tr (D : RealPlaceData k r Wp Wq) (F : Mat k r → (Wq →L[ℂ] W
   have e1 : D.π (Matrix.of (tr p' p).1.1) = (D.π (Matrix.of p'.1.1)).comp (D.π (Matrix.of p.1.1)) :=
     D.π_rep.2 _ h1 _ g1
   have e2 : D.π' (Matrix.of (tr p' p).2.1)⁻¹ = (D.π' (Matrix.of p.2.1)⁻¹).comp (D.π' (Matrix.of p'.2.1)⁻¹) := by
-    have : ((Matrix.of (tr p' p).2.1 : Mat k r))⁻¹ = (Matrix.of p.2.1)⁻¹ * (Matrix.of p'.2.1)⁻¹ :=
-      Matrix.mul_inv_rev _ _
-    rw [this]
+    rw [show ((Matrix.of (tr p' p).2.1 : Mat k r))⁻¹ = (Matrix.of p.2.1)⁻¹ * (Matrix.of p'.2.1)⁻¹ from Matrix.mul_inv_rev _ _]
     exact D.π'_rep.2 _ (WeylGroupFacts.uw_inv g3) _ (WeylGroupFacts.uw_inv h3)
   unfold rho
   rw [e0, e1, e2]
@@ -1305,8 +1296,7 @@ section abstractFubini
 theorem v_int_smul {P E : Type*} [MeasurableSpace P] {μ : Measure P} [NormedAddCommGroup E] [NormedSpace ℂ E]
     {u : P → E} (hu : Integrable u μ) {ξ : P → ℂ} (hξm : Measurable ξ) (hξ : ∀ p, ‖ξ p‖ = 1) :
     Integrable (fun p => ξ p • u p) μ := by
-  refine hu.mono (hξm.aestronglyMeasurable.smul hu.aestronglyMeasurable) (ae_of_all _ fun p => ?_)
-  rw [norm_smul, hξ p, one_mul]
+  exact hu.mono (hξm.aestronglyMeasurable.smul hu.aestronglyMeasurable) (ae_of_all _ fun p => by rw [norm_smul, hξ p, one_mul])
 
 theorem v_inner {P E : Type*} [MeasurableSpace P] {μ : Measure P} [NormedAddCommGroup E]
     [InnerProductSpace ℂ E] [CompleteSpace E]
@@ -1534,8 +1524,7 @@ theorem w_fixq (D : RealPlaceData k r Wp Wq) (hC : ConjInv D) {F : Mat k r → (
     rw [← hN τ, ← Complex.ofReal_mul]
   simp_rw [e, w_hOm] at sw
   refine ⟨?_, ?_⟩
-  · refine (sw.1.re).congr (ae_of_all _ fun τ => ?_)
-    exact Complex.ofReal_re _
+  · exact (sw.1.re).congr (ae_of_all _ fun τ => Complex.ofReal_re _)
   · exact (integral_complex_ofReal).symm.trans sw.2
 
 end u3

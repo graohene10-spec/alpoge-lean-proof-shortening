@@ -114,9 +114,7 @@ theorem vala_dg_labels (D : TwistData K) (gg : (D.Tau → Fin D.r → ℕ) → D
         have h0 := eOut_eq_zero_of_mem_support_coefOut out (mem_support_iff.mpr hα)
         funext t a
         have h1 : (α - μ) (D.mlab t, a) = 0 := by
-          have := DFunLike.congr_fun h0 (D.mlab t, a)
-          rw [eOut_apply, if_pos ⟨t, rfl⟩] at this
-          simpa using this
+          simpa [eOut_apply, if_pos (show out (D.mlab t) from ⟨t, rfl⟩)] using DFunLike.congr_fun h0 (D.mlab t, a)
         have h2 : μ (D.mlab t, a) ≤ α (D.mlab t, a) := hle _
         rw [Finsupp.tsub_apply] at h1
         simp only [TwistData.labF]

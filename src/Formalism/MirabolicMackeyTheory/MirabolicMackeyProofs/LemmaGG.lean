@@ -158,8 +158,7 @@ theorem ggE_eig {P : Type} [Group P] (ρ : Representation K P Z) (U : Subgroup P
     intro u
     rw [(gg_mem_eig ρ U ψ z).mp hz u, smul_smul, ← map_mul, ← hmul _ (U.inv_mem u.2) _ u.2,
       inv_mul_cancel, hone, map_one, one_smul]
-  rw [Finset.sum_congr rfl (fun u _ => this u)]
-  simp [Nat.cast_smul_eq_nsmul]
+  simp [this, Nat.cast_smul_eq_nsmul]
 
 theorem ggE_stable {P : Type} [Group P] (ρ : Representation K P Z) (U : Subgroup P) [Fintype U]
     (ψ : P → 𝓞 K) (L : Submodule (𝓞 K) Z)

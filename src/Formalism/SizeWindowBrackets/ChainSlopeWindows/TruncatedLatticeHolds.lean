@@ -34,9 +34,7 @@ theorem pLen_simple_ne (p m : Ideal R) [hp : p.IsMaximal] [hm : m.IsMaximal] (h 
     have := locBasic_locS_mono p.primeCompl hA
     unfold localization₂ at this ⊢
     rwa [locBasic_locS_idem] at this
-  unfold pLen
-  rw [Submodule.comap_subtype_eq_top.2 hle]
-  simp
+  simp [pLen, Submodule.comap_subtype_eq_top.2 hle]
 
 theorem kill_of_equiv (m : Ideal R) {A C : Submodule R W}
     (e : (A ⧸ C.comap A.subtype) ≃ₗ[R] (R ⧸ m)) : ∀ s ∈ m, ∀ x ∈ A, s • x ∈ C := by
@@ -218,17 +216,13 @@ theorem index_local_length : IndexLocLen := by
     rw [this]; exact ENat.natCast_ne_top _
   · refine k.support.finite_toSet.subset fun w hw => ?_
     rw [Function.mem_support, hl] at hw
-    rw [Finset.mem_coe, Finsupp.mem_support_iff]
-    exact hw
+    simpa [Finset.mem_coe, Finsupp.mem_support_iff] using hw
   · rw [hc, finsum_eq_sum_of_support_subset (s := k.support)]
     · refine Finset.sum_congr rfl fun w _ => ?_
       rw [hl]
     · intro w hw
-      rw [Function.mem_support, hl] at hw
-      rw [Finset.mem_coe, Finsupp.mem_support_iff]
-      intro h0
-      rw [h0] at hw
-      simp at hw
+      simp only [Function.mem_support, hl, Finset.mem_coe, Finsupp.mem_support_iff] at hw ⊢
+      exact fun h0 => hw (by simp [h0])
 
 section Span
 
@@ -255,9 +249,7 @@ theorem span_le_locS (Y : Submodule (𝓞 K) V) {x : V} (hx : x ∈ Submodule.sp
             smul_comm]
         rw [this]
         exact Y.smul_mem a hdv }
-  have hle : Submodule.span K (Y : Set V) ≤ T :=
-    Submodule.span_le.mpr (fun y hy => locBasic_le_locS _ Y hy)
-  exact hle hx
+  exact (Submodule.span_le.mpr (fun y hy => locBasic_le_locS _ Y hy) : Submodule.span K (Y : Set V) ≤ T) hx
 
 theorem span_inf {E M : Submodule (𝓞 K) V} (hE : E.FG)
     (h : Submodule.span K (E : Set V) = Submodule.span K (M : Set V)) :
@@ -401,8 +393,7 @@ theorem log_covolume_slope_mu : LcvMu := by
 
 theorem covolume_formula : Formalism.HN.LcvFormula := by
   intro K V ι _ _ _ _ _ _ _ _ _ _ b X hX j e M he hM hM0 hsp
-  obtain ⟨-, -, -, hfin, hmu⟩ := log_covolume_slope_mu K V ι b X hX j e M he hM hM0 hsp
-  exact ⟨hfin, hmu⟩
+  exact (log_covolume_slope_mu K V ι b X hX j e M he hM hM0 hsp).2.2.2
 
 end Main
 
@@ -670,11 +661,9 @@ theorem covolume_base_change : LcvBaseChange := by
   have hn : (Module.finrank ℚ K : ℝ) = 2 * (nPl K : ℝ) := by
     rw [sizeMu_finrank_eq K]; push_cast; ring
   have hf : (nPl K : ℝ) ≠ 0 := by
-    have : 0 < nPl K := Fintype.card_pos
-    exact_mod_cast this.ne'
+    exact_mod_cast (show (0 : ℕ) < nPl K from Fintype.card_pos).ne'
   have hprod : ∏ v : InfinitePlace K, v g.det ^ 2 = |((Algebra.norm ℚ g.det : ℚ) : ℝ)| := by
-    have h := InfinitePlace.prod_eq_abs_norm g.det
-    rw [← Rat.cast_abs, ← h]
+    rw [← Rat.cast_abs, ← InfinitePlace.prod_eq_abs_norm g.det]
     refine Finset.prod_congr rfl fun v _ => ?_
     rw [InfinitePlace.mult, if_neg (InfinitePlace.not_isReal_iff_isComplex.2
       (IsTotallyComplex.isComplex v))]
@@ -686,8 +675,7 @@ theorem covolume_base_change : LcvBaseChange := by
           Real.log (v g.det ^ 2) + Real.log (gramPl b X v e).det.re := by
       intro v
       obtain ⟨hp, him⟩ := gram_pos b X hX e he v
-      rw [det_gramPl_baseChange b X v e g him, Real.log_mul _ hp.ne']
-      exact pow_ne_zero _ ((map_ne_zero v).2 hd)
+      rw [det_gramPl_baseChange b X v e g him, Real.log_mul (pow_ne_zero _ ((map_ne_zero v).2 hd)) hp.ne']
     simp only [h1]
     rw [Finset.sum_add_distrib, ← Real.log_prod (fun v _ =>
       pow_ne_zero _ ((map_ne_zero v).2 hd)), hprod, hn]

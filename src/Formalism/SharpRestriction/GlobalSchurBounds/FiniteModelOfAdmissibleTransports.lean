@@ -107,9 +107,7 @@ lemma Uop_apply (i : ℕ) (v : (D.mem u).A.vT) (φ : Fn D u i) (c) : Uop D u i v
 lemma dn_sum_apply (i : ℕ) (v : (D.mem u).A.vT) (φ : Fn D u i) (c) : Dop D u i v φ c =
     ∑ g ∈ Finset.univ.filter (fun g : Module.Dual ((D.mem u).A.Fv v) ((D.fm u).lk i v c) => g ≠ 0),
       (if g ((D.fm u).te i v c) = 1 then (1 : ℂ) else 0) • (D.fm u).dnT i v c g (φ ((D.fm u).dn i v c g)) := by
-  simp only [Dop, LinearMap.pi_apply, LinearMap.sum_apply, LinearMap.comp_apply, LinearMap.proj_apply,
-    LinearEquiv.coe_coe]
-  rw [Finset.sum_filter, Finset.sum_filter]
+  simp only [Dop, LinearMap.pi_apply, LinearMap.sum_apply, Finset.sum_filter]
   refine Finset.sum_congr rfl (fun g _ => ?_)
   by_cases h : g ((D.fm u).te i v c) = 1
   · have : g ≠ 0 := by rintro rfl; simp at h
@@ -651,8 +649,7 @@ lemma dia_S (w) (v) (a) : Into D u w (dia D u 0 v a) ((D.fm u).S 0 w) ((D.fm u).
   | mem x h => obtain ⟨y, hy1, hy⟩ := (D.fm u).rhoT_lat v a x h; exact ⟨y, Submodule.subset_span hy1, hy⟩
   | zero => exact ⟨0, Submodule.zero_mem _, by simp⟩
   | add x y _ _ hx hy =>
-    obtain ⟨a1, m1, h1⟩ := hx; obtain ⟨a2, m2, h2⟩ := hy
-    exact ⟨a1 + a2, Submodule.add_mem _ m1 m2, by rw [map_add, map_add, map_add, h1, h2]⟩
+    obtain ⟨a1, m1, h1⟩ := hx; obtain ⟨a2, m2, h2⟩ := hy; exact ⟨a1 + a2, Submodule.add_mem _ m1 m2, by simp [map_add, h1, h2]⟩
   | smul r x _ hx =>
     obtain ⟨a1, m1, h1⟩ := hx
     exact ⟨r • a1, Submodule.smul_mem _ r m1, by
@@ -728,7 +725,6 @@ theorem heckeValue_estimate_of_record_value (C : ℝ) (hC : 0 ≤ C) (h : LevelC
         D.what₂.places.val_resChar w]
       rw [← (nsmul_eq_mul (s + 1) (D.what₂.places.ramIdx w : ℤ)), WithTop.coe_nsmul]
     · have he : (0 : ℝ) ≤ (D.what₂.places.ramIdx w : ℝ) := Nat.cast_nonneg _
-      have hW : (0 : ℝ) ≤ (Wt D u ((D.fm u).tauOf w v) : ℝ) := Nat.cast_nonneg _
       have hN : (0 : ℝ) ≤ (D.R.N D.R.m : ℝ) := Nat.cast_nonneg _
       have ht : (D.R.t : ℝ) = 2 * s + 1 := by rw [hs]; push_cast; ring
       have hs0 : (0 : ℝ) ≤ (s : ℝ) := Nat.cast_nonneg _
@@ -1107,11 +1103,10 @@ lemma card_Tau (u : D.what₂.Word) (w : D.what₂.places.Pl) : Fintype.card D.w
 lemma exponent_e1_count_bound (C : ℝ) (w : D.what₂.places.Pl) :
     ∑ τ, (2 * (Wt D u τ : ℝ) + C * D.R.N D.R.m + if τ ∉ tops D then 2 * (Wt D u τ : ℝ) + D.R.t else 0) ≤
       4 * ∑ τ, (Wt D u τ : ℝ) + (C + 1) * D.R.f * D.R.N D.R.m := by
-  have core := Formalism.HermitianLattices.LocalLatticeBases.exponent_loss_per_embedding D.what₂.Tau Finset.univ (fun τ => τ ∉ tops D) (fun τ => (Wt D u τ : ℝ))
-    (fun τ => 2 * (Wt D u τ : ℝ) + D.R.t) C (D.R.N D.R.m) D.R.t (fun _ _ => Nat.cast_nonneg _) (Nat.cast_nonneg _)
-    (by exact_mod_cast t_le_N D.R) (fun τ _ _ => le_rfl)
-  rw [Finset.card_univ, card_Tau u w] at core
-  exact core
+  simpa [Finset.card_univ, card_Tau u w] using
+    Formalism.HermitianLattices.LocalLatticeBases.exponent_loss_per_embedding D.what₂.Tau Finset.univ
+      (fun τ => τ ∉ tops D) (fun τ => (Wt D u τ : ℝ)) (fun τ => 2 * (Wt D u τ : ℝ) + D.R.t) C (D.R.N D.R.m) D.R.t
+      (fun _ _ => Nat.cast_nonneg _) (Nat.cast_nonneg _) (by exact_mod_cast t_le_N D.R) (fun τ _ _ => le_rfl)
 
 theorem exists_exponent_e1_latticeInto (C : ℝ) (hC : 0 ≤ C) (w : D.what₂.places.Pl) (i : ℕ)
     (h1 : (D.fm u).seenP w = false →
@@ -1963,10 +1958,9 @@ theorem FiSt_of (h5 : IntOffT D u) (hd : DiaFi D u) : FiSt D u := by
     fi_of_rat _ (rat_of_into w _ _ _ (h5 i hi w hw v).2 (S_span i w)) φ hφ, hd i hi v φ hφ⟩
 
 lemma dense_embLL (D : D7) : DenseRange D.what₂.embLL := by
-  have hv : (InfinitePlace.mk D.what₂.embLL).IsComplex := IsTotallyComplex.isComplex _
-  have hd := denseRange_embedding_of_isComplex _ hv
+  have hd := denseRange_embedding_of_isComplex _ (IsTotallyComplex.isComplex (InfinitePlace.mk D.what₂.embLL))
   rcases InfinitePlace.embedding_mk_eq D.what₂.embLL with h | h
-  · rw [h] at hd; exact hd
+  · simpa [h] using hd
   · rw [h] at hd
     have h2 : DenseRange ((starRingEnd ℂ) ∘ (ComplexEmbedding.conjugate D.what₂.embLL)) :=
       DenseRange.comp (Function.Surjective.denseRange (fun z => ⟨(starRingEnd ℂ) z, Complex.conj_conj z⟩)) hd
@@ -2029,8 +2023,7 @@ theorem cplx_of_place (h : (D.fm u).PRat)
       (D.fm u).emb D.R.m (∑ a, r a • ((D.fm u).lat D.R.m).b a) := by
     rw [map_sum]
     exact Finset.sum_congr rfl (fun a _ => by rw [LinearMap.map_smulₛₗ]; rfl)
-  rw [hr]
-  exact cplx_rat h hb _
+  simpa [hr] using cplx_rat h hb (∑ a, r a • ((D.fm u).lat D.R.m).b a)
 
 theorem deg_eq_degZ (τ : D.what₂.Tau) :
     (D.fm u).deg τ = Formalism.MainNotions.PrimeDegreeVariant.degZ (lamTr D u τ) (sgTr D u τ) := by
@@ -2100,11 +2093,9 @@ theorem normFock_wSh {n : ℕ} (l : DomWeight n) (c : ℤ) (f g : MvPolynomial (
 theorem brBd_wSh {n N : ℕ} (h : n + 1 = N) (lam : DomWeight N) (sg : DomWeight n) (c : ℤ) :
     brBd h (wSh lam c) (wSh sg c) = brBd h lam sg := by
   have hs : (wSh lam c).spread = lam.spread := by
-    unfold DomWeight.spread wSh
-    split_ifs <;> simp
+    simp [DomWeight.spread, wSh]
   have h0 : D0 h (wSh lam c) (wSh sg c) = D0 h lam sg := by
-    unfold D0 wSh
-    exact Finset.sum_congr rfl fun i _ => by simp
+    simp [D0, wSh]
   have h1 : D1 h (wSh lam c) (wSh sg c) = D1 h lam sg := by
     unfold D1
     rw [h0]
@@ -2228,8 +2219,7 @@ theorem Pt_integral (P : Pend D u) (h4 : ArchimedeanSignatureMatching P) (hPF : 
   refine mem_of_forall_inLoc _ _ (fun p => ?_)
   obtain ⟨y, hy, hy'⟩ := Pt_loc P h4 hPF (D.plEq.symm p) x (Submodule.subset_span hx)
   have e : y = (D.fm u).PtL h x := (D.fm u).ptEmb_inj (by rw [hy', (D.fm u).PtL_spec h x]; rfl)
-  have := D.inLoc_of_mem_locW (D.plEq.symm p) (D.fm u).ptLat.L y hy
-  rwa [Equiv.apply_symm_apply, e] at this
+  simpa only [Equiv.apply_symm_apply, e] using D.inLoc_of_mem_locW (D.plEq.symm p) (D.fm u).ptLat.L y hy
 
 variable (D u) in
 
@@ -2274,12 +2264,11 @@ theorem conclusion_of_rest (C : ℝ) (hC : 0 ≤ C) (hS : HidaSetting D u) (hA :
   have hC1 : 0 ≤ C + 1 := by linarith
   have hF := FiSt_of hI5 hd
   have hKF := KFi_of C h3a
-  have hM := DiaMul_of hF hU
-  have h1 := baseChange_preserves_unitary_of hF hM hX hU hUC hI4 hI5 (Rat0_of_Int hI5)
+  have h1 := baseChange_preserves_unitary_of hF (DiaMul_of hF hU) hX hU hUC hI4 hI5 (Rat0_of_Int hI5)
   have h3 := latticeChain_succ_of_partial C hC h3a
   have h4 := heckeValue_estimate_of_record_value (C + 1) hC1 h4X hKD hKF
   exact ⟨h1, slopeEstimate_of_lemmaB_slopeLine hS W hμ hB h1, h3, h4, ramifiedLattice_of_chain_estimates (C + 1) hC1 hS hKF hB h1 h3 h4X, classMap_estimate_of_admissible hA h6,
-    finiteModel_of_heckeEstimate hF hM hX hU (C + 1) h4, h4X, h5S⟩
+    finiteModel_of_heckeEstimate hF (DiaMul_of hF hU) hX hU (C + 1) h4, h4X, h5S⟩
 
 theorem packetEstimate_of_remainder (C : ℝ) (hC : 0 ≤ C) (h : HidaSetting D u → AdmE D u → Rest D u C) : Stmt D u (C + 1) :=
   fun hS hA => conclusion_of_rest C hC hS hA (h hS hA)

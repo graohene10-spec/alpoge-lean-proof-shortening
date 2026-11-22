@@ -96,11 +96,8 @@ private theorem glRel_neg_transpose {A : Type*} [Ring A] {n : ℕ} (F : Fin n �
     GlRel (fun a b => -F b a) := by
   intro a b c d
   show -F b a * -F d c - -F d c * -F b a = (if b = c then -F d a else 0) - (if d = a then -F b c else 0)
-  have h' := h b a d c
-  rw [neg_mul_neg, neg_mul_neg, h']
-  have e1 : (a = d) ↔ (d = a) := eq_comm
-  have e2 : (c = b) ↔ (b = c) := eq_comm
-  rw [if_congr e1 rfl rfl, if_congr e2 rfl rfl]
+  rw [neg_mul_neg, neg_mul_neg, h b a d c]
+  rw [if_congr (eq_comm : (a = d) ↔ (d = a)) rfl rfl, if_congr (eq_comm : (c = b) ↔ (b = c)) rfl rfl]
   split_ifs <;> abel
 
 private theorem sum_pq_commute_sum_pq_of_canonical_relations {A : Type*} [Ring A] {M N : ℕ} (p q : Fin M → Fin N → A)

@@ -63,10 +63,8 @@ theorem extractK : ExtractK := by
 
 lemma sum_prod_abs {K d : ℕ} (grid : Fin K → Fin (d + 1) → ℝ) :
     ∑ j : Fin K → Fin (d + 1), ∏ a, |lagCo (grid a) (j a)| = ∏ a, ∑ i, |lagCo (grid a) i| := by
-  first
-  | rw [Finset.prod_univ_sum, Fintype.piFinset_univ]
-  | exact (Finset.prod_univ_sum (fun a i => |lagCo (grid a) i|)).symm
-  | simp [Finset.prod_univ_sum]
+  simpa only [Fintype.piFinset_univ] using
+    (Finset.prod_univ_sum (fun _ : Fin K => (Finset.univ : Finset (Fin (d + 1)))) (fun a i => |lagCo (grid a) i|)).symm
 
 lemma norm_le_sum {V : Type} [SeminormedAddCommGroup V] [NormedSpace ℂ V] {K d : ℕ} (s : Fin K → ℂ)
     (W : ℕ → (Fin K → ℝ) → V) (grid : Fin K → Fin (d + 1) → ℝ) (hP : PolyStep K d s W)

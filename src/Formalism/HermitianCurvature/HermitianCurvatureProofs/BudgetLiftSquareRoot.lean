@@ -46,10 +46,8 @@ theorem sizes_tie {E : Type} [Field E] (D : Data E) (Pat3 : Type) [Fintype Pat3]
     (c3 : ℕ → E → ℝ) (ep1 : ℝ) (ep3 bd4 : ℕ → ℝ) (ep a : ℝ) (i : ℕ)
     (h : LevelSizes D Pat3 c1 c3 ep1 ep3 bd4 ep a i) : 0 ≤ ep1 ∧ 1 + ep1 ≤ (1 + ep) ^ 2 := by
   obtain ⟨h1, _, h3, h4, _⟩ := h
-  have e1 : 0 ≤ ep1 := by simpa using h1.2 ∅ (by simp)
-  refine ⟨e1, le_trans ?_ h4⟩
-  have : 0 ≤ (Fintype.card Pat3 : ℝ) * ep3 1 := mul_nonneg (Nat.cast_nonneg _) h3
-  nlinarith
+  refine ⟨by simpa using h1.2 ∅ (by simp), le_trans ?_ h4⟩
+  nlinarith [(show (0 : ℝ) ≤ ep1 by simpa using h1.2 ∅ (by simp)), mul_nonneg (show (0 : ℝ) ≤ (Fintype.card Pat3 : ℝ) from Nat.cast_nonneg _) h3]
 
 theorem isPt_PT {E : Type} [Field E] [DecidableEq E] (Sg : ℕ → ℕ → Finset E) (hNZ : NZSg Sg) :
     ∀ n p, p ∈ PT Sg n → IsPt n p := by

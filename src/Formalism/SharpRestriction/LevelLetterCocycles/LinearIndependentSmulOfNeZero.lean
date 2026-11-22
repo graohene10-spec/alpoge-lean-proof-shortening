@@ -429,8 +429,7 @@ theorem projA_grp (i : X.Tw) {Q' Q : Finset (PlE D.host)} (h : Q' ⊆ Q) (M : �
 
 theorem projA_comp (i : X.Tw) {Q'' Q' Q : Finset (PlE D.host)} (h1 : Q'' ⊆ Q') (h2 : Q' ⊆ Q) (M : ℕ) :
     (projA i h1 M).comp (projA i h2 M) = projA i (h1.trans h2) M := by
-  refine AddMonoidAlgebra.algHom_ext ?_ (Subsingleton.elim _ _)
-  intro γ
+  refine AddMonoidAlgebra.algHom_ext (fun γ => ?_) (Subsingleton.elim _ _)
   rw [AlgHom.comp_apply, projA_single, projA_single, projA_single]
   rfl
 
@@ -438,8 +437,7 @@ theorem projA_refl (i : X.Tw) {Q : Finset (PlE D.host)} (h : Q ⊆ Q) (M : ℕ) 
     projA i h M = AlgHom.id (X.O i) (LamO X i Q M) := by
   refine AddMonoidAlgebra.algHom_ext ?_ (Subsingleton.elim _ _)
   intro γ
-  rw [projA_single]
-  rfl
+  exact (projA_single i h M γ 1).trans rfl
 
 theorem grp_nsmul (i : X.Tw) (Q : Finset (PlE D.host)) (M : ℕ) (γ : DelQM D.host (X.l i) Q M) (k : ℕ) :
     grp i Q M (k • γ) = grp i Q M γ ^ k := by
@@ -449,8 +447,7 @@ theorem grp_nsmul (i : X.Tw) (Q : Finset (PlE D.host)) (M : ℕ) (γ : DelQM D.h
 theorem grp_mul_neg (i : X.Tw) (Q : Finset (PlE D.host)) (M : ℕ) (γ : DelQM D.host (X.l i) Q M) :
     grp i Q M γ * grp i Q M (-γ) = 1 := by
   unfold grp
-  rw [AddMonoidAlgebra.single_mul_single, add_neg_cancel, one_mul]
-  rfl
+  rw [AddMonoidAlgebra.single_mul_single, add_neg_cancel, one_mul, AddMonoidAlgebra.one_def]
 
 theorem augA_grp (i : X.Tw) (Q : Finset (PlE D.host)) (M : ℕ) (γ : DelQM D.host (X.l i) Q M) :
     augA i Q M (grp i Q M γ) = 1 := by
@@ -979,17 +976,14 @@ theorem linearIndependent_one_tmul (hinj : Function.Injective (algebraMap O R'))
   have : FaithfulSMul O R' := (faithfulSMul_iff_algebraMap_injective O R').mpr hinj
   have : Module.IsTorsionFree O R' := inferInstance
   have : Module.Flat O R' := inferInstance
-  have h1 := (Algebra.TensorProduct.basis R' β).linearIndependent
   have h2 : Function.Injective (B.subtype.baseChange R') := by
     rw [LinearMap.baseChange_eq_ltensor]
     exact Module.Flat.lTensor_preserves_injective_linearMap (M := R') B.subtype B.injective_subtype
-  have h3 := h1.map' (B.subtype.baseChange R') (LinearMap.ker_eq_bot.2 h2)
   have h4 : (fun t => (1 : R') ⊗ₜ[O] (β t : Fm)) =
       (B.subtype.baseChange R') ∘ (Algebra.TensorProduct.basis R' β) := by
     funext t
     simp
-  rw [h4]
-  exact h3
+  simpa [← h4] using (Algebra.TensorProduct.basis R' β).linearIndependent.map' (B.subtype.baseChange R') (LinearMap.ker_eq_bot.2 h2)
 
 end BaseCh
 
@@ -1678,8 +1672,7 @@ theorem linearIndependent_smul_of_ne_zero {R W ι : Type} [CommRing R] [IsDomain
     {v : ι → W} (hv : LinearIndependent R v) {c : R} (hc : c ≠ 0) : LinearIndependent R (fun a => c • v a) := by
   rw [linearIndependent_iff'] at hv ⊢
   intro s g hg a ha
-  have := hv s (fun a => g a * c) (by simpa [mul_smul] using hg) a ha
-  exact (mul_eq_zero.1 this).resolve_right hc
+  exact (mul_eq_zero.1 (hv s (fun a => g a * c) (by simpa [mul_smul] using hg) a ha)).resolve_right hc
 
 variable {D : Formalism.BasicNotions.D7} {N : NData D.R D.host D.what₂}
   {X : NTw D.R D.host D.what₂ D.LL0 N} {Y : NExp D.R D.host D.what₂ D.LL0 N X}
@@ -1991,11 +1984,9 @@ theorem sIdx_mono' {R W : Type} [CommRing R] [IsDomain R] [IsDiscreteValuationRi
     [Module R W] (l : ℕ) {B0 Y T V : Submodule R W} (hB : IsLatIn B0 V) (hY : IsLatIn Y V)
     (hT : IsLatIn T V) (h : Y ≤ T) : sIdx l B0 T ≤ sIdx l B0 Y := by
   have a := Formalism.MainNotions.IntegralHeckeForms.Idx.sIdx_add hB hT hY
-  have h0 : Formalism.IrreducibleCountingLemmas.TW.relLen Y T = 0 := Formalism.IrreducibleCountingLemmas.TW.Idx.relLen_of_le h
   have h1 : 0 ≤ Formalism.IrreducibleCountingLemmas.TW.sIdx T Y := by
-    unfold Formalism.IrreducibleCountingLemmas.TW.sIdx
-    rw [h0]
-    simp
+    simp [Formalism.IrreducibleCountingLemmas.TW.sIdx,
+      Formalism.IrreducibleCountingLemmas.TW.Idx.relLen_of_le h]
   have h2 : Formalism.IrreducibleCountingLemmas.TW.sIdx B0 T ≤ Formalism.IrreducibleCountingLemmas.TW.sIdx B0 Y := by omega
   rw [Formalism.MainNotions.IntegralHeckeForms.Idx.sIdx_eq, Formalism.MainNotions.IntegralHeckeForms.Idx.sIdx_eq]
   exact div_le_div_of_nonneg_right (by exact_mod_cast h2) (Nat.cast_nonneg _)
@@ -2007,9 +1998,8 @@ abbrev JB (D : Formalism.BasicNotions.D7) : Type := ↥(Finset.Icc 1 D.R.m) × B
 
 theorem Pack.isLatIn_B {i : X.Tw} {j : ℕ} {b : Bool} (p : Pack Y i j b) (k : ℕ) :
     IsLatIn (p.B.baseChange (X.Ok i k)) (p.VKk k) := by
-  unfold Pack.VKk
-  rw [Formalism.MainNotions.IntegralHeckeForms.Idx.baseChange_eq_ext, Formalism.MainNotions.IntegralHeckeForms.Idx.baseChange_eq_ext]
-  exact Formalism.MainNotions.IntegralHeckeForms.Idx.isLatIn_ext (X.Ok_inj i k) _ (isLatIn_spanK p.fg)
+  simpa only [Pack.VKk, Formalism.MainNotions.IntegralHeckeForms.Idx.baseChange_eq_ext] using
+    Formalism.MainNotions.IntegralHeckeForms.Idx.isLatIn_ext (X.Ok_inj i k) _ (isLatIn_spanK p.fg)
 
 open Classical in
 
@@ -2105,14 +2095,10 @@ theorem general_bound_of_lattice_pack (bkP : Formalism.MainNotions.BlochKatoRedu
     Formalism.MainNotions.IntegralHeckeForms.TwOK_psiAt b (Formalism.MainNotions.IntegralHeckeForms.TwOK_of_PsiOk hPsi)
   have hψ : psiAt b (ψ'.comp (X.art i Q)) = (psiAt b χ).comp (Y.delU i Q M) := by
     rw [hχ, Formalism.MainNotions.IntegralHeckeForms.psiAt_comp]
-
   have hfg : (F.ThPsi j b k' Q (psiAt b (ψ'.comp (X.art i Q)))).FG := by
-    have hle := hR.2.2.2.2.2.2.2.2.2.2.1 k' Q _ hTw
     have hfg0 := ((Y.MtLat_fg i j b k' Q (psiAt b (ψ'.comp (X.art i Q)))).map
       (Y.thP i j b k' Q (psiAt b (ψ'.comp (X.art i Q))))).map ((F.kap j b).baseChange (X.Ok i k'))
-    have := isNoetherian_of_fg_of_noetherian _ hfg0
-    exact (isNoetherian_submodule.1 this) _ hle
-
+    exact (isNoetherian_submodule.1 (isNoetherian_of_fg_of_noetherian _ hfg0)) _ (hR.2.2.2.2.2.2.2.2.2.2.1 k' Q _ hTw)
   have hle : (packR F j b hR).Yl Q M k' (psiAt b χ) ≤ F.ThPsi j b k' Q (psiAt b (ψ'.comp (X.art i Q))) := by
     unfold Pack.Yl
     rw [Submodule.span_le]
@@ -2129,10 +2115,9 @@ theorem general_bound_of_lattice_pack (bkP : Formalism.MainNotions.BlochKatoRedu
   have hlat : IsLatIn (F.ThPsi j b k' Q (psiAt b (ψ'.comp (X.art i Q)))) (F.VKk j b k') :=
     Formalism.MainNotions.IntegralHeckeForms.Idx.isLatIn_of_le hl hfg hle (hR.2.2.2.2.2.2.2.2.2.2.2 k' Q _ hTw)
   refine ⟨hlat, ?_⟩
-  have hmono := sIdx_mono' (X.l i) ((packR F j b hR).isLatIn_B k') hl hlat hle
   have hTh : (packR F j b hR).Th = F.Th j b := hR.2.2.2.2.2.2.1
   rw [hTh] at hi
-  exact hmono.trans hi
+  exact (sIdx_mono' (X.l i) ((packR F j b hR).isLatIn_B k') hl hlat hle).trans hi
 
 def packAB {i : X.Tw} (F : Formalism.MainNotions.IntegralHeckeForms.RFam Y i) (j : ℕ) (b : Bool) (h : Formalism.MainNotions.IntegralHeckeForms.ABHyp Y i F j b) :
     Pack Y i j b where
@@ -2233,13 +2218,11 @@ theorem val_le_one_of_isIntegral {R Ω : Type} [CommRing R] [Field Ω] [Algebra 
   let φ : R →+* A := (algebraMap R Ω).codRestrict A.toSubring
     (fun r => (A.valuation_le_one_iff _).1 (hR r))
   obtain ⟨p, hpm, hp⟩ := hy
-  have h1 : IsIntegral A y := by
-    refine ⟨p.map φ, hpm.map φ, ?_⟩
+  have h1 : IsIntegral A y := ⟨p.map φ, hpm.map φ, by
     rw [Polynomial.eval₂_map]
-    exact hp
+    exact hp⟩
   obtain ⟨a, ha⟩ := IsIntegrallyClosed.algebraMap_eq_of_integral h1
-  rw [← ha]
-  exact A.valuation_le_one a
+  exact ha ▸ A.valuation_le_one a
 
 theorem exists_primitive_at {R Ω : Type} (F : Type) [CommRing R] [IsDedekindDomain R] [Field F] [Algebra R F]
     [IsFractionRing R F] [Field Ω] [Algebra F Ω] [Algebra R Ω] [IsScalarTower R F Ω]

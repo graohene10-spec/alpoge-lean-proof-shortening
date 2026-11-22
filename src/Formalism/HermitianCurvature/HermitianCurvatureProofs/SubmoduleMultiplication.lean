@@ -114,7 +114,6 @@ variable {R : Subring K} {ϖ : Kˣ}
 theorem Adic.approx (h : Adic R ϖ) (f : K → K) (hf : Continuous f) (b : K)
     (ha : ∀ n : ℕ, ∃ r ∈ R, ∃ e ∈ R, f r = b + (ϖ : K) ^ n * e) : ∃ r ∈ R, f r = b := by
   have := h.t2
-  have hcl : IsClosed (f '' (R : Set K)) := (h.isCompact.image hf).isClosed
   have hb : b ∈ closure (f '' (R : Set K)) := by
     rw [mem_closure_iff_nhds]
     intro N hN
@@ -124,9 +123,8 @@ theorem Adic.approx (h : Adic R ϖ) (f : K → K) (hf : Continuous f) (b : K)
     obtain ⟨n, hn⟩ := h.basis _ hW
     obtain ⟨r, hr, e, he, hre⟩ := ha n
     exact ⟨f r, by rw [hre]; exact hn e he, r, hr, rfl⟩
-  rw [hcl.closure_eq] at hb
-  obtain ⟨r, hr, e⟩ := hb
-  exact ⟨r, hr, e⟩
+  rw [(h.isCompact.image hf).isClosed.closure_eq] at hb
+  simpa only [Set.mem_image, SetLike.mem_coe] using hb
 
 theorem Adic.unit_one (h : Adic R ϖ) (j : K) (hj : j ∈ I R (ϖ : K)) : ∃ v ∈ R, (1 + j) * v = 1 := by
   obtain ⟨r, hr, rfl⟩ := hj
@@ -173,7 +171,6 @@ theorem I_isOpen {R : Subring K} (ho : IsOpen (R : Set K)) (a : Kˣ) : IsOpen (I
   have : I R (a : K) = (fun x => ((a⁻¹ : Kˣ) : K) * x) ⁻¹' (R : Set K) := by
     ext x; constructor
     · rintro ⟨r, hr, rfl⟩
-      show ((a⁻¹ : Kˣ) : K) * ((a : K) * r) ∈ R
       simpa using hr
     · intro hx
       exact ⟨_, hx, by simp⟩
@@ -376,9 +373,7 @@ theorem int_mul {A B : Matrix (Fin m) (Fin m) K} (hA : ∀ i j, A i j ∈ R) (hB
 theorem quad_diff {Λ : Submodule R K} {G Y Y' : Matrix (Fin m) (Fin m) K} (hG : ∀ i j, G i j ∈ R)
     (hY : ∀ i j, Y i j ∈ R) (hY' : ∀ i j, Y' i j ∈ R) (hd : MemM Λ (Y - Y')) :
     MemM Λ (Y * G * Y - Y' * G * Y') := by
-  have e : Y * G * Y - Y' * G * Y' = (Y - Y') * (G * Y) + Y' * G * (Y - Y') := by
-    noncomm_ring
-  rw [e]
+  rw [show Y * G * Y - Y' * G * Y' = (Y - Y') * (G * Y) + Y' * G * (Y - Y') by noncomm_ring]
   exact (hd.mul_right (int_mul hG hY)).add (hd.mul_left (int_mul hY' hG))
 
 theorem Adic.sqrtM (h : Adic R ϖ) (G N : Matrix (Fin m) (Fin m) K) (hG : ∀ i j, G i j ∈ R)
@@ -609,7 +604,6 @@ theorem conj_identity (p : K) (Y N : Matrix (Fin m) (Fin m) K) (hs : Yᵀ = Y)
     (e : Y = N - p • (Y * HA K m * Y)) :
     (1 + (2 * p) • (HA K m * Y))ᵀ * HH K m * (1 + (2 * p) • (HA K m * Y)) =
       HH K m + (4 * ((m + 1 : ℕ) : K) * p) • N := by
-  have eN : N = Y + p • (Y * HA K m * Y) := by rw [eq_sub_iff_add_eq] at e; exact e.symm
   have e1 : HH K m * (HA K m * Y) = ((m + 1 : ℕ) : K) • Y := by
     rw [← Matrix.mul_assoc, HH_HA, Matrix.smul_mul, one_mul]
   have e2 : Y * HA K m * HH K m = ((m + 1 : ℕ) : K) • Y := by
@@ -617,7 +611,7 @@ theorem conj_identity (p : K) (Y N : Matrix (Fin m) (Fin m) K) (hs : Yᵀ = Y)
   rw [Matrix.transpose_add, Matrix.transpose_one, Matrix.transpose_smul, Matrix.transpose_mul, hs,
     HA_symm]
   simp only [add_mul, mul_add, one_mul, mul_one, Matrix.smul_mul, Matrix.mul_smul, e1, e2]
-  conv_rhs => rw [eN]
+  rw [(eq_sub_iff_add_eq.1 e).symm]
   simp only [Matrix.mul_assoc]
   module
 
@@ -933,9 +927,7 @@ theorem morse : MorseLemma := by
   obtain ⟨M0, hM0⟩ := h.inv_bounded hQ hQu
   obtain ⟨n0, hn0⟩ := h.root_bounded (m + 1) (by omega)
   obtain ⟨u4, hu4⟩ := hn (4 * (m + 1)) (by omega)
-  have h2 : IsUnit (2 : K) := by
-    have := hn 2 (by omega)
-    simpa using this
+  have h2 : IsUnit (2 : K) := by simpa using hn 2 (by omega)
   have hcv : ((u4 * ϖ : Kˣ) : K) = 4 * ((m + 1 : ℕ) : K) * (ϖ : K) := by
     rw [Units.val_mul, hu4]; push_cast; ring
   refine ⟨I R ((ϖ ^ (n0 + M0) * (u4 * ϖ) : Kˣ) : K), I_nhds h.isOpen _, fun B hB hBV z hz => ?_⟩
@@ -944,8 +936,7 @@ theorem morse : MorseLemma := by
     have h1 := hM0 _ hz ((((z⁻¹ : Kˣ) : K)) ^ (m + 1)) (by rw [← mul_pow]; simp)
     have e : ((ϖ : K) ^ M0 * ((z⁻¹ : Kˣ) : K)) ^ (m + 1) =
         ((ϖ : K) ^ M0) ^ m * ((ϖ : K) ^ M0 * (((z⁻¹ : Kˣ) : K)) ^ (m + 1)) := by ring
-    rw [e]
-    exact R.mul_mem (R.pow_mem (R.pow_mem h.mem _) _) h1
+    simpa only [e] using R.mul_mem (R.pow_mem (R.pow_mem h.mem _) _) h1
   obtain ⟨φ, h1, h2', h3⟩ := h.morse_local h2 m (u4 * ϖ) z hcv B hB.2.isClosed (fun b hb => by
     obtain ⟨r, hr, e⟩ := hBV hb
     refine ⟨_, R.mul_mem hz' hr, ?_⟩

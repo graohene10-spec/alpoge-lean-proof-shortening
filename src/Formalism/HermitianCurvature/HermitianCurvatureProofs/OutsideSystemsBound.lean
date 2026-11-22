@@ -219,10 +219,7 @@ theorem psd_diag {F : Finset α} {k : α → α → ℂ} (hk : TB.PSDOn F k) {x 
     (k x x).im = 0 ∧ 0 ≤ (k x x).re := by
   classical
   have h2 := (psdOn_iff_isPSD F k).1 hk (fun u => if u = x then 1 else 0)
-  have h1 := quad1 F k x hx
-  beta_reduce at h2
-  rw [h1] at h2
-  exact h2
+  simpa [hx, quad1 F k x hx] using h2
 
 theorem psd_off {F : Finset α} {k : α → α → ℂ} (hk : TB.PSDOn F k) {x y : α} (hx : x ∈ F) (hy : y ∈ F) :
     ‖k x y‖ ≤ (k x x).re + (k y y).re := by
@@ -440,13 +437,11 @@ theorem t_OutsideDomination : OutsideDomination := by
   congr 1
   by_cases h : t ∈ ⨅ p, L p
   · rw [if_pos h]
-    have h' : ∀ p, t ∈ L p := AddSubgroup.mem_iInf.1 h
-    exact Finset.prod_eq_one fun p _ => if_pos (h' p)
+    exact Finset.prod_eq_one fun p _ => if_pos (AddSubgroup.mem_iInf.1 h p)
   · rw [if_neg h]
-    have : ∃ p, t ∉ L p := by
-      by_contra hc
-      exact h (AddSubgroup.mem_iInf.2 fun p => by_contra fun hp => hc ⟨p, hp⟩)
-    obtain ⟨p, hp⟩ := this
+    rw [AddSubgroup.mem_iInf] at h
+    push Not at h
+    obtain ⟨p, hp⟩ := h
     exact Finset.prod_eq_zero (Finset.mem_univ p) (if_neg hp)
 
 theorem t_PhaseOk : PhaseOk := by

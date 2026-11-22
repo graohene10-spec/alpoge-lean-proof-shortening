@@ -266,8 +266,7 @@ theorem div_pi {ϖ : o} (hϖ : Irreducible ϖ) {m n : Type} (x : Matrix m n o)
   exact ⟨Matrix.of y, by ext a b; simp [hy]⟩
 
 theorem res_pi {ϖ : o} (hϖ : Irreducible ϖ) : IsLocalRing.residue o ϖ = 0 := by
-  rw [IsLocalRing.residue_eq_zero_iff, hϖ.maximalIdeal_eq]
-  exact Ideal.mem_span_singleton_self ϖ
+  simp [IsLocalRing.residue_eq_zero_iff, hϖ.maximalIdeal_eq]
 
 end DVR
 
@@ -399,12 +398,10 @@ variable [CommRing A]
 
 theorem block11_mul (x y : Matrix (Idx r k) (Idx r k) A) :
     b11 (x * y) = b11 x * b11 y + b12 x * b21 y + b13 x * b31 y := by
-  ext a b
-  simp [b11, b12, b13, b11, b21, b31, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
+  ext a b; simp [b11, b12, b13, b21, b31, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
 
 theorem one_block11 : b11 (1 : Matrix (Idx r k) (Idx r k) A) = 1 := by
-  ext a b
-  simp [b11, Matrix.one_apply]
+  (ext a b; simp [b11, Matrix.one_apply])
 
 theorem block11_map {B : Type} (f : A → B) (x : Matrix (Idx r k) (Idx r k) A) :
     b11 (x.map f) = (b11 x).map f := rfl
@@ -423,8 +420,7 @@ theorem block12_map {B : Type} (f : A → B) (x : Matrix (Idx r k) (Idx r k) A) 
 
 theorem block13_mul (x y : Matrix (Idx r k) (Idx r k) A) :
     b13 (x * y) = b11 x * b13 y + b12 x * b23 y + b13 x * b33 y := by
-  ext a b
-  simp [b11, b12, b13, b13, b23, b33, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
+  ext a b; simp [b11, b12, b13, b23, b33, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
 
 theorem block13_one : b13 (1 : Matrix (Idx r k) (Idx r k) A) = 0 := by
   ext a b
@@ -435,8 +431,7 @@ theorem block13_map {B : Type} (f : A → B) (x : Matrix (Idx r k) (Idx r k) A) 
 
 theorem block21_mul (x y : Matrix (Idx r k) (Idx r k) A) :
     b21 (x * y) = b21 x * b11 y + b22 x * b21 y + b23 x * b31 y := by
-  ext a b
-  simp [b21, b22, b23, b11, b21, b31, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
+  ext a b; simp [b11, b21, b22, b23, b31, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
 
 theorem one_block21 : b21 (1 : Matrix (Idx r k) (Idx r k) A) = 0 := by
   ext a b
@@ -447,8 +442,7 @@ theorem block21_map {B : Type} (f : A → B) (x : Matrix (Idx r k) (Idx r k) A) 
 
 theorem block22_mul (x y : Matrix (Idx r k) (Idx r k) A) :
     b22 (x * y) = b21 x * b12 y + b22 x * b22 y + b23 x * b32 y := by
-  ext a b
-  simp [b21, b22, b23, b12, b22, b32, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
+  ext a b; simp [b12, b21, b22, b23, b32, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
 
 theorem block22_one : b22 (1 : Matrix (Idx r k) (Idx r k) A) = 1 := by
   ext a b
@@ -459,8 +453,7 @@ theorem block22_map {B : Type} (f : A → B) (x : Matrix (Idx r k) (Idx r k) A) 
 
 theorem block23_mul (x y : Matrix (Idx r k) (Idx r k) A) :
     b23 (x * y) = b21 x * b13 y + b22 x * b23 y + b23 x * b33 y := by
-  ext a b
-  simp [b21, b22, b23, b13, b23, b33, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
+  ext a b; simp [b13, b21, b22, b23, b33, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
 
 theorem block23_one : b23 (1 : Matrix (Idx r k) (Idx r k) A) = 0 := by
   ext a b

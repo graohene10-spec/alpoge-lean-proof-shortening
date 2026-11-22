@@ -661,11 +661,10 @@ theorem admissible_valuation_zero (D : Formalism.BasicNotions.D7) (Y : FormalGro
   subst e
   obtain ⟨φ, hφ⟩ := h j hj La (c', L'') hLa hL'
   refine ⟨φ, fun f g hI G hG => ?_⟩
-  simp only [Nprime_zero, zpow_zero, Finset.prod_const_one, one_smul]
-  refine hφ f g (fun I n => ?_) G hG
-  have e2 : (shX X j).PI (rbX X j) (nuX X j) I = X.PI j I (fun _ => 0) := (PI_X X j I).symm
-  rw [e2]
-  exact hI I n
+  simpa only [Nprime_zero, zpow_zero, Finset.prod_const_one, one_smul] using
+    hφ f g (fun I n => by
+      rw [← PI_X X j I]
+      exact hI I n) G hG
 
 end G
 

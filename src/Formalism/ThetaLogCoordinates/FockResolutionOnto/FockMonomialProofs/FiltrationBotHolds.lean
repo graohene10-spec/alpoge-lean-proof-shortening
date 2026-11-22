@@ -45,18 +45,10 @@ theorem pow_mul_int_iff (v : σ) (e : ℕ) (a : MvPolynomial σ ℚ_[p]) :
 
 theorem pow_mul_order (v : σ) (e : ℕ) (h : MvPolynomial σ ℚ_[p]) :
     X v ^ e * h ∈ restrictSupport ℚ_[p] {m : σ →₀ ℕ | e ≤ m v} := by
-  classical
-  have c1 : ∀ (m : σ →₀ ℕ) (g' : MvPolynomial σ ℚ_[p]), coeff m (X v ^ e * g') =
-      if e ≤ m v then coeff (m - Finsupp.single v e) g' else 0 := by
-    intro m g'
-    rw [X_pow_eq_monomial, coeff_monomial_mul']
-    simp only [Finsupp.single_le_iff, one_mul]
-  rw [mem_restrictSupport_iff]
-  intro m hm
-  rw [Finset.mem_coe, mem_support_iff, c1] at hm
-  split_ifs at hm with hle
-  · exact hle
-  · exact absurd rfl hm
+  rw [pow_mul_mem, mem_restrictSupport_iff]
+  intro m _
+  simp only [Set.mem_ofPred_eq, Finsupp.add_apply, Finsupp.single_eq_same]
+  omega
 
 theorem exists_pow_div (v : σ) (e : ℕ) (f : MvPolynomial σ ℚ_[p])
     (hf : f ∈ restrictSupport ℚ_[p] {m : σ →₀ ℕ | e ≤ m v}) : ∃ h, f = X v ^ e * h := by

@@ -33,10 +33,9 @@ lemma gnExt_mulVec {ι : Type*} [Fintype ι] [DecidableEq ι] (p : ι → Prop) 
     simp [hne]
 
 lemma gn_re_star_mul_self (w : ℂ) : (star w * w).re = Complex.normSq w := by
-  have h1 : star w * w = (Complex.normSq w : ℂ) := by
-    rw [Complex.normSq_eq_conj_mul_self]
-    first | rfl | skip
-  rw [h1, Complex.ofReal_re]
+  change ((starRingEnd ℂ) w * w).re = Complex.normSq w
+  rw [← Complex.normSq_eq_conj_mul_self]
+  exact Complex.ofReal_re _
 
 lemma gn_quad_eig {ι : Type*} [Fintype ι] [DecidableEq ι] {A : Matrix ι ι ℂ} (hA : A.IsHermitian)
     (d : ι → ℂ) :
@@ -155,10 +154,9 @@ lemma gn_Hpk_herm (k r : ℕ) : (Hpk k r).IsHermitian := by
 
 lemma gn_gramM_herm (k r : ℕ) (z z' : Fin (2 * r + k + 1) → ℂ)
     (g : Matrix (Fin (2 * r + k + 1)) (Fin (2 * r + k + 1)) ℂ) : (gramM k r z z' g).IsHermitian := by
-  have hH := gn_Hpk_herm k r
-  unfold Matrix.IsHermitian at hH ⊢
+  unfold Matrix.IsHermitian
   rw [gn_gramM_eq, Matrix.conjTranspose_mul, Matrix.conjTranspose_mul,
-    Matrix.conjTranspose_conjTranspose, hH, Matrix.mul_assoc]
+    Matrix.conjTranspose_conjTranspose, (show (Hpk k r)ᴴ = Hpk k r from gn_Hpk_herm k r), Matrix.mul_assoc]
 
 lemma gn_quad_B (k r : ℕ) (z z' : Fin (2 * r + k + 1) → ℂ)
     (g : Matrix (Fin (2 * r + k + 1)) (Fin (2 * r + k + 1)) ℂ) (c : Fin (r + 1) ⊕ Fin (r + 1) → ℂ) :

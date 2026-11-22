@@ -84,9 +84,7 @@ theorem lehwShift_pow {R : Type*} [CommRing R] {r n : ℕ} {w : Fin r × Fin n �
     (hP : LehwShift w P μ δ) (e : ℕ) : LehwShift w (P ^ e) (e • μ) δ := by
   induction e with
   | zero => simpa using lehwShift_one (R := R) w δ
-  | succ e ih =>
-    rw [pow_succ, succ_nsmul]
-    exact lehwShift_mul ih hP
+  | succ e ih => simpa [pow_succ, succ_nsmul, add_mul] using lehwShift_mul ih hP
 
 theorem lehwShift_prod {R : Type*} [CommRing R] {r n : ℕ} {w : Fin r × Fin n → ℤ} {ι : Type*}
     (s : Finset ι) (P : ι → Polynomial (MvPolynomial (Fin r × Fin n) R)) (μ : ι → ℤ) (δ : ℤ)

@@ -101,11 +101,9 @@ variable {ι ζ : Type*} {n : ℕ} {L : Type*} [CommRing L] (isVec : ι → Bool
 
 theorem wExp_add (last : Bool) (e e' : LVar ι ζ n →₀ ℕ) :
     wExp isVec S last (e + e') = wExp isVec S last e + wExp isVec S last e' := by
-  have h : ∀ e : LVar ι ζ n →₀ ℕ,
-      wExp isVec S last e = e.sum fun x d => (d : ℤ) * wtX isVec S last x := fun e => rfl
-  rw [h, h, h, Finsupp.sum_add_index']
-  · intro x; simp
-  · intro x a b; push_cast; ring
+  exact Finsupp.sum_add_index' (f := e) (g := e')
+    (h := fun x d => (d : ℤ) * wtX isVec S last x)
+    (fun x => by simp) (fun x a b => by push_cast; ring)
 
 theorem wExp_weight (last : Bool) (e : LVar ι ζ n →₀ ℕ) :
     wExp isVec S last e = Finsupp.weight (wtX isVec S last) e := by
@@ -177,8 +175,7 @@ theorem wge_X (x : LVar ι ζ n) (hx : wtX isVec S last x = 0) :
     by_contra hne
     rw [if_neg hne] at he
     exact he rfl
-  rw [← h1, wExp_single, hx]
-  simp
+  simp [← h1, wExp_single, hx]
 
 theorem wge_hom {H : MvPolynomial (LVar ι ζ n) L} {a w : ℤ}
     (h : IsWeightedHomogeneous (wtX isVec S last) H w) (ha : H ≠ 0 → a ≤ s * w) :

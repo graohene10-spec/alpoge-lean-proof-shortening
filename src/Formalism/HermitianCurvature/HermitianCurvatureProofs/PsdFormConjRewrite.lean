@@ -220,8 +220,7 @@ theorem t_TowersAgree : TowersAgree := by
   unfold TowersAgree
   intro E _ _ T i
   ext p
-  rw [pt_iff T.Sg p i]
-  exact T.isTower i p
+  exact (T.isTower i p).trans (pt_iff T.Sg p i).symm
 
 end Tower
 

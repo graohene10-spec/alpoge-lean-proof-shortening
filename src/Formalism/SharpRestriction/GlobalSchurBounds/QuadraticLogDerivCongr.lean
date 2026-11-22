@@ -342,13 +342,11 @@ theorem card_Tau (D : D7) : Fintype.card D.what₂.Tau = D.R.f := by
 
 theorem image_plMap (D : D7) (e : Formalism.HC.Frame) (he : D.R.toFrame = e) :
     (Finset.univ : Finset D.what₂.Tau).image (plMap D e) = PhiSet (H := e.A) := by
-  apply Finset.eq_of_subset_of_card_le
-  · intro g hg
-    obtain ⟨τ, -, rfl⟩ := Finset.mem_image.mp hg
-    exact plMap_mem D e τ
+  refine Finset.eq_of_subset_of_card_le ?_ ?_
+  · exact Finset.image_subset_iff.mpr (fun τ _ => plMap_mem D e τ)
   · rw [Finset.card_image_of_injective _ (plMap_injective D e he), Finset.card_univ, card_Tau, card_PhiSet,
       ← he]
-    exact le_of_eq rfl
+    exact le_rfl
 
 theorem sum_PhiSet (D : D7) (e : Formalism.HC.Frame) (he : D.R.toFrame = e) (G : E0 × e.A → ℝ) :
     ∑ g ∈ PhiSet (H := e.A), G g = ∑ τ : D.what₂.Tau, G (plMap D e τ) := by
@@ -645,9 +643,8 @@ theorem data_Count5 (C : Consts) (h : ∀ u0 : M.e.A, Count_at (Fm.L x (M.pt u0)
   rw [hs, M.s_m u0, M.s_lg u0, M.s_La hx u0, M.s_k u0] at h1
   rw [M.s_m u0, M.s_sc hx u0] at h2
   refine ⟨h1, h2, fun u' => ?_⟩
-  have h4 := h3 u'
-  rw [M.s_k u0] at h4
-  exact h4
+  rw [M.s_k u0] at h3
+  exact h3 u'
 
 include hx in
 theorem data_Slopes (C : Consts) (h : ∀ u0 : M.e.A, SlopesM_at (Fm.L x (M.pt u0)) C.cSlope) :
@@ -787,8 +784,7 @@ theorem ident (ell : AddChar (E0 × M.e.A) ℂ → ℂ) (hl : (Fm.L x M.i0).logD
 
 theorem top_of (u0 : M.e.A) {n : ℕ} (hn : n ∈ Fm.TTn x) :
     ∃ t : (Fm.D x (M.pt u0)).host.TT, (t : (Fm.D x (M.pt u0)).R.A).val = n := by
-  have hn' : n ∈ (Fm.D x (M.pt u0)).host.TT.image Formalism.HC.Frame.A.val := by rw [Fm.TT_eq]; exact hn
-  obtain ⟨s, hs, hsn⟩ := Finset.mem_image.mp hn'
+  obtain ⟨s, hs, hsn⟩ := Finset.mem_image.mp ((by rw [Fm.TT_eq]; exact hn) : n ∈ (Fm.D x (M.pt u0)).host.TT.image Formalism.HC.Frame.A.val)
   exact ⟨⟨s, hs⟩, hsn⟩
 
 theorem reads (u0 : M.e.A) : Reads (Fm.L x (M.pt u0)) M.e M.m M.TT M.a (M.w u0) :=
@@ -1504,8 +1500,7 @@ theorem four_le (x : ℝ) (h3 : 3 ≤ x) : 4 * (x + 1) ≤ x ^ 3 := by
 theorem f_le (sN : SizeN L) : (D.R.f : ℝ) ≤ 2 * L.sc.x ^ 3 := by
   have h := n_le_x_cubed sN
   rw [show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num, rpow_nat] at h
-  have : (D.R.f : ℝ) = 2 * (D.R.n : ℝ) := by unfold Ranks.f; push_cast; ring
-  rw [this]; linarith
+  unfold Ranks.f; push_cast; linarith
 
 theorem winJ (sN : SizeN L) (c6 : ℝ) (h3 : 3 ≤ L.sc.x)
     (hE3 : L.sc.x ^ (7 : ℝ) ≤ Real.exp (c6 * L.sc.x ^ (L.sc.eps / 8))) :
@@ -1798,13 +1793,8 @@ theorem size_windows_of_thick_set {eps : ℝ} (Fm : FamP eps) (hT2 : ThickSetEve
   obtain ⟨a7, h7⟩ := ev_loglog ka hka0
   refine ⟨5, Fm.x1 + 3 + |a1| + |a3| + |a4| + |a5| + |a6| + |a7| + |aT|, by norm_num, fun x hx i => ?_⟩
   have hpos := Fm.one_lt_family_threshold
-  have n1 := abs_nonneg a1
-  have n3 := abs_nonneg a3
-  have n4 := abs_nonneg a4
-  have n5 := abs_nonneg a5
-  have n6 := abs_nonneg a6
-  have n7 := abs_nonneg a7
-  have nT := abs_nonneg aT
+  obtain ⟨n1, n3, n4, n5, n6, n7, nT⟩ : 0 ≤ |a1| ∧ 0 ≤ |a3| ∧ 0 ≤ |a4| ∧ 0 ≤ |a5| ∧ 0 ≤ |a6| ∧ 0 ≤ |a7| ∧ 0 ≤ |aT| :=
+    ⟨abs_nonneg a1, abs_nonneg a3, abs_nonneg a4, abs_nonneg a5, abs_nonneg a6, abs_nonneg a7, abs_nonneg aT⟩
   have hx1 : Fm.x1 < x := by linarith
   have hx3 : 3 ≤ x := by linarith
   have hone : 1 ≤ x := by linarith

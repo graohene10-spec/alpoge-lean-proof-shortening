@@ -19,7 +19,6 @@ theorem finrank_host (D : D7) : Module.finrank ℚ D.host.E = 2 * D.R.f := by
   have h1 : Nat.card (D.R.GG) = Nat.card (D.host.E →+* ℂ) := Nat.card_congr (Equiv.ofBijective _ hb)
   have h2 : Nat.card (D.host.E →+* ℂ) = Module.finrank ℚ D.host.E := by
     rw [Nat.card_eq_fintype_card]; exact NumberField.Embeddings.card D.host.E ℂ
-  have h3 := (factCardPsi D.R D.host).1
   have h4 : Nat.card (D.R.GG) = 4 * D.R.ord := D.R.natCard_GG
   rw [← h2, ← h1, h4]
   show 4 * D.R.ord = 2 * (2 * D.R.ord)
@@ -577,8 +576,7 @@ theorem familyLevelSectionB_holds {eps : ℝ} (Fm : Formalism.MainNotions.FamP e
     obtain ⟨i⟩ := Fm.Ix_zero
     rw [← Fm.L_eps 0 i]; exact (Fm.L 0 i).sc.eps_pos
   obtain ⟨x0, hx0⟩ := levelStatement_eventually eps C3 C0 heps
-  refine ⟨x0, fun x hx hx1 i => ?_⟩
-  exact hx0 (Fm.D x i) (Fm.ex x hx1 i).lev (Fm.L x i).sc (Fm.L_eps x i) (by rw [Fm.L_x x i hx1]; exact hx) (h4 x hx1 i)
+  exact ⟨x0, fun x hx hx1 i => hx0 (Fm.D x i) (Fm.ex x hx1 i).lev (Fm.L x i).sc (Fm.L_eps x i) (by rw [Fm.L_x x i hx1]; exact hx) (h4 x hx1 i)⟩
 
 theorem familyLevel_of_classes {eps : ℝ} (Fm : Formalism.MainNotions.FamP eps) (C3 : ℝ)
     (hfin : ∀ x (i : Fm.Ix x), Module.finrank ℚ (Fm.D x i).host.E = 2 * (Fm.D x i).R.f)
@@ -1097,8 +1095,7 @@ theorem standard_lattice_eq_telescope_lattice (K : Type) [Field K] [NumberField 
     stdLat K M = Formalism.HermitianLatticesTheory.massTelescope_lat K M := by
   unfold stdLat Formalism.HermitianLatticesTheory.massTelescope_lat
   congr 1
-  ext v
-  simp [Pi.basisFun_apply]
+  simp [Set.ext_iff, Pi.basisFun_apply]
 
 theorem stdForm_symm (K : Type) [Field K] [NumberField K] [StarRing K] (M : ℕ) : (stdForm K M).IsSymm := by
   rw [standard_form_eq_telescope_form]; exact Formalism.HermitianLatticesTheory.massTelescope_symm K M
@@ -1130,15 +1127,14 @@ theorem massRatio_of_definiteVolume (D : D7) (h2 : Conclusion2 D) (hv : Definite
   have hW : W.SigOK := Formalism.BasicNotions.Examples₂.posSpace_sigOK _ M
   obtain ⟨x, -, W', ι, -, -, hW', hs', hr⟩ := h2 W M 0 hW (fun _ => rfl) hM true (by simp; omega)
   have hrk : W'.rank = M - 1 := by
-    have := Formalism.BasicNotions.sig_sum W' hW' D.host.φ₀
-    rw [hs' D.host.φ₀] at this
-    simpa using this.symm
+    simpa [hs' D.host.φ₀] using (Formalism.BasicNotions.sig_sum W' hW' D.host.φ₀).symm
   have e1 : D.vol W = massI D M := hv W hW (fun _ => rfl)
   have e2 : D.vol W' = massI D (M - 1) := by
-    rw [← hrk]
-    exact hv W' hW' (fun τ => by rw [hs' τ, hrk]; rfl)
-  rw [← e1, ← e2]
-  exact hr
+    simpa [hrk] using hv W' hW' (fun τ => by rw [hs' τ, hrk]; rfl)
+  have hsW : W.sig D.host.φ₀ = (M, 0) := rfl
+  have hWr : W.rank = M := by
+    simpa [hsW] using (Formalism.BasicNotions.sig_sum W hW D.host.φ₀).symm
+  simpa [e1, e2, hWr] using hr
 
 theorem volume_eq_mass_of_definite (D : D7) (h2 : Conclusion2 D) (hv : DefiniteVolumeEqMass D) : VolumeEqMass₂ D := by
   let _ := D.host.cmStar
@@ -1236,8 +1232,7 @@ theorem trivialClass_of_landherr (D : D7) (h2 : Conclusion2 D) (hs : LandherrSma
   let _ := D.host.cmStar
   have hpos := Formalism.BasicNotions.baseSpace_posDef D.R D.host.F D.sp
   have h := exists_orthogonal_lattice (D.sp.X 0) (landherr_of_small D h2 hs _ (D.sp.X 0) rfl (D.sp.X_sig 0) hpos)
-  rw [D.sp.rank0] at h
-  exact h
+  rwa [D.sp.rank0] at h
 
 theorem levelStatement_of_landherrSmall (D : D7) (Lv : LevelData D) (C3 : ℝ)
     (hfin : Module.finrank ℚ D.host.E = 2 * D.R.f)
@@ -1356,9 +1351,8 @@ theorem tMap_lattice (e : V ≃ₗ[K] V') (M : Submodule (𝓞 K) V) (hM : Submo
     Submodule.IsLattice K (tMap e M) where
   fg := hM.fg.map _
   span_eq_top := by
-    have h1 : ((tMap e M : Submodule (𝓞 K) V') : Set V') = (e : V →ₗ[K] V') '' (M : Set V) := by
-      unfold tMap; rw [Submodule.map_coe]; rfl
-    rw [h1, Submodule.span_image, hM.span_eq_top, Submodule.map_top]
+    change Submodule.span K ((e : V →ₗ[K] V') '' (M : Set V)) = ⊤
+    rw [Submodule.span_image, hM.span_eq_top, Submodule.map_top]
     exact LinearEquiv.range e
 
 theorem tMap_genus (e : V ≃ₗ[K] V') (he : ∀ x y, h' (e x) (e y) = h x y) (L M : Submodule (𝓞 K) V)
@@ -1459,11 +1453,9 @@ theorem mass_ortho (K : Type) [Field K] [NumberField K] [StarRing K] (hK : Forma
     ext y
     constructor
     · rintro ⟨_, ⟨i, rfl⟩, rfl⟩
-      refine ⟨i, ?_⟩
-      exact (heB i).symm
+      exact ⟨i, (heB i).symm⟩
     · rintro ⟨i, rfl⟩
-      refine ⟨b i, ⟨i, rfl⟩, ?_⟩
-      exact heB i
+      exact ⟨b i, ⟨i, rfl⟩, heB i⟩
   have hMB := Formalism.HermitianLatticesTheory.final_massBasic K (Fin n → K) (stdForm K n) (stdForm_symm K n)
     (by rw [standard_form_eq_telescope_form]; exact Formalism.HermitianLatticesTheory.massTelescope_def K hK n) (stdLat K n)
     (by rw [standard_lattice_eq_telescope_lattice]; exact Formalism.HermitianLatticesTheory.massTelescope_isLattice K n)
@@ -2305,7 +2297,6 @@ theorem volumeMass_of_unfolding (D : D7) (h : VolumeRatio₂ D) : Conclusion2 D 
     (by omega) (host_v_pos D) (lVal_pos D _ (by omega))
   rw [mass_ratio_eq]
   unfold ratioH
-  refine Eq.trans ?_ key
-  rw [← h5, inv_div]
+  simpa only [← h5, inv_div] using key
 
 end Formalism.MainNotions.StandardLattice

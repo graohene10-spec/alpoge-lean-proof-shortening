@@ -27,8 +27,7 @@ theorem compW_fix (w : (σ →₀ ℕ) → Fin n → ℤ) (μ ν : Fin n → ℤ
   rw [coeff_compW]
   by_cases h0 : coeff m x = 0
   · split_ifs <;> simp [h0]
-  · rw [hx m h0]
-    split_ifs <;> simp
+  · by_cases h : ν = μ <;> simp [h, hx m h0]
 
 theorem compW_isW (w : (σ →₀ ℕ) → Fin n → ℤ) (μ : Fin n → ℤ) (x : MvPolynomial σ ℚ_[p]) :
     ∀ m, coeff m (compW p w μ x) ≠ 0 → w m = μ := by
@@ -149,8 +148,7 @@ theorem pderiv_X_mul (j b : Fin r) (G : MvPolynomial (Fin (K + 1) × Fin r) ℚ_
   rw [pderiv_mul, pderiv_X]
   by_cases h : j = b
   · subst h; simp
-  · have h' : ((Fin.last K, b) : Fin (K + 1) × Fin r) ≠ (Fin.last K, j) := fun h' => h (Prod.mk.inj h').2.symm
-    rw [Pi.single_apply, if_neg h', if_neg h, zero_mul]
+  · simp [h, Ne.symm h]
 
 theorem glJ_X_mul (LL : Letters (K + 1)) (a b d : Fin r) (G : MvPolynomial (Fin (K + 1) × Fin r) ℚ_[p]) :
     glAct p LL K a b (X (Fin.last K, d) * G) = X (Fin.last K, d) * glAct p LL K a b G := by
@@ -414,7 +412,6 @@ theorem coeff_GX_comp (LL : Letters (K + 1)) (c : ℤ) (hv : LL.vec (Fin.last K)
 end GX
 
 theorem gl_action_exists : GXExists := by
-  intro p _ K s LL c hv
-  exact ⟨GX p LL c hv, GX_E LL c hv, fun μ x m => coeff_GX_comp LL c hv μ x m⟩
+  exact fun p [Fact p.Prime] K s LL c hv => ⟨GX p LL c hv, GX_E LL c hv, coeff_GX_comp LL c hv⟩
 
 end Formalism.InvariantFactorPaths.L4

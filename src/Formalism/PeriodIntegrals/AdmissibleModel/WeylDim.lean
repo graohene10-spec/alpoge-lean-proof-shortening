@@ -147,16 +147,13 @@ theorem ext_sum {k : ℕ} (μ : Fin (k + 1) → ℤ) (hμ : 0 ≤ μ (Fin.last k
 
 theorem ext_intl {k : ℕ} (μ : Fin (k + 1) → ℤ) (hμ : 0 ≤ μ (Fin.last k)) (g : UU k μ) : Intl (ext μ g.1) := by
   intro l j hlj a
-  have hl : l.val < k := by have := j.isLt; omega
-  obtain ⟨l', rfl⟩ : ∃ l' : Fin k, l'.castSucc = l := ⟨⟨l.val, hl⟩, rfl⟩
+  obtain ⟨l', rfl⟩ : ∃ l' : Fin k, l'.castSucc = l := ⟨⟨l.val, by have := j.isLt; omega⟩, rfl⟩
   induction a using Fin.lastCases with
   | last =>
+    obtain rfl : j = l'.succ := Fin.ext (by rw [Fin.val_succ, hlj, Fin.val_castSucc])
     rw [sum_le_last, sum_lt_last]
     simp only [ext_cc]
-    have hj : j = l'.succ := Fin.ext (by rw [Fin.val_succ, hlj, Fin.coe_castSucc])
-    have h1 := ext_sum μ hμ g j
-    have h2 : μ j ≤ ((∑ b, g.1 b l' : ℕ) : ℤ) := by rw [hj]; exact ((mem_gtBox' μ _).1 g.2.2 l').1
-    have h3 : ((∑ b, ext μ g.1 b j : ℕ) : ℤ) ≤ ((∑ b, g.1 b l' : ℕ) : ℤ) := by rw [h1]; exact h2
+    have h3 := (ext_sum μ hμ g (l'.succ)).trans_le ((mem_gtBox' μ _).1 g.2.2 l').1
     exact_mod_cast h3
   | cast a =>
     rw [sum_le_castSucc, sum_lt_castSucc]

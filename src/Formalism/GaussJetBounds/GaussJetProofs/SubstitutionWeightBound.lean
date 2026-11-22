@@ -44,9 +44,8 @@ theorem wtGe_add {pi : ℝ} (h0 : 0 < pi) (h1 : pi ≤ 1) {r : ι → ℝ} {w1 w
     WtGe pi r (min w1 w2) (f + g) := by
   intro n
   rw [monoWtGe_iff, map_add]
-  refine (IsUltrametricDist.norm_add_le_max _ _).trans (max_le ?_ ?_)
-  · exact wtGe_mono h0 h1 (min_le_left w1 w2) hf n
-  · exact wtGe_mono h0 h1 (min_le_right w1 w2) hg n
+  exact (IsUltrametricDist.norm_add_le_max _ _).trans
+    (max_le (wtGe_mono h0 h1 (min_le_left w1 w2) hf n) (wtGe_mono h0 h1 (min_le_right w1 w2) hg n))
 
 theorem wtGe_sum {pi : ℝ} (h0 : 0 < pi) {r : ι → ℝ} {wt : ℝ} {α : Type w} (s : Finset α)
     (F : α → MvPowerSeries ι K) (h : ∀ i ∈ s, WtGe pi r wt (F i)) :
@@ -64,8 +63,7 @@ theorem wtGe_mul {pi : ℝ} (h0 : 0 < pi) {r : ι → ℝ} {w1 w2 : ℝ}
   rw [monoWtGe_iff, MvPowerSeries.coeff_mul]
   refine IsUltrametricDist.norm_sum_le_of_forall_le_of_nonneg (Real.rpow_nonneg h0.le _)
     fun x hx => ?_
-  rw [Finset.HasAntidiagonal.mem_antidiagonal] at hx
-  rw [norm_mul, ← hx, dot_add]
+  rw [norm_mul, ← (Finset.HasAntidiagonal.mem_antidiagonal.mp hx), dot_add]
   calc ‖MvPowerSeries.coeff x.1 f‖ * ‖MvPowerSeries.coeff x.2 g‖
       ≤ pi ^ (w1 - dot x.1 r) * pi ^ (w2 - dot x.2 r) :=
         mul_le_mul (hf x.1) (hg x.2) (norm_nonneg _) (Real.rpow_nonneg h0.le _)
@@ -99,14 +97,11 @@ theorem norm_finsum_le_of {K : Type u} [NormedField K] [IsUltrametricDist K] {α
 theorem substitution_weight_bound : SubstWt.{u, v, w} := by
   intro K _ _ pi h0 h1 σ τ _ a r r' wt f ha0 ha hf
   classical
-  have hs : MvPowerSeries.HasSubst a := MvPowerSeries.hasSubst_of_constantCoeff_zero ha0
-  have hp : ∀ d : σ →₀ ℕ, WtGe pi r' (dot d r) (d.prod fun s e => a s ^ e) := by
-    intro d
-    have := wtGe_prod h0 d.support (fun s => (d s : ℝ) * r s) (fun s => a s ^ d s)
-      fun s _ => wtGe_pow h0 (ha s) (d s)
-    simpa [dot, Finsupp.sum, Finsupp.prod] using this
+  have hp : ∀ d : σ →₀ ℕ, WtGe pi r' (dot d r) (d.prod fun s e => a s ^ e) := fun d => by
+    simpa [dot, Finsupp.sum, Finsupp.prod] using
+      (wtGe_prod h0 d.support (fun s => (d s : ℝ) * r s) (fun s => a s ^ d s) fun s _ => wtGe_pow h0 (ha s) (d s))
   intro m
-  rw [monoWtGe_iff, MvPowerSeries.coeff_subst hs]
+  rw [monoWtGe_iff, MvPowerSeries.coeff_subst (MvPowerSeries.hasSubst_of_constantCoeff_zero ha0)]
   refine norm_finsum_le_of (Real.rpow_nonneg h0.le _) fun d => ?_
   rw [smul_eq_mul, norm_mul]
   calc ‖MvPowerSeries.coeff d f‖ * ‖MvPowerSeries.coeff m (d.prod fun s e => a s ^ e)‖

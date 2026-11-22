@@ -21,24 +21,21 @@ variable {K : Type} [Field K] [NumberField K] [StarRing K]
 
 theorem val_int (w : HeightOneSpectrum (𝓞 K)) (x : 𝓞 K) (hx : x ≠ 0) :
     w.valuation K (x : K) = WithZero.exp (-(vw w (x : K))) := by
-  have h1 : (x : K) = algebraMap (𝓞 K) K x := rfl
-  rw [h1, IsDedekindDomain.HeightOneSpectrum.valuation_of_algebraMap,
+  rw [show (x : K) = algebraMap (𝓞 K) K x from rfl,
+    IsDedekindDomain.HeightOneSpectrum.valuation_of_algebraMap,
     IsDedekindDomain.HeightOneSpectrum.intValuation_if_neg _ hx]
   congr 1
   rw [neg_inj]
-  symm
   unfold vw
   rw [← FractionalIdeal.coeIdeal_span_singleton, FractionalIdeal.count_coe K w (by simpa using hx)]
 
 theorem val_eq (w : HeightOneSpectrum (𝓞 K)) (a : K) (ha : a ≠ 0) :
     w.valuation K a = WithZero.exp (-(vw w a)) := by
   obtain ⟨x, y, hy, rfl⟩ := IsFractionRing.div_surjective (A := 𝓞 K) a
-  have hx0 : algebraMap (𝓞 K) K x ≠ 0 := (div_ne_zero_iff.mp ha).1
   have hy0 : algebraMap (𝓞 K) K y ≠ 0 := (div_ne_zero_iff.mp ha).2
-  have hx : x ≠ 0 := fun h => hx0 (by rw [h, map_zero])
-  have hy1 : y ≠ 0 := fun h => hy0 (by rw [h, map_zero])
+  have hx : x ≠ 0 := fun h => ha (by simp [h])
   have vx := val_int w x hx
-  have vy := val_int w y hy1
+  have vy := val_int w y (nonZeroDivisors.ne_zero hy)
   rw [show ((x : K)) = algebraMap (𝓞 K) K x from rfl] at vx
   rw [show ((y : K)) = algebraMap (𝓞 K) K y from rfl] at vy
   have hmul : vw w (algebraMap (𝓞 K) K x) =

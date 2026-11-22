@@ -163,14 +163,11 @@ variable (X : Fields)
 theorem conjO_coe (x : 𝓞 X.E) : ((X.conjO x : 𝓞 X.E) : X.E) = star (x : X.E) := rfl
 
 theorem conjO_conjO (x : 𝓞 X.E) : X.conjO (X.conjO x) = x := by
-  apply RingOfIntegers.ext
-  rw [conjO_coe, conjO_coe, star_star]
+  exact RingOfIntegers.ext (by rw [conjO_coe, conjO_coe, star_star])
 
 theorem absNorm_natCast (hrank : Module.finrank ℚ X.E = 2) (p : ℕ) :
     Ideal.absNorm (Ideal.span {(p : 𝓞 X.E)}) = p ^ 2 := by
-  rw [Ideal.absNorm_span_singleton]
-  have h : (p : 𝓞 X.E) = algebraMap ℤ (𝓞 X.E) (p : ℤ) := by simp
-  rw [h, Algebra.norm_algebraMap, RingOfIntegers.rank, hrank]
+  rw [Ideal.absNorm_span_singleton, show (p : 𝓞 X.E) = algebraMap ℤ (𝓞 X.E) (p : ℤ) from by simp, Algebra.norm_algebraMap, RingOfIntegers.rank, hrank]
   simp [Int.natAbs_pow]
 
 theorem divs_of_norm (hrank : Module.finrank ℚ X.E = 2) {π : 𝓞 X.E} {p : ℕ} (hp : p.Prime)
@@ -251,8 +248,7 @@ def iQb : Qb := Classical.choose (exists_sqrt (-((1 : ℕ) : ℤ)))
 theorem iQb_mem : iQb ∈ sqrts (-((1 : ℕ) : ℤ)) := Classical.choose_spec (exists_sqrt (-((1 : ℕ) : ℤ)))
 
 theorem iQb_sq : iQb ^ 2 = -1 := by
-  have h : iQb ^ 2 = ((-((1 : ℕ) : ℤ) : ℤ) : Qb) := iQb_mem
-  rw [h]; simp
+  simpa [sqrts] using iQb_mem
 
 theorem conj_iQb : conjQb ι iQb = -iQb := by
   have h : (conjQb ι iQb) ^ 2 = iQb ^ 2 := by rw [← map_pow, iQb_sq, map_neg, map_one]
@@ -335,15 +331,13 @@ section Roots
 
 theorem hasEnoughRoots (ι : Qb →+* ℂ) (LL : Fld) {N n : ℕ} (hN : 0 < N) (hn : n ∣ N) (hLL : cycQ N ≤ LL) :
     HasEnoughRootsOfUnity (CoF ι LL) n := by
-  have hn0 : 0 < n := Nat.pos_of_dvd_of_pos hn hN
-  have : NeZero n := ⟨hn0.ne'⟩
+  have : NeZero n := ⟨(Nat.pos_of_dvd_of_pos hn hN).ne'⟩
   obtain ⟨ζ, hζ⟩ := HasEnoughRootsOfUnity.exists_primitiveRoot Qb n
-  have hmem : ζ ∈ LL := by
-    apply hLL
+  have hmem : ζ ∈ LL := hLL (by
     apply subset_adjoin
     show ζ ^ N = 1
     obtain ⟨c, rfl⟩ := hn
-    rw [pow_mul, hζ.pow_eq_one, one_pow]
+    rw [pow_mul, hζ.pow_eq_one, one_pow])
   refine ⟨⟨CoF.mk ι LL ζ hmem, ?_⟩, inferInstance⟩
   exact IsPrimitiveRoot.of_map_of_injective (f := CoF.val ι LL) (by simpa using hζ) (CoF.val_injective ι LL)
 
@@ -471,11 +465,9 @@ theorem gaussian_field_le_cyclotomic : KQ 1 ≤ cycQ 780 := by
   apply adjoin.mono
   intro z hz
   have h : z ^ 2 = -1 := by
-    have h1 : z ^ 2 = ((-((1 : ℕ) : ℤ) : ℤ) : Qb) := hz
-    rw [h1]; simp
+    simpa using (show z ^ 2 = ((-((1 : ℕ) : ℤ) : ℤ) : Qb) from hz)
   show z ^ 780 = 1
-  have : z ^ 780 = (z ^ 2) ^ 390 := by rw [← pow_mul]
-  rw [this, h]
+  rw [show z ^ 780 = (z ^ 2) ^ 390 by rw [← pow_mul], h]
   norm_num
 
 instance fin_cyc : FiniteDimensional ℚ (cycQ 780) := fin_adjoin (finite_pow_eq 780 (by norm_num) 1)

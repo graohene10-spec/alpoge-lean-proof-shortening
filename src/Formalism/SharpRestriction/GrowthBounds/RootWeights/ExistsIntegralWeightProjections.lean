@@ -66,11 +66,9 @@ theorem exists_integral_weight_projections [CharZero (KK O)] (E : GLOps n (KK O)
       (∀ mu, ∀ x ∈ weightSp E mu, P mu x = x) ∧
       (∀ mu, ∀ nu ∈ F, nu ≠ mu → ∀ x ∈ weightSp E nu, P mu x = 0) := by
   choose P g hg1 hg0 hgw hgM using fun mu => exists_integral_weight_projection E mu F
-  refine ⟨P, fun mu M hM x hx => hgM mu M hM x hx, fun mu x hx => ?_, fun mu nu hnu hne x hx => ?_⟩
-  · rw [hgw mu mu x hx, hg1 mu]
-    simp
-  · rw [hgw mu nu x hx, hg0 mu nu hnu hne]
-    simp
+  refine ⟨P, hgM, fun mu x hx => ?_, fun mu nu hnu hne x hx => ?_⟩
+  · simp [hgw mu mu x hx, hg1 mu]
+  · simp [hgw mu nu x hx, hg0 mu nu hnu hne]
 
 theorem sum_weight_projections_eq_one {E : GLOps n (KK O) V} {F : Finset (Fin n → ℤ)}
     (hF : (⊤ : Submodule (KK O) V) ≤ ⨆ nu ∈ F, weightSp E nu) {P : (Fin n → ℤ) → Module.End (KK O) V}

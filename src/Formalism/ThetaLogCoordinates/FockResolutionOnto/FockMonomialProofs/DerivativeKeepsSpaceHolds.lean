@@ -195,9 +195,7 @@ theorem pol_zero_free (LL : Letters (K + 1)) (x : MvPolynomial (Fin (K + 1) × F
   rw [Pol, mem_restrictSupport_iff] at hx
   rw [FreeLast, mem_restrictSupport_iff]
   intro m hm c
-  have h1 : ∑ c, m (Fin.last K, c) = (setLast LL 0).deg (Fin.last K) := hx hm (Fin.last K)
-  have h2 : (setLast LL 0).deg (Fin.last K) = 0 := by simp [setLast]
-  rw [h2] at h1
+  have h1 : ∑ c, m (Fin.last K, c) = 0 := by simpa [setLast] using hx hm (Fin.last K)
   exact Finset.sum_eq_zero_iff.mp h1 c (Finset.mem_univ c)
 
 theorem restriction_surjective [NeZero r] (hΩ : OmegaInj) (LL : Letters (K + 1)) {q : ℕ} (J : Fin q → ℕ) (M : Fin q → WithTop ℤ)

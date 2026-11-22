@@ -531,9 +531,7 @@ theorem bk_sum {d : ℕ} {g : (Fin d → ℂ) → ℂ} {x : Fin d → ℂ} (hne 
 theorem bkb_u_contDiffOn {d : ℕ} {Ω : Set (Fin d → ℂ)} {g : (Fin d → ℂ) → ℂ} (hΩ : IsOpen Ω)
     (hg : DifferentiableOn ℂ g Ω) (k : Fin d) (n : ℕ) :
     ContDiffOn ℂ n (fun x => fderiv ℂ g x (Pi.single k 1)) Ω := by
-  have h := holo_contDiffOn hΩ hg (n + 1)
-  have h' : ContDiffOn ℂ ((n : WithTop ℕ∞) + 1) g Ω := by exact_mod_cast h
-  have h2 := ((contDiffOn_succ_iff_fderiv_of_isOpen hΩ).mp h').2.2
+  have h2 := ((contDiffOn_succ_iff_fderiv_of_isOpen hΩ).mp (show ContDiffOn ℂ ((n : WithTop ℕ∞) + 1) g Ω from by exact_mod_cast holo_contDiffOn hΩ hg (n + 1))).2.2
   exact h2.clm_apply contDiffOn_const
 
 theorem bkb_cu_contDiffOn {d : ℕ} {Ω : Set (Fin d → ℂ)} {g : (Fin d → ℂ) → ℂ} (hΩ : IsOpen Ω)
@@ -559,7 +557,6 @@ theorem bkb_N_contDiffOn {d : ℕ} {Ω : Set (Fin d → ℂ)} {g : (Fin d → �
 theorem bk_contDiffOn {d : ℕ} {Ω : Set (Fin d → ℂ)} {g : (Fin d → ℂ) → ℂ} (hΩ : IsOpen Ω)
     (hg : DifferentiableOn ℂ g Ω) (hne : ∀ x ∈ Ω, fderiv ℂ g x ≠ 0) (k : Fin d) (n : ℕ) :
     ContDiffOn ℝ n (bk g k) Ω := by
-  unfold bk
   exact ((bkb_N_contDiffOn hΩ hg n).inv fun x hx => (bkb_N_pos (hne x hx)).ne').smul (bkb_cu_contDiffOn hΩ hg k n)
 
 theorem bkb_u_bd {d q : ℕ} {Ω : Set (Fin d → ℂ)} {g : (Fin d → ℂ) → ℂ} {P : ℝ} (hΩ : IsOpen Ω)
@@ -569,24 +566,20 @@ theorem bkb_u_bd {d q : ℕ} {Ω : Set (Fin d → ℂ)} {g : (Fin d → ℂ) →
   intro j hj
   rw [norm_iteratedFDerivWithin_real_eq hΩ (bkb_u_contDiffOn hΩ hg k q) hx hj,
     iteratedFDerivWithin_of_isOpen j hΩ hx]
-  have h := holo_contDiffOn hΩ hg (q + 1)
-  have h' : ContDiffOn ℂ ((q : WithTop ℕ∞) + 1) g Ω := by exact_mod_cast h
+  have h' : ContDiffOn ℂ ((q : WithTop ℕ∞) + 1) g Ω := by exact_mod_cast holo_contDiffOn hΩ hg (q + 1)
   have h2 := ((contDiffOn_succ_iff_fderiv_of_isOpen hΩ).mp h').2.2
   have h3 := (ContinuousLinearMap.apply ℂ ℂ (Pi.single k (1 : ℂ) : Fin d → ℂ)).norm_iteratedFDeriv_comp_left
     (h2.contDiffAt (hΩ.mem_nhds hx)) (n := j) (by exact_mod_cast hj)
-  have h4 : ‖ContinuousLinearMap.apply ℂ ℂ (Pi.single k (1 : ℂ) : Fin d → ℂ)‖ ≤ 1 := by
-    refine ContinuousLinearMap.opNorm_le_bound _ zero_le_one fun T => ?_
-    have := T.le_opNorm (Pi.single k (1 : ℂ) : Fin d → ℂ)
-    rw [bkb_norm_single, mul_one] at this
-    simpa using this
+  have h4 : ‖ContinuousLinearMap.apply ℂ ℂ (Pi.single k (1 : ℂ) : Fin d → ℂ)‖ ≤ 1 :=
+    ContinuousLinearMap.opNorm_le_bound _ zero_le_one fun T => by
+      simpa [bkb_norm_single] using T.le_opNorm (Pi.single k (1 : ℂ) : Fin d → ℂ)
   have h5 : ‖iteratedFDeriv ℂ (j + 1) g x‖ ≤ ‖fderiv ℂ g x‖ * P ^ j := by
     rcases Nat.eq_zero_or_pos j with rfl | hj0
     · simp [norm_iteratedFDeriv_one]
     · exact hb j hj0 hj
   rw [norm_iteratedFDeriv_fderiv] at h3
   calc _ ≤ _ := h3
-    _ ≤ 1 * ‖iteratedFDeriv ℂ (j + 1) g x‖ := mul_le_mul_of_nonneg_right h4 (norm_nonneg _)
-    _ ≤ _ := by rw [one_mul]; exact h5
+    _ ≤ _ := by simpa using mul_le_mul h4 h5 (norm_nonneg _) zero_le_one
 
 theorem bk_bound (d q : ℕ) : ∃ B : ℝ, 0 ≤ B ∧ ∀ (Ω : Set (Fin d → ℂ)) (g : (Fin d → ℂ) → ℂ) (P : ℝ), IsOpen Ω →
     DifferentiableOn ℂ g Ω → 0 < P → (∀ x ∈ Ω, fderiv ℂ g x ≠ 0) → ∀ x ∈ Ω,
@@ -685,11 +678,9 @@ theorem wirt_tsupport (k : Fin d) (f : (Fin d → ℂ) → V) : tsupport (wirt k
 theorem wirt_bound {n : ℕ} (k : Fin d) {f : (Fin d → ℂ) → V} (hf : ContDiff ℝ (n + 1 : ℕ) f) {j : ℕ} (hj : j ≤ n)
     (x : Fin d → ℂ) : ‖iteratedFDeriv ℝ j (wirt k f) x‖ ≤ ‖iteratedFDeriv ℝ (j + 1) f x‖ := by
   rw [wirt_eq]
-  have h1 : ContDiff ℝ n (fderiv ℝ f) := hf.fderiv_right (by norm_cast)
-  refine ((wirtL V k).norm_iteratedFDeriv_comp_left (N := n) h1.contDiffAt (by exact_mod_cast hj)).trans ?_
+  refine ((wirtL V k).norm_iteratedFDeriv_comp_left (N := n) (hf.fderiv_right (by norm_cast)).contDiffAt (by exact_mod_cast hj)).trans ?_
   rw [norm_iteratedFDeriv_fderiv]
-  calc _ ≤ 1 * ‖iteratedFDeriv ℝ (j + 1) f x‖ := by gcongr; exact norm_wirtL_le k
-    _ = _ := one_mul _
+  simpa using mul_le_mul_of_nonneg_right (norm_wirtL_le k) (norm_nonneg (iteratedFDeriv ℝ (j + 1) f x))
 
 theorem base_bound (β t : ℂ) (g : (Fin d → ℂ) → ℂ) {S : ℝ} {a : (Fin d → ℂ) → V} (hc : HasCompactSupport a)
     (hb : ∀ x, ‖a x‖ ≤ S) :

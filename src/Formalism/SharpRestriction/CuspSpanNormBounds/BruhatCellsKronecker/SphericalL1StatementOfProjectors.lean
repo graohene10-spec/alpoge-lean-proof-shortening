@@ -31,10 +31,8 @@ lemma hsR_cont {Q : Type} [Fintype Q] : Continuous (hsR : Matrix (Fin n) Q ℂ �
 
 lemma hsR_entry_le {Q : Type} [Fintype Q] (g : Matrix (Fin n) Q ℂ) (i : Fin n) (j : Q) : ‖g i j‖ ^ 2 ≤ hsR g := by
   unfold hsR
-  calc ‖g i j‖ ^ 2 ≤ ∑ j', ‖g i j'‖ ^ 2 :=
-        Finset.single_le_sum (f := fun j' => ‖g i j'‖ ^ 2) (fun _ _ => by positivity) (Finset.mem_univ j)
-    _ ≤ _ := Finset.single_le_sum (f := fun i' => ∑ j', ‖g i' j'‖ ^ 2)
-        (fun _ _ => Finset.sum_nonneg fun _ _ => by positivity) (Finset.mem_univ i)
+  exact (Finset.single_le_sum (f := fun j' => ‖g i j'‖ ^ 2) (fun _ _ => by positivity) (Finset.mem_univ j)).trans
+    (Finset.single_le_sum (f := fun i' => ∑ j', ‖g i' j'‖ ^ 2) (fun _ _ => Finset.sum_nonneg fun _ _ => by positivity) (Finset.mem_univ i))
 
 lemma mul_sign_projection_apply (ε : Fin n → Bool) (s : Bool) (g : Matrix (Fin n) (Fin n) ℂ) (i : Fin n) (b : SgIx ε s) :
     (g * P0 ε s) i b = g i b.1 := by
@@ -395,10 +393,9 @@ lemma hs_exp_le {n : ℕ} (X : Matrix (Fin n) (Fin n) ℂ) :
     hs (NormedSpace.exp X) ≤ n * Real.exp (2 * Real.sqrt (hs X)) := by
   have h := norm_exp_frob X
   rw [← sqrt_frobenius_eq_norm, ← sqrt_frobenius_eq_norm] at h
-  have h0 : 0 ≤ hs (NormedSpace.exp X) := by unfold hs; positivity
-  calc hs (NormedSpace.exp X) = Real.sqrt (hs (NormedSpace.exp X)) ^ 2 := (Real.sq_sqrt h0).symm
+  calc hs (NormedSpace.exp X) = Real.sqrt (hs (NormedSpace.exp X)) ^ 2 := (Real.sq_sqrt (by unfold hs; positivity)).symm
     _ ≤ (Real.sqrt n * Real.exp (Real.sqrt (hs X))) ^ 2 := pow_le_pow_left₀ (Real.sqrt_nonneg _) h 2
-    _ = _ := by
+    _ = n * Real.exp (2 * Real.sqrt (hs X)) := by
         rw [mul_pow, Real.sq_sqrt (Nat.cast_nonneg n), ← Real.exp_nat_mul]
         norm_num
 
@@ -566,8 +563,7 @@ def LowestKTypeProjectorExists : Prop :=
 
 theorem lowest_K_type_projector_of_mult_one (D : Formalism.BasicNotions.D7) (h2 : adm2 D) : LowestKTypeProjectorExists := by
   intro n ε lam hlam H _ _ _ σ hσ
-  have hK := (h2 n ε lam hlam H σ hσ).1
-  have : FiniteDimensional ℂ (lowKSub ε lam σ) := hK.1
+  have : FiniteDimensional ℂ (lowKSub ε lam σ) := ((h2 n ε lam hlam H σ hσ).1).1
   exact ⟨(lowKSub ε lam σ).starProjection, (lowKSub ε lam σ).isIdempotentElem_starProjection,
     fun x y => Submodule.inner_starProjection_left_eq_right _ x y, Submodule.range_starProjection _⟩
 

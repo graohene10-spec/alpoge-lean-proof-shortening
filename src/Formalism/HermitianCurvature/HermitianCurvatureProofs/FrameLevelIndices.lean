@@ -106,8 +106,7 @@ variable {o : Type} [CommRing o] [IsLocalRing o] {r k : ℕ}
 
 theorem kppO_mul {j j' : Matrix (Idx r k) (Idx r k) o} (h : KppO j) (h' : KppO j') : KppO (j * j') := by
   refine ⟨by rw [Matrix.det_mul]; exact h.1.mul h'.1, ?_⟩
-  rw [Matrix.map_mul, S3x1.isNU_iff]
-  exact S3x1.par_mul S3x1.gpUni ((S3x1.isNU_iff _).1 h.2) ((S3x1.isNU_iff _).1 h'.2)
+  simpa only [Matrix.map_mul, S3x1.isNU_iff] using S3x1.par_mul S3x1.gpUni ((S3x1.isNU_iff _).1 h.2) ((S3x1.isNU_iff _).1 h'.2)
 
 theorem kppO_inv {j : Matrix (Idx r k) (Idx r k) o} (h : KppO j) : KppO j⁻¹ := by
   refine ⟨Matrix.isUnit_nonsing_inv_det j h.1, ?_⟩

@@ -236,12 +236,10 @@ theorem L_le_La {D : D7} (L : SizeData₂ D) (h : Formalism.MainNotions.SizesAt 
   have hx : 1 < L.sc.x := L.sc.one_lt_alt
   unfold SizeData₂.La Scale.a Scale.b
   have hb : 0 < Real.exp L.sc.L := Real.exp_pos _
-  have : Real.exp L.sc.L ≤ L.sc.x * Real.exp L.sc.L * D.host.rdE := by
-    have h1 : Real.exp L.sc.L ≤ L.sc.x * Real.exp L.sc.L := by nlinarith
-    have h2 : 0 ≤ L.sc.x * Real.exp L.sc.L := by positivity
-    nlinarith
+  have h1 : Real.exp L.sc.L ≤ L.sc.x * Real.exp L.sc.L := by nlinarith
+  have h2 : 0 ≤ L.sc.x * Real.exp L.sc.L := by positivity
   calc L.sc.L = Real.log (Real.exp L.sc.L) := (Real.log_exp _).symm
-    _ ≤ _ := Real.log_le_log hb this
+    _ ≤ _ := Real.log_le_log hb (by nlinarith [h1, h2, hr])
 
 theorem OrthoNormProductBound.mono {D : D7} {L : SizeData₂ D} {C C' : ℝ} (hLa : 0 ≤ L.La) (hC : C ≤ C') (h : OrthoNormProductBound D L C) :
     OrthoNormProductBound D L C' := by
@@ -783,9 +781,7 @@ theorem pair_core (D : D7) (w : D.what₂.places.Pl) {V : Type} [AddCommGroup V]
     exact ⟨a + b, by rw [map_add, map_add, ha, hb], pair_add_ge D w ha' hb'⟩
   | smul r x _ hx =>
     obtain ⟨a, ha, ha'⟩ := hx
-    refine ⟨(r : D.what₂.LL) * a, ?_, pair_smul_ge D w r.2 ha'⟩
-    rw [map_mul, ha, Subring.smul_def, LinearMap.map_smulₛₗ]
-    rfl
+    exact ⟨(r : D.what₂.LL) * a, (by rw [map_mul, ha, Subring.smul_def, LinearMap.map_smulₛₗ]; rfl), pair_smul_ge D w r.2 ha'⟩
 
 theorem stmtPair (D : D7) (Dx : DivX D) (T : TwForms D) : PairingFromIntegrality D Dx T := by
   intro h0 hT hp0 hpT
@@ -992,12 +988,10 @@ theorem sg_atG (u : D.what₂.Word) (w : D.what₂.places.Pl) (hg : D.what₂.pl
     L.sg u w = ∑ j ∈ SizeData₂.lifts D, (L.F j w - L.E u j w) := by
   unfold SizeData₂.sg
   refine Finset.sum_congr rfl fun j _ => ?_
-  have h0 : L.gainD j w = 0 := by
-    unfold SizeData₂.gainD
-    split_ifs
-    · rfl
-    · exact L.gain_g j w hg
-  rw [h0, zero_add]
+  unfold SizeData₂.gainD
+  split_ifs
+  · rw [zero_add]
+  · rw [L.gain_g j w hg, zero_add]
 
 theorem mem_gTypes_of (w : D.what₂.places.Pl) (i : Fin 2) (hi : D.what₂.places.resChar w = D.host.g i) :
     D.what₂.places.resChar w ∈ ({D.host.g 0, D.host.g 1} : Finset ℕ) := by
@@ -1478,8 +1472,7 @@ theorem form_inj (hli : LinearIndependent ℂ (fun i => j (b i))) : Function.Inj
   have h0 : j (x - y) = 0 := by rw [map_sub, hxy, sub_self]
   rw [form_expand b j] at h0
   have h3 := Fintype.linearIndependent_iff.1 hli (fun i => σ (b.repr (x - y) i)) h0
-  have h4 : b.repr (x - y) = 0 := Finsupp.ext fun i => (map_eq_zero σ).1 (h3 i)
-  exact sub_eq_zero.1 (b.repr.map_eq_zero_iff.1 h4)
+  exact sub_eq_zero.1 (b.repr.map_eq_zero_iff.1 (Finsupp.ext fun i => (map_eq_zero σ).1 (h3 i)))
 
 theorem form_span_top (hli : LinearIndependent ℂ (fun i => j (b i)))
     (hsp : Submodule.span ℂ (Set.range fun i => j (b i)) = ⊤) (U : Submodule K V)
@@ -1622,10 +1615,9 @@ theorem stmtRRlat (D : D7) : FullLatticesFromInputs D := by
 def RowLatticeRankPos (D : D7) : Prop := 0 < D.div.RR.rank
 
 theorem Drows_pos_of (D : D7) (h1 : D.what₂.delp < 1) (h2 : 0 < D.what₂.Dall) : 0 < D.what₂.Drows := by
-  have h := D.what₂.D_eq
-  have h3 : (0 : ℝ) < (D.what₂.Dall : ℝ) := by exact_mod_cast h2
-  have h4 : (0 : ℝ) < (D.what₂.Drows : ℝ) := by rw [h]; exact mul_pos (by linarith) h3
-  exact_mod_cast h4
+  have h : (0 : ℝ) < (D.what₂.Drows : ℝ) := by
+    simpa [D.what₂.D_eq] using mul_pos (by linarith) (by exact_mod_cast h2)
+  exact_mod_cast h
 
 theorem rowLatticeRank_pos_of (D : D7) (hF : D.RRFull) (h1 : D.what₂.delp < 1) (h2 : 0 < D.what₂.Dall) : RowLatticeRankPos D := by
   unfold RowLatticeRankPos
@@ -1743,9 +1735,7 @@ theorem center_smul_mem_Mtilde (D : D7) (h1 : CentralElementPreserves D) (E : Mo
     (hx : x ∈ (D.what₂.Mtilde μ).carrier) : c • D.ntypes.onAmb μ E x ∈ (D.what₂.Mtilde μ).carrier := by
   have h3 := h1 μ (c • ⟨E, hE⟩) hc x hx
   rw [map_smul, LinearMap.smul_apply] at h3
-  unfold NTypes.onAmb
-  rw [dif_pos hE]
-  exact h3
+  simpa only [NTypes.onAmb, dif_pos hE] using h3
 
 theorem idempotentIntegral_of (D : D7) (h1 : CentralElementPreserves D) (h2 : CentralIdempotentIntegralAlt D) : IdempotentIntegral D := by
   intro μ x hx
@@ -1765,9 +1755,7 @@ theorem center_smul_mem_lattice (h1 : CentralElementPreservesSide S) (E : Monoid
     (hE : E ∈ Subalgebra.center ℂ (MonoidAlgebra ℂ (G0g D.nd))) (c : ℂ)
     (hc : ∀ g, (c • E).coeff g ∈ Set.range D.what₂.phiO) (μ : D.what₂.Tup) (x : S.Amb μ)
     (hx : x ∈ (S.Mtilde μ).carrier) : c • S.cen μ ⟨E, hE⟩ x ∈ (S.Mtilde μ).carrier := by
-  have h3 := h1 μ (c • ⟨E, hE⟩) hc x hx
-  rw [map_smul, LinearMap.smul_apply] at h3
-  exact h3
+  simpa only [map_smul, LinearMap.smul_apply] using h1 μ (c • ⟨E, hE⟩) hc x hx
 
 theorem idempotentIntegral_side_of (h1 : CentralElementPreservesSide S) (h2 : CentralIdempotentIntegralAlt D) : S.AIntegral := by
   intro μ x hx
@@ -1850,9 +1838,7 @@ theorem tuplesInRowRange_side_of (D : D7) {V : AbsolutelyIrreducibleSpan.Lev D} 
     rcases hμ with h | ⟨w, h⟩
     · exact Or.inl h
     · exact Or.inr ⟨w, h⟩
-  have h2 := h1.2.2.1 μ hU hy
-  rw [← hR.1] at h2
-  exact h2
+  simpa only [← hR.1] using h1.2.2.1 μ hU hy
 
 theorem tuplesInRowRange_of (D : D7) {A : Formalism.BasicNotions.AmbForm D (RowSide.sharp D)} (X : AbsolutelyIrreducibleSpan.Loc D A) (h1 : AbsolutelyIrreducibleSpan.Conclusion1 D X) (hR : AbsolutelyIrreducibleSpan.RRDef D X) : TuplesInRowRangeAll D := by
   intro μ hμ
@@ -2069,8 +2055,7 @@ theorem wSz_eq_wj (j : ℕ) (h1 : 1 ≤ j) (h2 : j ≤ D.R.m) (τ : D.what₂.Ta
 
 theorem two_le_b (L : SizeData₂ D) : 2 ≤ L.sc.b := by
   have h1 : 1 ≤ L.sc.L := Real.one_le_rpow L.sc.one_lt_alt.le L.sc.eps_pos.le
-  have h2 : L.sc.L + 1 ≤ L.sc.b := Real.add_one_le_exp _
-  linarith
+  linarith [h1, (show L.sc.L + 1 ≤ L.sc.b from Real.add_one_le_exp _)]
 
 theorem b'_le (L : SizeData₂ D) (hS : Formalism.MainNotions.SizeLstar L) : L.sc.b' ≤ L.sc.b / 3 := by
   have hb := b_pos D L
@@ -2496,13 +2481,9 @@ theorem ivAny_of {L : SizeData₂ D} {Z : JumpSetsAlt.Prov D} {Y : LocF D} (T : 
   set μ := D.what₂.muAt w with hμ
   set l := D.what₂.places.resChar w with hl
   set k := J j l + dualExp D w with hk
-  have hn : (((l : ℕ) : 𝓞 D.what₂.LL) ^ k) ≠ 0 := by
-    refine pow_ne_zero _ ?_
-    intro h0
-    have : ((l : ℕ) : D.what₂.LL) = 0 := by
-      have := congrArg (fun t : 𝓞 D.what₂.LL => (t : D.what₂.LL)) h0
-      simpa using this
-    exact (Nat.cast_ne_zero.mpr (D.what₂.places.resChar_prime w).ne_zero) this
+  have hn : (((l : ℕ) : 𝓞 D.what₂.LL) ^ k) ≠ 0 :=
+    pow_ne_zero k (fun h0 => (Nat.cast_ne_zero.mpr (D.what₂.places.resChar_prime w).ne_zero)
+      (by simpa [hl] using congrArg (fun t : 𝓞 D.what₂.LL => (t : D.what₂.LL)) h0 : ((D.what₂.places.resChar w : ℕ) : D.what₂.LL) = 0))
   have hloc : ∀ y ∈ MtZ D μ j, ∃ s : 𝓞 D.what₂.LL, s ∉ (D.plEq w).asIdeal ∧
       s • ((l : ℕ) : 𝓞 D.what₂.LL) ^ k • y ∈ MtDualZ D μ j := by
     intro y hy
@@ -2621,10 +2602,8 @@ theorem jivF {CJ A : ℝ}
       admJ (Fm.D x i) (Fm.L x i) (XF x i) CJ A ∧ ExponentBoundIV (Fm.D x i) (XF x i) := by
   obtain ⟨x0, h⟩ := h
   refine ⟨fun x i => if h' : ExponentChoiceBounds (Fm.D x i) (Fm.L x i) CJ A then h'.choose else ⟨fun _ _ => 0⟩, x0, fun x hx h1 i => ?_⟩
-  have h' := h x hx h1 i
   show admJ (Fm.D x i) (Fm.L x i) (dite _ _ _) CJ A ∧ ExponentBoundIV (Fm.D x i) (dite _ _ _)
-  rw [dif_pos h']
-  exact h'.choose_spec
+  simpa only [dif_pos (h x hx h1 i)] using (h x hx h1 i).choose_spec
 
 theorem on4ivF (he : 0 < eps) (ZF : ∀ x (_ : Fm.x1 < x) (i : Fm.Ix x), JumpSetsAlt.Prov (Fm.D x i))
     (YF : ∀ x (i : Fm.Ix x), LocF (Fm.D x i))

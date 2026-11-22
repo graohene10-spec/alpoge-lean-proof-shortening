@@ -284,8 +284,7 @@ theorem zE_mem (y : Fin (B.dZ ℓ Z) → K) : (B.zE ℓ Z).mulVec y ∈ B.Z0 ℓ
 theorem exists_zE {u : Fin (B.nV ℓ) → K} (hu : u ∈ B.Z0 ℓ Z) : ∃ y, (B.zE ℓ Z).mulVec y = u := by
   have h := (subspace_image_spec K (B.nV ℓ) (B.Z0 ℓ Z)).2
   rw [← h] at hu
-  obtain ⟨y, hy⟩ := LinearMap.mem_range.mp hu
-  exact ⟨y, hy⟩
+  simpa only [show B.zE ℓ Z = subE (B.Z0 ℓ Z) from rfl, Matrix.mulVecLin_apply] using LinearMap.mem_range.mp hu
 
 theorem blockPoly_ne_zero (ν : K) (q t : ℕ) : Col.blockPoly ν q t ≠ 0 := by
   unfold Col.blockPoly
@@ -794,18 +793,16 @@ theorem GmOf_le [IsTotallyComplex K] {s : ℕ} (h : F.Ok s) (P : Subgroup G) (ψ
     (t : T) (w : HeightOneSpectrum (𝓞 K)) :
     vw w (GmOf (F.side P ψ Zs) t w) ≤
       (((F.side P ψ Zs).dQ t : ℕ) : ℤ) * vw w ((Fintype.card G * s : ℕ) : K) := by
-  have hl : 0 < Fintype.card G * s := Nat.mul_pos Fintype.card_pos (h.what₂ t).good.s_pos
-  have hlat := BlockDat.Lam_lat (ℓ := F.lvl P ψ) (Z := Zs.Z t) h.conj (h.what₂ t) h.irr
   have := reduction_lemma_first K (cmMax K) (isCMSub_cmMax' K) F.v0 h.conj _ _ ((F.R t).HV (F.lvl P ψ))
     (BlockDat.HV_rat (ℓ := F.lvl P ψ) h.conj (h.what₂ t) h.irr)
     (BlockDat.HV_pos (ℓ := F.lvl P ψ) h.conj (h.what₂ t) h.irr) ((F.R t).Pq (F.lvl P ψ) (Zs.Z t))
     (BlockDat.Pq_surj (ℓ := F.lvl P ψ) h.conj (h.what₂ t) h.irr) ((F.R t).Mt (F.lvl P ψ))
-    (BlockDat.Mt_lat (ℓ := F.lvl P ψ) h.conj (h.what₂ t) h.irr) (Fintype.card G * s) 1 hl
+    (BlockDat.Mt_lat (ℓ := F.lvl P ψ) h.conj (h.what₂ t) h.irr) (Fintype.card G * s) 1 (Nat.mul_pos Fintype.card_pos (h.what₂ t).good.s_pos)
     (by
       intro x hx
       rw [pow_one]
       exact BlockDat.Mt_dual (ℓ := F.lvl P ψ) h.conj (h.what₂ t) h.irr x hx)
-    w (ebOf (F.side P ψ Zs) t w) (locBasisOf_spec _ hlat w)
+    w (ebOf (F.side P ψ Zs) t w) (locBasisOf_spec _ (BlockDat.Lam_lat (ℓ := F.lvl P ψ) (Z := Zs.Z t) h.conj (h.what₂ t) h.irr) w)
   rw [Nat.cast_one, one_mul] at this
   exact this
 
@@ -870,8 +867,7 @@ theorem tB_ZH : tB.ZH = ⊤ := by
 
 theorem example_good_coordinates_top (ℓ : Lvl ℚ G3) : tB.inV0 ℓ ⊤ = ⊤ := by
   refine eq_top_iff.mpr fun u _ => ?_
-  rw [BlockDat.mem_goodPart_iff]
-  exact Submodule.mem_top
+  exact (tB.mem_goodPart_iff ℓ ⊤ u).2 Submodule.mem_top
 
 theorem tB_res_eq {Sg : Unit → ℚ[X]} (h : tB.partF Sg ≠ ⊥) : Sg = fun _ => 1 := by
   obtain ⟨x, hx, hocc⟩ := tB.exists_of_partF_ne_bot h

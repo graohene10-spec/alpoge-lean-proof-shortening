@@ -17,9 +17,7 @@ variable {K : Type u} [NormedField K] [IsUltrametricDist K]
 lemma sigma_norm_le_one {p q : ℕ} {σ : K →+* K} (hp : ‖(p : K)‖ ≤ 1)
     (hσ : IsFrobLift p q σ) (a : K) (ha : ‖a‖ ≤ 1) : ‖σ a‖ ≤ 1 := by
   have h1 : ‖σ a - a ^ q‖ ≤ ‖(p : K)‖ := hσ a ha
-  have h2 : ‖a ^ q‖ ≤ 1 := by
-    rw [norm_pow]
-    simpa using pow_le_pow_of_le_one (norm_nonneg a) ha (Nat.zero_le q)
+  have h2 : ‖a ^ q‖ ≤ 1 := by simpa [norm_pow] using pow_le_pow_of_le_one (norm_nonneg a) ha (Nat.zero_le q)
   calc ‖σ a‖ = ‖(σ a - a ^ q) + a ^ q‖ := by rw [sub_add_cancel]
     _ ≤ max ‖σ a - a ^ q‖ ‖a ^ q‖ := IsUltrametricDist.norm_add_le_max _ _
     _ ≤ 1 := max_le (h1.trans hp) h2
@@ -198,16 +196,13 @@ lemma powpj {p : ℕ} (hp : p.Prime) {r : ℕ} (hr : 1 ≤ r) {A B : MvPowerSeri
 lemma pow_sub_pow_bd {c : ℝ} (hc : 0 ≤ c) {A B : MvPowerSeries ι K} (hA : Bd 1 A) (hB : Bd 1 B)
     (hD : Bd c (A - B)) (m : ℕ) : Bd c (A ^ m - B ^ m) := by
   induction m with
-  | zero =>
-    intro d
-    simp [hc]
+  | zero => simp [Bd, hc]
   | succ m ih =>
     have hAm : Bd 1 (A ^ m) := by simpa using Bd.pow hA zero_le_one m
-    have e : A ^ (m + 1) - B ^ (m + 1) = A ^ m * (A - B) + (A ^ m - B ^ m) * B := by ring
-    rw [e]
-    have h1 : Bd c (A ^ m * (A - B)) := by simpa using Bd.mul hAm hD zero_le_one hc
-    have h2 : Bd c ((A ^ m - B ^ m) * B) := by simpa using Bd.mul ih hB hc zero_le_one
-    exact bd_add' h1 h2
+    rw [show A ^ (m + 1) - B ^ (m + 1) = A ^ m * (A - B) + (A ^ m - B ^ m) * B by ring]
+    exact bd_add'
+      (by simpa using Bd.mul hAm hD zero_le_one hc)
+      (by simpa using Bd.mul ih hB hc zero_le_one)
 
 end Bd
 

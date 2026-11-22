@@ -17,23 +17,20 @@ theorem condProb_eq (n : ℕ) (hn : 1 ≤ n) (δ : ℝ) (A : Finset ℕ → Prop
     condProb n δ A = P ((range n).erase 0) δ (fun t => A (insert 0 t)) := by
   classical
   have h0 : 0 ∈ range n := mem_range.2 hn
-  have hU : range n = insert 0 ((range n).erase 0) := (insert_erase h0).symm
-  have hc : ((range n).erase 0).card = n - 1 := by rw [card_erase_of_mem h0, card_range]
+  have h0t : ∀ t ∈ ((range n).erase 0).powerset, 0 ∉ t := fun t ht h => notMem_erase 0 (range n) (mem_powerset.1 ht h)
   unfold condProb P
-  conv_lhs => rw [hU]
+  conv_lhs => rw [← insert_erase h0]
   rw [sum_powerset_insert (notMem_erase 0 _)]
   rw [sum_eq_zero (fun t ht => ?_), zero_add]
   · apply sum_congr rfl
     intro t ht
-    have h0t : 0 ∉ t := fun h => notMem_erase 0 (range n) (mem_powerset.1 ht h)
-    have hnt : n - (t.card + 1) = n - 1 - t.card := by omega
-    rw [card_insert_of_notMem h0t, hc, hnt]
+    rw [card_insert_of_notMem (h0t t ht), card_erase_of_mem h0, card_range,
+      show n - (t.card + 1) = n - 1 - t.card by omega]
     by_cases hA : A (insert 0 t)
     · rw [if_pos ⟨mem_insert_self 0 t, hA⟩, if_pos hA]
       simp
     · rw [if_neg (fun h => hA h.2), if_neg hA]
-  · have h0t : 0 ∉ t := fun h => notMem_erase 0 (range n) (mem_powerset.1 ht h)
-    rw [if_neg (fun h => h0t h.1)]
+  · rw [if_neg (fun h => (h0t t ht) h.1)]
 
 theorem w_nonneg {δ : ℝ} (h0 : 0 ≤ δ) (h1 : δ ≤ 1) (a b : ℕ) : 0 ≤ δ ^ a * (1 - δ) ^ b := by
   exact mul_nonneg (pow_nonneg h0 a) (pow_nonneg (sub_nonneg.mpr h1) b)

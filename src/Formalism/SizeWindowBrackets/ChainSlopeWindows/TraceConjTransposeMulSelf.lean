@@ -114,11 +114,8 @@ lemma norm_trace_mul_le (X : Matrix m n ℂ) (Y : Matrix n m ℂ) :
   exact h1.trans (sum_norm_mul_le_hsNorm_mul X Yᵀ)
 
 lemma hsSq_one (n : ℕ) : hsSq (1 : Matrix (Fin n) (Fin n) ℂ) = n := by
-  have h : ∀ i j : Fin n, ‖(1 : Matrix (Fin n) (Fin n) ℂ) i j‖ ^ 2 = if i = j then 1 else 0 := by
-    intro i j
-    by_cases hij : i = j <;> simp [Matrix.one_apply, hij]
-  unfold hsSq
-  simp [h]
+  rw [hsSq_eq_re, Matrix.conjTranspose_one, Matrix.one_mul, Matrix.trace_one, Fintype.card_fin]
+  simp
 
 end CS
 

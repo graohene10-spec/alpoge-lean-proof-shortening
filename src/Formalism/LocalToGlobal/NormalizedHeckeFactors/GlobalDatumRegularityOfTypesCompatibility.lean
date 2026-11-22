@@ -129,21 +129,18 @@ theorem mrayRay_of_tied (T : NormalizedTypesCompatibility D jE) (hC : RayCFT (KQ
       rw [hcond] at h1
       rw [hN]
       exact_mod_cast h1
-    have e0 : algebraMap (𝓞 D.host.E) D.host.E π = (π : D.host.E) := rfl
-    rw [e0] at hc'
-    have hci : IsIntegral ℤ (jE (algebraMap (𝓞 D.host.E) D.host.E c)) :=
-      ((RingOfIntegers.isIntegral c).algebraMap).map jE.toIntAlgHom
-    by_cases h0 : N = 0
-    · rw [h0, div_zero]
-      exact isIntegral_zero
-    · have e : (jE (π : D.host.E) - 1) / N = jE (algebraMap (𝓞 D.host.E) D.host.E c) * N ^ b := by
-        rw [← hc', div_eq_iff h0]
-        ring
-      rw [e]
-      have hNi : IsIntegral ℤ N := by
-        rw [hN, ← map_natCast (algebraMap ℤ Qb)]
-        exact isIntegral_algebraMap
-      exact hci.mul (hNi.pow b)
+    rw [show algebraMap (𝓞 D.host.E) D.host.E π = (π : D.host.E) from rfl] at hc'
+    have hN0 : N ≠ 0 := by
+      rw [hN]
+      exact_mod_cast (Nat.ne_of_gt (Nat.mul_pos (Nat.mul_pos D.host.QS_pos D.host.hyp.1.pos) D.host.hyp.2.1.pos))
+    have e : (jE (π : D.host.E) - 1) / N = jE (algebraMap (𝓞 D.host.E) D.host.E c) * N ^ b := by
+      rw [← hc', div_eq_iff hN0]
+      ring
+    rw [e]
+    have hNi : IsIntegral ℤ N := by
+      rw [hN, ← map_natCast (algebraMap ℤ Qb)]
+      exact isIntegral_algebraMap
+    exact (((RingOfIntegers.isIntegral c).algebraMap).map jE.toIntAlgHom).mul (hNi.pow b)
   · haveI : IsAlgClosure ℚ Qb := ⟨inferInstance, AlgebraicClosure.isAlgebraic ℚ⟩
     haveI : Normal ℚ Qb := IsAlgClosure.normal ℚ Qb
     letI : Algebra D.host.E Qb := jE.toAlgebra
@@ -152,8 +149,7 @@ theorem mrayRay_of_tied (T : NormalizedTypesCompatibility D jE) (hC : RayCFT (KQ
         ((algebraMap D.host.E Qb).comp (algebraMap ℚ D.host.E)))) x
     refine ⟨(D.host.conj : D.host.E →ₐ[ℚ] D.host.E).liftNormal Qb, ?_⟩
     have hσ := AlgHom.liftNormal_commutes (D.host.conj : D.host.E →ₐ[ℚ] D.host.E) Qb (π : D.host.E)
-    have e1 : (algebraMap D.host.E Qb) = jE := rfl
-    rw [e1] at hσ
+    rw [show (algebraMap D.host.E Qb) = jE from rfl] at hσ
     rw [hσ, ← map_mul]
     change jE ((π : D.host.E) * D.host.conj (π : D.host.E)) = (p : Qb)
     rw [hpp, map_natCast]
@@ -186,8 +182,7 @@ theorem sqrtMinusD_mem_KQbar (jE : D.host.E →+* Qb) : jE D.host.sqrtMinusD ∈
   (IntermediateField.mem_map _).2 ⟨D.host.sqrtMinusD, IntermediateField.mem_adjoin_simple_self ℚ _, rfl⟩
 
 theorem sqrtMinusD_sq_Qbar (jE : D.host.E →+* Qb) : (jE D.host.sqrtMinusD) ^ 2 = -(D.host.d : Qb) := by
-  rw [← map_pow, show D.host.sqrtMinusD ^ 2 = -(D.host.d : D.host.E) from D.host.sqd_sq,
-    map_neg, map_natCast]
+  simpa only [map_pow, map_neg, map_natCast] using congrArg jE (show D.host.sqrtMinusD ^ 2 = -(D.host.d : D.host.E) from D.host.sqd_sq)
 
 theorem hostCond_pos : 0 < D.host.QS * D.host.q * D.host.d :=
   Nat.mul_pos (Nat.mul_pos D.host.QS_pos D.host.hyp.1.pos) D.host.hyp.2.1.pos

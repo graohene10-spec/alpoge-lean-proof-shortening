@@ -55,8 +55,7 @@ lemma isWt_comp (μ : Fin r → ℤ) (x : V) : G.IsWt μ (G.comp μ x) := by
 
 lemma isWt_E {ν : Fin r → ℤ} {x : V} (h : G.IsWt ν x) (a b : Fin r) :
     G.IsWt (ν + dl a b) (G.E a b x) := by
-  show G.comp (ν + dl a b) (G.E a b x) = G.E a b x
-  rw [G.shift, add_sub_cancel_right, show G.comp ν x = x from h]
+  simpa only [IsWt, add_sub_cancel_right, show G.comp ν x = x from h] using G.shift a b (ν + dl a b) x
 
 lemma E_diag_of_isWt {ν : Fin r → ℤ} {x : V} (h : G.IsWt ν x) (c : Fin r) :
     G.E c c x = ((ν c : ℤ) : K) • x := by
@@ -280,8 +279,7 @@ lemma Dle_add_right {μ ν : Fin r → ℤ} (h : Dle μ ν) (κ : Fin r → ℤ)
   refine ⟨fun k => ?_, ?_⟩
   · rw [psum_add, psum_add]
     linarith [h.1 k]
-  · simp only [Pi.add_apply, Finset.sum_add_distrib]
-    rw [h.2]
+  · simp [Pi.add_apply, Finset.sum_add_distrib, h.2]
 
 lemma Dle_lower (ν : Fin r → ℤ) {a b : Fin r} (hab : b < a) : Dle (ν + dl a b) ν := by
   refine ⟨fun k => ?_, ?_⟩
@@ -873,8 +871,7 @@ theorem inj_of {la : Fin r → ℤ} {v : V} (hv : G.IsHW la v) {W : Submodule K 
   have h1 := hyK.2
   rw [hc, map_smul] at h1
   rcases smul_eq_zero.mp h1 with h2 | h2
-  · apply hy0'
-    rw [hc, h2, zero_smul]
+  · exact hy0' (by rw [hc, h2, zero_smul])
   · exact hΦv h2
 
 end GlW
@@ -1587,14 +1584,12 @@ theorem Cas_wh (LL : Letters N) {j0 J : ℕ} (hJ : j0 ≤ J) {ν : Fin r → ℤ
     (GA p LL j0).Cas F ∈ weightedHomogeneousSubmodule ℚ_[p] (wv LL J) ν := by
   rw [GlW.Cas_apply]
   refine Submodule.sum_mem _ fun a _ => Submodule.sum_mem _ fun b _ => ?_
-  have h1 := glAct_wh' LL hJ b a hF
-  have h2 := glAct_wh' LL hJ a b h1
   have e : ν + dl b a + dl a b = ν := by
     funext c
     simp only [Pi.add_apply, dl_apply]
     split_ifs <;> omega
-  rw [e] at h2
-  exact h2
+  rw [← e]
+  exact glAct_wh' LL hJ a b (glAct_wh' LL hJ b a hF)
 
 theorem ycond_cprod [NeZero r] (LL : Letters N) {j0 J : ℕ} (hJ : j0 ≤ J) (M : WithTop ℤ) (cs : List ℤ)
     {F : MvPolynomial (Fin N × Fin r) ℚ_[p]} (hF : F ∈ YCond p LL J M) :
@@ -1955,8 +1950,7 @@ lemma choose_tie (LL : Letters N) (T : TieData) (hadm : T.Admissible LL) (i : Fi
 lemma setTies_deg_eta (LL : Letters N) (T : TieData) (hadm : T.Admissible LL) (i : Fin T.t) (n : Fin T.t → ℕ)
     (h : T.pos i + 1 < N) : (LL.setTies T n).deg ⟨T.pos i + 1, h⟩ = n i := by
   have hex : ∃ j, T.pos j + 1 = ((⟨T.pos i + 1, h⟩ : Fin N) : ℕ) := ⟨i, rfl⟩
-  simp only [Letters.setTies, dif_pos hex]
-  rw [choose_tie LL T hadm i hex]
+  simpa only [Letters.setTies, dif_pos hex] using congrArg n (choose_tie LL T hadm i hex)
 
 lemma takeD_update (LL : Letters N) (T : TieData) (hadm : T.Admissible LL) (i : Fin T.t) (n : Fin T.t → ℕ) (n' : ℕ) :
     (LL.setTies T (Function.update n i n')).takeD (T.pos i + 1) = (LL.setTies T n).takeD (T.pos i + 1) := by
@@ -2016,9 +2010,7 @@ theorem ycond_top [NeZero r] (LL : Letters N) (j : ℕ) : YCond p (r := r) LL j 
   constructor
   · intro x _
     rw [MvPolynomial.mem_restrictSupport_iff]
-    intro m _
-    show ((wt LL j 0 m : ℤ) : WithTop ℤ) ≤ ⊤
-    exact le_top
+    exact fun m _ => (le_top : ((wt LL j 0 m : ℤ) : WithTop ℤ) ≤ ⊤)
   · intro c d x _
     exact Submodule.mem_top
 
@@ -2516,10 +2508,9 @@ theorem eta_wL (iK : Fin N) (ρ : Fin r) (u : ℕ) :
 
 theorem eta_wOut (iK : Fin N) (ρ : Fin r) (u : ℕ) :
     IsWeightedHomogeneous (wOut N r iK) (X (iK, ρ) ^ u : MvPolynomial (Fin N × Fin r) ℚ_[p]) 0 := by
-  rw [X_pow_eq_monomial]
-  apply isWeightedHomogeneous_monomial
-  rw [Finsupp.weight_apply, Finsupp.sum_single_index (by simp)]
-  simp [wOut]
+  simpa [X_pow_eq_monomial] using
+    (isWeightedHomogeneous_monomial (wOut N r iK) (Finsupp.single (iK, ρ) u) (1 : ℚ_[p])
+      (by rw [Finsupp.weight_apply, Finsupp.sum_single_index (by simp)]; simp [wOut]))
 
 theorem eta_wv (LL : Letters N) (j0 : ℕ) (iK : Fin N) (hiK : (iK : ℕ) < j0) (hv : LL.vec iK = false)
     (ρ : Fin r) (u : ℕ) :

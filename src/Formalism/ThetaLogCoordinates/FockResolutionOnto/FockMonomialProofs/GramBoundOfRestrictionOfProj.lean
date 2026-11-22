@@ -96,7 +96,6 @@ private theorem fock_eq_sum_coeff_mul_factorial (F G : MvPolynomial σ ℚ_[p]) 
     simp [h0]
 
 theorem fock_eq_zero_of (F G : MvPolynomial σ ℚ_[p]) (h : ∀ m, coeff m F = 0 ∨ coeff m G = 0) : fock p F G = 0 := by
-  unfold fock
   refine Finset.sum_eq_zero fun m _ => ?_
   rcases h m with h1 | h1 <;> simp [h1]
 

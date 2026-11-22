@@ -15,9 +15,7 @@ def sgNat {n : ℕ} (sg : DomWeight n) : Fin n → ℕ := fun i => (sg.w i).toNa
 
 theorem natW_anti {N : ℕ} (lam : DomWeight N) : Antitone lam.natW := by
   intro i j h
-  have := lam.anti h
-  unfold DomWeight.natW
-  omega
+  simpa [DomWeight.natW] using Int.toNat_le_toNat (sub_le_sub_right (lam.anti h) lam.detShift)
 
 theorem detShift_last {n : ℕ} (lt : DomWeight (n + 1)) (h0 : lt.w (Fin.last n) = 0) : lt.detShift = 0 := by
   unfold DomWeight.detShift
@@ -108,8 +106,7 @@ theorem rowAct_lpMinor_full (n : ℕ) (A : Matrix (Fin n) (Fin n) ℂ) :
 
 theorem rowAct_dpow (n c : ℕ) (A : Matrix (Fin n) (Fin n) ℂ) :
     rowAct ℂ A (dpow n c) = C (A.det ^ c) * dpow n c := by
-  unfold dpow
-  rw [map_pow, rowAct_lpMinor_full, mul_pow, C_pow]
+  simp [dpow, map_pow, rowAct_lpMinor_full, mul_pow]
 
 theorem weyl_eq_dual (r n : ℕ) (hn : n ≤ r) (ν : Fin n → ℕ) (hν : Antitone ν) :
     weyl ℂ r n hn ν = dualWeyl ℂ r n ν :=

@@ -208,9 +208,7 @@ theorem isoC_eq (LL : Letters N) (j : ℕ) (Cs : Finset (Fin r)) (la : Fin r →
   ext S
   simp only [Set.mem_ofPred_eq, stableC_iff]
   refine and_congr_left fun _ => ?_
-  constructor
-  · intro h v hv; exact h ((hwc_iff LL j Cs la v).mpr hv)
-  · intro h v hv; exact h ((hwc_iff LL j Cs la v).mp hv)
+  exact ⟨fun h v hv => h ((hwc_iff LL j Cs la v).mpr hv), fun h v hv => h ((hwc_iff LL j Cs la v).mp hv)⟩
 
 theorem exists_ext (Cs : Finset (Fin r)) (μ : Fin Cs.card → ℤ) : ∃ la : Fin r → ℤ, la ∘ enumC Cs = μ :=
   ⟨Function.extend (enumC Cs) μ 0, Function.extend_comp (enumC Cs).injective μ 0⟩

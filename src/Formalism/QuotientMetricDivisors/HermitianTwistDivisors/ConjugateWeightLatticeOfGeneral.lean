@@ -505,13 +505,11 @@ theorem second_step_refined_weak : StepBRW := by
   intro K _ _ _ _ K0 hK0 v0 hv0 D XE hXE Tup μ0 μ hμc hμfin XQ hXQ abelian₂ hLam ι hι J _ d XW hXW
     M hM HT XT hHT0 hHTw T hT θ hθ κ hκ ρ ρr hρr hρ0 hρpos hρv hdet0 hdet G e hLB hG n H hH hHpos P hP
     hQ Mt hMt hLamP hGR R hR hRloc
-  have hLB0 : ∀ w, IsLocBasis (matLat P Mt) w (e μ0 w) := fun w => hLamP ▸ hLB μ0 w
-  have hRb := (lemmaRb K K0 hK0 v0 hv0 n D H hH hHpos P hP (XQ μ0) hQ Mt hMt (e μ0) hLB0).2
-  have hbase : lcv (XQ μ0) (abelian₂ μ0) ≤ ∑ᶠ w, lw w * (vw w (G μ0 w) : ℝ) := by
-    rw [hLamP]
-    simpa only [hGR] using hRb
-  exact weak_form_b K K0 hK0 v0 hv0 D XE hXE Tup μ0 μ hμc hμfin XQ hXQ abelian₂ hLam ι hι J d XW hXW M hM
-    HT XT hHT0 hHTw T hT θ hθ κ hκ ρ ρr hρr hρ0 hρpos hρv hdet0 hdet G e hLB hG hbase R hR hRloc
+  refine weak_form_b K K0 hK0 v0 hv0 D XE hXE Tup μ0 μ hμc hμfin XQ hXQ abelian₂ hLam ι hι J d XW hXW
+    M hM HT XT hHT0 hHTw T hT θ hθ κ hκ ρ ρr hρr hρ0 hρpos hρv hdet0 hdet G e hLB hG ?_ R hR hRloc
+  rw [hLamP]
+  simpa only [hGR] using (lemmaRb K K0 hK0 v0 hv0 n D H hH hHpos P hP (XQ μ0) hQ Mt hMt (e μ0)
+    (fun w => hLamP ▸ hLB μ0 w)).2
 
 theorem divisor_bounds_chain_weak : BoundsChainW := by
   intro K _ _ _ _ K0 hK0 v0 hv0 D XE hXE Tup μ0 μ hμc hμfin XQ hXQ abelian₂ hLam ι hι J _ d XW hXW
@@ -545,8 +543,7 @@ theorem isCMSub_cmMax : IsCMSub (cmMax K) := fun σ _ ha => ha σ
 theorem le_cmMax (K0 : Subfield K) (h : IsCMSub K0) : K0 ≤ cmMax K := fun a ha σ => h σ a ha
 
 theorem star_mem_cmMax {a : K} (ha : a ∈ cmMax K) : star a ∈ cmMax K := by
-  intro σ
-  rw [star_star, ha σ, Complex.conj_conj]
+  exact fun σ => by rw [star_star, ha σ, Complex.conj_conj]
 
 theorem mem_cmMax_iff_twist (a : K) : a ∈ cmMax K ↔ ∀ σ : K →+* ℂ, twist σ a = σ a := by
   constructor
@@ -588,8 +585,7 @@ theorem exists_reduced {F : Type} [Field F] {n : ℕ} (Z : Submodule F (Fin n �
   let bs : Basis s F (Fin d → F) := Basis.mk hli hsp
   have : Fintype s := FiniteDimensional.fintypeBasisIndex bs
   have hcard : Fintype.card s = d := by
-    have := finrank_eq_card_basis bs
-    simpa using this.symm
+    simpa using (finrank_eq_card_basis bs).symm
   let e : Fin d ≃ s := (Fintype.equivFinOfCardEq hcard).symm
   choose g hg using fun x : s => hs x.2
   let f : Fin d → Fin n := fun a => g (e a)
@@ -610,8 +606,7 @@ theorem exists_reduced {F : Type} [Field F] {n : ℕ} (Z : Submodule F (Fin n �
   have hzli : LinearIndependent F z := by
     rw [Fintype.linearIndependent_iff]
     intro c hc i
-    have := congrFun hc (f i)
-    simpa [Finset.sum_apply, hz] using this
+    simpa [Finset.sum_apply, hz] using congrFun hc (f i)
   have hzmem : ∀ a, z a ∈ Z := by
     intro a
     have : z a = ∑ c, B⁻¹ a c • (b c : Fin n → F) := by
@@ -714,8 +709,7 @@ theorem map_gramMat {n d : ℕ} (H : Matrix (Fin n) (Fin n) K) (z : Fin d → Fi
   have hT : ((colMat z)ᴴ).map σ = ((colMat z).map σ)ᴴ := by
     ext a i
     simp only [Matrix.map_apply, Matrix.conjTranspose_apply, colMat, Matrix.of_apply]
-    rw [hz a i]
-    rfl
+    exact hz a i
   rw [gramMat_eq, Matrix.map_mul, Matrix.map_mul, hT]
 
 open scoped MatrixOrder in
@@ -786,10 +780,8 @@ open ConjugateWeightGram in
 theorem restriction_rational_hermitian : RestrictRatHerm := by
   intro K _ _ _ K0 hcm hstar n H X hH d z hzli hz
   obtain ⟨XT, hXT⟩ := exists_restrict hH z hzli
-  refine ⟨XT, ⟨?_, fun v => ⟨(hXT v).1, ?_⟩⟩, fun v x y => majAt_restrict hH z XT v (hXT v).2 x y,
-    hform_restrict H z⟩
-  · intro a b
-    simp only [gramMat, Matrix.of_apply, dotProduct, Matrix.mulVec, Pi.star_apply]
+  refine ⟨XT, ⟨fun a b => ?_, fun v => ⟨(hXT v).1, ?_⟩⟩, fun v x y => majAt_restrict hH z XT v (hXT v).2 x y, hform_restrict H z⟩
+  · simp only [gramMat, Matrix.of_apply, dotProduct, Matrix.mulVec, Pi.star_apply]
     exact Subfield.sum_mem _ fun i _ => Subfield.mul_mem _ (hstar _ (hz a i))
       (Subfield.sum_mem _ fun j _ => Subfield.mul_mem _ (hH.1 i j) (hz b j))
   · rw [(hXT v).2, map_gramMat H z v.embedding fun a i => hcm _ _ (hz a i)]

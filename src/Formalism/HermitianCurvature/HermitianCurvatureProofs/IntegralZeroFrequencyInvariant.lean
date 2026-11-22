@@ -226,15 +226,6 @@ theorem decay (hibp : RegIBP) : TestDecay := by
     | exact Complex.ofRealCLM.contDiff.comp hcd
     | fun_prop
   have hcs' : HasCompactSupport (fun t : ℝ => (wh t : ℂ)) := hcs.comp_left Complex.ofReal_zero
-  have hgc : Continuous (fun t : ℝ => (wh t : ℂ) - iteratedDeriv 2 (fun t : ℝ => (wh t : ℂ)) t) :=
-    hcd'.continuous.sub (hcd'.continuous_iteratedDeriv 2 (by norm_num))
-  have hgs : HasCompactSupport
-      (fun t : ℝ => (wh t : ℂ) - iteratedDeriv 2 (fun t : ℝ => (wh t : ℂ)) t) :=
-    hcs'.sub (by
-      first
-      | (rw [iteratedDeriv_succ, iteratedDeriv_one]; exact hcs'.deriv.deriv)
-      | (rw [iteratedDeriv_eq_iterate]; exact hcs'.deriv.deriv)
-      | exact hcs'.iteratedDeriv 2)
   have hn : ∀ y : ℝ, ‖Complex.exp (Complex.I * (y : ℂ))‖ = 1 := fun y => by
     rw [Complex.norm_exp]
     simp
@@ -276,8 +267,7 @@ theorem intZero : IntRdZeroInv := by
     letI : NormedRing (Matrix (Fin n) (Fin n) ℂ) := Matrix.linftyOpNormedRing
     letI : NormedAlgebra ℂ (Matrix (Fin n) (Fin n) ℂ) := Matrix.linftyOpNormedAlgebra
     letI : NormedAlgebra ℚ (Matrix (Fin n) (Fin n) ℂ) := NormedAlgebra.restrictScalars ℚ ℂ _
-    have h1 : Continuous fun t : ℝ => ((t : ℂ) • X) := by fun_prop
-    exact NormedSpace.exp_continuous.comp h1
+    exact NormedSpace.exp_continuous.comp (by fun_prop)
   have hEadd : ∀ s t : ℝ, E (s + t) = E s * E t := by
     intro s t
     simp only [hE]
@@ -287,10 +277,8 @@ theorem intZero : IntRdZeroInv := by
   have hE0 : E 0 = 1 := by simp [hE]
   set k : (Fin n → Fin n → ℂ) → ℂ := fun g => RdV X h (Matrix.of g) with hk
   set Ψ : (Fin n → Fin n → ℂ) × ℝ → (Fin n → Fin n → ℂ) := fun p => rmulF (E p.2) p.1 with hΨd
-  have hΨc : Continuous Ψ := by
-    have : Continuous fun p : (Fin n → Fin n → ℂ) × ℝ => (Matrix.of p.1 : Matrix (Fin n) (Fin n) ℂ) * E p.2 :=
-      Continuous.matrix_mul continuous_fst (hEcont.comp continuous_snd)
-    exact this
+  have hΨc : Continuous Ψ :=
+    Continuous.matrix_mul continuous_fst (hEcont.comp continuous_snd)
   have hΨ : Measurable Ψ := hΨc.measurable
   have hR : ∀ s : ℝ, Measurable (rmulF (E s)) := fun s => hΨ.comp measurable_prodMk_right
   set ν : Measure ℝ := volume.restrict (Set.Ioc 0 1) with hν
@@ -317,15 +305,13 @@ theorem intZero : IntRdZeroInv := by
   have hint : Integrable (fun p => k (Ψ p)) (μ.prod ν) := by
     have hm : AEStronglyMeasurable (fun p => k (Ψ p)) (μ.prod ν) := hRI.1.comp_quasiMeasurePreserving hq
     rw [integrable_prod_iff' hm]
-    refine ⟨Filter.Eventually.of_forall fun s => hkR s, ?_⟩
-    have : (fun y : ℝ => ∫ x, ‖k (Ψ (x, y))‖ ∂μ) = fun _ => ∫ g, ‖k g‖ ∂μ := by
-      funext y; exact hkN y
+    refine ⟨Filter.Eventually.of_forall hkR, ?_⟩
+    have : (fun y : ℝ => ∫ x, ‖k (Ψ (x, y))‖ ∂μ) = fun _ => ∫ g, ‖k g‖ ∂μ := funext hkN
     rw [this]
     exact integrable_const _
   have hswap := integral_integral_swap (f := fun g s => k (Ψ (g, s))) (μ := μ) (ν := ν) hint
   have hrhs : (∫ s, ∫ g, k (Ψ (g, s)) ∂μ ∂ν) = ∫ g, k g ∂μ := by
-    have : (fun s : ℝ => ∫ g, k (Ψ (g, s)) ∂μ) = fun _ => ∫ g, k g ∂μ := by
-      funext s; exact hkI s
+    have : (fun s : ℝ => ∫ g, k (Ψ (g, s)) ∂μ) = fun _ => ∫ g, k g ∂μ := funext hkI
     rw [this]
     simp [hν]
   have hftc : ∀ᵐ g ∂μ, (∫ s, k (Ψ (g, s)) ∂ν) = h (Matrix.of (rmulF (E 1) g)) - h (Matrix.of g) := by

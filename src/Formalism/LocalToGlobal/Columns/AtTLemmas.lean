@@ -144,13 +144,10 @@ theorem DecoSet.dia_mem_upSet (c : DiaG E ST) (P : ST) (q : 𝓞 E) (d d' : Deco
 
 theorem DecoSet.dia_mem_dnSetA (c : DiaG E ST) (P : ST) (q : 𝓞 E) (a : 𝓞 E ⧸ P.1.asIdeal)
     (d d' : DecoSet E n ST SG) : d'.dia c ∈ (d.dia c).dnSetA P q a ↔ d' ∈ d.dnSetA P q a := by
-  constructor
-  · intro h
-    have h1 : ((d'.dia c).dia c⁻¹) ∈ ((d.dia c).dia c⁻¹).dnSetA P q a :=
-      Deco.IsDnA.dia (d.dia c).2 (d'.dia c).2 h c⁻¹
-    rwa [DecoSet.dia_inv_dia, DecoSet.dia_inv_dia] at h1
-  · intro h
-    exact Deco.IsDnA.dia d.2 d'.2 h c
+  refine ⟨fun h => ?_, fun h => Deco.IsDnA.dia d.2 d'.2 h c⟩
+  have h1 : ((d'.dia c).dia c⁻¹) ∈ ((d.dia c).dia c⁻¹).dnSetA P q a :=
+    Deco.IsDnA.dia (d.dia c).2 (d'.dia c).2 h c⁻¹
+  rwa [DecoSet.dia_inv_dia, DecoSet.dia_inv_dia] at h1
 
 theorem DecoSet.sum_dia {M : Type*} [AddCommMonoid M] (nb : DecoSet E n ST SG → Finset (DecoSet E n ST SG))
     (c : DiaG E ST) (h : ∀ d d', d'.dia c ∈ nb (d.dia c) ↔ d' ∈ nb d) (F : DecoSet E n ST SG → M)

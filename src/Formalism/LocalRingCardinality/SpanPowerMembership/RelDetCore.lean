@@ -21,7 +21,6 @@ theorem of_mulVec_eq (γ : Matrix (Fin N) (Fin N) E) (v : Fin N → Fin N → E)
 
 private theorem det_mem_detIdeal_lemma (L : Submodule (𝓞 E) (Fin N → E)) (v : Fin N → Fin N → E)
     (hv : ∀ j, v j ∈ L) : (Matrix.of v).det ∈ detIdeal L := by
-  unfold detIdeal
   exact Submodule.subset_span ⟨v, hv, rfl⟩
 
 theorem detIdeal_smul (γ : Matrix (Fin N) (Fin N) E) (L : Submodule (𝓞 E) (Fin N → E))
@@ -118,12 +117,10 @@ theorem det_root_of_unity_of_stab [StarRing E]
     (γ : Matrix (Fin N) (Fin N) E) (hu : γ.det ∈ unitary E) (L : Submodule (𝓞 E) (Fin N → E))
     (hfg : L.FG) (hsp : Submodule.span E (L : Set (Fin N → E)) = ⊤)
     (hγ : ∀ x ∈ L, γ.mulVec x ∈ L) : ∃ n : ℕ, 0 < n ∧ γ.det ^ n = 1 := by
-  have hint_r := isIntegral_det_of_stab γ L hfg hsp hγ
   have hnorm : ∀ φ : E →+* ℂ, ‖φ γ.det‖ = 1 := by
     intro φ
-    have h1 : star γ.det * γ.det = 1 := hu.1
     have h2 : starRingEnd ℂ (φ γ.det) * φ γ.det = 1 := by
-      rw [← hstar, ← map_mul, h1, map_one]
+      rw [← hstar, ← map_mul, hu.1, map_one]
     have h4 : Complex.normSq (φ γ.det) = 1 := by
       have h := Complex.normSq_eq_conj_mul_self (z := φ γ.det)
       rw [h2] at h
@@ -132,7 +129,7 @@ theorem det_root_of_unity_of_stab [StarRing E]
       rw [← Complex.normSq_eq_norm_sq]
       exact h4
     nlinarith [norm_nonneg (φ γ.det)]
-  obtain ⟨n, hn, h⟩ := NumberField.Embeddings.pow_eq_one_of_norm_eq_one (K := E) (A := ℂ) hint_r hnorm
+  obtain ⟨n, hn, h⟩ := NumberField.Embeddings.pow_eq_one_of_norm_eq_one (K := E) (A := ℂ) (isIntegral_det_of_stab γ L hfg hsp hγ) hnorm
   exact ⟨n, hn, h⟩
 
 end Core

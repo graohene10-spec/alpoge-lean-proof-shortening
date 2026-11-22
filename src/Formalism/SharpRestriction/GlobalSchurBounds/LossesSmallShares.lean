@@ -435,9 +435,7 @@ theorem muRank_of_proviso (Fm : FamP eps) {C0 : ℝ} (crystallineComparison : �
   have b1 : a1 ≤ x := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hx
   have b2 : a2 ≤ x := le_trans (le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) (le_max_right _ _)) hx
   have b3 : a3 ≤ x := le_trans (le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) (le_max_right _ _)) hx
-  have b4 : Fm.x1 < x := by
-    have := le_trans (le_trans (le_max_right _ _) (le_max_right _ _)) hx
-    linarith
+  have b4 : Fm.x1 < x := by linarith [le_trans (le_trans (le_max_right _ _) (le_max_right _ _)) hx]
   have hSet := hS x b2 b4 i u
   have h1 : ((Fm.D x i).div.Nu u).rank = ((Fm.D x i).mem u).A.du := (hN x b0 i).rank u
   rw [h1]

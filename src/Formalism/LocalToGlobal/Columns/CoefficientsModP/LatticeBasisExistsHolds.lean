@@ -121,15 +121,9 @@ theorem latticeBasisExists_holds : BasisAtEx := by
   ext x
   constructor
   · rintro ⟨i, rfl⟩
-    refine ⟨e i, ?_⟩
-    funext a
-    show (Pi.basisFun K (Fin n)).toMatrix b' a (e i) = bK i a
-    simp [Module.Basis.toMatrix_apply, b']
+    exact ⟨e i, by funext a; simp [B, Module.Basis.toMatrix_apply, b']⟩
   · rintro ⟨j, rfl⟩
-    refine ⟨e.symm j, ?_⟩
-    funext a
-    show bK (e.symm j) a = (Pi.basisFun K (Fin n)).toMatrix b' a j
-    simp [Module.Basis.toMatrix_apply, b']
+    exact ⟨e.symm j, by funext a; simp [B, Module.Basis.toMatrix_apply, b']⟩
 
 end BasisAt
 

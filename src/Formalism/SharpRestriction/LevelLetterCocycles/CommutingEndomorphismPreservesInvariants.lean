@@ -93,8 +93,7 @@ theorem isLatIn_inf {M N V : Submodule R W} (hM : IsLatIn M V) (hN : IsLatIn N V
     IsLatIn (M ⊓ N) V := by
   refine ⟨?_, inf_le_left.trans hM.2.1, ?_⟩
   · have : IsNoetherian R M := isNoetherian_of_fg_of_noetherian M hM.1
-    have h2 : ((M ⊓ N).comap M.subtype).FG := IsNoetherian.noetherian _
-    have h3 := h2.map M.subtype
+    have h3 := (IsNoetherian.noetherian ((M ⊓ N).comap M.subtype)).map M.subtype
     rwa [Submodule.map_comap_subtype, inf_eq_right.2 inf_le_left] at h3
   · intro x hx
     obtain ⟨c, hc, h⟩ := hM.2.2 x hx
@@ -205,8 +204,7 @@ theorem range_th (P : Submodule R W) : LinearMap.range (th hι P) = ext R' ι P 
 
 theorem th_injective [Module.Flat R R'] (P : Submodule R W) : Function.Injective (th hι P) := by
   refine hι.equiv.injective.comp ?_
-  rw [LinearMap.baseChange_eq_ltensor]
-  exact Module.Flat.lTensor_preserves_injective_linearMap (M := R') P.subtype P.injective_subtype
+  simpa only [LinearMap.baseChange_eq_ltensor] using (Module.Flat.lTensor_preserves_injective_linearMap (M := R') P.subtype P.injective_subtype)
 
 include hι in
 theorem relLen_ext_of_le [Module.Flat R R'] {N P : Submodule R W} (h : N ≤ P) :
@@ -406,9 +404,8 @@ theorem gk_comp : (gk O Ok O' Fm).restrictScalars O ∘ₗ TensorProduct.mk O Ok
 
 theorem gk_isBaseChange : IsBaseChange O' (gk O Ok O' Fm) := by
   refine IsBaseChange.of_comp (TensorProduct.isBaseChange O Fm Ok) ?_
-  have := TensorProduct.isBaseChange O Fm O'
-  rw [← gk_comp (Ok := Ok)] at this
-  exact this
+  rw [gk_comp (Ok := Ok)]
+  exact TensorProduct.isBaseChange O Fm O'
 
 theorem ext_gk (N : Submodule O Fm) : ext O' (gk O Ok O' Fm) (N.baseChange Ok) = N.baseChange O' := by
   rw [Submodule.baseChange_eq_span, ext_span, Submodule.baseChange_eq_span]
@@ -678,9 +675,7 @@ theorem eG_irred (i : X.Tw) (j : ℕ) (b : Bool) (W : Submodule (FractionRing (X
   rcases hirr _ hle hst' with h | h
   · right
     intro x hx
-    have : eG Y i j b x ∈ W.map (eG Y i j b) := ⟨x, hx, rfl⟩
-    rw [h] at this
-    exact (Submodule.mem_bot _).1 this
+    simpa [h] using (show eG Y i j b x ∈ W.map (eG Y i j b) from ⟨x, hx, rfl⟩)
   · left
     intro x hx
     rw [← h] at hx
@@ -707,8 +702,7 @@ theorem mem_typeSubspace_iff_unipotent_character {i : X.Tw} {j : ℕ} {b : Bool}
 theorem idempotent_preserves_forms {i : X.Tw} {j : ℕ} {b : Bool} {x : Y.Fm i j b} (hx : x ∈ Fm0 Y i j b) :
     eG Y i j b x ∈ Fm0 Y i j b := by
   rw [mem_typeSubspace_iff_unipotent_character] at hx ⊢
-  intro u
-  rw [eG_comm, hx u, map_smul]
+  exact fun u => by rw [eG_comm, hx u, map_smul]
 
 theorem mem_invariant_forms {i : X.Tw} {j : ℕ} {b : Bool} (x : Y.Fm i j b) :
     x ∈ V0 Y i j b ↔ x ∈ Fm0 Y i j b ∧ eG Y i j b x = x := by
@@ -1242,9 +1236,8 @@ theorem ThPsi_fg (E : ExpDat Y) (hT4 : admT4 Y E) (i : X.Tw) (hi : X.NonzeroInde
     (hTw : TwOK i k Q ψ) (Sg : Set (Y.Dat i j b)) (hSg : Sg ⊆ E.Dat0 i j b) :
     (ThPsi Y i j b k Q ψ Sg).FG := by
   have hle := hT4 i hi j hj b k Q ψ hTw Sg hSg
-  have hfg : ((Y.MtLat i j b k Q ψ).map (Y.thP i j b k Q ψ)).FG := (Y.MtLat_fg i j b k Q ψ).map _
   have : IsNoetherian (X.Ok i k) ↥((Y.MtLat i j b k Q ψ).map (Y.thP i j b k Q ψ)) :=
-    isNoetherian_of_fg_of_noetherian _ hfg
+    isNoetherian_of_fg_of_noetherian _ ((Y.MtLat_fg i j b k Q ψ).map (Y.thP i j b k Q ψ))
   exact (isNoetherian_submodule.1 this) _ hle
 
 theorem InclAt_of (E : ExpDat Y) (hT4 : admT4 Y E) (i : X.Tw) (hi : X.NonzeroIndexPlace i) (j : ℕ) (hj : j ∈ Finset.Icc 1 D.R.m)
@@ -1292,9 +1285,7 @@ theorem algebraicity_iff_commutation (D : Formalism.BasicNotions.D7) : adm5 D �
 theorem algebraicity_of_commutation (D : Formalism.BasicNotions.D7) (h : HeckeCommutation D) : adm5 D := (algebraicity_iff_commutation D).2 h
 
 theorem sup_lattice_finitely_generated (D : Formalism.BasicNotions.D7) (i : D.ntw.Tw) (j : ℕ) (b : Bool) : (Mall D.nexp i j b).FG := by
-  have : IsNoetherian (D.ntw.O i) ↥(D.nexp.Bsup i j b) :=
-    isNoetherian_of_fg_of_noetherian _ (Formalism.MainNotions.ExistsIdealDenominator.Bsup_fg D i j b)
-  exact (isNoetherian_submodule.1 this) _ inf_le_left
+  exact (isNoetherian_submodule.1 (isNoetherian_of_fg_of_noetherian _ (Formalism.MainNotions.ExistsIdealDenominator.Bsup_fg D i j b))) _ inf_le_left
 
 theorem hecke_preserves_sup_lattice (D : Formalism.BasicNotions.D7) (hB : Formalism.MainNotions.ExistsIdealDenominator.IntegralitySecondClauseSupLattice D) (hC : HeckeCommutation D) (i : D.ntw.Tw) (hi : D.ntw.NonzeroIndexPlace i) (j : ℕ)
     (hj : j ∈ Finset.Icc 1 D.R.m) (b : Bool) (k : ℕ) (P : PlE D.host) (h : HkIdx i k P) :

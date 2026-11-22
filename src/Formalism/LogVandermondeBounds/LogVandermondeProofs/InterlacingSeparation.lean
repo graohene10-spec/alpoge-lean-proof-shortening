@@ -7,13 +7,11 @@ open Finset
 lemma term_le_B0 {n : ℕ} {lam : Fin (n + 1) → ℤ} {nu : Fin n → ℤ} (h : Interlace lam nu)
     (i : Fin n) : nu i - lam i.succ ≤ B0 lam nu := by
   unfold B0
-  exact Finset.single_le_sum (f := fun k => nu k - lam k.succ)
-    (fun k _ => by have := (h.2 k).1; linarith) (Finset.mem_univ i)
+  exact Finset.single_le_sum (f := fun k => nu k - lam k.succ) (fun k _ => by linarith [(h.2 k).1]) (Finset.mem_univ i)
 
 lemma loss_bound_nonneg {n : ℕ} {lam : Fin (n + 1) → ℤ} {nu : Fin n → ℤ} (h : Interlace lam nu) :
     0 ≤ B0 lam nu := by
-  unfold B0
-  exact Finset.sum_nonneg (fun k _ => by have := (h.2 k).1; linarith)
+  simpa only [B0] using Finset.sum_nonneg (fun k _ => by linarith [(h.2 k).1])
 
 lemma len_nonneg {n : ℕ} {lam : Fin (n + 1) → ℤ} {nu : Fin n → ℤ} (h : Interlace lam nu)
     (i : Fin n) : 0 ≤ len lam i := by

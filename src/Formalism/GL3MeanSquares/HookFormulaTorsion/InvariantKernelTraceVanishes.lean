@@ -28,8 +28,7 @@ theorem mulVecLin_inj {n : Type} [Fintype n] [DecidableEq n] (u : Matrix n n R) 
 
 theorem endo_inj {n : Type} [Fintype n] [DecidableEq n] (P : (n → R) →ₗ[R] (n → R))
     (hP : LinearMap.det P ≠ 0) : Function.Injective P := by
-  have h := mulVecLin_inj (LinearMap.toMatrix' P) (by rwa [LinearMap.det_toMatrix'])
-  rwa [← Matrix.toLin'_apply', Matrix.toLin'_toMatrix'] at h
+  simpa [← Matrix.toLin'_apply', Matrix.toLin'_toMatrix'] using mulVecLin_inj (LinearMap.toMatrix' P) (by rwa [LinearMap.det_toMatrix'])
 
 theorem index_det (ϖ : R) (hϖ : Irreducible ϖ) {n : Type} [Fintype n] [DecidableEq n]
     (u : Matrix n n R) (hu : u.det ≠ 0) :
@@ -116,13 +115,8 @@ theorem root_of_unity_congruence_one : Formalism.HermitianLattices.RamifiedLatti
     rw [one_pow] at hd
     rw [hd]; exact P.mul_mem_right d hx
   have hc1 : c - 1 ∈ P := hpow b _ hb1
-  have hcl : c ^ l = 1 := hco ▸ pow_orderOf_eq_one c
-  have hcne : c ≠ 1 := by
-    intro h; rw [h, orderOf_one] at hco; exact hl.one_lt.ne hco
-  have hsum : ∑ i ∈ range l, c ^ i = 0 := by
-    have h := mul_geom_sum c l
-    rw [hcl, sub_self] at h
-    exact (mul_eq_zero.mp h).resolve_left (sub_ne_zero.mpr hcne)
+  have hprimc : IsPrimitiveRoot c l := hco ▸ IsPrimitiveRoot.orderOf c
+  have hsum : ∑ i ∈ range l, c ^ i = 0 := hprimc.geom_sum_eq_zero hl.one_lt
   have hlP : (l : NumberField.RingOfIntegers K) ∈ P := by
     have e : (l : NumberField.RingOfIntegers K) =
         ∑ i ∈ range l, c ^ i - ∑ i ∈ range l, (c ^ i - 1) := by
@@ -141,12 +135,12 @@ theorem root_of_unity_congruence_one : Formalism.HermitianLattices.RamifiedLatti
       exact P.add_mem (P.mul_mem_left _ hlP) (P.mul_mem_left _ hTP)
     exact hP.ne_top ((Ideal.eq_top_iff_one _).mpr h1)
   have hprim : IsPrimitiveRoot (algebraMap (NumberField.RingOfIntegers K) K c) T := by
-    rw [← hlT, ← hco]
-    exact (IsPrimitiveRoot.orderOf c).map_of_injective (IsFractionRing.injective _ K)
+    rw [← hlT]
+    exact hprimc.map_of_injective (IsFractionRing.injective _ K)
   have : NeZero T := ⟨hT.ne_zero⟩
-  have hmin := Polynomial.cyclotomic_eq_minpoly_rat hprim (Nat.pos_of_ne_zero hT.ne_zero)
   have hdeg := minpoly.natDegree_le (A := ℚ) (algebraMap (NumberField.RingOfIntegers K) K c)
-  rw [← hmin, Polynomial.natDegree_cyclotomic, Nat.totient_prime hT] at hdeg
+  rw [← Polynomial.cyclotomic_eq_minpoly_rat hprim (Nat.pos_of_ne_zero hT.ne_zero),
+    Polynomial.natDegree_cyclotomic, Nat.totient_prime hT] at hdeg
   exact hdeg
 
 theorem invariant_kernel_trace_vanishes : Formalism.HermitianLattices.RamifiedLatticeOperators.InvariantKernelTraceVanishes := by
@@ -393,9 +387,7 @@ theorem card_ker {V W : Type} [AddCommGroup V] [Module F V] [Fintype V] [AddComm
     [Module F W] (L : V →ₗ[F] W) :
     Nat.card {x : V // L x = 0} = Fintype.card F ^ finrank F (LinearMap.ker L) := by
   classical
-  rw [show Nat.card {x : V // L x = 0} = Nat.card (LinearMap.ker L) from
-    Nat.card_congr (Equiv.subtypeEquivRight fun x => LinearMap.mem_ker.symm)]
-  rw [Nat.card_eq_fintype_card, Module.card_eq_pow_finrank (K := F)]
+  rw [show Nat.card {x : V // L x = 0} = Nat.card (LinearMap.ker L) from Nat.card_congr (Equiv.subtypeEquivRight fun x => LinearMap.mem_ker.symm), Nat.card_eq_fintype_card, Module.card_eq_pow_finrank (K := F)]
 
 theorem mem_range_iff_dual {m k : Type} [Fintype m] [Fintype k] [DecidableEq m] [DecidableEq k]
     (A : Matrix m k F) (v : m → F) :

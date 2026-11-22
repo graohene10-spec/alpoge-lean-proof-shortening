@@ -149,9 +149,7 @@ theorem phInf_eq (I : AutInst) {H : InfinitePlace I.F → Type} [∀ v, NormedAd
     (w : ∀ v, H v) (dv : InfinitePlace I.F → ℝ) :
     phInf I σ w dv = fun g => ∏ v, phLoc (ε := I.ε v) (σ v) (w v) (dv v) (g v) := by
   funext g
-  simp only [phInf, mInf, phLoc, Complex.ofReal_prod, Finset.prod_mul_distrib]
-  congr 1
-  exact map_prod (starRingEnd ℂ) _ _
+  simp [phInf, mInf, phLoc, Complex.ofReal_prod, Finset.prod_mul_distrib]
 
 theorem projRowsR_of (hS : SchurConv) (hC : ConvProj) (hP : ProdConv) (hR : RegUnitary) : ProjRowsR := by
   classical

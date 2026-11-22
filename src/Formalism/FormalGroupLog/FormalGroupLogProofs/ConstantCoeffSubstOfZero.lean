@@ -79,9 +79,8 @@ theorem hX1 : constantCoeff (MvPowerSeries.X 1 : MvPowerSeries (Fin 2) R) = 0 :=
 theorem eval_zero_subst_law (φ : PowerSeries R) :
     MvPowerSeries.subst ![(PowerSeries.X : PowerSeries R), 0] (φ.subst F.toPowerSeries) = φ := by
   rw [psubst_subst φ F.zero_constantCoeff hb0]
-  have : MvPowerSeries.subst ![(PowerSeries.X : PowerSeries R), 0] F.toPowerSeries =
-      PowerSeries.X := F.Xzero_eq_X
-  rw [this, PowerSeries.X_subst]
+  rw [(show MvPowerSeries.subst ![(PowerSeries.X : PowerSeries R), 0] F.toPowerSeries =
+      PowerSeries.X from F.Xzero_eq_X), PowerSeries.X_subst]
 
 theorem evalYZero_atY (φ : PowerSeries R) :
     MvPowerSeries.subst ![(PowerSeries.X : PowerSeries R), 0] (atY φ) =
@@ -104,8 +103,7 @@ theorem derivative_log_mul_omega {g : PowerSeries R} (hg : IsLog F g) :
   rw [subst_mul hb0, eval_zero_subst_law, evalYZero_atY] at this
   rw [omegaF, this]
   have h1 : PowerSeries.constantCoeff (PowerSeries.derivative R g) = 1 := by
-    rw [← PowerSeries.coeff_zero_eq_constantCoeff_apply, PowerSeries.coeff_derivative, hg.2.1]
-    simp
+    simp [← PowerSeries.coeff_zero_eq_constantCoeff_apply, PowerSeries.coeff_derivative, hg.2.1]
   rw [h1, map_one]
 
 theorem log_unique [Algebra ℚ R] {f g : PowerSeries R} (hf : IsLog F f) (hg : IsLog F g) :

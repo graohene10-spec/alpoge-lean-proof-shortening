@@ -34,9 +34,7 @@ theorem netUnitMean : NetUnitMean := by
   intro Λ _ y X lg hy hs
   rcases isEmpty_or_nonempty Λ with h | ⟨⟨w0⟩⟩
   · simp at hs ⊢
-  · have hc : (Fintype.card Λ : ℝ) ≠ 0 := by
-      have : 0 < Fintype.card Λ := Fintype.card_pos_iff.mpr ⟨w0⟩
-      positivity
+  · have hc : (Fintype.card Λ : ℝ) ≠ 0 := by exact_mod_cast (Fintype.card_pos_iff.mpr ⟨w0⟩).ne'
     have h1 : ∀ w, y w = y w0 := fun w => hy w w0
     have h2 : lg = (Fintype.card Λ : ℝ) * y w0 := by
       rw [← hs, Finset.sum_congr rfl (fun w _ => h1 w)]; simp
@@ -255,8 +253,7 @@ theorem net_index_real (F : Type) [Field F] [Fintype F] (n e E : ℕ) (H : Subgr
   have h1 : (H.index : ℝ) * (Fintype.card F : ℝ) ^ e = (Nat.card (GL (Fin n) F) : ℝ) := by
     rw [← H.index_mul_card, hH]; push_cast; ring
   rw [(netCardGL F n).2, ← hE, pow_add] at h1
-  have h2 : (Fintype.card F : ℝ) ^ e ≠ 0 := (pow_pos hq e).ne'
-  apply mul_right_cancel₀ h2
+  apply mul_right_cancel₀ (pow_pos hq e).ne'
   rw [h1]; ring
 
 theorem net_card_of_pattern (F : Type) [Field F] [Fintype F] (n : ℕ) (S : Finset (Fin n × Fin n))
@@ -275,9 +272,7 @@ theorem netBalanceG : NetBalanceG := by
     h1 hA h4 h5 n R1 R2 hTP hJ hk hJk hn1 hn2 hR2
   have hb := balanceG J T P D del hD hdel colL colLb aL aLb Dpi Dp Dm eta etab top k w e1 e2 Ecol CA
     rL rLb Etw h1 hA h4 h5
-  have hr := netReturnOfA ℕ P T hTP n top R1 R2 (J.card : ℝ) k (by exact_mod_cast hJ) hk hJk hn1 hn2
-    hR2
-  have hr' := (abs_le.mp hr).1
+  have hr' := (abs_le.mp (netReturnOfA ℕ P T hTP n top R1 R2 (J.card : ℝ) k (by exact_mod_cast hJ) hk hJk hn1 hn2 hR2)).1
   have e : ∑ j ∈ J, ∑ τ ∈ P, (w j τ + e1 j τ + e2 j τ)
       = ∑ j ∈ J, ∑ τ ∈ P, w j τ + ∑ j ∈ J, ∑ τ ∈ P, (e1 j τ + e2 j τ) := by
     rw [← Finset.sum_add_distrib]; refine Finset.sum_congr rfl fun j _ => ?_

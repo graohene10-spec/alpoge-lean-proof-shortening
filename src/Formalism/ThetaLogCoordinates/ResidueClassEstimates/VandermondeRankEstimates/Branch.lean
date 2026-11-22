@@ -81,10 +81,7 @@ lemma det_diff {n : ℕ} (M : Matrix (Fin (n + 1)) (Fin (n + 1)) ℝ) (h : ∀ i
     · simp [B]
     · simp [B]
   rw [h1, Matrix.det_succ_column_zero, Fin.sum_univ_succ]
-  have h2 : ∀ i : Fin n, B i.succ 0 = 0 := by
-    intro i; simp [B, h]
-  have h3 : B 0 0 = 1 := by simp [B, h]
-  simp only [h2, h3, mul_zero, zero_mul, Finset.sum_const_zero, add_zero, Fin.val_zero, pow_zero, one_mul]
+  simp [B, h]
   congr 1
 
 def W (n : ℕ) (u : ℕ → ℝ) : ℝ := ∏ j ∈ range n, ∏ i ∈ range j, (u j - u i)

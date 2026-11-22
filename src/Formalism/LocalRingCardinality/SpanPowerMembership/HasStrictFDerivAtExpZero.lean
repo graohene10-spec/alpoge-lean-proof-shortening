@@ -19,14 +19,10 @@ def logA : 𝔸 → 𝔸 := (hasStrictFDerivAt_exp_zero_alt (𝔸 := 𝔸)).loca
 theorem logA_exp : ∀ᶠ X in 𝓝 (0 : 𝔸), logA 𝔸 (exp X) = X := hasStrictFDerivAt_exp_zero_alt.eventually_left_inverse
 
 theorem exp_logA : ∀ᶠ h in 𝓝 (1 : 𝔸), exp (logA 𝔸 h) = h := by
-  have h := (hasStrictFDerivAt_exp_zero_alt (𝔸 := 𝔸)).eventually_right_inverse
-  rw [exp_zero] at h
-  exact h
+  simpa [logA, exp_zero] using (hasStrictFDerivAt_exp_zero_alt (𝔸 := 𝔸)).eventually_right_inverse
 
 theorem logA_one : logA 𝔸 (1 : 𝔸) = 0 := by
-  have h := (hasStrictFDerivAt_exp_zero_alt (𝔸 := 𝔸)).localInverse_apply_image
-  rw [exp_zero] at h
-  exact h
+  simpa [logA] using (hasStrictFDerivAt_exp_zero_alt (𝔸 := 𝔸)).localInverse_apply_image
 
 theorem hasStrict_logA : HasStrictFDerivAt (logA 𝔸) (ContinuousLinearMap.id ℝ 𝔸) (1 : 𝔸) := by
   have h := (hasStrictFDerivAt_exp_zero_alt (𝔸 := 𝔸)).to_localInverse
@@ -62,22 +58,15 @@ theorem hasStrict_mul (L M : 𝔸 × 𝔸 →L[ℝ] 𝔸) :
   simp only [map_zero, exp_zero, one_smul, MulOpposite.op_one] at hprod
   have hlog : HasStrictFDerivAt (logA 𝔸) (ContinuousLinearMap.id ℝ 𝔸)
       (((fun p : 𝔸 × 𝔸 => exp (L p)) * fun p : 𝔸 × 𝔸 => exp (M p)) 0) := by
-    simp only [Pi.mul_apply, map_zero, exp_zero, mul_one]
-    exact hasStrict_logA
-  have h := hlog.comp (0 : 𝔸 × 𝔸) hprod
-  rw [ContinuousLinearMap.id_comp, add_comm] at h
-  exact h
+    simpa using hasStrict_logA
+  simpa only [Pi.mul_apply, ContinuousLinearMap.id_comp, add_comm] using hlog.comp (0 : 𝔸 × 𝔸) hprod
 
 theorem hasStrictFDerivAt_translateLog : HasStrictFDerivAt (F1 (𝔸 := 𝔸)) (ContinuousLinearMap.snd ℝ 𝔸 𝔸) 0 := by
-  have h := hasStrict_mul (𝔸 := 𝔸) (-ContinuousLinearMap.fst ℝ 𝔸 𝔸)
-    (ContinuousLinearMap.fst ℝ 𝔸 𝔸 + ContinuousLinearMap.snd ℝ 𝔸 𝔸)
-  rw [neg_add_cancel_left] at h
-  have hf : F1 (𝔸 := 𝔸) = fun p => logA 𝔸 (exp ((-ContinuousLinearMap.fst ℝ 𝔸 𝔸) p) *
-      exp ((ContinuousLinearMap.fst ℝ 𝔸 𝔸 + ContinuousLinearMap.snd ℝ 𝔸 𝔸) p)) := by
-    funext p
-    simp [F1]
-  rw [hf]
-  exact h
+  change HasStrictFDerivAt (fun p : 𝔸 × 𝔸 =>
+    logA 𝔸 (exp (-p.1) * exp (p.1 + p.2))) (ContinuousLinearMap.snd ℝ 𝔸 𝔸) 0
+  simpa [neg_add_cancel_left] using
+    hasStrict_mul (𝔸 := 𝔸) (-ContinuousLinearMap.fst ℝ 𝔸 𝔸)
+      (ContinuousLinearMap.fst ℝ 𝔸 𝔸 + ContinuousLinearMap.snd ℝ 𝔸 𝔸)
 
 theorem hasStrictFDerivAt_productLog : HasStrictFDerivAt (F2 (𝔸 := 𝔸))
     (ContinuousLinearMap.fst ℝ 𝔸 𝔸 + ContinuousLinearMap.snd ℝ 𝔸 𝔸) 0 := hasStrict_mul (ContinuousLinearMap.fst ℝ 𝔸 𝔸) (ContinuousLinearMap.snd ℝ 𝔸 𝔸)
@@ -86,8 +75,7 @@ theorem eventually_pair {P : 𝔸 × 𝔸 → Prop} (h : ∀ᶠ p in 𝓝 (0 : �
     ∃ δ > 0, ∀ X Y : 𝔸, ‖X‖ < δ → ‖Y‖ < δ → P (X, Y) := by
   obtain ⟨δ, hδ, hP⟩ := Metric.eventually_nhds_iff.1 h
   refine ⟨δ, hδ, fun X Y hX hY => hP ?_⟩
-  rw [dist_zero_right, Prod.norm_def]
-  exact max_lt hX hY
+  simpa [dist_zero_right, Prod.norm_def] using max_lt hX hY
 
 theorem strict_est {F : 𝔸 × 𝔸 → 𝔸} {F' : 𝔸 × 𝔸 →L[ℝ] 𝔸} (hF : HasStrictFDerivAt F F' 0)
     {ε : ℝ} (hε : 0 < ε) : ∃ δ > 0, ∀ X Y : 𝔸, ‖X‖ < δ → ‖Y‖ < δ →

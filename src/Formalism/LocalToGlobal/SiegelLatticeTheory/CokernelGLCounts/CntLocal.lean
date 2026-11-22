@@ -250,12 +250,10 @@ theorem gaPlus_eq_gram (D : Formalism.BasicNotions.D7) {M : ∀ p : PlF D, Forma
   ext a b
   cases hs : (M p).split with
   | none =>
-    simp only [GaPlus, hs, Formalism.MainNotions.S.Loc.HermSp.gram, Formalism.MainNotions.S.Loc.HermSp.MMfam, Matrix.of_apply]
-    rw [gaLoc_gram D L]
+    simp only [GaPlus, hs, Formalism.MainNotions.S.Loc.HermSp.gram, Formalism.MainNotions.S.Loc.HermSp.MMfam, Matrix.of_apply, gaLoc_gram D L]
     rcases a with a | a <;> rcases b with b | b <;> rfl
   | some g =>
-    rw [gaPlus_gram_G D L δ p F F' g hs]
-    simp only [Formalism.MainNotions.S.Loc.HermSp.gram, Formalism.MainNotions.S.Loc.HermSp.MMfam, hs, Matrix.of_apply]
+    simpa only [Formalism.MainNotions.S.Loc.HermSp.gram, Formalism.MainNotions.S.Loc.HermSp.MMfam, hs, Matrix.of_apply] using gaPlus_gram_G D L δ p F F' g hs a b
 
 theorem zhatLoc_eq (D : Formalism.BasicNotions.D7) {M : ∀ p : PlF D, Formalism.MainNotions.S.Loc.Model (D.s.atP p).Fp (D.s.atP p).Ep}
     (L : LocSp D M) (δ : ∀ p : PlF D, (D.s.atP p).Fp) (p : PlF D) {T T' : D.host.E}
@@ -278,8 +276,7 @@ theorem nu_eq_zero_of_GZ (D : Formalism.BasicNotions.D7) {T T' : D.host.E} (F0 :
     exact hG (by rw [gz_eq, hZ', hZ])
   have hc : ∀ Λ, cntE T' F0 Λ Z = 0 := by
     intro Λ
-    simp only [cntE, hE Λ, Set.mem_empty_iff_false, false_and, exists_false, Set.ofPred_false,
-      Set.encard_empty]
+    simp [cntE, hE Λ]
   simp [Formalism.L2.SG.CntLocal.nu, hc]
 
 end Formalism.L2.SG.CntLocal

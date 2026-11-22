@@ -67,9 +67,8 @@ theorem v_prod_nonneg {ι : Type} (s : Finset ι) (f : ι → K) (h : ∀ i ∈ 
   induction s using Finset.induction_on with
   | empty => rw [Finset.prod_empty, AddValuation.map_one]
   | @insert a s ha ih =>
-    rw [Finset.prod_insert ha, AddValuation.map_mul]
-    exact add_nonneg (h a (Finset.mem_insert_self a s))
-      (ih (fun i hi => h i (Finset.mem_insert_of_mem hi)))
+    rw [Finset.prod_insert ha]
+    exact v_mul_nonneg (h a (Finset.mem_insert_self a s)) (ih (fun i hi => h i (Finset.mem_insert_of_mem hi)))
 
 theorem v_mul_ge_left {x y : K} {c : WithTop ℚ} (hx : c ≤ v x) (hy : 0 ≤ v y) : c ≤ v (x * y) := by
   rw [AddValuation.map_mul]
@@ -379,8 +378,7 @@ theorem dg_one_fun (F : MvPolynomial σ K) : dg (fun _ => (1 : K)) F = F := by
 theorem dg_mul_fun (f g : (σ →₀ ℕ) → K) (F : MvPolynomial σ K) :
     dg (fun α => f α * g α) F = dg f (dg g F) := by
   ext α
-  simp only [coeff_dg_eq_coeff_mul, coeff_add, coeff_sub, coeff_smul, smul_eq_mul]
-  ring
+  simp [coeff_dg_eq_coeff_mul, mul_assoc, mul_comm, mul_left_comm]
 
 theorem dg_add_fun (f g : (σ →₀ ℕ) → K) (F : MvPolynomial σ K) :
     dg (fun α => f α + g α) F = dg f F + dg g F := by
@@ -391,8 +389,7 @@ theorem dg_add_fun (f g : (σ →₀ ℕ) → K) (F : MvPolynomial σ K) :
 theorem dg_smul_fun (a : K) (f : (σ →₀ ℕ) → K) (F : MvPolynomial σ K) :
     dg (fun α => a * f α) F = a • dg f F := by
   ext α
-  simp only [coeff_dg_eq_coeff_mul, coeff_add, coeff_sub, coeff_smul, smul_eq_mul]
-  ring
+  rw [coeff_dg_eq_coeff_mul, coeff_smul, coeff_dg_eq_coeff_mul, smul_eq_mul, mul_left_comm (coeff α F) a (f α)]
 
 theorem dg_sub_fun (f g : (σ →₀ ℕ) → K) (F : MvPolynomial σ K) :
     dg (fun α => f α - g α) F = dg f F - dg g F := by

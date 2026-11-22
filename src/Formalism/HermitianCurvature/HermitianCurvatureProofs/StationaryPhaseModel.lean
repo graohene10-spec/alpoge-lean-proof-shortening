@@ -54,8 +54,7 @@ theorem A_const_nonneg {f : E → F} (hw : ∀ x ∈ A, 0 < w x) (h : Sym A w m 
 theorem Sym.mono {f : E → F} {N' : ℕ} {K' : ℝ} (hw : ∀ x ∈ A, 0 < w x) (h : Sym A w m N K f) (hN : N' ≤ N)
     (hK : K ≤ K') : Sym A w m N' K' f := by
   refine ⟨h.1.of_le (by exact_mod_cast hN), fun x hx i hi => ?_⟩
-  refine (h.2 x hx i (hi.trans hN)).trans ?_
-  exact mul_le_mul_of_nonneg_right hK (zpow_pos (hw x hx) _).le
+  exact (h.2 x hx i (hi.trans hN)).trans (mul_le_mul_of_nonneg_right hK (zpow_pos (hw x hx) _).le)
 
 theorem Sym.subset {f : E → F} {A' : Set E} (h : Sym A w m N K f) (hA : A' ⊆ A) : Sym A' w m N K f :=
   ⟨h.1, fun x hx i hi => h.2 x (hA hx) i hi⟩
@@ -66,9 +65,8 @@ theorem A_cda {f : E → F} (h : ContDiff ℝ N f) {i : ℕ} (hi : i ≤ N) (x :
 theorem Sym.add {f g : E → F} (hf : Sym A w m N K₁ f) (hg : Sym A w m N K₂ g) :
     Sym A w m N (K₁ + K₂) (fun x => f x + g x) := by
   refine ⟨hf.1.add hg.1, fun x hx i hi => ?_⟩
-  have h1 : iteratedFDeriv ℝ i (fun x => f x + g x) x = iteratedFDeriv ℝ i f x + iteratedFDeriv ℝ i g x :=
-    iteratedFDeriv_add_apply (A_cda hf.1 hi x) (A_cda hg.1 hi x)
-  rw [h1, add_mul]
+  rw [show (fun x => f x + g x) = f + g from rfl,
+    iteratedFDeriv_add_apply (A_cda hf.1 hi x) (A_cda hg.1 hi x), add_mul]
   exact (norm_add_le _ _).trans (add_le_add (hf.2 x hx i hi) (hg.2 x hx i hi))
 
 theorem Sym.neg {f : E → F} (hf : Sym A w m N K f) : Sym A w m N K (fun x => - f x) := by
@@ -92,17 +90,15 @@ theorem Sym.sum {ι : Type*} (s : Finset ι) {f : ι → E → F} {Kl : ι → �
 theorem Sym.const_smul {f : E → F} (c : ℝ) (hf : Sym A w m N K f) :
     Sym A w m N (|c| * K) (fun x => c • f x) := by
   refine ⟨hf.1.const_smul c, fun x hx i hi => ?_⟩
-  have h1 : iteratedFDeriv ℝ i (fun x => c • f x) x = c • iteratedFDeriv ℝ i f x :=
-    iteratedFDeriv_const_smul_apply (A_cda hf.1 hi x)
-  rw [h1, norm_smul, Real.norm_eq_abs, mul_assoc]
+  change ‖iteratedFDeriv ℝ i (c • f) x‖ ≤ |c| * K * w x ^ (m - (i : ℤ))
+  rw [iteratedFDeriv_const_smul_apply (A_cda hf.1 hi x), norm_smul, Real.norm_eq_abs, mul_assoc]
   exact mul_le_mul_of_nonneg_left (hf.2 x hx i hi) (abs_nonneg c)
 
 theorem Sym.const_smul_complex {V : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V] {f : E → V} (c : ℂ)
     (hf : Sym A w m N K f) : Sym A w m N (‖c‖ * K) (fun x => c • f x) := by
   refine ⟨hf.1.const_smul c, fun x hx i hi => ?_⟩
-  have h1 : iteratedFDeriv ℝ i (fun x => c • f x) x = c • iteratedFDeriv ℝ i f x :=
-    iteratedFDeriv_const_smul_apply (A_cda hf.1 hi x)
-  rw [h1, norm_smul, mul_assoc]
+  change ‖iteratedFDeriv ℝ i (c • f) x‖ ≤ ‖c‖ * K * w x ^ (m - (i : ℤ))
+  rw [iteratedFDeriv_const_smul_apply (A_cda hf.1 hi x), norm_smul, mul_assoc]
   exact mul_le_mul_of_nonneg_left (hf.2 x hx i hi) (norm_nonneg c)
 
 theorem Sym.smul {f : E → ℝ} {g : E → F} (hw : ∀ x ∈ A, 0 < w x) (hf : Sym A w m₁ N K₁ f)
@@ -220,8 +216,7 @@ theorem A_fderiv_inv {f : E → ℝ} (hf : Differentiable ℝ f) (hpos : ∀ x, 
     fderiv ℝ (fun x => (f x)⁻¹) = fun x => -(((f x)⁻¹ * (f x)⁻¹) • fderiv ℝ f x) := by
   funext x
   have h := (hasDerivAt_inv (hpos x).ne').comp_hasFDerivAt x (hf x).hasFDerivAt
-  have h2 : HasFDerivAt (fun x => (f x)⁻¹) ((-(f x ^ 2)⁻¹) • fderiv ℝ f x) x := h
-  rw [h2.fderiv, neg_smul, sq, mul_inv]
+  rw [show fderiv ℝ (fun x => (f x)⁻¹) x = (-(f x ^ 2)⁻¹) • fderiv ℝ f x from h.fderiv, neg_smul, sq, mul_inv]
 
 theorem Sym.inv (N : ℕ) (K c : ℝ) (hc : 0 < c) : ∃ C : ℝ, 0 ≤ C ∧ ∀ (A : Set E) (w : E → ℝ) (f : E → ℝ),
     (∀ x ∈ A, 0 < w x) → Sym A w 2 N K f → (∀ x, 0 < f x) → (∀ x ∈ A, c * w x ^ 2 ≤ f x) →
@@ -422,8 +417,7 @@ theorem B_weight (d : ℕ) (β : ℂ) (hβ : β ≠ 0) : ∃ C₀ : ℝ, 0 ≤ C
     ring
 
 theorem B_norm_osc {E : Type*} (φ : E → ℝ) (τ : ℝ) (x : E) : ‖osc φ τ x‖ = 1 := by
-  unfold osc
-  exact Complex.norm_exp_I_mul_ofReal _
+  simpa only [osc] using Complex.norm_exp_I_mul_ofReal (φ x / τ)
 
 section IBP
 
@@ -637,9 +631,7 @@ theorem B_reduce (ι : Type) [Fintype ι] (n : ℕ) (Γ c₀ : ℝ) (hc₀ : 0 <
 end Reduce
 
 theorem B_norm_dirv {d : ℕ} (l : Fin d × Bool) : ‖dirv l‖ = 1 := by
-  unfold dirv
-  rw [Pi.norm_single]
-  split_ifs <;> simp
+  by_cases h : l.2 = true <;> simp [dirv, Pi.norm_single, h, Complex.norm_I]
 
 theorem osc_bound (d q : ℕ) (β : ℂ) (hβ : β ≠ 0) (Γ c₁ : ℝ) (hc₁ : 0 < c₁) : ∃ C : ℝ, 0 ≤ C ∧
     ∀ (A : Set (Fin d → ℂ)) (φ : (Fin d → ℂ) → ℝ) (τ : ℝ), 0 < τ →
@@ -720,9 +712,7 @@ variable {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [NormedAddComm
 
 theorem C_line_hasDerivAt {f : E → F} {y v : E} {ζ : ℂ} (h : DifferentiableAt ℂ f (y + ζ • v)) :
     HasDerivAt (fun z : ℂ => f (y + z • v)) (fderiv ℂ f (y + ζ • v) v) ζ := by
-  have h1 : HasDerivAt (fun z : ℂ => y + z • v) v ζ := by
-    simpa using ((hasDerivAt_id ζ).smul_const v).const_add y
-  exact h.hasFDerivAt.comp_hasDerivAt ζ h1
+  simpa [Function.comp_def] using h.hasFDerivAt.comp_hasDerivAt ζ (((hasDerivAt_id ζ).smul_const v).const_add y)
 
 theorem C_norm_fderiv_le {f : E → F} {y : E} {δ M : ℝ} (hδ : 0 < δ)
     (hf : DifferentiableOn ℂ f (ball y δ)) (hM : ∀ z ∈ ball y δ, ‖f z‖ ≤ M) :
@@ -990,11 +980,10 @@ theorem D_norm_sq_le_nsq (d : ℕ) (x : Fin d → ℂ) : ‖x‖ ^ 2 ≤ D_nsq d
 theorem D_exp_decay (n : ℕ) (s : ℝ) (hs : 0 ≤ s) :
     (1 + s) ^ (2 * n) * Real.exp (-s ^ 2) ≤ 2 ^ n * n.factorial * Real.exp 1 := by
   have h1 : (1 + s) ^ 2 ≤ 2 * (1 + s ^ 2) := by nlinarith [sq_nonneg (1 - s)]
-  have h2 : (1 + s ^ 2) ^ n / n.factorial ≤ Real.exp (1 + s ^ 2) :=
-    Real.pow_div_factorial_le_exp _ (by positivity) n
   have h3 : (1 + s ^ 2) ^ n ≤ n.factorial * Real.exp (1 + s ^ 2) := by
-    rw [div_le_iff₀ (by positivity)] at h2
-    linarith
+    rw [mul_comm]
+    exact (div_le_iff₀ (by positivity)).1
+      (Real.pow_div_factorial_le_exp (1 + s ^ 2) (by positivity) n)
   calc (1 + s) ^ (2 * n) * Real.exp (-s ^ 2) = ((1 + s) ^ 2) ^ n * Real.exp (-s ^ 2) := by rw [pow_mul]
     _ ≤ (2 * (1 + s ^ 2)) ^ n * Real.exp (-s ^ 2) := by gcongr
     _ = 2 ^ n * (1 + s ^ 2) ^ n * Real.exp (-s ^ 2) := by rw [mul_pow]
@@ -1367,12 +1356,8 @@ theorem D_phi_lower (d : ℕ) (hd : 0 < d) (c : ℂ) (hc : c ≠ 0) (H : Matrix 
   by_contra hcon
   push Not at hcon
   have hx0 : 0 < ‖x‖ := by
-    have := hcon (⟨0, hd⟩, false)
-    have h2 := (abs_nonneg _).trans_lt this
-    by_contra h3
-    have h4 : ‖x‖ = 0 := le_antisymm (not_lt.1 h3) (norm_nonneg x)
-    rw [h4, mul_zero] at h2
-    exact lt_irrefl _ h2
+    have h2 : 0 < ‖c‖ / (4 * Λ) * ‖x‖ := (abs_nonneg _).trans_lt (hcon (⟨0, hd⟩, false))
+    exact pos_of_mul_pos_right h2 (by positivity)
   have hk : ∀ k, ‖(H *ᵥ x) k‖ ≤ ‖x‖ / (2 * Λ) := by
     intro k
     have h1 := hcon (k, false)
@@ -1836,9 +1821,7 @@ theorem E_P_vanish {φ : E → ℝ} (hφ : ContDiff ℝ 2 φ) (hc : fderiv ℝ �
     (hφ.fderiv_right (m := 1) (by norm_num)).differentiable (by norm_num)
   have h2 : fderiv ℝ (fderiv ℝ (E_P φ)) 0 = 0 := by
     rw [E_P_fderiv hφ]
-    have := ((hd 0).hasFDerivAt.sub (fderiv ℝ (fderiv ℝ φ) 0).hasFDerivAt).fderiv
-    rw [sub_self] at this
-    exact this
+    exact (((hd 0).hasFDerivAt.sub (fderiv ℝ (fderiv ℝ φ) 0).hasFDerivAt).fderiv).trans (sub_self (fderiv ℝ (fderiv ℝ φ) 0))
   intro i hi
   rw [← norm_eq_zero]
   interval_cases i
@@ -2002,8 +1985,7 @@ theorem E_dphi_sym {φ : E → ℝ} {N : ℕ} (hN : 1 ≤ N) (hφ : ContDiff ℝ
     rw [← norm_eq_zero, norm_iteratedFDeriv_zero, hc, norm_zero]
 
 theorem E_wt_pos {σ : ℝ} (hσ : 0 < σ) (x : E) : 0 < wt σ x := by
-  unfold wt
-  linarith [norm_nonneg x]
+  simpa [wt, add_comm] using add_pos_of_nonneg_of_pos (norm_nonneg x) hσ
 
 theorem E_ph_sym {φ : E → ℝ} {N : ℕ} (hN : 1 ≤ N) (hφ : ContDiff ℝ (N + 1 : ℕ) φ) {r Γ σ : ℝ} (hr : 0 < r)
     (hσ : 0 < σ) (hσ1 : σ ≤ 1) (hc : fderiv ℝ φ 0 = 0)
@@ -2027,8 +2009,7 @@ theorem E_ph_sym {φ : E → ℝ} {N : ℕ} (hN : 1 ≤ N) (hφ : ContDiff ℝ (
   linarith
 
 theorem E_norm_dirv {d : ℕ} (l : Fin d × Bool) : ‖(dirv l : Fin d → ℂ)‖ = 1 := by
-  unfold dirv
-  rw [Pi.norm_single]
+  simp [dirv, Pi.norm_single]
   split_ifs <;> simp
 
 theorem E_ph_low {d : ℕ} {φ : (Fin d → ℂ) → ℝ} {n : ℕ} (h3n : 3 ≤ n) (hφ : ContDiff ℝ n φ) {r Γ c₁ ρ : ℝ}
@@ -2776,8 +2757,7 @@ theorem F_g_contDiffOn (hg : DifferentiableOn ℂ g (Metric.ball 0 (2 * r))) (n 
 
 theorem F_phi_contDiff (hr : 0 < r) (hg : DifferentiableOn ℂ g (Metric.ball 0 (2 * r))) (c : ℂ) (n : ℕ) :
     ContDiff ℝ n (F_phi d r c g) := by
-  refine F_contDiff_mul_cut Metric.isOpen_ball (F_bump_contDiff hr n) (F_bump_tsupport hr) ?_
-  exact (realPartMulCLM c).contDiff.comp_contDiffOn (F_g_contDiffOn hg n)
+  exact F_contDiff_mul_cut Metric.isOpen_ball (F_bump_contDiff hr n) (F_bump_tsupport hr) ((realPartMulCLM c).contDiff.comp_contDiffOn (F_g_contDiffOn hg n))
 
 theorem F_phi_ev (hr : 0 < r) (c : ℂ) {x : Fin d → ℂ} (hx : x ∈ Metric.ball (0 : Fin d → ℂ) (5 * r / 4)) :
     F_phi d r c g =ᶠ[𝓝 x] (realPartMulCLM c ∘ g) := by
@@ -3109,20 +3089,16 @@ theorem oscillatory_integral_trivial_bound (d : ℕ) (β : ℂ) (hβ : β ≠ 0)
     ‖∫ x : Fin d → ℂ, u x • a x ∂(muPi β (Fin d))‖ ≤
       S * (muPi β (Fin d) (Metric.closedBall 0 r)).toReal := by
   have := isAddHaar_muPi d β hβ
-  have h1 : ∫ x : Fin d → ℂ, u x • a x ∂(muPi β (Fin d)) =
-      ∫ x in Metric.closedBall (0 : Fin d → ℂ) r, u x • a x ∂(muPi β (Fin d)) := by
-    symm
-    apply setIntegral_eq_integral_of_forall_compl_eq_zero
-    intro x hx
-    have : a x = 0 := by
-      by_contra hne
-      exact hx (hsupp hne)
-    rw [this, smul_zero]
-  rw [h1]
+  rw [← show ∫ x in Metric.closedBall (0 : Fin d → ℂ) r, u x • a x ∂(muPi β (Fin d)) =
+      ∫ x : Fin d → ℂ, u x • a x ∂(muPi β (Fin d)) from
+    setIntegral_eq_integral_of_forall_compl_eq_zero (fun x hx => by
+      have : a x = 0 := by
+        by_contra hne
+        exact hx (hsupp hne)
+      rw [this, smul_zero])]
   refine norm_setIntegral_le_of_norm_le_const (isCompact_closedBall _ _).measure_lt_top ?_
   intro x _
-  rw [norm_smul, hu, one_mul]
-  exact hS x
+  simpa [norm_smul, hu x] using hS x
 
 theorem F_zero (d : ℕ) (hd : 0 < d) (β : ℂ) (hβ : β ≠ 0) (r Λ : ℝ) (hr : 0 < r) (hΛ : 0 < Λ) : ∃ C : ℝ, 0 ≤ C ∧
     ∀ (g : (Fin d → ℂ) → ℂ) (dg : (Fin d → ℂ) → Fin d → ℂ) (H : Matrix (Fin d) (Fin d) ℂ),

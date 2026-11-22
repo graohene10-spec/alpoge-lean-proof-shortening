@@ -18,9 +18,7 @@ variable {K : Type} [Field K]
 theorem rf_inv_entries_mem (K0 : Subfield K) {d : ℕ} (A : Matrix (Fin d) (Fin d) K) (hA : ∀ i j, A i j ∈ K0) (i j : Fin d) :
     A⁻¹ i j ∈ K0 := by
   let A0 : Matrix (Fin d) (Fin d) K0 := fun i j => ⟨A i j, hA i j⟩
-  have e : A = A0.map K0.subtype := rfl
-  rw [Matrix.inv_def, Matrix.smul_apply, smul_eq_mul, Ring.inverse_eq_inv', e, ← RingHom.mapMatrix_apply,
-    ← RingHom.map_det, ← RingHom.map_adjugate]
+  rw [Matrix.inv_def, Matrix.smul_apply, smul_eq_mul, Ring.inverse_eq_inv', show A = A0.map K0.subtype from rfl, ← RingHom.mapMatrix_apply, ← RingHom.map_det, ← RingHom.map_adjugate]
   exact mul_mem (inv_mem (A0.det).2) ((A0.adjugate i j).2)
 
 end Mat
@@ -61,17 +59,14 @@ theorem csum_basis (i : Fin S.dim) (x : Fin S.dim → K) :
 theorem repr_mem (R : S.Rat) (hb : S.HasRatBasis) (hdet : S.H.det ≠ 0) (f : S.Forms) (hf : S.IsRat (f : S.Cl → S.V))
     (i : Fin S.dim) : S.basis.repr f i ∈ cmMax K := by
   set x : Fin S.dim → K := S.basis.equivFun f with hx
-  have hI : S.I x = (f : S.Cl → S.V) := by
-    rw [S.I_apply, hx, LinearEquiv.symm_apply_apply]
   have h1 : S.H *ᵥ x = fun i => S.csum (S.basis i : S.Cl → S.V) (f : S.Cl → S.V) := by
     funext i
-    rw [← csum_basis, hI]
+    rw [← csum_basis, S.I_apply, hx, LinearEquiv.symm_apply_apply]
   have h2 : x = S.H⁻¹ *ᵥ fun i => S.csum (S.basis i : S.Cl → S.V) (f : S.Cl → S.V) := by
     rw [← h1, Matrix.mulVec_mulVec, Matrix.nonsing_inv_mul _ (isUnit_iff_ne_zero.mpr hdet), Matrix.one_mulVec]
   show x i ∈ cmMax K
-  rw [h2]
-  show ∑ j, S.H⁻¹ i j * S.csum (S.basis j : S.Cl → S.V) (f : S.Cl → S.V) ∈ cmMax K
-  exact sum_mem fun j _ => mul_mem (rf_inv_entries_mem _ _ (H_mem S R hb) i j) (csum_mem S R _ _ (S.basis_rat hb j) hf)
+  simpa [h2, Matrix.mulVec, dotProduct] using
+    sum_mem fun j _ => mul_mem (rf_inv_entries_mem _ _ (H_mem S R hb) i j) (csum_mem S R _ _ (S.basis_rat hb j) hf)
 
 theorem actRat_of (R : S.Rat) (hb : S.HasRatBasis) (hdet : S.H.det ≠ 0) {G : Type} [Group G] [Fintype G]
     (r : Representation K G S.Forms)

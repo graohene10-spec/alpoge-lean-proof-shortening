@@ -53,8 +53,7 @@ theorem initPart_int (v : σ) (e : ℕ) (f : MvPolynomial σ ℚ_[p]) (hf : f �
   rw [coeff_initPart]
   split_ifs
   · exact hf m
-  · rw [norm_zero]
-    exact zero_le_one
+  · simp
 
 theorem initPart_zero_X_mul (v : σ) (a : MvPolynomial σ ℚ_[p]) : initPart v 0 (X v * a) = 0 := by
   classical

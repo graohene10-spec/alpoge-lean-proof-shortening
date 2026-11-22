@@ -88,11 +88,9 @@ theorem hwProj_comm' (LL : Letters N) (j : ℕ) (ρ : Fin r) (la : Fin r → ℤ
   rw [h2, inf_assoc, inf_idem]
 
 theorem resL_fix' {σ : Type} (v : σ) (x : MvPolynomial σ ℚ_[p]) (hx : x ∈ FreeOf p v) : resL p v 0 x = x := by
-  have hx' : ↑x.support ⊆ {m : σ →₀ ℕ | m v = 0} := by
-    have h' := hx
-    simp only [FreeOf, MvPolynomial.restrictSupport, AddMonoidAlgebra.supported, Finsupp.mem_supported, Submodule.mem_comap,
-      LinearEquiv.coe_coe, AddMonoidAlgebra.coeffLinearEquiv_apply] at h'
-    exact h'
+  have hx' := hx
+  simp only [FreeOf, MvPolynomial.restrictSupport, AddMonoidAlgebra.supported, Finsupp.mem_supported, Submodule.mem_comap,
+    LinearEquiv.coe_coe, AddMonoidAlgebra.coeffLinearEquiv_apply] at hx'
   change initPart v 0 x = x
   unfold initPart
   conv_rhs => rw [x.as_sum]

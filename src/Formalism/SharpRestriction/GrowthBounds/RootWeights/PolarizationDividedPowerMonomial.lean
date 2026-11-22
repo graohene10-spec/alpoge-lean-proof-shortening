@@ -86,11 +86,10 @@ variable {σ : Type}
 
 theorem exponent_factorial_erase_single (m : σ →₀ ℕ) (v : σ) (j : ℕ) :
     expFact (m.erase v + Finsupp.single v j) = expFact (m.erase v) * j.factorial := by
-  have hd : Disjoint (m.erase v).support (Finsupp.single v j).support :=
-    Finset.disjoint_of_subset_right Finsupp.support_single_subset
-      (Finset.disjoint_singleton_right.mpr (by simp))
   unfold expFact
-  rw [Finsupp.prod_add_index_of_disjoint hd, Finsupp.prod_single_index (by simp)]
+  rw [Finsupp.prod_add_index_of_disjoint (Finset.disjoint_of_subset_right Finsupp.support_single_subset
+      (Finset.disjoint_singleton_right.mpr (by simp))),
+    Finsupp.prod_single_index (by simp)]
 
 theorem exponent_factorial_add_single (m : σ →₀ ℕ) (v : σ) (k : ℕ) :
     expFact (m + Finsupp.single v k) * (m v).factorial = expFact m * (m v + k).factorial := by

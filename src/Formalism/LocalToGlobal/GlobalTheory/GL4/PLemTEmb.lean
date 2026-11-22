@@ -52,11 +52,8 @@ def vec {S : HSpace E} (M : Model S) (σ : E →+* ℂ) (x : S.V) : Fin S.rank �
 
 theorem vec_add {S : HSpace E} (M : Model S) (σ : E →+* ℂ) (x y : S.V) :
     vec M σ (x + y) = vec M σ x + vec M σ y := by
-  unfold vec
-  rw [← Matrix.mulVec_add]
-  congr 1
-  ext j
-  simp
+  simp [vec]
+  exact Matrix.mulVec_add (M.Y σ) (fun j => σ (S.frame.repr x j)) (fun j => σ (S.frame.repr y j))
 
 theorem vec_rat {S : HSpace E} (M : Model S) (σ : E →+* ℂ) (r : ℚ) (x : S.V) :
     vec M σ ((r : E) • x) = (r : ℂ) • vec M σ x := by

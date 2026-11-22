@@ -287,8 +287,7 @@ theorem one_le_norm_mul_discr_sq (β : E) (hβ : β ≠ 0)
   have hinv : dd = (FractionalIdeal.dual ℤ ℚ (1 : FractionalIdeal (𝓞 E)⁰ E))⁻¹ :=
     coeIdeal_differentIdeal ℤ ℚ E (𝓞 E)
   have hdd0 : dd ≠ 0 := by
-    rw [hinv]
-    exact inv_ne_zero hdual0
+    simp [hinv, inv_ne_zero hdual0]
   have h1 : FractionalIdeal.spanSingleton (𝓞 E)⁰ β * dd ≤ FractionalIdeal.dual ℤ ℚ 1 := by
     rw [FractionalIdeal.mul_le]
     intro i hi j hj
@@ -308,9 +307,7 @@ theorem one_le_norm_mul_discr_sq (β : E) (hβ : β ≠ 0)
     mul_ne_zero (mul_ne_zero (FractionalIdeal.spanSingleton_ne_zero_iff.mpr hβ) hdd0) hdd0
   have hI0 : I' ≠ ⊥ := by
     rintro rfl
-    apply hne
-    rw [← hI']
-    simp
+    exact hne (by rw [← hI']; simp)
   have hn := congrArg FractionalIdeal.absNorm hI'
   rw [FractionalIdeal.coeIdeal_absNorm, map_mul, map_mul, FractionalIdeal.absNorm_span_singleton, hdd,
     FractionalIdeal.coeIdeal_absNorm, absNorm_differentIdeal E] at hn
@@ -412,12 +409,10 @@ theorem star_mem_inverseDifferent (z : E) (hz : z ∈ FractionalIdeal.dual ℤ �
 theorem different_mul_dual_mem_range (δ : 𝓞 E) (hδ : δ ∈ differentIdeal ℤ (𝓞 E)) (z : E)
     (hz : z ∈ FractionalIdeal.dual ℤ ℚ (1 : FractionalIdeal (𝓞 E)⁰ E)) :
     algebraMap (𝓞 E) E δ * z ∈ (algebraMap (𝓞 E) E).range := by
-  have hdual0 : FractionalIdeal.dual ℤ ℚ (1 : FractionalIdeal (𝓞 E)⁰ E) ≠ 0 :=
-    FractionalIdeal.dual_ne_zero ℤ ℚ one_ne_zero
-  have h1 : algebraMap (𝓞 E) E δ * z ∈
-      ((differentIdeal ℤ (𝓞 E) : Ideal (𝓞 E)) : FractionalIdeal (𝓞 E)⁰ E) * FractionalIdeal.dual ℤ ℚ 1 :=
-    FractionalIdeal.mul_mem_mul ((FractionalIdeal.mem_coeIdeal _).mpr ⟨δ, hδ, rfl⟩) hz
-  rw [coeIdeal_differentIdeal ℤ ℚ E (𝓞 E), inv_mul_cancel₀ hdual0] at h1
+  have h1 := FractionalIdeal.mul_mem_mul
+    ((FractionalIdeal.mem_coeIdeal _).mpr ⟨δ, hδ, rfl⟩) hz
+  rw [coeIdeal_differentIdeal ℤ ℚ E (𝓞 E),
+    inv_mul_cancel₀ (FractionalIdeal.dual_ne_zero ℤ ℚ (one_ne_zero : (1 : FractionalIdeal (𝓞 E)⁰ E) ≠ 0))] at h1
   exact (FractionalIdeal.mem_one_iff _).mp h1
 
 theorem dualLattice_smul_mem (S : HSpace E) (L : Submodule (𝓞 E) S.V) (o : 𝓞 E) (y : S.V) (hy : y ∈ dualSub S L) :

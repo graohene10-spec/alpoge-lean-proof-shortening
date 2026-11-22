@@ -40,10 +40,8 @@ theorem szh_sf (N : ℕ) :
       ∏ i ∈ range N, (i.factorial : ℝ) := by
   simp_rw [szh_sf_inner_lemma]
   refine (Fin.prod_univ_eq_prod_range (fun i : ℕ => ((N - (i + 1)).factorial : ℝ)) N).trans ?_
-  refine Eq.trans ?_ (Finset.prod_range_reflect (fun i : ℕ => (i.factorial : ℝ)) N)
-  apply Finset.prod_congr rfl
+  refine (Finset.prod_congr rfl ?_).trans (Finset.prod_range_reflect (fun i : ℕ => (i.factorial : ℝ)) N)
   intro i _
-  show ((N - (i + 1)).factorial : ℝ) = ((N - 1 - i).factorial : ℝ)
   rw [show N - (i + 1) = N - 1 - i by omega]
 
 theorem szh_fdegHC {N : ℕ} (lam : Fin N → ℝ) (h : StrictAnti lam) :

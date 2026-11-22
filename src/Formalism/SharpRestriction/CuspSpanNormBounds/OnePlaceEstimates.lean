@@ -241,12 +241,10 @@ def BesselConjugatesEveryCell (D : D7) (Ch Cg Cq Cb : ℝ) : Prop :=
           (DpowPt α γ * star (DpowPt β γ)) • OrbInt L (fν 0) g νm = ∑' ν, a ν • OrbInt L (fν ν) g νm)
 
 theorem bessel_iteration_of_near {D : D7} {Ch Cg Cq Cb : ℝ} (h : BesselIterationNearParameter D Ch Cg Cq Cb) : BesselDerivativeIteration D Ch Cg Cq Cb := by
-  intro L f μsec ka b κ p hκ hL hR hf hs α hα
-  exact h L L.lam f μsec ka b κ p hκ hL hR.toC hf hs α hα
+  exact fun L f μsec ka b κ p hκ hL hR => h L L.lam f μsec ka b κ p hκ hL hR.toC
 
 theorem bessel_expansion_coeff_of_near {D : D7} {Ch Cg Cq Cb : ℝ} (h : BesselExpansionNearParameter D Ch Cg Cq Cb) : BesselExpansionCoefficientSum D Ch Cg Cq Cb := by
-  intro L μsec ka b κ p Hν _ _ _ σν fν hκ hL hR hs hν h0 α hα
-  exact h L L.lam μsec ka b κ p Hν σν fν hκ hL hR.toC hs hν h0 α hα
+  exact fun L μsec ka b κ p Hν _ _ _ σν fν hκ hL hR hs hν h0 α hα => h L L.lam μsec ka b κ p Hν σν fν hκ hL hR.toC hs hν h0 α hα
 
 theorem bessel_expansion_of_near {D : D7} {Ch Cg Cq Cb : ℝ} (h : BesselConjugatesEveryCell D Ch Cg Cq Cb) : BesselExpansionCoefficients D Ch Cg Cq Cb := by
   intro L μsec ka b κ p Hν _ _ _ σν fν hκ hL hR hs hν h0 α β hαβ
@@ -562,8 +560,7 @@ theorem gridWd_adm {r : ℕ} {y0 a b : ℝ} {w : Word} (h : GridWd r y0 w) (ha :
     split_ifs <;> linarith
 
 theorem gridW_nil {D : D7} {k0 : ℕ} (X : GramWordSpace.Dat D k0) (y0 : D.what₂.Tau → ℝ) : GridW X y0 (fun _ => []) := by
-  intro v
-  refine ⟨⟨fun l hl => absurd hl List.not_mem_nil, List.Pairwise.nil⟩, ⟨by simp, fun a l h => by simp at h⟩⟩
+  exact fun v => ⟨⟨fun l hl => absurd hl List.not_mem_nil, List.Pairwise.nil⟩, ⟨by simp, fun a l h => by simp at h⟩⟩
 
 section Raw
 

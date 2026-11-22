@@ -65,13 +65,11 @@ theorem base_bound {ε : ℝ} (hε : 0 < ε) (u : ℝ) {ρ : ℝ} (hρ : ρ ≤ 
     rw [this, ha]
     push_cast
     ring
-  have h2 : ‖Complex.exp (-(w - u)) - 1‖ ≤ 2 * ρ := by
-    have h := Complex.norm_exp_sub_one_le (x := -(w - u)) (by rw [norm_neg]; linarith)
-    rw [norm_neg] at h
-    linarith
   have h3 : -(2 * ρ) ≤ (Complex.exp (-(w - u)) - 1).re := by
-    have := Complex.abs_re_le_norm (Complex.exp (-(w - u)) - 1)
-    have := neg_abs_le (Complex.exp (-(w - u)) - 1).re
+    have h2 := Complex.norm_exp_sub_one_le (x := -(w - u)) (by rw [norm_neg]; linarith)
+    rw [norm_neg] at h2
+    have hre := Complex.abs_re_le_norm (Complex.exp (-(w - u)) - 1)
+    have hneg := neg_abs_le (Complex.exp (-(w - u)) - 1).re
     linarith
   have hρ0 : 0 ≤ ρ := (norm_nonneg _).trans hw
   have h4 : a * -(2 * ρ) ≤ a * (Complex.exp (-(w - u)) - 1).re :=
@@ -92,12 +90,10 @@ theorem cauchy_theta_identity : Formalism.FourierDecayAlt.E.CauchyTheta := by
   have hρ0 : 0 < ρ := by positivity
   have hρ : ρ ≤ 1 / 16 := by
     apply one_div_le_one_div_of_le <;> linarith
-  set F : ℂ → ℂ := fun w => (1 + (ε : ℂ) * Complex.exp (-w)) ^ ((-σ : ℝ) : ℂ) with hF
-  set f : ℝ → ℝ := fun v => (1 + ε * Real.exp (-v)) ^ (-σ) with hf
-  set U : Set ℂ := {w | 0 < (1 + (ε : ℂ) * Complex.exp (-w)).re} with hUdef
-  have hU : IsOpen U := by
-    apply isOpen_lt continuous_const
-    fun_prop
+  set F : ℂ → ℂ := fun w => (1 + (ε : ℂ) * Complex.exp (-w)) ^ ((-σ : ℝ) : ℂ)
+  set f : ℝ → ℝ := fun v => (1 + ε * Real.exp (-v)) ^ (-σ)
+  set U : Set ℂ := {w | 0 < (1 + (ε : ℂ) * Complex.exp (-w)).re}
+  have hU : IsOpen U := isOpen_lt continuous_const (by fun_prop)
   have hFd : DifferentiableOn ℂ F U := by
     intro w hw
     apply DifferentiableAt.differentiableWithinAt
@@ -108,9 +104,8 @@ theorem cauchy_theta_identity : Formalism.FourierDecayAlt.E.CauchyTheta := by
     intro x; push_cast; ring
   have hmem : ∀ x : ℝ, (x : ℂ) ∈ U := by
     intro x
-    show 0 < (1 + (ε : ℂ) * Complex.exp (-(x : ℂ))).re
-    rw [hcast, Complex.ofReal_re]
-    exact hpos x
+    change 0 < (1 + (ε : ℂ) * Complex.exp (-(x : ℂ))).re
+    simpa only [hcast, Complex.ofReal_re] using hpos x
   have hfF : ∀ x : ℝ, F x = f x := by
     intro x
     show (1 + (ε : ℂ) * Complex.exp (-(x : ℂ))) ^ ((-σ : ℝ) : ℂ) = _
@@ -121,21 +116,19 @@ theorem cauchy_theta_identity : Formalism.FourierDecayAlt.E.CauchyTheta := by
   have hsub : closedBall (u : ℂ) ρ ⊆ U := by
     intro w hw
     have := base_bound hε u hρ (w := w) (by simpa [dist_eq_norm] using hw)
-    have h0 : 0 < (1 + ε * Real.exp (-u)) * (1 - 2 * ρ) := by positivity
-    exact lt_of_lt_of_le h0 this
+    exact lt_of_lt_of_le (mul_pos hA h12) this
   have hC : ∀ w ∈ sphere (u : ℂ) ρ, ‖F w‖ ≤ Real.exp 1 * (1 + ε * Real.exp (-u)) ^ (-σ) := by
     intro w hw
     have hb := base_bound hε u hρ (w := w) (by
       have : ‖w - u‖ = ρ := by simpa [dist_eq_norm] using hw
       exact this.le)
-    have h0 : 0 < (1 + ε * Real.exp (-u)) * (1 - 2 * ρ) := by positivity
     have hn : (1 + ε * Real.exp (-u)) * (1 - 2 * ρ) ≤ ‖1 + (ε : ℂ) * Complex.exp (-w)‖ :=
       hb.trans (Complex.re_le_norm _)
     show ‖(1 + (ε : ℂ) * Complex.exp (-w)) ^ ((-σ : ℝ) : ℂ)‖ ≤ _
     rw [Complex.norm_cpow_real]
     calc ‖1 + (ε : ℂ) * Complex.exp (-w)‖ ^ (-σ)
         ≤ ((1 + ε * Real.exp (-u)) * (1 - 2 * ρ)) ^ (-σ) :=
-          Real.rpow_le_rpow_of_nonpos h0 hn (by linarith)
+          Real.rpow_le_rpow_of_nonpos (mul_pos hA h12) hn (by linarith)
       _ = (1 + ε * Real.exp (-u)) ^ (-σ) * (1 - 2 * ρ) ^ (-σ) :=
           Real.mul_rpow hA.le h12.le
       _ ≤ (1 + ε * Real.exp (-u)) ^ (-σ) * Real.exp 1 :=

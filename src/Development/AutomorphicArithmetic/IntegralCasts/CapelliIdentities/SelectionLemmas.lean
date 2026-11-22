@@ -3024,8 +3024,7 @@ private theorem exists_uniform {R W : Type} [CommRing R] [AddCommGroup W] [Modul
     obtain ⟨s, hs, hx⟩ := h (Submodule.mem_span_singleton_self x)
     refine ⟨s, hs, fun y hy => ?_⟩
     obtain ⟨a, rfl⟩ := Submodule.mem_span_singleton.1 hy
-    rw [smul_comm]
-    exact L.smul_mem _ hx
+    simpa [smul_smul, mul_comm] using L.smul_mem a hx
   | sup N₁ N₂ _ _ h₁ h₂ =>
     obtain ⟨s, hs, h₁⟩ := h₁ (le_sup_left.trans h)
     obtain ⟨t, ht, h₂⟩ := h₂ (le_sup_right.trans h)
@@ -3081,9 +3080,7 @@ private theorem det_int {K : Type} [Field K] {D : ℕ} (A : Matrix (Fin D) (Fin 
   choose B hB using h
   refine ⟨(Matrix.of B).det, ?_⟩
   rw [RingHom.map_det]
-  congr 1
-  ext i j
-  exact hB i j
+  exact congrArg Matrix.det (Matrix.ext fun i j => hB i j)
 
 private theorem core {K : Type} [Field K] [StarRing K] {n D : ℕ}
     (H : Matrix (Fin n) (Fin n) K) (hH : IsUnit H.det) (B : Matrix (Fin D) (Fin n) K)

@@ -115,8 +115,7 @@ theorem estimates_mono : Formalism.FourierDecayAlt.J.EstimatesMono := by
 
 theorem product_of_energies : Formalism.FourierDecayAlt.J.ProductOfE := by
   intro r e sd h0 h1
-  rw [Finset.prod_Icc_succ_top (by omega), h1, Finset.prod_eq_one, one_mul]
-  intro i hi; rw [h0 i hi, add_zero]
+  rw [Finset.prod_Icc_succ_top (by omega), h1, Finset.prod_eq_one (fun i hi => by rw [h0 i hi, add_zero]), one_mul]
 
 theorem recursion_gives_explicit_form : Formalism.FourierDecayAlt.J.RecursionGivesBounds := by
   intro hA C₁ C₄ h1 h4
@@ -124,12 +123,10 @@ theorem recursion_gives_explicit_form : Formalism.FourierDecayAlt.J.RecursionGiv
   refine ⟨C, C', ?_⟩
   intro E W _ D Θ jn H _ _ _ Vt c hyp hC' hr he P _ B hI hδ hS
   obtain ⟨a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17⟩ := hyp
-  unfold S3.MassData.InTheoremA
-  apply hS
-  intro R
+  unfold S3.MassData.InTheoremA; refine hS _ (fun R => ?_)
   have := h E W D Θ jn H Vt c a1 a2 a3 hC' hr a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 R
   rw [Finset.prod_eq_one (fun i hi => by rw [he i hi, add_zero]), mul_one] at this
-  rw [hδ, hI]; exact this
+  simpa [hδ, hI] using this
 
 theorem recursion_gives_form : Formalism.FourierDecayAlt.J.RecursionGivesForm := by
   intro hA C₁ C₄ h1 h4
@@ -178,19 +175,13 @@ theorem form_gives_theorem_A : Formalism.FourierDecayAlt.J.FormGivesMain := by
   intro hM P _ B hPos he hKV h2A hF hMass hform hJ hNu hInf hVol hLev hMas hCol hOrd hTyp hInd
   obtain ⟨a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19,
     a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, a32, a33, a34, a35⟩ := hPos
-  have hn : 0 < B.n0c := a33
-  have hen : 0 < B.e1 * B.n0c := mul_pos he hn
+  have hen : 0 < B.e1 * B.n0c := mul_pos he a33
   have key := hM P { B with supdens := B.e1, KtopV := B.KV / (B.e1 * B.n0c) }
     ⟨a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20,
       a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, a32, a33, he.le, a35⟩ h2A hF
-    (by
-      constructor
-      · show B.KV ≤ B.e1 * B.n0c * (B.KV / (B.e1 * B.n0c))
-        rw [mul_div_cancel₀ _ hen.ne']
-      · show 0 ≤ B.KV / (B.e1 * B.n0c)
-        exact div_nonneg hKV hen.le)
+    ⟨by rw [mul_div_cancel₀ _ hen.ne'], div_nonneg hKV hen.le⟩
     hMass
-    (by show B.e1 ≤ B.e1; exact le_refl _)
+    (le_refl B.e1)
     (by
       show B.c0 * B.c0' * (B.KV / (B.e1 * B.n0c)) ≤ (1 + B.δ) * B.IntN
       rw [← mul_div_assoc, div_le_iff₀ hen]

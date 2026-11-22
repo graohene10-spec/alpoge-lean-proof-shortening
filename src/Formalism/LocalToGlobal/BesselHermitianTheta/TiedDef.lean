@@ -37,9 +37,7 @@ theorem defOneIndef {V : HSp D} (hd : V.IsDefinite) : ∀ τ τ' : D.what₂.Tau
 theorem sParGap_of_isDefinite {V : HSp D} (hd : V.IsDefinite) (P : D.what₂.Tau → SPar) :
     ∀ τ, SParGap V.rank (V.sig (tauE D τ)).1 (V.sig (tauE D τ)).2 (P τ) := by
   intro τ
-  rcases hd (tauE D τ) with h | h
-  · exact Or.inr (Or.inl (by rw [h]))
-  · exact Or.inl (by rw [h])
+  exact (hd (tauE D τ)).elim (fun h => Or.inr (Or.inl (by rw [h]))) (fun h => Or.inl (by rw [h]))
 
 theorem ThetaTiedDef.of_iff {T : ThetaTied D X} (sm : ThetaSmoothnessCondition T) (ty : TypTied T) (h1 : AutFunDefIffSm D)
     (h2 : IsoDefIffTypeAt T) : ThetaTiedDef T where
@@ -58,8 +56,7 @@ theorem ThetaTiedDef.of_iff {T : ThetaTied D X} (sm : ThetaSmoothnessCondition T
 
 theorem ThetaTiedDef.autFunDefIffSm {T : ThetaTied D X} (h : ThetaTiedDef T) (sm : ThetaSmoothnessCondition T) : AutFunDefIffSm D := by
   intro θ hθ V hs hd φ
-  have e : {φ | IsAutFunDef V φ} = {φ | IsAutFunSm θ V φ} := by rw [← h.ev_def V hs hd, sm.2 θ hθ V hs]
-  exact Set.ext_iff.1 e φ
+  exact Set.ext_iff.1 ((h.ev_def V hs hd).symm.trans (sm.2 θ hθ V hs)) φ
 
 theorem ThetaTiedDef.isoDefIffTypeAt {T : ThetaTied D X} (h : ThetaTiedDef T) (ty : TypTied T) : IsoDefIffTypeAt T := by
   intro θ hθ V hs hd P hP F

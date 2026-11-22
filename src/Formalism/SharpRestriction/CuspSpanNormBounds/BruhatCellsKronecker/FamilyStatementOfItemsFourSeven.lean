@@ -423,10 +423,8 @@ theorem inv_pow_le_max_inv_pow {t : ℝ} (ht : 0 < t) (n : ℕ) : (t⁻¹) ^ n �
   pow_le_pow_left₀ (inv_pos.2 ht).le (le_max_right _ _) n
 
 theorem one_le_pow_mul_max_inv_pow {t : ℝ} (ht : 0 < t) {n K : ℕ} (h : n ≤ K) : 1 ≤ t ^ n * (max t t⁻¹) ^ K := by
-  have h1 := one_le_max_self_inv ht
-  have h2 : (t⁻¹) ^ n ≤ (max t t⁻¹) ^ K := le_trans (inv_pow_le_max_inv_pow ht n) (pow_le_pow_right₀ h1 h)
-  calc (1 : ℝ) = t ^ n * (t⁻¹) ^ n := by rw [← mul_pow, mul_inv_cancel₀ ht.ne', one_pow]
-    _ ≤ t ^ n * (max t t⁻¹) ^ K := by gcongr
+  have h3 := mul_le_mul_of_nonneg_left (le_trans (inv_pow_le_max_inv_pow ht n) (pow_le_pow_right₀ (one_le_max_self_inv ht) h)) (pow_nonneg ht.le n)
+  rwa [← mul_pow, mul_inv_cancel₀ ht.ne', one_pow] at h3
 
 theorem power_change_of_scale_bound (d d' τ F' : ℝ) (E E' e0 s K : ℕ) (hd : 0 < d) (hτ : 0 < τ) (hd' : d' = d * τ) (hF : 0 ≤ F')
     (h1 : E = 2 * e0 + (2 * s + 4)) (h2 : 2 * e0 + 4 = E' + 2 * s) (hK : 2 * s + 4 ≤ K) :
@@ -566,14 +564,12 @@ theorem minor_chain_of_step (δ : ℕ → ℝ) : ∀ (bs : List (ℂ × ℕ)) (a
   | cons b bs ih =>
     intro a h
     obtain ⟨t, s⟩ := b
-    refine ⟨?_, ih (a + s) (fun q hq => ?_)⟩
+    refine ⟨?_, ih (a + s) ?_⟩
     · have := h 0 (by simp)
       simpa [pS] using this
-    · have := h (q + 1) (by simpa using hq)
-      have e1 : pS ((t, s) :: bs) (q + 1 + 1) = s + pS bs (q + 1) := by simp [pS]
-      have e2 : pS ((t, s) :: bs) (q + 1) = s + pS bs q := by simp [pS]
-      rw [e1, e2] at this
-      simpa [add_assoc] using this
+    · intro q hq
+      have := h (q + 1) (by simpa using hq)
+      simpa [pS, add_assoc] using this
 
 theorem leading_minor_norm_step {d : ℕ} (p : Point ℂ d) (q : ℕ) (hq : q < p.1.length) :
     ‖leadingPrincipalMinor (blockAntidiagonalMatrix (toComp p) (toT p)) (pS p.1 (q + 1))‖ =
@@ -588,9 +584,7 @@ theorem leading_minor_norm_step {d : ℕ} (p : Point ℂ d) (q : ℕ) (hq : q < 
   rw [hf, Finset.prod_insert (by simp), norm_mul, mul_comm]
   congr 1
   rw [norm_mul, norm_pow, norm_pow, norm_neg, norm_one, one_pow, one_mul]
-  have hb : (toComp p).blocksFun ⟨q, hq'⟩ = (p.1[q]).2 := by
-    simp [Composition.blocksFun, toComp]
-  rw [hb]
+  simp [Composition.blocksFun, toComp]
   rfl
 
 end Minors
@@ -693,9 +687,7 @@ theorem single_le_finset_prod (s : Finset ι) (f : ι → ℝ) (h : ∀ i ∈ s,
     f a ≤ ∏ i ∈ s, f i := by
   classical
   rw [← Finset.mul_prod_erase s f ha]
-  have h1 : 1 ≤ ∏ i ∈ s.erase a, f i := one_le_finset_prod _ _ (fun i hi => h i (Finset.mem_of_mem_erase hi))
-  have h0 : 0 ≤ f a := le_trans zero_le_one (h a ha)
-  nlinarith
+  exact le_mul_of_one_le_right (le_trans zero_le_one (h a ha)) (one_le_finset_prod _ _ (fun i hi => h i (Finset.mem_of_mem_erase hi)))
 
 theorem finset_prod_list_prod_comm (P : Finset ι) (E : List ℕ) (f : ι → ℕ → ℝ) :
     ∏ v ∈ P, (E.map (f v)).prod = (E.map (fun l => ∏ v ∈ P, f v l)).prod := by
@@ -2102,9 +2094,7 @@ theorem abs_bound_of_zero_decay (D : D7) (large₂ : SizeData₂ D) (C' Cl Cg cb
 
 theorem size_volume_antitone_height {k r : ℕ} {H H' : ℝ} (hH : 0 < H) (h : H ≤ H') (z z' : Fin (2 * r + k + 1) → ℂ) (γ : MatKR k r) :
     sizeV H' z z' γ ≤ sizeV H z z' γ := by
-  unfold sizeV
-  refine Finset.prod_le_prod (fun l _ => le_trans zero_le_one (le_max_left _ _)) (fun l _ => ?_)
-  exact max_le_max le_rfl (div_le_div_of_nonneg_left (norm_nonneg _) hH h)
+  simpa only [sizeV] using Finset.prod_le_prod (fun l _ => le_trans zero_le_one (le_max_left _ _)) (fun l _ => max_le_max le_rfl (div_le_div_of_nonneg_left (norm_nonneg _) hH h))
 
 theorem height_constant_mono_pos (D : D7) (large₂ : SizeData₂ D) {Ch Ch' : ℝ} (h : Ch ≤ Ch') :
     0 < scalePowQuadraticExponent D large₂ Ch ∧ scalePowQuadraticExponent D large₂ Ch ≤ scalePowQuadraticExponent D large₂ Ch' := by

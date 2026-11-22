@@ -228,8 +228,7 @@ theorem mem_range_ow_iff (w : HeightOneSpectrum (𝓞 K)) (x : K) :
       ← IsScalarTower.algebraMap_apply]
 
 theorem exists_isUnifW (w : HeightOneSpectrum (𝓞 K)) : ∃ ϖ : 𝓞 K, IsUnifW w ϖ := by
-  obtain ⟨x, hx, hx'⟩ := Ideal.exists_mem_pow_notMem_pow_succ w.asIdeal w.ne_bot w.isPrime.ne_top 1
-  exact ⟨x, by simpa using hx, hx'⟩
+  simpa [IsUnifW] using Ideal.exists_mem_pow_notMem_pow_succ w.asIdeal w.ne_bot w.isPrime.ne_top 1
 
 theorem maximalIdeal_ow (w : HeightOneSpectrum (𝓞 K)) :
     IsLocalRing.maximalIdeal (Ow w) = w.asIdeal.map (algebraMap (𝓞 K) (Ow w)) :=
@@ -340,12 +339,10 @@ theorem atW_free (w : HeightOneSpectrum (𝓞 K)) {L : Submodule (𝓞 K) V} (h 
 
 theorem span_atW (w : HeightOneSpectrum (𝓞 K)) (L : Submodule (𝓞 K) V) :
     Submodule.span K (atW w L : Set V) = Submodule.span K (L : Set V) := by
-  apply le_antisymm
-  · refine Submodule.span_le.2 ?_
-    have : atW w L ≤ (Submodule.span K (L : Set V)).restrictScalars (Ow w) :=
-      Submodule.span_le.2 Submodule.subset_span
-    exact this
-  · exact Submodule.span_mono (le_atW w L)
+  refine le_antisymm ?_ (Submodule.span_mono (le_atW w L))
+  have h : atW w L ≤ (Submodule.span K (L : Set V)).restrictScalars (Ow w) :=
+    Submodule.span_le.2 Submodule.subset_span
+  exact Submodule.span_le.2 h
 
 theorem finrank_atW (w : HeightOneSpectrum (𝓞 K)) {L : Submodule (𝓞 K) V} (h : L.FG) :
     Module.finrank (Ow w) (atW w L) = Module.finrank K (Submodule.span K (L : Set V)) := by

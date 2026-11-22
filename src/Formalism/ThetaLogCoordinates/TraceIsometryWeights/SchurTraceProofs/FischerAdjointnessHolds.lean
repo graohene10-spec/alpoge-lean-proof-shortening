@@ -101,8 +101,7 @@ theorem fock_X_mul' (i : σ) (g h : MvPolynomial σ ℚ_[p]) :
   unfold fock
   rw [support_X_mul, Finset.sum_map]
   refine Finset.sum_congr rfl fun m _ => ?_
-  simp only [addLeftEmbedding_apply]
-  rw [coeff_X_mul, coeff_pderiv, add_comm (Finsupp.single i 1) m, facProd_add_single]
+  rw [addLeftEmbedding_apply, coeff_X_mul, coeff_pderiv, add_comm (Finsupp.single i 1) m, facProd_add_single]
   ring
 
 theorem fock_monomial_right (F : MvPolynomial σ ℚ_[p]) (m : σ →₀ ℕ) (a : ℚ_[p]) :

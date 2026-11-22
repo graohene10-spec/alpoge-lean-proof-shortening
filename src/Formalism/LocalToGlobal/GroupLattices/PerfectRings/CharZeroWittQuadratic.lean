@@ -127,8 +127,7 @@ theorem wU_mem_max : wU p n ∈ maximalIdeal (OO p n) := by
   have h1 : (1 : W2 p n) ∈ Ideal.span {(p : W2 p n)} := by
     rw [← Ideal.Quotient.eq_zero_iff_mem, map_one]
     exact h0.symm
-  rw [Ideal.mem_span_singleton] at h1
-  have hpu : IsUnit (p : W2 p n) := isUnit_of_dvd_one h1
+  have hpu : IsUnit (p : W2 p n) := isUnit_of_dvd_one (Ideal.mem_span_singleton.mp h1)
   have h2 : IsUnit ((p : W2 p n).coeff 0) := hpu.map (WittVector.constantCoeff (p := p) (R := F2 p n))
   rw [WittVector.coeff_p_zero] at h2
   exact not_isUnit_zero h2

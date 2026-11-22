@@ -30,9 +30,7 @@ theorem subst_shift_shiftLog (hl : 2 ≤ l) (j : ZMod m) :
   rw [coeff_embDomain_rename]
   by_cases hA : ∃ t : ℕ, x = Finsupp.single (j - (t : ZMod m)) ((l ^ 2) ^ t)
   · obtain ⟨t, rfl⟩ := hA
-    rw [Finsupp.embDomain_single, hs, ShiftFEAux.coeff_shiftLog_single hl]
-    have : j - (t : ZMod m) - 1 = j - 1 - (t : ZMod m) := by ring
-    rw [this, ShiftFEAux.coeff_shiftLog_single hl]
+    rw [Finsupp.embDomain_single, hs, ShiftFEAux.coeff_shiftLog_single hl, sub_right_comm, ShiftFEAux.coeff_shiftLog_single hl]
   · push Not at hA
     rw [ShiftFEAux.coeff_shiftLog_zero j x hA, ShiftFEAux.coeff_shiftLog_zero]
     intro t ht
@@ -112,9 +110,8 @@ theorem coe_map_injective {σ : Type*} :
       MvPowerSeries σ ℤ_[l] → MvPowerSeries σ ℚ_[l]) := by
   intro a b hab
   ext n
-  have := congrArg (coeff n) hab
-  rw [coeff_map, coeff_map] at this
-  exact Subtype.ext this
+  exact Subtype.ext (show PadicInt.Coe.ringHom ((coeff n) a) = PadicInt.Coe.ringHom ((coeff n) b) from
+    by simpa only [coeff_map] using congrArg (coeff n) hab)
 
 theorem constantCoeff_of_map {σ : Type*} (x : MvPowerSeries σ ℤ_[l])
     (hx : constantCoeff (map (PadicInt.Coe.ringHom : ℤ_[l] →+* ℚ_[l]) x) = 0) :
@@ -128,7 +125,6 @@ def liftZ {σ : Type*} (g : MvPowerSeries σ ℚ_[l]) (hg : IntegralMv g) : MvPo
 theorem map_liftZ {σ : Type*} (g : MvPowerSeries σ ℚ_[l]) (hg : IntegralMv g) :
     map (PadicInt.Coe.ringHom : ℤ_[l] →+* ℚ_[l]) (liftZ g hg) = g := by
   ext n
-  rw [coeff_map]
   rfl
 
 theorem dvd_of_norm_le {x : ℤ_[l]}

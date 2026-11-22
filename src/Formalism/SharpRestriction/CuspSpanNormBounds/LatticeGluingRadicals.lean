@@ -134,9 +134,7 @@ theorem p_gram_family (S : HSpace E) {ι : Type} [Fintype ι] (w : ι → S.V) :
       (Matrix.of fun a i => S.frame.repr (w i) a)ᴴ * S.gram *
         Matrix.of fun a i => S.frame.repr (w i) a := by
   ext i j
-  rw [Matrix.of_apply, p_hT_expand]
-  simp only [Matrix.mul_apply, Matrix.conjTranspose_apply, Matrix.of_apply, Finset.sum_mul]
-  rw [Finset.sum_comm]
+  simpa only [Matrix.of_apply, p_hT_expand, Matrix.mul_apply, Matrix.conjTranspose_apply, Finset.sum_mul] using Finset.sum_comm
 
 theorem p_map_family (S : HSpace E) (τ : E →+* ℂ) (hτ : ∀ a, τ (star a) = starRingEnd ℂ (τ a))
     {ι : Type} [Fintype ι] (w : ι → S.V) :
@@ -309,8 +307,7 @@ theorem radical_positive_each_embedding (Λ : Submodule (𝓞 E) S.V) {T T' : E}
     ∀ τ : E →+* ℂ, ∀ x ∈ Hp Λ F F', x ≠ 0 → 0 < nrm S τ x := by
   intro τ x hx hx0
   have hx' : x ∈ orth S (U2 F F') := by
-    have : Hp Λ F F' = orth S (U2 F F') := by unfold Hp; rw [hU]
-    rwa [this] at hx
+    simpa [show Hp Λ F F' = orth S (U2 F F') from by unfold Hp; rw [hU]] using hx
   refine hP τ x ?_ ?_
   · rw [p_mem_orth] at hx' ⊢
     exact fun v hv => hx' v (Submodule.mem_sup_left hv)
@@ -318,8 +315,7 @@ theorem radical_positive_each_embedding (Λ : Submodule (𝓞 E) S.V) {T T' : E}
     apply hx0
     have : x ∈ U2 F F' ⊓ orth S (U2 F F') :=
       ⟨Submodule.mem_sup_left (Submodule.mem_sup_left hX), hx'⟩
-    rw [hNd] at this
-    exact (Submodule.mem_bot E).1 this
+    rwa [hNd, Submodule.mem_bot E] at this
 
 end Gen2
 
@@ -808,13 +804,9 @@ theorem b_mem_orth {U : Submodule E S.V} {y : S.V} :
 
 theorem b_span {T : E} (F : LFlag S r T) {v : S.V} (h : ∀ a, S.hT (F.fl.e a) v = 0)
     {x : S.V} (hx : x ∈ Xsp F) : S.hT x v = 0 ∧ S.hT v x = 0 := by
-  have h1 : Xsp F ≤ LinearMap.ker (S.hT v) := by
-    refine Submodule.span_le.2 ?_
-    rintro _ ⟨a, rfl⟩
-    show S.hT v (F.fl.e a) = 0
-    rw [b_herm, h a, star_zero]
-  have h2 : S.hT v x = 0 := h1 hx
-  exact ⟨by rw [b_herm, h2, star_zero], h2⟩
+  have hv : v ∈ orth S (Xsp F) := a_orth_of_frame F.fl.e v h
+  have h2 : S.hT x v = 0 := (b_mem_orth.1 hv) x hx
+  exact ⟨h2, by rw [b_herm, h2, star_zero]⟩
 
 theorem b_X_X {T : E} (F : LFlag S r T) {x x' : S.V} (hx : x ∈ Xsp F) (hx' : x' ∈ Xsp F) :
     S.hT x x' = 0 :=
@@ -924,10 +916,8 @@ theorem b_om_pair {T T' : E} (F : LFlag S r T) (F' : LFlag S r T') (a : Fin (r +
   rw [Matrix.mul_apply, Matrix.smul_apply, Matrix.one_apply, smul_eq_mul, mul_ite, mul_one, mul_zero,
     ← discriminant_eq_det_lift] at h
   rw [← h]
-  unfold b_om
-  rw [map_sum]
-  refine Finset.sum_congr rfl fun b _ => ?_
-  rw [map_smul, smul_eq_mul, b_Zhat_apply, mul_comm]
+  simp only [b_om, map_sum, map_smul, smul_eq_mul, b_Zhat_apply]
+  exact Finset.sum_congr rfl (fun b _ => mul_comm _ _)
 
 theorem b_om_eq {T T' : E} (F : LFlag S r T) (F' : LFlag S r T') :
     b_om F F' = Dr F F' • F'.fl.z +
@@ -1150,10 +1140,7 @@ theorem b_chSh_symm (hc : StarConj E) {T T' : ℕ} (F : LFlag S r (T : E)) (F' :
 theorem b_invSh_symm (hc : StarConj E) {T T' : ℕ} (F : LFlag S r (T : E)) (F' : LFlag S r (T' : E))
     (τ : E →+* ℂ) : invSh T' T F' F τ = invSh T T' F F' τ := by
   unfold invSh
-  rw [b_sh_symm hc F F']
-  by_cases h : Dr F F' = 0
-  · rw [if_pos h, if_pos ((b_Dr_zero_symm F F').2 h)]
-  · rw [if_neg h, if_neg (fun h' => h ((b_Dr_zero_symm F F').1 h'))]
+  rw [b_sh_symm hc F F', b_Dr_zero_symm F F']
 
 theorem lemma_two_norm_scaling_right (hc : StarConj E) {T T' : ℕ} (hT : 0 < T) (hT' : 0 < T') (F : LFlag S r (T : E))
     (F' : LFlag S r (T' : E)) (hz : F.zt = F.fl.z) (hz' : F'.zt = F'.fl.z) (hG : Gval F F' ≠ 0)
@@ -1376,11 +1363,7 @@ variable {E : Type} [Field E] [NumberField E] [StarRing E] {S : HSpace E} {r : �
 
 theorem m_exists_smul_mem (M : Submodule (𝓞 E) S.V) {x : S.V} (hx : x ∈ Submodule.span E (M : Set S.V)) :
     ∃ d : 𝓞 E, d ≠ 0 ∧ d • x ∈ M := by
-  first
-  | exact Formalism.MainNotions.LatticeGluingRadicals.m_exists_smul_memL
-  | (apply Formalism.MainNotions.LatticeGluingRadicals.m_exists_smul_memL <;> assumption)
-  | (intros; apply Formalism.MainNotions.LatticeGluingRadicals.m_exists_smul_memL <;> assumption)
-  | (intros; exact Formalism.MainNotions.LatticeGluingRadicals.m_exists_smul_memL ‹_› ‹_›)
+  exact @Formalism.MainNotions.LatticeGluingRadicals.m_exists_smul_memL E _ _ _ S M x hx
 
 theorem m_exists_nat_smul_mem (M : Submodule (𝓞 E) S.V) {x : S.V}
     (hx : x ∈ Submodule.span E (M : Set S.V)) : ∃ n : ℕ, 0 < n ∧ n • x ∈ M := by
@@ -1597,10 +1580,9 @@ theorem m_psi_noZ (hX : Xsp F ≤ UUE Λ F F') (hX' : Xsp F' ≤ UUE Λ F F') (x
   obtain ⟨-, -, -, l, hl, hxl, l', hl', hxl', -⟩ := m_La_mem Λ F F' g x.2
   rw [m_psi_apply hX hX' x hl hl' hxl hxl']
   refine ⟨⟨l - l', m_diff_mem hX hX' hl hl' hxl hxl'⟩, ?_, rfl⟩
-  have : l - l' = -((x : S.V) - l) + ((x : S.V) - l') := by abel
-  show l - l' ∈ Xsp F ⊔ Xsp F'
-  rw [this]
-  exact add_mem (Submodule.mem_sup_left (neg_mem hxl)) (Submodule.mem_sup_right hxl')
+  change l - l' ∈ Xsp F ⊔ Xsp F'
+  simpa [neg_sub, sub_add_sub_cancel] using
+    add_mem (Submodule.mem_sup_left (neg_mem hxl)) (Submodule.mem_sup_right hxl')
 
 theorem m_UU_le (hz : IsLift Λ F) (hz' : IsLift Λ F') :
     UU Λ F F' ≤ (Λ ⊓ toO S (Xplus F)) ⊔ (Λ ⊓ toO S (Xplus F')) := by
@@ -1790,11 +1772,10 @@ theorem c_Hp_orthX' {F : LFlag S r T} {F' : LFlag S r T'} (hU : HU Λ F F') :
 
 theorem c_Hp_X {F : LFlag S r T} {F' : LFlag S r T'} (hU : HU Λ F F') (hN : HNd F F')
     {x : S.V} (h1 : x ∈ Hp Λ F F') (h2 : x ∈ Xsp F) : x = 0 := by
-  have h3 : x ∈ U2 F F' ⊓ orth S (U2 F F') := by
+  have hx : x ∈ U2 F F' ⊓ orth S (U2 F F') := by
     refine ⟨(le_sup_left : Xplus F ≤ U2 F F') (c_X_le_Xplus F h2), ?_⟩
     have := h1; unfold Hp at this; rwa [hU] at this
-  rw [hN] at h3
-  exact (Submodule.mem_bot E).1 h3
+  exact (Submodule.mem_bot E).1 (by rw [hN] at hx; exact hx)
 
 section Pair
 
@@ -1953,10 +1934,8 @@ theorem c_finrank_Th (hU : HU Λ F F'') (hN : HNd F F'') :
     have h0 : p.1 = 0 := h
     obtain ⟨⟨_, hb⟩, hc, _⟩ := c_mem_ThPairs.1 hp
     have h2 : p.2 ∈ Xsp F := by
-      have := (Xsp F).neg_mem hc
-      rw [h0] at this; simpa using this
-    have h3 := c_Hp_X Λ hU hN hb h2
-    exact Subtype.ext (Prod.ext h0 h3)
+      simpa [h0] using (Xsp F).neg_mem hc
+    exact Subtype.ext (Prod.ext h0 (c_Hp_X Λ hU hN hb h2))
   have := LinearMap.finrank_range_of_inj inj
   rw [LinearMap.range_domRestrict] at this
   exact this
@@ -2642,8 +2621,7 @@ theorem c_finrank_orth_le (U : Submodule E S.V) :
 
 theorem c_finrank_X (F : LFlag S r T) : finrank E (Xsp F) = r := by
   have h := finrank_span_eq_card F.fl.e_indep
-  rw [Fintype.card_fin] at h
-  exact h
+  rwa [Fintype.card_fin] at h
 
 theorem c_finrank_Xplus (F : LFlag S r T) (hT : T ≠ 0) : r + 1 ≤ finrank E (Xplus F) := by
   have hlt : Xsp F < Xplus F := by
@@ -2956,8 +2934,7 @@ theorem d_sg_add {F : Formalism.MainNotions.S.UnitaryVolumeMass.Fl D T} {F' : Fo
   obtain ⟨x, hx, x', hx', e⟩ := h₁
   obtain ⟨w, hw, w', hw', e2⟩ := h₂
   refine ⟨x + w, add_mem hx hw, x' + w', add_mem hx' hw', ?_⟩
-  have : (y₁ + y₂) - (y₁' + y₂') = (y₁ - y₁') + (y₂ - y₂') := by abel
-  rw [this, e, e2, add_smul, add_smul]
+  rw [add_sub_add_comm, e, e2, add_smul, add_smul]
   abel
 
 theorem d_nrm_zero (τ : D.host.E →+* ℂ) : nrm (hS D) τ 0 = 0 := by simp [nrm]
@@ -3007,29 +2984,23 @@ theorem d_norms {F : Formalism.MainNotions.S.UnitaryVolumeMass.Fl D T} {F' : For
     nrm (hS D) τ y = (T : ℝ) * chSh T T' F F' τ ^ 2 ∧
       nrm (hS D) τ y' = (T : ℝ) * invSh T T' F F' τ ^ 2 := by
   obtain ⟨a₁, a₁', a₂, a₂', e1, e2, v1, v2, v3, v4, i1, i2⟩ := d_split h2 τ hy hy' h
-  have iv0 := h2.2.2.2.1 τ y hy y' hy' 1 0 h
-  simp only [map_one, map_zero, norm_one, norm_zero, one_pow, mul_one, ne_eq, OfNat.ofNat_ne_zero,
-    not_false_eq_true, zero_pow, mul_zero, sub_zero] at iv0
   have hT' : (0 : ℝ) < T := by exact_mod_cast hT
+  have iv0 : nrm (hS D) τ y - nrm (hS D) τ y' = (T : ℝ) := by
+    simpa using h2.2.2.2.1 τ y hy y' hy' 1 0 h
   have e3 : ‖τ a₁'‖ = ‖τ a₂'‖ := by
     have : a₁' = - a₂' := by linear_combination -e2
     rw [this, map_neg, norm_neg]
   have hx : invSh T T' F F' τ ^ 2 * nrm (hS D) τ y = chSh T T' F F' τ ^ 2 * nrm (hS D) τ y' := by
     rw [← v2, ← v4, e3]
+  have hA : (chSh T T' F F' τ ^ 2 - invSh T T' F F' τ ^ 2 - 1) * nrm (hS D) τ y = 0 := by
+    linear_combination (-1 : ℝ) * i1 - v1 + v2
+  have hB : (chSh T T' F F' τ ^ 2 - invSh T T' F F' τ ^ 2 - 1) * nrm (hS D) τ y' = 0 := by
+    linear_combination i2 + v3 - v4
   have hCS : chSh T T' F F' τ ^ 2 - invSh T T' F F' τ ^ 2 = 1 := by
-    by_cases hp : nrm (hS D) τ y = 0
-    · have hq : nrm (hS D) τ y' ≠ 0 := by
-        intro hq
-        rw [hp, hq] at iv0
-        linarith
-      have : (chSh T T' F F' τ ^ 2 - invSh T T' F F' τ ^ 2 - 1) * nrm (hS D) τ y' = 0 := by
-        linear_combination i2 + v3 - v4
-      have := (mul_eq_zero.1 this).resolve_right hq
-      linarith
-    · have : (chSh T T' F F' τ ^ 2 - invSh T T' F F' τ ^ 2 - 1) * nrm (hS D) τ y = 0 := by
-        linear_combination (-1 : ℝ) * i1 - v1 + v2
-      have := (mul_eq_zero.1 this).resolve_right hp
-      linarith
+    have hz : (chSh T T' F F' τ ^ 2 - invSh T T' F F' τ ^ 2 - 1) * (T : ℝ) = 0 := by
+      linear_combination hA - hB - ((chSh T T' F F' τ ^ 2 - invSh T T' F F' τ ^ 2 - 1) * iv0)
+    have := (mul_eq_zero.1 hz).resolve_right (ne_of_gt hT')
+    linarith
   exact d_pq _ _ _ _ _ iv0 hCS hx
 
 end Vec
@@ -3242,10 +3213,8 @@ theorem d_beta_orth (hp : IsPair Λ F F' F'' β g) {y' : S.V} (hy' : y' ∈ orth
   intro x hx
   rw [← d_map_Xplus hp] at hx
   obtain ⟨x0, hx0, rfl⟩ := hx
-  have := hp.1.1 x0 y'
   change S.hT (β x0) (β y') = 0
-  rw [this]
-  exact (a_mem_orth _ _).1 hy' x0 hx0
+  simpa only [hp.1.1 x0 y'] using (a_mem_orth _ _).1 hy' x0 hx0
 
 theorem d_Th''_cases {x₂ : S.V} (h : x₂ ∈ Th'' Λ F F' F'' β) :
     ∃ x₁ ∈ Hp Λ F F', x₁ - x₂ ∈ Xsp F ∧ β x₁ - x₂ ∈ Xsp F'' := by
@@ -4115,8 +4084,7 @@ variable {F : LFlag S r T} {F' : LFlag S r T'} {Λ : Submodule (𝓞 E) S.V} {g 
 theorem d_TermHyp.hU (H : d_TermHyp Λ g F F') : HU Λ F F' := a_HU Λ H.lat F F' H.zt H.zt'
 
 theorem d_TermHyp.hNd (H : d_TermHyp Λ g F F') : UUE Λ F F' ⊓ orth S (UUE Λ F F') = ⊥ := by
-  rw [show UUE Λ F F' = U2 F F' from H.hU]
-  exact a_HNd F F' H.G
+  exact (show UUE Λ F F' = U2 F F' from H.hU).symm ▸ (a_HNd F F' H.G)
 
 theorem local_lift_at_prime (H : d_TermHyp Λ g F F') (P : HeightOneSpectrum (𝓞 E)) {al al' : E}
     (hZ : (al, al') ∈ (Formalism.HermitianLatticeCounting.LocalIntegralStructure.ZZ g : Set (E × E))) :
@@ -4875,8 +4843,7 @@ theorem i_dualP : Formalism.HermitianLatticesTheory.dual S.hT (i_P Λ U U') ⊓ 
 
 theorem i_fg_of_le {L A : Submodule (𝓞 E) S.V} (hL : L.FG) (h : A ≤ L) : A.FG := by
   have h1 : Module.Finite (𝓞 E) L := Module.Finite.iff_fg.2 hL
-  have h2 : IsNoetherian (𝓞 E) L := isNoetherian_of_isNoetherianRing_of_finite (𝓞 E) L
-  exact (isNoetherian_submodule.1 h2) _ h
+  exact (isNoetherian_submodule.1 (isNoetherian_of_isNoetherianRing_of_finite (𝓞 E) L)) _ h
 
 include hΛ hc in
 theorem sum_of_intersections_is_lattice : Submodule.IsLattice E ((Λ ⊓ toO S U) ⊔ (Λ ⊓ toO S U')) := by
@@ -5061,8 +5028,7 @@ theorem i_locLen_congr {A' B' : Submodule (𝓞 E) S.V}
     (e : (A ⧸ B.comap A.subtype) ≃ₗ[𝓞 E] (A' ⧸ B'.comap A'.subtype)) :
     Formalism.HermitianLatticesTheory.locLen p A B = Formalism.HermitianLatticesTheory.locLen p A' B' := by
   unfold Formalism.HermitianLatticesTheory.locLen
-  have := IsLocalizedModule.linearEquiv p.primeCompl (i_g p A B) (i_g p A' B' ∘ₗ e.toLinearMap)
-  rw [this.length_eq]
+  rw [(IsLocalizedModule.linearEquiv p.primeCompl (i_g p A B) (i_g p A' B' ∘ₗ e.toLinearMap)).length_eq]
 
 theorem i_lidx_of_le (h : B ≤ A) : Formalism.HermitianLatticesTheory.lidx p A B = Formalism.HermitianLatticesTheory.locLen p A B := by
   unfold Formalism.HermitianLatticesTheory.lidx
@@ -5169,8 +5135,7 @@ theorem g_idx_pos {A B : Submodule (𝓞 E) W} (hA : A.FG) (h : g_Comm A B) : 0 
 
 theorem g_fg_le {A B : Submodule (𝓞 E) W} (hA : A.FG) (h : B ≤ A) : B.FG := by
   have h1 : Module.Finite (𝓞 E) A := Module.Finite.iff_fg.2 hA
-  have h2 : IsNoetherian (𝓞 E) A := isNoetherian_of_isNoetherianRing_of_finite (𝓞 E) A
-  exact (isNoetherian_submodule.1 h2) B h
+  exact (isNoetherian_submodule.1 (isNoetherian_of_isNoetherianRing_of_finite (𝓞 E) A)) B h
 
 theorem g_len_ne_top (p : Ideal (𝓞 E)) [p.IsPrime] {A B : Submodule (𝓞 E) W} (hA : A.FG)
     (h : g_Comm A B) :
@@ -5462,9 +5427,7 @@ theorem g_card_quot_le {M X : Type} [AddCommGroup M] [Module (𝓞 E) M] (N : Su
   intro q q' hq
   have := h _ _ hq
   rw [← Submodule.Quotient.eq] at this
-  have e1 : (Submodule.Quotient.mk (Quotient.out q) : M ⧸ N) = q := Quotient.out_eq q
-  have e2 : (Submodule.Quotient.mk (Quotient.out q') : M ⧸ N) = q' := Quotient.out_eq q'
-  rw [← e1, ← e2, this]
+  exact (Quotient.out_eq q).symm.trans (this.trans (Quotient.out_eq q'))
 
 theorem g_hT_smul_right (x y : S.V) (c : 𝓞 E) : S.hT x (c • y) = (c : E) * S.hT x y := by
   rw [← IsScalarTower.algebraMap_smul E c y, map_smul, smul_eq_mul]
@@ -5787,8 +5750,7 @@ theorem lattice_det_eq_index_quotient (D : D7) (h1 : g_GlueDet D) (hDI : g_DetIn
       NG Λ F F' / ((Nat.card (BQ Λ F F') : ℝ) * (iIdx Λ (gS D) F F' : ℝ)) := by
   have hU' : UUE Λ F F' = U2 F F' := a_HU Λ hF.1 F F' hF.2.2.1.2 hT.1.2
   refine lemma_one_det_general_lattice Λ F F' (gS D) hF.1 hg hF.2.2.1 hT.1 hT.2.2 hDI ?_
-  refine h1 Λ hF.1 hF.2.1 (UUE Λ F F') ?_
-  rw [hU']; exact a_HNd F F' hT.2.2
+  rw [hU']; exact h1 Λ hF.1 hF.2.1 (U2 F F') (a_HNd F F' hT.2.2)
 
 end D7
 
@@ -5920,13 +5882,10 @@ theorem h_idx_congr {A B A' B' : Submodule (𝓞 E) S.V} (hle : A ≤ A') (hB : 
   exact Nat.card_congr (Classical.choice (h_quot_equiv hle hB hsurj hker)).toEquiv
 
 theorem h_span_toO (X : Submodule E S.V) : spanE S (toO S X) = X := by
-  unfold spanE
   exact Submodule.span_eq X
 
 theorem h_span_le {L : Submodule (𝓞 E) S.V} {U : Submodule E S.V} (h : L ≤ toO S U) : spanE S L ≤ U := by
-  unfold spanE
-  rw [Submodule.span_le]
-  exact h
+  simpa [spanE] using (Submodule.span_le (p := U)).2 h
 
 theorem h_span_sup (A B : Submodule (𝓞 E) S.V) : spanE S (A ⊔ B) = spanE S A ⊔ spanE S B :=
   a_span_sup A B
@@ -5960,8 +5919,7 @@ theorem h_locLen_sat (p : Ideal (𝓞 E)) [p.IsPrime] {U X : Submodule E S.V} (h
     le_sup_left (sup_le le_sup_left (le_sup_of_le_right le_sup_right)) (by
       rintro x ⟨h1, h2⟩
       obtain ⟨c, hc, ξ, hξ, e⟩ := Submodule.mem_sup.1 h2
-      have : x = c := h_sat_cancel hUX (hA h1) (hA (hC hc)) (zero_mem X) hξ (by rw [add_zero, e])
-      rw [this]; exact hc)
+      simpa [h_sat_cancel hUX (hA h1) (hA (hC hc)) (zero_mem X) hξ (by rw [add_zero, e])] using hc)
   exact (i_locLen_congr p e).symm
 
 theorem h_lidx_sat (p : Ideal (𝓞 E)) [p.IsPrime] {U X : Submodule E S.V} (hUX : U ⊓ X = ⊥)
@@ -6150,10 +6108,9 @@ theorem h_span_inf {L : Submodule (𝓞 E) S.V} {U : Submodule E S.V} (h : U ≤
   apply le_antisymm (h_span_le inf_le_right)
   intro x hx
   obtain ⟨d, hd, hdx⟩ := m_exists_smul_mem L (h hx)
-  have hd' : (algebraMap (𝓞 E) E d) ≠ 0 := by
-    simpa using (map_ne_zero_iff (algebraMap (𝓞 E) E) (IsFractionRing.injective (𝓞 E) E)).2 hd
   have e : x = (algebraMap (𝓞 E) E d)⁻¹ • (d • x) := by
-    rw [← IsScalarTower.algebraMap_smul E d x, smul_smul, inv_mul_cancel₀ hd', one_smul]
+    rw [← IsScalarTower.algebraMap_smul E d x, smul_smul, inv_mul_cancel₀ (by
+      simpa using (map_ne_zero_iff (algebraMap (𝓞 E) E) (IsFractionRing.injective (𝓞 E) E)).2 hd), one_smul]
   rw [e]
   exact Submodule.smul_mem _ _ (Submodule.subset_span ⟨hdx, (toO S U).smul_mem d hx⟩)
 
@@ -6555,9 +6512,8 @@ theorem lattice_lemma_two (D : D7) : VanishingOnXAndXPlusGluing.Conclusion2 D :=
 
 theorem radical_positive_definite (D : D7) : VanishingOnXAndXPlusGluing.GlobalIntegralModelCondition D := by
   intro u T' Λ F F' hF hPr hT
-  have h0 : 0 < Tu D u := lt_of_lt_of_le (by norm_num) hPr.2.1
   exact ⟨a_rankHp_k Λ hF.1 F F' hF.2.2.1.2 hT.1.2 hT.2.2 D.R.k (p_rankV D),
-    radical_positive_each_embedding Λ (a_HU Λ hF.1 F F' hF.2.2.1.2 hT.1.2) (a_HNd F F' hT.2.2) (p_posX D _ h0 F)⟩
+    radical_positive_each_embedding Λ (a_HU Λ hF.1 F F' hF.2.2.1.2 hT.1.2) (a_HNd F F' hT.2.2) (p_posX D _ (lt_of_lt_of_le (by norm_num) hPr.2.1) F)⟩
 
 def Lem1Det (D : D7) : Prop :=
   ∀ (u : D.what₂.Word) (T' : ℕ) (Λ : VanishingOnXAndXPlusGluing.LatS D) (F : VanishingOnXAndXPlusGluing.FlS D (Tu D u)) (F' : VanishingOnXAndXPlusGluing.FlS D T'),
@@ -6637,14 +6593,12 @@ def ThmAIneq (D : D7) : Prop :=
 theorem theorem_A_of_inequalities (D : D7) (h : ThmAIneq D) : VanishingOnXAndXPlusGluing.PointsLemma D := by
   intro u T' Λ F F' F'' β hF hPr hT' hT'' hP hs
   have h0 : 0 < Tu D u := lt_of_lt_of_le (by norm_num) hPr.2.1
-  have h0' : 0 < T' := lt_of_lt_of_le (by norm_num) hPr.2.2.2.1
-  have hk : 1 ≤ D.R.k := by have := D.R.m_add_three_le_k; omega
   obtain ⟨i1, i2⟩ := h u T' Λ F F' F'' β hF hPr hT' hT'' hP hs
   refine ⟨i1, fun hnd => ?_⟩
   obtain ⟨r1, r2⟩ := c_thmA_ranks hP (a_HU Λ hF.1 F F' hF.2.2.1.2 hT'.1.2) (a_HNd F F' hT'.2.2)
-    (a_HU Λ hF.1 F F'' hF.2.2.1.2 hT''.1.2) (a_HNd F F'' hT''.2.2) (p_posX D _ h0' F'')
+    (a_HU Λ hF.1 F F'' hF.2.2.1.2 hT''.1.2) (a_HNd F F'' hT''.2.2) (p_posX D _ (lt_of_lt_of_le (by norm_num) hPr.2.2.2.1) F'')
     (by exact_mod_cast h0.ne') D.R.k (p_rankV D)
-    (radical_positive_definite D u T' Λ F F' hF hPr hT').1 (radical_positive_definite D u T' Λ F F'' hF hPr hT'').1 hk hnd
+    (radical_positive_definite D u T' Λ F F' hF hPr hT').1 (radical_positive_definite D u T' Λ F F'' hF hPr hT'').1 (by have := D.R.m_add_three_le_k; omega) hnd
   exact ⟨r1, r2, i2 hnd⟩
 
 theorem lattice_theorem_B_of_steps (D : D7) (h : TheoremBFirstTwoSteps D) : VanishingOnXAndXPlusGluing.Conclusion4 D :=
@@ -6681,11 +6635,7 @@ variable {E : Type} [Field E] [NumberField E]
 theorem j_exists_nat_smul_mem {V : Type} [AddCommGroup V] [Module E V] [Module (𝓞 E) V]
     [IsScalarTower (𝓞 E) E V] (M : Submodule (𝓞 E) V) {x : V}
     (hx : x ∈ Submodule.span E (M : Set V)) : ∃ n : ℕ, 0 < n ∧ n • x ∈ M := by
-  first
-  | exact Formalism.MainNotions.LatticeGluingRadicals.j_exists_nat_smul_memL
-  | (apply Formalism.MainNotions.LatticeGluingRadicals.j_exists_nat_smul_memL <;> assumption)
-  | (intros; apply Formalism.MainNotions.LatticeGluingRadicals.j_exists_nat_smul_memL <;> assumption)
-  | (intros; exact Formalism.MainNotions.LatticeGluingRadicals.j_exists_nat_smul_memL ‹_› ‹_›)
+  apply Formalism.MainNotions.LatticeGluingRadicals.j_exists_nat_smul_memL <;> assumption
 variable {e : ℕ}
 
 def j_Lat (A : Submodule (𝓞 E) (Fin e → E)) : Prop :=
@@ -6774,18 +6724,14 @@ theorem j_del_nested {A B : Submodule (𝓞 E) (Fin e → E)} (hA : j_Lat A) (hB
 
 theorem j_relIndex_pos {A B : Submodule (𝓞 E) (Fin e → E)} (hA : j_Lat A) (hB : j_Lat B) (hBA : B ≤ A) :
     0 < B.toAddSubgroup.relIndex A.toAddSubgroup := by
-  have h := j_del_nested hA hB hBA
-  have h1 := j_del_pos hB
-  rcases Nat.eq_zero_or_pos (B.toAddSubgroup.relIndex A.toAddSubgroup) with h0 | h0
-  · rw [h0] at h; simp at h; linarith
-  · exact h0
+  have hpos := j_del_pos hB
+  rw [j_del_nested hA hB hBA] at hpos
+  exact_mod_cast (pos_of_mul_pos_left hpos (le_of_lt (j_del_pos hA)))
 
 theorem j_del_le {A B : Submodule (𝓞 E) (Fin e → E)} (hA : j_Lat A) (hB : j_Lat B) (hBA : B ≤ A) :
     j_del A ≤ j_del B := by
   rw [j_del_nested hA hB hBA]
-  have h1 : (1 : ℚ) ≤ ((B.toAddSubgroup.relIndex A.toAddSubgroup : ℕ) : ℚ) := by
-    exact_mod_cast j_relIndex_pos hA hB hBA
-  nlinarith [j_del_pos hA]
+  exact le_mul_of_one_le_left (j_del_pos hA).le (by exact_mod_cast j_relIndex_pos hA hB hBA)
 
 theorem j_Lat_map {A : Submodule (𝓞 E) (Fin e → E)} (hA : j_Lat A) (C : (Fin e → E) ≃ₗ[E] (Fin e → E)) :
     j_Lat (A.map ((C : (Fin e → E) →ₗ[E] (Fin e → E)).restrictScalars (𝓞 E))) := by
@@ -6933,9 +6879,8 @@ theorem j_map_comap {u : Fin e → S.V} {M : Submodule (𝓞 E) S.V}
     (h : spanE S M = Submodule.span E (Set.range u)) : (M.comap (j_iotaO u)).map (j_iotaO u) = M := by
   rw [Submodule.map_comap_eq, inf_eq_right]
   intro x hx
-  have : x ∈ LinearMap.range (j_iota u) := by
-    rw [j_iota_range, ← h]; exact Submodule.subset_span hx
-  exact this
+  change x ∈ LinearMap.range (j_iota u)
+  rw [j_iota_range, ← h]; exact Submodule.subset_span hx
 
 theorem j_comap_lat {u : Fin e → S.V} (hu : LinearIndependent E u) {M : Submodule (𝓞 E) S.V} (hM : M.FG)
     (h : spanE S M = Submodule.span E (Set.range u)) : j_Lat (M.comap (j_iotaO u)) := by
@@ -8356,8 +8301,7 @@ theorem k_Comm_cyc (v : S.V) {d : 𝓞 E} (hd : d ≠ 0) :
 
 theorem k_cyc_le (v : S.V) (d : 𝓞 E) :
     Submodule.span (𝓞 E) {d • v} ≤ Submodule.span (𝓞 E) {v} := by
-  rw [Submodule.span_singleton_le_iff_mem]
-  exact Submodule.smul_mem _ d (Submodule.mem_span_singleton_self _)
+  exact (Submodule.span_singleton_le_iff_mem _ _).2 (Submodule.smul_mem _ d (Submodule.mem_span_singleton_self _))
 
 theorem k_dual_cyc {s : S.V} (hc : S.hT s s ≠ 0) :
     dualIn S (Submodule.span (𝓞 E) {s}) = Submodule.span (𝓞 E) {(S.hT s s)⁻¹ • s} := by
@@ -8616,8 +8560,7 @@ theorem k_ln_le_Sp : k_ln Λ F F' F'' β ≤ k_Sp Λ F F' F'' β := inf_le_inf_r
 theorem k_al_Th {f : S.V →ₗ[E] E} (hf : k_IsZc F F'' f) {θ : S.V} (hθ : θ ∈ Th Λ F F' F'' β) :
     k_al f β θ = 0 := by
   obtain ⟨x₂, -, ha, hb⟩ := c_mem_Th.1 hθ
-  have : θ - β θ = (θ - x₂) - (β θ - x₂) := by abel
-  rw [k_al_apply, this, map_sub, hf.2.1 _ ha, hf.2.2 _ (c_X_le_Xplus F'' hb), sub_zero]
+  rw [k_al_apply, (show θ - β θ = (θ - x₂) - (β θ - x₂) by abel), map_sub, hf.2.1 _ ha, hf.2.2 _ (c_X_le_Xplus F'' hb), sub_zero]
 
 theorem k_Psi_lat (hΛ : Submodule.IsLattice E Λ) (hg : 0 < g) (hz : IsLift Λ F) (hz' : IsLift Λ F')
     (hG' : Gval F F' ≠ 0) (hPos : PosX F) :
@@ -8766,9 +8709,7 @@ theorem k_pair_symm (hP : IsPair Λ F F' F'' β g) : IsPair Λ F F'' F' β.symm 
   · ext x
     constructor
     · rintro ⟨y, hy, rfl⟩
-      apply (k_beta_Lam hP _).1
-      show β (β.symm y) ∈ Λ
-      rw [LinearEquiv.apply_symm_apply]; exact hy
+      exact (k_beta_Lam hP _).1 (by simpa using hy)
     · intro hx
       exact ⟨β x, (k_beta_Lam hP x).2 hx, by simp⟩
   · intro j
@@ -8783,9 +8724,7 @@ theorem k_pair_symm (hP : IsPair Λ F F' F'' β g) : IsPair Λ F F'' F' β.symm 
       show β.symm x'' ∈ orth S (Xsp F')
       rw [c_mem_orth]
       intro v hv
-      have h1 := c_iso hP v (β.symm x'')
-      rw [LinearEquiv.apply_symm_apply] at h1
-      rw [← h1]
+      rw [← c_iso hP v (β.symm x''), LinearEquiv.apply_symm_apply]
       exact c_mem_orth.1 hx''.2 _ (c_beta_mem_X hP hv)
     have := hP.2.2.2 (β.symm x'') hmem l hl
     rw [LinearEquiv.apply_symm_apply] at this

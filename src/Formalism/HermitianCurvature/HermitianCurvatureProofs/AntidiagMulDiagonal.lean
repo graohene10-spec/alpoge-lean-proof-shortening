@@ -36,16 +36,13 @@ theorem upUni_inv {a : Matrix (Fin n) (Fin n) K} (ha : IsUpUni a) : IsUpUni a⁻
 theorem antidiag_mul_diagonal (d : Fin n → K) :
     w0 n * diagonal d = Matrix.of fun i j => if i = Fin.rev j then d j else 0 := by
   ext i j
-  rw [Matrix.mul_diagonal]
-  simp only [w0, Matrix.of_apply]
   have hi := i.isLt
   have hj := j.isLt
   have hiff : ((i : ℕ) + (j : ℕ) + 1 = n) ↔ i = Fin.rev j := by
     rw [Fin.ext_iff, Fin.val_rev]
     omega
-  by_cases h : i = Fin.rev j
-  · rw [if_pos (hiff.mpr h), if_pos h, one_mul]
-  · rw [if_neg (fun h' => h (hiff.mp h')), if_neg h, zero_mul]
+  simp only [Matrix.mul_diagonal, w0, Matrix.of_apply, hiff]
+  by_cases h : i = Fin.rev j <;> simp [h]
 
 theorem mulW_apply (a : Matrix (Fin n) (Fin n) K) (d : Fin n → K) (i j : Fin n) :
     (a * (w0 n * diagonal d) : Matrix (Fin n) (Fin n) K) i j = a i (Fin.rev j) * d j := by
@@ -75,8 +72,7 @@ theorem lower_eq_one {a c : Matrix (Fin n) (Fin n) K} {d : Fin n → K} (ha : Is
   · rcases lt_or_gt_of_ne hik with h' | h'
     · have e := congrFun (congrFun h i) (Fin.rev k)
       rw [mulW_apply, Wmul_apply, Fin.rev_rev] at e
-      have hc0 : c (Fin.rev i) (Fin.rev k) = 0 := hc.1 (Fin.rev_lt_rev.mpr h')
-      rw [hc0, mul_zero] at e
+      rw [(show c (Fin.rev i) (Fin.rev k) = 0 from hc.1 (Fin.rev_lt_rev.mpr h')), mul_zero] at e
       exact (mul_eq_zero.mp e).resolve_right (hd _)
     · exact ha.1 h'
 

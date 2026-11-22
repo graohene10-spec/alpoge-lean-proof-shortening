@@ -76,7 +76,6 @@ theorem out_discriminant_bound : OutD := by
 theorem second_discriminant_bound : SecondD := by
   intro Ps cand cl Sig θ m T a R hm hT ha hSig hW hcl
   have h1 := second_term_le Ps cand cl Sig θ m T a hm hT ha hcl
-  have hc : 0 ≤ 2 * a * m * T := by positivity
   have h2 : ∑ p ∈ cand, (if θ < Sig p then 4 * (m * T * a) * Real.log p / p else 0) ≤
       2 * a * m * T * lhsW cand θ Sig := by
     unfold lhsW
@@ -84,14 +83,13 @@ theorem second_discriminant_bound : SecondD := by
     refine Finset.sum_le_sum (fun p hp => ?_)
     have hl := logdiv_nonneg p
     have hs := hSig p hp
-    have h0 : 0 ≤ 2 * a * m * T * (Real.log p / p * (4 * Sig p)) := by positivity
     split_ifs
     · have e : 2 * a * m * T * (Real.log p / p * (2 + 4 * Sig p)) =
           4 * (m * T * a) * Real.log p / p + 2 * a * m * T * (Real.log p / p * (4 * Sig p)) := by ring
-      rw [e]; linarith
-    · rw [zero_add]; exact h0
-  have h3 := mul_le_mul_of_nonneg_left hW hc
-  linarith
+      rw [e]
+      linarith [show (0 : ℝ) ≤ 2 * a * m * T * (Real.log p / p * (4 * Sig p)) by positivity]
+    · simpa using (show (0 : ℝ) ≤ 2 * a * m * T * (Real.log p / p * (4 * Sig p)) by positivity)
+  exact (h1.trans h2).trans (mul_le_mul_of_nonneg_left hW (by positivity))
 
 theorem io_discriminant_bound : IoD := by
   intro cand Sig io θ m T a R hm hT ha hW hio

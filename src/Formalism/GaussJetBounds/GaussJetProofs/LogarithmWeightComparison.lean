@@ -68,13 +68,11 @@ def genLogTrunc (l : ℕ) (p : τ → τ) (x : τ) (M : ℕ) : MvPowerSeries τ 
 theorem coeff_genLogTrunc (l : ℕ) (p : τ → τ) (x : τ) (M : ℕ) (n : τ →₀ ℕ) :
     coeff n (genLogTrunc (K := K) l p x M) = ∑ e ∈ Finset.range M,
       if n = Finsupp.single (p^[e] x) ((l ^ 2) ^ e) then ((l : K) ^ e)⁻¹ else 0 := by
-  simp only [genLogTrunc, map_sum, MvPowerSeries.coeff_smul, MvPowerSeries.coeff_X_pow, mul_ite, mul_one,
-    mul_zero]
+  simp [genLogTrunc, map_sum, MvPowerSeries.coeff_X_pow, mul_ite, mul_one, mul_zero]
 
 theorem low_genLog_sub {l : ℕ} (hl : 2 ≤ l) (p : τ → τ) (x : τ) (M : ℕ) :
     Low M (genLog (K := K) l p x - genLogTrunc l p x M) := by
-  intro d hd
-  rw [map_sub, coeff_genLog hl p x d hd, coeff_genLogTrunc, sub_self]
+  exact fun d hd => by rw [map_sub, coeff_genLog hl p x d hd, coeff_genLogTrunc, sub_self]
 
 theorem subst_genLogTrunc [Finite τ] {g : τ → MvPowerSeries τ K} (hs : HasSubst g) (l : ℕ)
     (p : τ → τ) (x : τ) (M : ℕ) :

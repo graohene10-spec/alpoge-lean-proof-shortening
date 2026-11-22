@@ -271,19 +271,15 @@ theorem one_le_L {D : D7} (large₂ : SizeData₂ D) : 1 ≤ large₂.sc.L := by
   simpa [Scale.L] using Real.one_le_rpow large₂.sc.one_lt_alt.le large₂.sc.eps_pos.le
 
 theorem log_b {D : D7} (large₂ : SizeData₂ D) : Real.log large₂.sc.b = large₂.sc.L := by
-  unfold Scale.b
-  exact Real.log_exp _
+  simp [Scale.b]
 
 theorem one_lt_b {D : D7} (large₂ : SizeData₂ D) : 1 < large₂.sc.b := by
   have h := one_le_L large₂
   simpa [Scale.b, ← Real.exp_zero] using Real.exp_lt_exp.mpr (by linarith)
 
 theorem one_le_f (D : D7) : (1 : ℝ) ≤ D.R.f := by
-  have h1 := D.R.m_le_f
   have h2 := D.R.two_le_m
-  have h3 : 1 ≤ D.R.f := by
-    unfold Ranks.f Ranks.n
-    omega
+  have h3 : 1 ≤ D.R.f := le_trans (by omega : 1 ≤ D.R.m) D.R.m_le_f
   exact_mod_cast h3
 
 theorem bOne_gap (D : D7) (τ : D.what₂.Tau) (j : ℕ) (h1 : 1 ≤ j) (h2 : j < D.R.m) :

@@ -41,8 +41,7 @@ theorem cmStar_apply (x : H.E) :
 
 theorem emb_star (φ : H.E →+* ℂ) (x : H.E) :
     φ (letI := H.cmStar; star x) = starRingEnd ℂ (φ x) := by
-  rw [cmStar_apply]
-  exact IsCMField.complexEmbedding_complexConj H.E φ x
+  simp [cmStar_apply, IsCMField.complexEmbedding_complexConj H.E φ x]
 
 theorem emb_conj (φ : H.E →+* ℂ) (x : H.E) : φ (H.conj x) = starRingEnd ℂ (φ x) :=
   H.conjE_apply φ x
@@ -55,16 +54,12 @@ theorem bridgeStar : Formalism.BasicNotions.bridge_star := fun _ H x => star_eq_
 theorem conj_aE : H.conj (H.sqq) = - H.sqq := by
   rw [H.gal_sqq]
   simp [Formalism.HC.HostRaw.conj, Formalism.HC.Frame.cc]
-  have hc : ((c0.1 : ℤˣ) : ℤ) = -1 := rfl
-  rw [hc]
-  simp
+  simp [show ((c0.1 : ℤˣ) : ℤ) = -1 by rfl]
 
 theorem conj_bE : H.conj (H.sqd) = - H.sqd := by
   rw [H.gal_sqd]
   simp [Formalism.HC.HostRaw.conj, Formalism.HC.Frame.cc]
-  have hc : ((c0.2 : ℤˣ) : ℤ) = -1 := rfl
-  rw [hc]
-  simp
+  simp [show ((c0.2 : ℤˣ) : ℤ) = -1 by rfl]
 
 theorem aE_sq : H.sqq ^ 2 = -(H.q : H.E) := H.sqq_sq
 

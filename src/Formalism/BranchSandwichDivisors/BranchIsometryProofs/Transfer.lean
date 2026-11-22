@@ -171,10 +171,7 @@ theorem col_norm_le {n : ℕ} (M : Fin n → Matrix ι ι ℂ) (c : ℝ) (hc : 0
 theorem blockDiag_mul_inv {n : ℕ} (Y : Matrix ι ι ℂ) (hY : IsUnit Y.det) :
     Matrix.blockDiagonal' (fun _ : Fin n => Y) * Matrix.blockDiagonal' (fun _ : Fin n => Y⁻¹) = 1 := by
   rw [← Matrix.blockDiagonal'_mul]
-  have h : (fun _ : Fin n => Y * Y⁻¹) = fun _ : Fin n => (1 : Matrix ι ι ℂ) := by
-    funext _
-    exact Matrix.mul_nonsing_inv Y hY
-  rw [h]
+  simp only [Matrix.mul_nonsing_inv Y hY]
   exact Matrix.blockDiagonal'_one
 
 theorem blockDiag_det {n : ℕ} (Y : Matrix ι ι ℂ) (hY : IsUnit Y.det) :
@@ -186,12 +183,10 @@ theorem blockDiag_inv {n : ℕ} (Y : Matrix ι ι ℂ) (hY : IsUnit Y.det) :
 theorem mul_blockDiag_apply {n : ℕ} {κ : Type} (N : Matrix κ (Σ _ : Fin n, ι) ℂ) (Y : Matrix ι ι ℂ)
     (k : κ) (i : Fin n) (j : ι) :
     (N * Matrix.blockDiagonal' (fun _ : Fin n => Y)) k ⟨i, j⟩ = ∑ l, N k ⟨i, l⟩ * Y l j := by
-  rw [Matrix.mul_apply, Fintype.sum_sigma, Finset.sum_eq_single i]
+  rw [Matrix.mul_apply, Fintype.sum_sigma, Finset.sum_eq_single_of_mem i (Finset.mem_univ i)]
   · exact Finset.sum_congr rfl fun l _ => by rw [Matrix.blockDiagonal'_apply_eq]
   · intro b _ hb
     exact Finset.sum_eq_zero fun l _ => by rw [Matrix.blockDiagonal'_apply_ne _ _ _ hb, mul_zero]
-  · intro h
-    exact absurd (Finset.mem_univ i) h
 
 theorem blockDiag_mul_apply {n : ℕ} {κ : Type} (N : Matrix (Σ _ : Fin n, ι) κ ℂ) (Y : Matrix ι ι ℂ)
     (k : κ) (i : Fin n) (j : ι) :
@@ -200,8 +195,7 @@ theorem blockDiag_mul_apply {n : ℕ} {κ : Type} (N : Matrix (Σ _ : Fin n, ι)
   · exact Finset.sum_congr rfl fun l _ => by rw [Matrix.blockDiagonal'_apply_eq]
   · intro b _ hb
     exact Finset.sum_eq_zero fun l _ => by rw [Matrix.blockDiagonal'_apply_ne _ _ _ hb.symm, zero_mul]
-  · intro h
-    exact absurd (Finset.mem_univ i) h
+  · exact fun h => absurd (Finset.mem_univ i) h
 
 end Mat
 

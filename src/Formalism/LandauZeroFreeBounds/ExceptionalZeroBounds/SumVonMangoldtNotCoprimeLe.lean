@@ -12,9 +12,7 @@ def partialSumUpTo (f : ℕ → ℂ) (x : ℝ) : ℂ := ∑ n ∈ Icc 1 ⌊x⌋�
 
 lemma sum_Icc_eq_add_sum_Ioc (g : ℕ → ℂ) {a b : ℕ} (hab : a ≤ b) :
     ∑ n ∈ Icc 1 b, g n = ∑ n ∈ Icc 1 a, g n + ∑ n ∈ Ioc a b, g n := by
-  have h1 : ∀ m : ℕ, Icc 1 m = Ioc 0 m := fun m => by
-    ext n; simp only [Finset.mem_Icc, Finset.mem_Ioc]; omega
-  rw [h1, h1, Finset.sum_Ioc_consecutive _ (Nat.zero_le a) hab]
+  rw [show Icc 1 b = Ioc 0 b by ext n; simp only [Finset.mem_Icc, Finset.mem_Ioc]; omega, show Icc 1 a = Ioc 0 a by ext n; simp only [Finset.mem_Icc, Finset.mem_Ioc]; omega, Finset.sum_Ioc_consecutive g (Nat.zero_le a) hab]
 
 lemma weightedSum_identity (f : ℕ → ℂ) {y Y : ℝ} (hyY : y ≤ Y) :
     (y : ℂ) * weightedPartialSumUpTo f Y - (Y : ℂ) * weightedPartialSumUpTo f y

@@ -116,18 +116,16 @@ theorem rtt_QE (he : MU e) (d' d : K) :
   exact ybet_alg _ _ _ d' d (swap_mul_firstEmbed _) (swap_mul_secondEmbed _) (QE_first_mul_second_eq_swap he) (QE_second_mul_first_eq_swap he)
 
 theorem J_PE (he : MU e) : YangianSpanCharacter.T.J B * PE e = YangianSpanCharacter.T.J B - QE e * YangianSpanCharacter.T.J B := by
-  have h := he.sum
-  have h' : e 1 1 = 1 - e 0 0 := eq_sub_of_add_eq' h
+  have h' : e 1 1 = 1 - e 0 0 := eq_sub_of_add_eq' he.sum
   ext i j
-  fin_cases i <;> fin_cases j <;>
-    (simp [YangianSpanCharacter.T.J, PE, QE, Matrix.mul_apply, Fin.sum_univ_two, h'] <;> first | rfl | abel)
+  fin_cases i <;> fin_cases j
+  all_goals (simp [YangianSpanCharacter.T.J, PE, QE, Matrix.mul_apply, Fin.sum_univ_two, h'] <;> abel)
 
 theorem J_QE (he : MU e) : YangianSpanCharacter.T.J B * QE e = YangianSpanCharacter.T.J B - PE e * YangianSpanCharacter.T.J B := by
-  have h := he.sum
-  have h' : e 1 1 = 1 - e 0 0 := eq_sub_of_add_eq' h
+  have h' : e 1 1 = 1 - e 0 0 := eq_sub_of_add_eq' he.sum
   ext i j
-  fin_cases i <;> fin_cases j <;>
-    (simp [YangianSpanCharacter.T.J, PE, QE, Matrix.mul_apply, Fin.sum_univ_two, h'] <;> first | rfl | abel)
+  fin_cases i <;> fin_cases j
+  all_goals (simp [YangianSpanCharacter.T.J, PE, QE, Matrix.mul_apply, Fin.sum_univ_two, h'] <;> abel)
 
 theorem QE_J_PE (he : MU e) : QE e * YangianSpanCharacter.T.J B * PE e = -(QE e * YangianSpanCharacter.T.J B) := by
   ext i j
@@ -154,8 +152,7 @@ theorem det2 (he : MU e) (D : K) :
   module
 
 theorem RhE_transpose (D : K) : (RhE e D)ᵀ = (D - 1)⁻¹ • (D • (1 : M2 B) - QE e) := by
-  unfold RhE
-  rw [Matrix.transpose_smul, Matrix.transpose_sub, Matrix.transpose_smul, Matrix.transpose_one]
+  simp only [RhE, Matrix.transpose_smul, Matrix.transpose_sub, Matrix.transpose_smul, Matrix.transpose_one]
   rfl
 
 theorem RhtE_transpose (d : K) : (RhtE e d)ᵀ = (d - 1)⁻¹ • (d • (1 : M2 B) - PE e) := by
@@ -390,10 +387,7 @@ theorem herm_transpose {RR : SlopeTestRemainingChoices S A} {T : M2 (SlopeTestRe
     (d0 RR * Tᵀ)ᴴ = d0 RR * Tᵀ := by
   ext1 i j
   have h' := congrFun (congrFun h j) i
-  unfold d0 at h' ⊢
-  rw [Matrix.conjTranspose_apply, Matrix.diagonal_mul] at h' ⊢
-  rw [Matrix.diagonal_mul] at h' ⊢
-  exact h'
+  simpa [d0, Matrix.conjTranspose_apply, Matrix.diagonal_mul, Matrix.transpose_apply] using h'
 
 end Slots
 

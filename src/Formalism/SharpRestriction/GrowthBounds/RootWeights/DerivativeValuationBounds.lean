@@ -138,9 +138,7 @@ theorem flt_hom_monomial {B₀ B' : Type*} [CommRing B₀] [CommRing B'] {σ : T
     (hX : ∀ w, φ (X w) ∈ Fl'.F (wt (Finsupp.single w 1))) (m : σ →₀ ℕ) :
     φ (monomial m 1) ∈ Fl'.F (wt m) := by
   induction m using Finsupp.induction
-  next =>
-    rw [← MvPolynomial.C_apply, _root_.map_one, _root_.map_one, _root_.map_zero]
-    exact Fl'.one_mem
+  next => simpa using Fl'.one_mem
   next a k f _ _ ih =>
     have e1 : monomial (Finsupp.single a k + f) (1 : B₀) = X a ^ k * monomial f 1 := by
       rw [MvPolynomial.X_pow_eq_monomial, MvPolynomial.monomial_mul, one_mul]
@@ -309,8 +307,7 @@ theorem flt_lam1S_mul_le {R : Type*} [CommRing R] {ι : Type*} {n : ℕ} [NeZero
     (F G : MvPolynomial (ι × Fin n) R) : lam1S LL S (F * G) ≤ lam1S LL S F + lam1S LL S G := by
   refine flt_withBot_le_add fun t u ht hu => ?_
   rw [flt_lam1S_le, _root_.map_mul]
-  have h1 := (laurentCoeffFiltration R n _ (-1)).mul_mem ((flt_lam1S_le LL S F t).1 ht) ((flt_lam1S_le LL S G u).1 hu)
-  rwa [← neg_add] at h1
+  simpa [neg_add, add_comm] using (laurentCoeffFiltration R n (ι × Fin n) (-1)).mul_mem ((flt_lam1S_le LL S F t).1 ht) ((flt_lam1S_le LL S G u).1 hu)
 
 theorem flt_twistMat_mem (R : Type*) [CommRing R] (n : ℕ) (j : Fin n) (k e t : ℤ) (h0 : t ≤ 0) (hk : t ≤ e * k)
     (b c : Fin n) : twistMat R n j k b c ∈ (flt_L (GLCoord R n) e).F t := by
@@ -745,12 +742,10 @@ theorem flt_op_mem {R : Type*} [CommRing R] {ι : Type*} {n : ℕ} (LL : Letters
     (hF : twistSub LL S j F ∈ (laurentCoeffFiltration R n (ι × Fin n) e).F t) (al be : ι × Fin n →₀ ℕ) :
     twistSub LL S j (monomial al 1 * divDer be F) ∈
       (laurentCoeffFiltration R n (ι × Fin n) e).F (t - (flt_cost LL S bm al + flt_cost LL S (!bm) be)) := by
-  rw [_root_.map_mul]
-  have h1 := (laurentCoeffFiltration R n _ e).mul_mem (flt_twist_monomial_mem (R := R) LL S j h al) (flt_divDer_mem LL S j h hF be)
-  have e2 : t - (flt_cost LL S bm al + flt_cost LL S (!bm) be) =
-      -flt_cost LL S bm al + (t - flt_cost LL S (!bm) be) := by ring
-  rw [e2]
-  exact h1
+  simpa only [_root_.map_mul, sub_eq_add_neg, neg_add, add_assoc, add_left_comm, add_comm] using
+    (laurentCoeffFiltration R n _ e).mul_mem
+      (flt_twist_monomial_mem (R := R) LL S j h al)
+      (flt_divDer_mem LL S j h hF be)
 
 theorem flt_vecDeg_le {ι : Type} {n : ℕ} (LL : Letters ι) (S : Set ι) (al : ι × Fin n →₀ ℕ) :
     vecDeg LL S al ≤ al.sum fun _ k => k := by
@@ -771,8 +766,7 @@ theorem flt_op_mem_val {R : Type*} [CommRing R] {ι : Type} {n : ℕ} [NeZero n]
     {F : MvPolynomial (ι × Fin n) R} {t : ℤ} (ht : (t : WithTop ℤ) ≤ valS LL S F) (al be : ι × Fin n →₀ ℕ)
     (N : ℕ) (hN : covDeg LL S al + vecDeg LL S be ≤ N) :
     twistSub LL S (lastIdx n) (monomial al 1 * divDer be F) ∈ (laurentCoeffFiltration R n (ι × Fin n) 1).F (t - N) := by
-  have hF := (flt_le_valS LL S F t).1 ht
-  have h1 := flt_op_mem LL S (lastIdx n) (Or.inl ⟨rfl, rfl⟩ : flt_compat 1 false) hF al be
+  have h1 := flt_op_mem LL S (lastIdx n) (Or.inl ⟨rfl, rfl⟩ : flt_compat 1 false) ((flt_le_valS LL S F t).1 ht) al be
   simp only [flt_cost_covDeg, Bool.not_false, flt_cost_vecDeg] at h1
   exact (laurentCoeffFiltration R n _ 1).anti (by omega) h1
 
@@ -780,8 +774,7 @@ theorem flt_op_mem_lam {R : Type*} [CommRing R] {ι : Type} {n : ℕ} [NeZero n]
     {F : MvPolynomial (ι × Fin n) R} {M : ℤ} (hM : lam1S LL S F ≤ (M : WithBot ℤ)) (al be : ι × Fin n →₀ ℕ)
     (N : ℕ) (hN : vecDeg LL S al + covDeg LL S be ≤ N) :
     twistSub LL S (0 : Fin n) (monomial al 1 * divDer be F) ∈ (laurentCoeffFiltration R n (ι × Fin n) (-1)).F (-(M + N)) := by
-  have hF := (flt_lam1S_le LL S F M).1 hM
-  have h1 := flt_op_mem LL S (0 : Fin n) (Or.inr ⟨rfl, rfl⟩ : flt_compat (-1) true) hF al be
+  have h1 := flt_op_mem LL S (0 : Fin n) (Or.inr ⟨rfl, rfl⟩ : flt_compat (-1) true) ((flt_lam1S_le LL S F M).1 hM) al be
   simp only [flt_cost_vecDeg, Bool.not_true, flt_cost_covDeg] at h1
   exact (laurentCoeffFiltration R n _ (-1)).anti (by omega) h1
 
@@ -811,9 +804,8 @@ theorem derivative_valuation_bound (D : Formalism.BasicNotions.D7) : DerivativeV
 theorem flt_twist_C_mem {R : Type*} [CommRing R] {ι : Type*} {n : ℕ} (LL : Letters ι) (S : Set ι) (j : Fin n)
     (e : ℤ) (q : R) : twistSub LL S j (C q) ∈ (laurentCoeffFiltration R n (ι × Fin n) e).F 0 := by
   simp only [twistSub, eval₂Hom_C, RingHom.coe_comp, Function.comp_apply]
-  refine flt_C_mem ?_
-  simp only [coefL, RingHom.coe_comp, Function.comp_apply]
-  exact flt_L_C e _
+  exact flt_C_mem (by
+    simpa only [coefL, RingHom.coe_comp, Function.comp_apply] using flt_L_C e _)
 
 theorem degree_truncation (D : Formalism.BasicNotions.D7) : DegreeTruncationLemma D := by
   unfold DegreeTruncationLemma

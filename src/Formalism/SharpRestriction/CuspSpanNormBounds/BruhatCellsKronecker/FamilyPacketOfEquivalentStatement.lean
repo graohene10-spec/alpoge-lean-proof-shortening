@@ -22,8 +22,7 @@ theorem d_hsNormSq_eq (A : V →L[ℂ] W) :
     hsNormSq A = ∑ i, ‖A (stdOrthonormalBasis ℂ V i)‖ ^ 2 := by
   unfold hsNormSq hsInner
   rw [Complex.re_sum]
-  refine Finset.sum_congr rfl fun i _ => ?_
-  rw [inner_self_eq_norm_sq_to_K]
+  simp only [inner_self_eq_norm_sq_to_K]
   norm_cast
 
 theorem d_hsNormSq_nonneg (A : V →L[ℂ] W) : 0 ≤ hsNormSq A := by

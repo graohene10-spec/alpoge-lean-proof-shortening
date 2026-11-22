@@ -67,8 +67,7 @@ theorem pow_two_pow_add_inv_mem_adjoin [Algebra ℚ L] (ζ : L) (hζ : ζ ≠ 0)
   induction m with
   | zero => simpa [thP, F1] using IntermediateField.mem_adjoin_simple_self ℚ (ζ + ζ⁻¹)
   | succ m ih =>
-    rw [pow_two_pow_add_inv_succ ζ hζ]
-    exact sub_mem (pow_mem ih 2) (by exact_mod_cast (F1 ζ).natCast_mem 2)
+    simpa [Nat.succ_eq_add_one, pow_two_pow_add_inv_succ ζ hζ] using sub_mem (pow_mem ih 2) (by exact_mod_cast (F1 ζ).natCast_mem 2)
 
 theorem pow_two_pow_add_inv_sq_eq_two [CharZero L] (ζ : L) (e : ℕ) (he : 1 ≤ e) (h : IsPrimitiveRoot ζ (2 ^ (e + 2))) :
     thP ζ (e - 1) ^ 2 = 2 := by
@@ -188,7 +187,6 @@ theorem three_lt_absNorm (D : D7) (v : FinF D) (h2 : (2 : 𝓞 (FF D)) ∉ v.asI
   have h2' : Ideal.absNorm v.asIdeal ≠ 2 := by
     intro h; rw [h] at hm; exact h2 (by exact_mod_cast hm)
   have h3 : Ideal.absNorm v.asIdeal = 3 := by omega
-  rw [h3] at hm
   obtain ⟨s, hs⟩ := exists_sqrt_two D
   have hcard : Nat.card (𝓞 (FF D) ⧸ v.asIdeal) = 3 := by
     rw [← h3, Ideal.absNorm_apply, Submodule.cardQuot_apply]
@@ -200,15 +198,11 @@ theorem three_lt_absNorm (D : D7) (v : FinF D) (h2 : (2 : 𝓞 (FF D)) ∉ v.asI
   rw [← Nat.card_eq_fintype_card, hcard] at hx3
   have hx2 : (Ideal.Quotient.mk v.asIdeal s) ^ 2 = 2 := by
     rw [← map_pow, hs, map_ofNat]
-  have h3K : (3 : 𝓞 (FF D) ⧸ v.asIdeal) = 0 := by
-    have := Ideal.Quotient.eq_zero_iff_mem.mpr hm
-    rw [Nat.cast_ofNat, map_ofNat] at this
-    exact this
   have hx0 : Ideal.Quotient.mk v.asIdeal s = 0 := by
     linear_combination hx3 - (Ideal.Quotient.mk v.asIdeal s) * hx2
-  have : (1 : 𝓞 (FF D) ⧸ v.asIdeal) = 0 := by
-    linear_combination h3K + hx2 - (Ideal.Quotient.mk v.asIdeal s) * hx0
-  exact one_ne_zero this
+  apply h2
+  rw [← Ideal.Quotient.eq_zero_iff_mem, map_ofNat, ← hx2, hx0]
+  simp
 
 theorem conj_conj (D : D7) (x : D.host.E) : D.host.conj (D.host.conj x) = x := by
   apply D.host.φ₀.injective
@@ -228,8 +222,7 @@ theorem sgO_sgO (D : D7) (x : 𝓞 D.host.E) : sgO D (sgO D x) = x := by
 
 theorem sgO_F (D : D7) (x : 𝓞 (FF D)) :
     sgO D (algebraMap (𝓞 (FF D)) (𝓞 D.host.E) x) = algebraMap (𝓞 (FF D)) (𝓞 D.host.E) x := by
-  apply RingOfIntegers.ext; rw [sgO_coe]
-  exact (D.host.conjE_mem_hostF_iff (x : FF D).1).1 (x : FF D).2
+  exact RingOfIntegers.ext (by rw [sgO_coe]; exact (D.host.conjE_mem_hostF_iff (x : FF D).1).1 (x : FF D).2)
 
 theorem algFE_inj (D : D7) : Function.Injective (algebraMap (𝓞 (FF D)) (𝓞 D.host.E)) :=
   FaithfulSMul.algebraMap_injective _ _
@@ -312,8 +305,7 @@ theorem exists_bO (D : D7) : ∃ β : 𝓞 D.host.E,
   · apply RingOfIntegers.coe_injective
     rw [map_pow, map_neg, map_natCast, hβ, b_sq]
   · apply RingOfIntegers.coe_injective
-    rw [map_neg, hβ, ← conj_b]
-    exact (sgO_coe D _).trans (congrArg D.host.conj hβ)
+    simpa only [map_neg, sgO_coe, hβ] using conj_b D
 
 theorem not_fixed_splitK (D : D7) (w : FinE D) (p : ℕ) (hpp : p.Prime) (hp2 : p ≠ 2)
     (hj : jacobiSym (-(D.host.d : ℤ)) p = 1) (hpw : (p : 𝓞 D.host.E) ∈ w.asIdeal) :
@@ -366,8 +358,7 @@ theorem not_fixed_splitK (D : D7) (w : FinE D) (p : ℕ) (hpp : p.Prime) (hp2 : 
 theorem mem_of_over (D : D7) {w : FinE D} {v : FinF D} (hw : Over D w v) (n : ℕ) :
     (n : 𝓞 (FF D)) ∈ v.asIdeal → (n : 𝓞 D.host.E) ∈ w.asIdeal := by
   intro h
-  rw [← hw, Ideal.mem_comap, map_natCast] at h
-  exact h
+  rwa [← hw, Ideal.mem_comap, map_natCast] at h
 
 theorem val_eq_one (D : D7) (w : FinE D) (x : 𝓞 D.host.E) (hx : x ∉ w.asIdeal) :
     w.valuation D.host.E (algebraMap (𝓞 D.host.E) D.host.E x) = 1 := by

@@ -433,8 +433,7 @@ theorem tens_coeff (a : ∀ i, MonoidAlgebra ℂ (G i)) (g : ∀ i, G i) :
 
 theorem conv_coeff {H : Type} [Group H] [Fintype H] (x y : MonoidAlgebra ℂ H) (g : H) :
     (x * y).coeff g = ∑ h, x.coeff h * y.coeff (h⁻¹ * g) := by
-  rw [MonoidAlgebra.coeff_mul_apply_left, Finsupp.sum_fintype]
-  intro i; simp
+  simp [MonoidAlgebra.coeff_mul_apply_left, Finsupp.sum_fintype]
 
 theorem tens_mul (a b : ∀ i, MonoidAlgebra ℂ (G i)) :
     tens a * tens b = tens (fun i => a i * b i) := by
@@ -697,8 +696,7 @@ theorem serSupp_cancel (D : D7) {V : Type} [AddCommGroup V] [Module ℂ V]
 
 theorem secondSentenceLemmaOne_of (D : D7) (h : SecondSentenceInputs D) : ErrorFirstTermSize D := by
   obtain ⟨h1, h2⟩ := h
-  exact ⟨fun μ j hj1 hj2 σ' k v f F hF hne => serSupp_cancel D _ _ _ _ (h1 μ j hj1 hj2) σ' k v f F hF hne,
-    fun μ σ' k v f F hF hne => serSupp_cancel D _ _ _ _ (h2 μ) σ' k v f F hF hne⟩
+  exact ⟨fun μ j hj1 hj2 => serSupp_cancel D _ _ _ _ (h1 μ j hj1 hj2), fun μ => serSupp_cancel D _ _ _ _ (h2 μ)⟩
 
 def ThetaUpInV0Side {EE : Type} [NormedAddCommGroup EE] [InnerProductSpace ℂ EE] [FiniteDimensional ℂ EE]
     (S : RowSide D EE) : Prop := ∀ μ, LinearMap.range (S.thetaUp μ) ≤ S.V0 μ
@@ -916,9 +914,7 @@ theorem atPlace_eq (D : D7) [DecidableEq (Σ k : Fin 2, D.nd.PlG k)] (k : Fin 2)
     Formalism.MainNotions.ArithmeticCylinders.atPlace D k v a =
       plc (G := fun kv : (Σ k : Fin 2, D.nd.PlG k) => GL (Fin D.R.r) (ZMod (D.host.g kv.1))) ⟨k, v⟩ a := by
   unfold Formalism.MainNotions.ArithmeticCylinders.atPlace
-  convert mapDomain_mulSingle (G := fun kv : (Σ k : Fin 2, D.nd.PlG k) => GL (Fin D.R.r) (ZMod (D.host.g kv.1)))
-    (⟨k, v⟩ : Σ k : Fin 2, D.nd.PlG k) a
-  all_goals rfl
+  convert mapDomain_mulSingle (G := fun kv : (Σ k : Fin 2, D.nd.PlG k) => GL (Fin D.R.r) (ZMod (D.host.g kv.1))) (⟨k, v⟩ : Σ k : Fin 2, D.nd.PlG k) a <;> rfl
 
 end Ten
 
@@ -943,9 +939,7 @@ theorem idempotent_acts_trivially_of (Y : Prov D X) (hE : IdempotentGoodTypeCond
     · have h2 : (fun k v => Formalism.CyclotomicNorms.monicOf (lab ⟨k, v⟩)) = sup P := by
         funext k v
         exact hlab ⟨k, v⟩
-      show D.ntypes.goodTuple _
-      rw [h2]
-      exact hP
+      simpa [goodVec, h2] using hP
   have hle : (⨆ P ∈ {P | D.ntypes.goodTuple (sup P)}, sp P) ≤
       LinearMap.ker (Y.actEE.asAlgebraHom D.ntypes.e0 - 1) :=
     iSup₂_le fun P hP F hF => by
@@ -1007,13 +1001,10 @@ theorem thetaUpInV0_of (Y : Prov D X) {EE : Type} [NormedAddCommGroup EE] [Inner
   have hK := thetaUpInV0_level_of Y hc' h1 he
   intro μ y hy
   obtain ⟨x, rfl⟩ := LinearMap.mem_range.mp hy
-  show S.thetaUp μ x ∈ LinearMap.range (S.eOp μ)
   refine LinearMap.mem_range.mpr ⟨S.thetaUp μ x, ?_⟩
   apply inj_of_normSq P.H (aA μ) (hA μ)
-  have hKx : Y.sK.thetaUp μ (aE x) ∈ LinearMap.range (Y.sK.eOp μ) :=
-    hK μ (LinearMap.mem_range_self _ _)
-  obtain ⟨z, hz⟩ := LinearMap.mem_range.mp hKx
   have hidem : Y.sK.eOp μ (Y.sK.thetaUp μ (aE x)) = Y.sK.thetaUp μ (aE x) := by
+    obtain ⟨z, hz⟩ := LinearMap.mem_range.mp (hK μ (LinearMap.mem_range_self (Y.sK.thetaUp μ) (aE x)))
     rw [← hz, ← LinearMap.comp_apply, Y.sK.eOp_idem μ]
   rw [Y.sK.eOp_tie μ, dif_pos hc'] at hidem
   rw [S.eOp_tie μ, dif_pos hc', hcen μ, hth μ x]
@@ -1040,10 +1031,8 @@ theorem sharp_thetaUp (D : D7) (μ : D.what₂.Tup) : (RowSide.sharp D).thetaUp 
   exact congrArg LinearMap.adjoint hi
 
 theorem thetaUpInV0_iff_sharp (D : D7) : ThetaUpInV0 D ↔ ThetaUpInV0Side (RowSide.sharp D) := by
-  unfold ThetaUpInV0 ThetaUpInV0Side
-  refine forall_congr' fun μ => ?_
-  rw [sharp_thetaUp]
-  all_goals rfl
+  simp only [ThetaUpInV0, ThetaUpInV0Side, sharp_thetaUp]
+  rfl
 
 def frg (D : D7) : ℝ := (D.R.f : ℝ) * D.R.r / (min (D.host.g 0) (D.host.g 1) : ℕ)
 
@@ -1141,8 +1130,7 @@ theorem prod_near_one {ι : Type} (s : Finset ι) (a : ι → ℝ) (x : ℝ) (hx
 theorem exactMultiplicityOne_of (Y : Prov D X) (hL : LocalMultiplicityFactor Y) : LatticeChainWithoutLast Y := by
   intro lab hl s hs
   obtain ⟨n0, nSh, h0, -, hloc⟩ := hL lab hl
-  rw [h0 s]
-  exact Finset.prod_eq_one fun kv _ => (hloc s hs kv).1
+  simpa only [h0 s] using (Finset.prod_eq_one (s := Finset.univ) fun kv _ => (hloc s hs kv).1)
 
 theorem latticeChain_succ_of_partial (Y : Prov D X) (C : ℝ) (hC : 8 ≤ C) (hL : LocalMultiplicityFactor Y) (hg : LevelRatioBound D) : PointsLemma Y C := by
   intro lab hl s hs
@@ -1250,8 +1238,7 @@ theorem rowMultiplicity_of (Y : Prov D X) (C : ℝ) (hTt : adm3_alt Y) (hT : Row
   · rw [hN π, h0 π, hone π, one_mul]
   · rw [h0 π, hone π, one_mul]
     exact hpos π
-  · dsimp only
-    rw [hlab π π' hπ]
+  · simp [hlab π π' hπ]
   · exact (h lab' hl (lab π) (hg (lab π))).2
 
 theorem exactRowOccurrence_of_multiplicity (D : D7) (C : ℝ) (h : RowMultiplicityBound D C) : ExactRowOccurrence D := by
@@ -1818,9 +1805,7 @@ theorem levelBound_of_ratio (D : D7) (h : 12 * frg D ≤ 1 / 3) : LevelRatioBoun
 
 theorem familyMultiplicityBound_of (Fm : FamP ε) (YF : ProvF Fm) (h1 : Adm1aF Fm YF) (h2 : FamilyRatioTendsZero Fm) : familyMultiplicityBoundConst Fm YF 8 := by
   obtain ⟨x0, hx0⟩ := h2 12
-  refine ⟨x0, fun x hx hx1 i => ?_⟩
-  obtain ⟨-, -, -, -, -, -, -, hL⟩ := h1 x hx1 i
-  exact latticeChain_succ_of_partial _ 8 le_rfl hL (levelBound_of_ratio _ (hx0 x hx hx1 i))
+  exact ⟨x0, fun x hx hx1 i => latticeChain_succ_of_partial _ 8 le_rfl (h1 x hx1 i).2.2.2.2.2.2.2 (levelBound_of_ratio _ (hx0 x hx hx1 i))⟩
 
 def AdmFA (Fm : FamP ε) (YF : ProvF Fm) : Prop := Adm1aF Fm YF ∧ FamilyRatioTendsZero Fm
 
@@ -1847,9 +1832,7 @@ theorem stmtAtA (Fm : FamP ε) (YF : ProvF Fm) : FamilyPartAImplication Fm YF :=
   rintro ⟨h1, h2⟩
   obtain ⟨e1, e2, e3, e4⟩ := stmtFA_exact Fm YF h1
   obtain ⟨x0, hx0⟩ := familyMultiplicityBound_of Fm YF h1 h2
-  refine ⟨e1, e2, e3, e4, ⟨8, x0, fun x hx hx1 i => ?_⟩, ⟨8, familyMultiplicityBound_of Fm YF h1 h2⟩⟩
-  obtain ⟨-, -, -, -, -, hTt, hR, -⟩ := h1 x hx1 i
-  exact rowMultiplicity_of _ 8 hTt hR (hx0 x hx hx1 i)
+  refine ⟨e1, e2, e3, e4, ⟨8, x0, fun x hx hx1 i => rowMultiplicity_of _ 8 (h1 x hx1 i).2.2.2.2.2.1 (h1 x hx1 i).2.2.2.2.2.2.1 (hx0 x hx hx1 i)⟩, ⟨8, ⟨x0, hx0⟩⟩⟩
 
 theorem stmtFA (Fm : FamP ε) (CH : ℝ) : FamilyPartA Fm CH := by
   exact stmtAtA Fm

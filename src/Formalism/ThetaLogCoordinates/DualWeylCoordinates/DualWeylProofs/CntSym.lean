@@ -47,8 +47,7 @@ lemma qk_mem_strUp {n : ℕ} {mu nu : Fin n → ℤ} {b : ℕ} (h : nu ∈ strUp
   exact h.2
 
 lemma qk_mem_strDown {n : ℕ} {mu nu : Fin n → ℤ} {b : ℕ} (h : nu ∈ strDown mu b) : HStrip nu mu b := by
-  unfold strDown at h
-  simp only [mem_filter] at h
+  simp only [strDown, mem_filter] at h
   exact h.2
 
 def qk_symEquiv (n b : ℕ) : SymIdx n b ≃ {P : Fin n → ℕ // ∑ i, P i = b} where

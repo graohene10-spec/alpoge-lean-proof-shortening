@@ -57,8 +57,7 @@ theorem divIneqRecordFree6
     (by linarith) (by linarith) q6 q7 z1 z2 z3 z4 z5 z6 z7 z8 z9 z10 le_rfl le_rfl
     z13 z14 z15 z16 z17 z18 z19 z20 z21 zb
     z23 z24 z25 z26 z27 z28 z29 z30 z31 z32 z33 z34 z35 hC hCC hnV hnVN hL' hCL y1 ?_ y5 y6
-  · rw [add_zero] at key
-    linarith
+  · linarith [key]
   · have hxe : 0 ≤ x ^ eps := Real.rpow_nonneg (by linarith) _
     have hb : 0 ≤ b := by rw [z4]; exact (Real.exp_pos _).le
     have hB0 : 0 ≤ B0 := by rw [z10]; positivity

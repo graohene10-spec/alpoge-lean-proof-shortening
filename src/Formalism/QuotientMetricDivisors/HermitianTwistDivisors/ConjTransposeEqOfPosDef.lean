@@ -55,11 +55,11 @@ end R0
 open R0 in
 theorem gram_determinant_quotient_metric : GramDeterminantQuotientMetric := by
   intro K _ _ _ _ K0 hCM v0 hv0 n D H hK0 hpos P hsurj XQ hQ e
-  have hH : Hᴴ = H := conjTranspose_eq_of_posDef v0 hv0 H (hpos v0)
   have hΓ : (quotGram P H)ᴴ = quotGram P H := by
     unfold quotGram
     rw [Matrix.conjTranspose_nonsing_inv, Matrix.conjTranspose_mul, Matrix.conjTranspose_mul,
-      Matrix.conjTranspose_conjTranspose, Matrix.conjTranspose_nonsing_inv, hH, Matrix.mul_assoc]
+      Matrix.conjTranspose_conjTranspose, Matrix.conjTranspose_nonsing_inv,
+      conjTranspose_eq_of_posDef v0 hv0 H (hpos v0), Matrix.mul_assoc]
   have hΓmap : (quotGram P H).map v0.embedding = ((XQ v0)⁻¹)ᴴ * (XQ v0)⁻¹ := by
     rw [(hQ v0).2]
     unfold quotGram
@@ -71,14 +71,13 @@ theorem gram_determinant_quotient_metric : GramDeterminantQuotientMetric := by
     rw [RingHom.map_det]
     congr 1
     ext a c
-    simp only [RingHom.mapMatrix_apply, Matrix.map_apply, Matrix.of_apply, Formalism.HermitianLatticesTheory.majAt,
-      Formalism.HermitianLatticesTheory.fcoord, Formalism.HermitianLatticesTheory.vecAt, Pi.basisFun_repr]
+    simp only [RingHom.mapMatrix_apply, Matrix.map_apply, Matrix.of_apply,
+      Formalism.HermitianLatticesTheory.majAt, Formalism.HermitianLatticesTheory.fcoord]
     have hY : ∀ (Y : Matrix (Fin D) (Fin D) ℂ) (x y : Fin D → ℂ),
         ∑ i, star ((Y *ᵥ x) i) * (Y *ᵥ y) i = ∑ i, star (x i) * ((Yᴴ * Y) *ᵥ y) i := by
       intro Y x y
-      have e1 : ∑ i, star ((Y *ᵥ x) i) * (Y *ᵥ y) i = star (Y *ᵥ x) ⬝ᵥ (Y *ᵥ y) := rfl
-      have e2 : ∑ i, star (x i) * ((Yᴴ * Y) *ᵥ y) i = star x ⬝ᵥ ((Yᴴ * Y) *ᵥ y) := rfl
-      rw [e1, e2, Matrix.star_mulVec, ← Matrix.dotProduct_mulVec, Matrix.mulVec_mulVec]
+      change star (Y *ᵥ x) ⬝ᵥ (Y *ᵥ y) = star x ⬝ᵥ ((Yᴴ * Y) *ᵥ y)
+      rw [Matrix.star_mulVec, ← Matrix.dotProduct_mulVec, Matrix.mulVec_mulVec]
     rw [hY, ← hΓmap]
     have hv0' : ∀ a : K, v0.embedding (star a) = starRingEnd ℂ (v0.embedding a) := hv0
     simp only [dotProduct, Matrix.mulVec, map_sum, map_mul, Pi.star_apply, Matrix.map_apply, hv0']

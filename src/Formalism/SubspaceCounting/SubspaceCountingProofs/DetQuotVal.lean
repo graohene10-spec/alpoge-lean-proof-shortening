@@ -147,15 +147,11 @@ theorem Formalism.G0.det_quotient_valuation : Formalism.G0.DetQuotVal := by
   simp only [map_mul, map_pow] at h ⊢
   set p : MvPolynomial (ι × Fin r) (Polynomial L) := MvPolynomial.C Polynomial.X with hpdef
   have hp : Prime p := (MvPolynomial.prime_C_iff _).mpr Polynomial.prime_X
-  have hnd : ∀ (U : MvPolynomial (ι × Fin r) (Polynomial L)), ¬ p ∣ U → ∀ n, p ^ n ∣ U ^ m' *
-      substS (K := K) vec S' g H → p ^ n ∣ substS (K := K) vec S' g H := by
-    intro U hU n hn
-    exact hp.pow_dvd_of_dvd_mul_left n (fun e => hU (hp.dvd_of_dvd_pow e)) hn
+  have hnd : ∀ (U : MvPolynomial (ι × Fin r) (Polynomial L)), ¬ p ∣ U → ∀ n, p ^ n ∣ U ^ m' * substS (K := K) vec S' g H → p ^ n ∣ substS (K := K) vec S' g H :=
+    fun U hU n hn => hp.pow_dvd_of_dvd_mul_left n (fun e => hU (hp.dvd_of_dvd_pow e)) hn
   by_cases hall : 1 ≤ r ∧ ∀ l, A l ∈ S'
-  · rw [substS_det_all hall.1 vec S' A hv hall.2 g, mul_pow, mul_assoc] at h
-    rw [show th + c = m' + (th - m' + c) by omega, pow_add] at h
-    have h' := (mul_dvd_mul_iff_left (pow_ne_zero m' hp.ne_zero)).mp h
-    exact hnd _ (not_dvd_detX A hA) _ h'
+  · rw [substS_det_all hall.1 vec S' A hv hall.2 g, mul_pow, mul_assoc, show th + c = m' + (th - m' + c) by omega, pow_add] at h
+    exact hnd _ (not_dvd_detX A hA) _ ((mul_dvd_mul_iff_left (pow_ne_zero m' hp.ne_zero)).mp h)
   · have hnot : ¬ p ∣ substS (K := K) vec S' g (detLetters A) := by
       by_cases hr : 1 ≤ r
       · exact not_dvd_substS_det hr vec S' A hA hv (fun x => hall ⟨hr, x⟩) g

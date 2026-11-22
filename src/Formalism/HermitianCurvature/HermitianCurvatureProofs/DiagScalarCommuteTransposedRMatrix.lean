@@ -176,11 +176,7 @@ theorem io_algebraMap (k : K) : (io (algebraMap K A k) : SlopeTestRemainingChoic
 
 theorem cen_Um (s : K) : Cen (Um (A := A) s) := by
   intro i j x
-  fin_cases i <;> fin_cases j
-  · exact Commute.one_left x
-  · exact Commute.zero_left x
-  · exact (Algebra.commute_algebraMap_left s x).neg_left
-  · exact Commute.one_left x
+  fin_cases i <;> fin_cases j <;> simp [Um, Algebra.commute_algebraMap_left]
 
 theorem cen_Uinv (s : K) : Cen (Uinv (A := A) s) := by
   intro i j x
@@ -601,12 +597,10 @@ end Formalism.FourierDecayAlt.P.Wd11
 namespace Formalism.FourierDecayAlt.P
 
 theorem R_matrix_UU_relation : Formalism.FourierDecayAlt.Wd.RhUU := by
-  intro K A S _ _ _ _ _ _ _ _ a D s
-  exact Wd11.rhUU a D s
+  exact fun K A S _ _ _ _ _ _ _ _ a D s => Wd11.rhUU a D s
 
 theorem transposed_R_matrix_UU_relation : Formalism.FourierDecayAlt.Wd.RhtUU := by
-  intro K A S _ _ _ _ _ _ _ _ b d s
-  exact Wd11.rhtUU b d s
+  exact fun K A S _ _ _ _ _ _ _ _ b d s => Wd11.rhtUU b d s
 
 theorem plane_wave_vector_identity : Formalism.FourierDecayAlt.Wd.PlaneWaveVec := by
   intro K A S _ _ _ _ _ _ _ _ σ f fi s w hW hc hci hp hw

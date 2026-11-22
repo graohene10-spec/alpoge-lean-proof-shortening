@@ -48,8 +48,7 @@ theorem free_eU {a c : S} (hc : c ≠ a) (k l : Fin 2) : FreeOf c (eU a k l : Sl
 
 theorem freeOf2_mul {c : S} {M N : M2 (SlopeTestRemainingChoices S A)} (hM : FreeOf2 c M) (hN : FreeOf2 c N) : FreeOf2 c (M * N) := by
   intro i j
-  rw [Matrix.mul_apply, Fin.sum_univ_two]
-  exact free_add (free_mul (hM _ _) (hN _ _)) (free_mul (hM _ _) (hN _ _))
+  simpa [Matrix.mul_apply, Fin.sum_univ_two] using free_add (free_mul (hM i 0) (hN 0 j)) (free_mul (hM i 1) (hN 1 j))
 
 theorem freeOf2_transpose {c : S} {M : M2 (SlopeTestRemainingChoices S A)} (hM : FreeOf2 c M) : FreeOf2 c Mᵀ :=
   fun i j => hM j i
@@ -67,8 +66,7 @@ theorem freeOf2_one (c : S) : FreeOf2 c (1 : M2 (SlopeTestRemainingChoices S A))
 
 theorem freeOf2_rmatrix {a c : S} (hc : c ≠ a) (D : ℂ) : FreeOf2 c (Rh0 a D : M2 (SlopeTestRemainingChoices S A)) := by
   intro i j
-  unfold Rh0
-  rw [Matrix.smul_apply, Matrix.sub_apply, Matrix.smul_apply]
+  simp only [Rh0, Matrix.smul_apply, Matrix.sub_apply]
   exact free_smul _ (free_sub (free_smul _ (freeOf2_one c i j)) (free_eU hc j i))
 
 theorem freeOf2_rmatrix_transpose {a c : S} (hc : c ≠ a) (D : ℂ) : FreeOf2 c (Rht0 a D : M2 (SlopeTestRemainingChoices S A)) := by
@@ -84,40 +82,34 @@ theorem blk_plus (M : M2 (SlopeTestRemainingChoices S A)) (D : ℂ) (i j k l : F
     Formalism.YangianSpanCharacter.F.blk (E1 M *
       ((D - 1)⁻¹ • (D • (1 : Matrix (Fin 2 × Fin 2) (Fin 2 × Fin 2) (SlopeTestRemainingChoices S A)) - Pf (SlopeTestRemainingChoices S A)))) i j k l =
       (D - 1)⁻¹ • (D • (if k = l then M i j else 0) - (if k = j then M i l else 0)) := by
-  unfold Formalism.YangianSpanCharacter.F.blk E1 Pf
   fin_cases i <;> fin_cases j <;> fin_cases k <;> fin_cases l <;>
-    simp [Matrix.mul_apply, Fintype.sum_prod_type, Fin.sum_univ_two, Matrix.one_apply, mul_sub]
+    simp [Formalism.YangianSpanCharacter.F.blk, E1, Pf, Matrix.mul_apply, Fintype.sum_prod_type, Fin.sum_univ_two, Matrix.one_apply, mul_sub]
 
 theorem blk_minus (M : M2 (SlopeTestRemainingChoices S A)) (d : ℂ) (i j k l : Fin 2) :
     Formalism.YangianSpanCharacter.F.blk (((d - 1)⁻¹ • pt1 (d • (1 : Matrix (Fin 2 × Fin 2) (Fin 2 × Fin 2) (SlopeTestRemainingChoices S A)) - Pf (SlopeTestRemainingChoices S A))) *
       E1 M) i j k l =
       (d - 1)⁻¹ • (d • (if k = l then M i j else 0) - (if i = k then M l j else 0)) := by
-  unfold Formalism.YangianSpanCharacter.F.blk E1 Pf pt1
   fin_cases i <;> fin_cases j <;> fin_cases k <;> fin_cases l <;>
-    simp [Matrix.mul_apply, Fintype.sum_prod_type, Fin.sum_univ_two, Matrix.one_apply, sub_mul]
+    simp [Formalism.YangianSpanCharacter.F.blk, E1, Pf, pt1, Matrix.mul_apply, Fintype.sum_prod_type, Fin.sum_univ_two, Matrix.one_apply, sub_mul]
 
 theorem mul_rmatrix_apply (a : S) (M : M2 (SlopeTestRemainingChoices S A)) (D : ℂ) (i j : Fin 2) :
     (M * Rh0 a D : M2 (SlopeTestRemainingChoices S A)) i j =
       (D - 1)⁻¹ • (D • M i j - (M i 0 * eU a j 0 + M i 1 * eU a j 1)) := by
-  unfold Rh0 P0
-  rw [Matrix.mul_smul, Matrix.smul_apply, Matrix.mul_sub, Matrix.sub_apply, Matrix.mul_smul, Matrix.smul_apply,
-    Matrix.mul_one, Matrix.mul_apply, Fin.sum_univ_two]
-  rfl
+  simp only [Rh0, P0, Matrix.mul_smul, Matrix.smul_apply, Matrix.mul_sub, Matrix.sub_apply, Matrix.mul_one]
+  simp only [Matrix.mul_apply, Fin.sum_univ_two, Matrix.of_apply]
 
 theorem Rht0_mul_apply (b : S) (M : M2 (SlopeTestRemainingChoices S A)) (d : ℂ) (i j : Fin 2) :
     (Rht0 b d * M : M2 (SlopeTestRemainingChoices S A)) i j =
       (d - 1)⁻¹ • (d • M i j - (eU b i 0 * M 0 j + eU b i 1 * M 1 j)) := by
   unfold Rht0 Q0
-  rw [Matrix.smul_mul, Matrix.smul_apply, Matrix.sub_mul, Matrix.sub_apply, Matrix.smul_mul, Matrix.smul_apply,
-    Matrix.one_mul, Matrix.mul_apply, Fin.sum_univ_two]
-  rfl
+  rw [Matrix.smul_mul, Matrix.sub_mul, Matrix.smul_mul, Matrix.one_mul]
+  simp [Matrix.smul_apply, Matrix.sub_apply, Matrix.mul_apply, Fin.sum_univ_two]
 
 theorem ins_block (a : S) (c D : ℂ) (x : SlopeTestRemainingChoices S A) (y : Fin 2 → SlopeTestRemainingChoices S A) (m : Fin 2) :
     ins a (Matrix.of fun k l => c • (D • (if k = l then x else 0) - (if k = m then y l else 0))) =
       c • (D • x - (eU a m 0 * y 0 + eU a m 1 * y 1)) := by
-  have h1 := Wd1.sum_eU_diag (A := A) a
-  rw [Fin.sum_univ_two] at h1
-  have h2 : x = eU a 0 0 * x + eU a 1 1 * x := by rw [← add_mul, h1, one_mul]
+  have h2 : x = eU a 0 0 * x + eU a 1 1 * x := by
+    simpa [Fin.sum_univ_two, add_mul] using (congrArg (fun z => z * x) (Wd1.sum_eU_diag (A := A) a)).symm
   unfold ins
   conv_rhs => rw [h2]
   fin_cases m <;>

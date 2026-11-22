@@ -77,8 +77,7 @@ theorem comap_iSup_top {F : Type} [Field F] {d d' : ℕ} (φ : Matrix (Fin d') (
   have hb : Function.Bijective φ.mulVecLin := h
   have e1 : (⨆ p, (A p).comap φ.mulVecLin).map φ.mulVecLin = ⊤ := by
     rw [Submodule.map_iSup]
-    simp only [Submodule.map_comap_eq_of_surjective hb.2]
-    exact ht
+    simpa only [Submodule.map_comap_eq_of_surjective hb.2] using ht
   have e2 := congrArg (Submodule.comap φ.mulVecLin) e1
   rwa [Submodule.comap_map_eq_of_injective hb.1, Submodule.comap_top] at e2
 
@@ -134,11 +133,10 @@ theorem Ep_decomp (wf : Df.WF) : iSupIndep S.Ep ∧ (⨆ p, S.Ep p) = ⊤ := by
   exact ⟨map_indep _ hb0 _ wf.Qp_indep, map_iSup_top _ hb0 _ wf.Qp_top⟩
 
 theorem Wp_decomp (wf : Df.WF) (j : Bs.J) : iSupIndep (S.Wp j) ∧ (⨆ p, S.Wp j p) = ⊤ := by
-  have hθ0 := S.l1c.2.1 j Bs.μ0
   have hw : S.Wp j = fun p => (Df.Zp j Bs.μ0 p).map (S.θ j Bs.μ0).mulVecLin :=
     funext fun p => (S.l1a.2 j p).symm
   rw [hw]
-  exact ⟨map_indep _ hθ0 _ (wf.Zp_indep j), map_iSup_top _ hθ0 _ (S.4 j)⟩
+  exact ⟨map_indep _ (S.l1c.2.1 j Bs.μ0) _ (wf.Zp_indep j), map_iSup_top _ (S.l1c.2.1 j Bs.μ0) _ (S.4 j)⟩
 
 theorem Qpart_decomp (wf : Df.WF) (t : Bs.Tup) : iSupIndep (S.Qpart t) ∧ (⨆ p, S.Qpart t p) = ⊤ := by
   obtain ⟨h1, h2⟩ := S.Ep_decomp wf
@@ -205,13 +203,10 @@ theorem IndefRows.RR_spec (hG : LatticeGlue) {Bs : DefBase K} {Df : DefSide Bs} 
     ((twisted_finite S).subset fun w hw => ?_)
   intro h
   apply hw
-  show Formalism.HermitianLatticesTheory.localization₂ w.asIdeal (matLat (S.ι (S.μ w)) (Df.abelian₂ (S.μ w))) = _
   rw [h]
 
 theorem vw_one (w : HeightOneSpectrum (𝓞 K)) : vw w (1 : K) = 0 := by
-  first
-  | simp only [vw, FractionalIdeal.spanSingleton_one, FractionalIdeal.count_one]
-  | simp [vw]
+  simp only [vw, FractionalIdeal.spanSingleton_one, FractionalIdeal.count_one]
 
 theorem IndefRows.stepB [IsTotallyComplex K] (hB : StepBW) (hS : SpecDet) (hR0 : GramDeterminantQuotientMetric) (hRb : LemmaRb)
     (hG : LatticeGlue) {Bs : DefBase K} {Df : DefSide Bs} (wf : Df.WF) (S : IndefRows Df)
@@ -424,12 +419,9 @@ theorem fnorm_eq_zero {n : ℕ} (Y : Matrix (Fin n) (Fin n) ℂ) (hY : IsUnit Y.
   have h1 : ∑ i, ‖(Y⁻¹.mulVec y) i‖ ^ 2 = 0 := by
     have h' : Real.sqrt (∑ i, ‖(Y⁻¹.mulVec y) i‖ ^ 2) = 0 := h
     rwa [Real.sqrt_eq_zero (Finset.sum_nonneg fun i _ => by positivity)] at h'
-  have h2 : Y⁻¹.mulVec y = 0 := by
-    funext i
-    have := (Finset.sum_eq_zero_iff_of_nonneg (fun i _ => by positivity)).mp h1 i (Finset.mem_univ i)
-    simpa using this
-  calc y = (Y * Y⁻¹).mulVec y := by rw [Matrix.mul_nonsing_inv Y hY, Matrix.one_mulVec]
-    _ = Y.mulVec (Y⁻¹.mulVec y) := (Matrix.mulVec_mulVec y Y Y⁻¹).symm
+  have h2 : Y⁻¹.mulVec y = 0 := funext fun i => by
+    simpa using (Finset.sum_eq_zero_iff_of_nonneg (fun i _ => by positivity)).mp h1 i (Finset.mem_univ i)
+  calc y = Y.mulVec (Y⁻¹.mulVec y) := by rw [Matrix.mulVec_mulVec, Matrix.mul_nonsing_inv Y hY, Matrix.one_mulVec]
     _ = 0 := by rw [h2, Matrix.mulVec_zero]
 
 theorem period_images_surjective (h : C.L1e) (hX : IsUnit (S.XE Bs.v0).det) (hD : 0 < S.D) (z : Sp.HH) (hz : z ∈ Sp.Rw) : ∃ y, C.sE y = z := by
@@ -497,8 +489,7 @@ theorem IndefCore.divCore [IsTotallyComplex K] (hM : Formalism.DivisorInequality
     P.base.boundsMu hM hS hR0 hG hRam wf0 P.extra.untw eb heb Sy hSy hG0 LG E3 E2 gy ηy hi hLG hiv hE2 hE3
   have hp := (P.extra.passage hde hde3 _ P.extra.fun0).2
   have hh := P.cols.height hH wf1 u hXc hne X0 hX0 pU hpU
-  have hκ : meanLog P.cols.κ = meanLog P.base.κ := by rw [P.extra.level.2.1]
-  rw [hκ] at hh
+  rw [← P.extra.level.2.1] at hh
   have h1 : P.base.muCC - meanLog P.base.κ ≤ X := by rw [hX]; linarith [h0]
   have h2 : 3 * N.de * (P.base.muCC + (N.hh - meanLog P.base.κ) + 28 * N.la) ≤
       3 * N.de * (X + N.hh + 28 * N.la) :=

@@ -284,8 +284,7 @@ theorem extension_local_parts : HostLocalParts := by
 
 lemma jac_two_d {q d : ℕ} (h : HostHyp q d) : jacobiSym ((2 : ℕ) : ℤ) d = 1 := by
   have h8 : d % 8 = 7 := by have := h.2.2.2.1; omega
-  have hodd : Odd d := Nat.odd_iff.2 (by omega)
-  rw [Nat.cast_ofNat, jacobiSym.at_two hodd, ZMod.χ₈_nat_mod_eight, h8]
+  rw [Nat.cast_ofNat, jacobiSym.at_two (Nat.odd_iff.2 (by omega)), ZMod.χ₈_nat_mod_eight, h8]
   rfl
 
 lemma jac_two_q {q d : ℕ} (h : HostHyp q d) : jacobiSym ((2 : ℕ) : ℤ) q = -1 := by
@@ -317,8 +316,7 @@ lemma jac_flip {l m : ℕ} (hl : l % 4 = 3) (hm : Odd m) : jacobiSym (m : ℤ) l
 
 lemma sgn2_toAdd_eq_ite (s : ℤˣ) : Multiplicative.toAdd (sgn2 s) = if (s : ℤ) = 1 then 0 else 1 := by
   change (if s = 1 then (0 : ZMod 2) else 1) = _
-  have : s = 1 ↔ (s : ℤ) = 1 := by rw [Units.ext_iff, Units.val_one]
-  simp only [this]
+  simp only [show s = 1 ↔ (s : ℤ) = 1 by rw [Units.ext_iff, Units.val_one]]
 
 lemma legU_of_modEq {N l : ℕ} [NeZero N] [Fact l.Prime] (h : l ∣ N) (u : (ZMod N)ˣ) (k : ℕ)
     (hk : (u : ZMod N).val ≡ k [MOD l]) : ((legU N l h u : ℤˣ) : ℤ) = jacobiSym (k : ℤ) l := by
@@ -447,8 +445,7 @@ lemma host_unram (h : HostHyp q d) (p : ℕ) (hp : p.Coprime (hostN e q d)) (hpp
     intro x hx
     obtain ⟨u, hu, rfl⟩ := (mem_host_inertia_iff p x).1 hx
     rw [h1, Subgroup.mem_bot] at hu
-    rw [hu, map_one]
-    exact AddSubgroup.zero_mem _
+    simp [hu]
   · change Multiplicative.toAdd (recMap e q d (frobUnit (hostN e q d) p)) = _
     congr 2
     apply Units.ext
@@ -761,9 +758,7 @@ lemma galE_mul' (h : HostHyp q d) (hL : IsLayer (e + 2) q d ζ a b) (σ τ : hos
 
 lemma galE_one' (h : HostHyp q d) (hL : IsLayer (e + 2) q d ζ a b) :
     galE e ζ a b (1 : hostE ζ a b ≃ₐ[ℚ] hostE ζ a b) = 1 := by
-  have := galE_mul' h hL 1 1
-  rw [mul_one] at this
-  exact mul_eq_left.mp this.symm
+  exact (mul_eq_left (a := galE e ζ a b 1)).mp (by simpa [mul_one] using (galE_mul' h hL 1 1).symm)
 
 lemma galois_map_mul_inv (h : HostHyp q d) (hL : IsLayer (e + 2) q d ζ a b)
     (σ τ : hostE ζ a b ≃ₐ[ℚ] hostE ζ a b) :

@@ -240,10 +240,8 @@ private theorem mapCoord_intCast (m : ℤ) :
     rw [Units.coe_map, qhDet_val]
     show mapCoord (n := n) R (algebraMap _ _ (genMat ℤ n).det) = _
     rw [mapCoord_mvPolynomial_int, RingHom.map_det, genMat_map_coord]
-  calc mapCoord (n := n) R ((detU n ^ m : (GLCoord ℤ n)ˣ) : GLCoord ℤ n)
-      = ((Units.map (mapCoord (n := n) R).toMonoidHom (detU n ^ m) : (GLCoord R n)ˣ) : GLCoord R n) :=
-        (Units.coe_map _ _).symm
-    _ = ((qhDet R n ^ m : (GLCoord R n)ˣ) : GLCoord R n) := by rw [map_zpow, hu]
+  change ((Units.map (mapCoord (n := n) R).toMonoidHom (detU n ^ m) : (GLCoord R n)ˣ) : GLCoord R n) = ((qhDet R n ^ m : (GLCoord R n)ˣ) : GLCoord R n)
+  rw [map_zpow, hu]
 
 lemma qh_bidet_mem [NeZero n] {mu : Fin n → ℤ} (hmu : Dominant mu) (k : ℕ) (hk : 0 ≤ mu (lastIdx n) + k)
     {K : ℕ} (sz : Fin K → ℕ) (hsz : ∀ κ, sz κ ≤ n) (I : ∀ κ, Fin (sz κ) → Fin n)

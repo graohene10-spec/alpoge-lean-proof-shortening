@@ -286,25 +286,20 @@ theorem pathCount_eq_card_middle (P Q : HeightOneSpectrum (𝓞 E)) (i j : ℕ) 
 
 theorem split_inf_le {P : HeightOneSpectrum (𝓞 E)} (hne : conjPrime₂ P ≠ P) {N M e : Submodule (𝓞 E) (Sp E n)}
     (h1 : P.asIdeal • M ≤ e) (h2 : (conjPrime₂ P).asIdeal • N ≤ e) : M ⊓ N ≤ e := by
-  have hne' : P.asIdeal ≠ (conjPrime₂ P).asIdeal := fun h => hne (HeightOneSpectrum.ext h.symm)
-  have htop := Ideal.IsMaximal.coprime_of_ne P.isMaximal (conjPrime₂ P).isMaximal hne'
-  have h1mem : (1 : 𝓞 E) ∈ P.asIdeal ⊔ (conjPrime₂ P).asIdeal := by rw [htop]; trivial
-  obtain ⟨a, ha, b, hb, hab⟩ := Submodule.mem_sup.mp h1mem
-  intro x hx
-  have hx' : x = a • x + b • x := by rw [← add_smul, hab, one_smul]
-  rw [hx']
-  exact e.add_mem (h1 (Submodule.smul_mem_smul ha hx.1)) (h2 (Submodule.smul_mem_smul hb hx.2))
+  obtain ⟨a, ha, b, hb, hab⟩ := Submodule.mem_sup.mp
+    ((Ideal.IsMaximal.coprime_of_ne P.isMaximal (conjPrime₂ P).isMaximal
+      (fun h => hne (HeightOneSpectrum.ext h.symm))).symm ▸ Submodule.mem_top)
+  rintro x ⟨hxM, hxN⟩
+  rw [show x = a • x + b • x by rw [← add_smul, hab, one_smul]]
+  exact e.add_mem (h1 (Submodule.smul_mem_smul ha hxM)) (h2 (Submodule.smul_mem_smul hb hxN))
 
 theorem split_sup_inf_eq {P : HeightOneSpectrum (𝓞 E)} (hne : conjPrime₂ P ≠ P) {N M e : Submodule (𝓞 E) (Sp E n)}
     (h1 : P.asIdeal • e ≤ N) (h2 : (conjPrime₂ P).asIdeal • e ≤ M) : (e ⊓ N) ⊔ (M ⊓ e) = e := by
-  have hne' : P.asIdeal ≠ (conjPrime₂ P).asIdeal := fun h => hne (HeightOneSpectrum.ext h.symm)
-  have htop := Ideal.IsMaximal.coprime_of_ne P.isMaximal (conjPrime₂ P).isMaximal hne'
-  have h1mem : (1 : 𝓞 E) ∈ P.asIdeal ⊔ (conjPrime₂ P).asIdeal := by rw [htop]; trivial
-  obtain ⟨a, ha, b, hb, hab⟩ := Submodule.mem_sup.mp h1mem
-  refine le_antisymm (sup_le inf_le_left inf_le_right) ?_
-  intro x hx
-  have hx' : x = a • x + b • x := by rw [← add_smul, hab, one_smul]
-  rw [hx']
+  obtain ⟨a, ha, b, hb, hab⟩ := Submodule.mem_sup.mp
+    ((Ideal.IsMaximal.coprime_of_ne P.isMaximal (conjPrime₂ P).isMaximal
+      (fun h => hne (HeightOneSpectrum.ext h.symm))).symm ▸ Submodule.mem_top)
+  refine le_antisymm (sup_le inf_le_left inf_le_right) fun x hx => ?_
+  rw [show x = a • x + b • x by rw [← add_smul, hab, one_smul]]
   exact Submodule.add_mem_sup ⟨e.smul_mem a hx, h1 (Submodule.smul_mem_smul ha hx)⟩
     ⟨h2 (Submodule.smul_mem_smul hb hx), e.smul_mem b hx⟩
 
@@ -346,17 +341,14 @@ theorem card_of_equiv_fin {A : Type} [AddCommGroup A] [Module (𝓞 E) A] {Q : I
 theorem ideal_sq_smul_le {P : HeightOneSpectrum (𝓞 E)} {N M B : Submodule (𝓞 E) (Sp E n)}
     (hPM : ∀ p ∈ P.asIdeal, ∀ p' ∈ P.asIdeal, ∀ x ∈ M, p • p' • x ∈ N) (hB : M ⊓ N ≤ B) :
     (P.asIdeal * P.asIdeal) • M ≤ B := by
-  have hMN : (P.asIdeal * P.asIdeal) • M ≤ M ⊓ N := by
-    refine le_inf Submodule.smul_le_right ?_
-    rw [Submodule.mul_smul, Submodule.smul_le]
-    intro a ha y hy
-    refine Submodule.smul_induction_on (p := fun y => a • y ∈ N) hy ?_ ?_
-    · intro r hr x hx
-      exact hPM a ha r hr x hx
-    · intro x y hx hy
-      simp only [smul_add]
-      exact N.add_mem hx hy
-  exact le_trans hMN hB
+  refine le_trans ?_ hB
+  rw [Submodule.mul_smul, Submodule.smul_le]
+  intro a ha y hy
+  refine Submodule.smul_induction_on (p := fun y => a • y ∈ M ⊓ N) hy ?_ ?_
+  · intro r hr x hx
+    exact ⟨M.smul_mem a (M.smul_mem r hx), hPM a ha r hr x hx⟩
+  · intro x y hx hy
+    simpa only [smul_add] using (M ⊓ N).add_mem hx hy
 
 theorem card_paths_eq_submodulePairs (P : HeightOneSpectrum (𝓞 E)) (hne : conjPrime₂ P ≠ P)
     (hST : ∀ R : ST, R.1 ≠ P ∧ R.1 ≠ conjPrime₂ P) (hSG : ∀ w : SG, w.1 ≠ P ∧ w.1 ≠ conjPrime₂ P)

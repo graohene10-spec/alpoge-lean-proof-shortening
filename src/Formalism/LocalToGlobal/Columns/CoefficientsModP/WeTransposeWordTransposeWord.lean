@@ -133,8 +133,7 @@ theorem weForm_apply (x y : dualWeyl ℚ r n ν) :
 
 theorem we_form_symm : (weForm hn ν).IsSymm := by
   rw [LinearMap.isSymm_def]
-  intro x y
-  rw [weForm_apply, weForm_apply, starRingEnd_apply, star_trivial, we_fock_symm]
+  simp [weForm_apply, we_fock_symm]
 
 theorem we_form_self_eq_zero (x : dualWeyl ℚ r n ν) (h : weForm hn ν x x = 0) : x = 0 := by
   rw [weForm_apply, div_eq_zero_iff] at h

@@ -48,8 +48,7 @@ lemma qc_evGL_map {n : ℕ} {R R' : Type} [CommRing R] [CommRing R'] (φ : R →
     evGL (Matrix.GeneralLinearGroup.map φ g) = φ.comp (evGL g) := by
   apply qc_hom_ext
   intro a b
-  rw [RingHom.comp_apply, qc_evGL_alg, qc_evGL_alg]
-  simp only [coe_eval₂Hom, eval₂_X]
+  simp only [RingHom.comp_apply, qc_evGL_alg, coe_eval₂Hom, eval₂_X]
   rfl
 
 lemma qc_map_span_mem {A B F : Type} [CommRing A] [CommRing B] [Field F] [Module F B] (φ : A →+* B) (S : Set A)

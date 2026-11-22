@@ -21,15 +21,14 @@ def LeadAt (w : σ → M) (γ : M) (f t : MvPolynomial σ R) : Prop :=
 private theorem weight_eq_of_le_of_add_eq_lemma {w : σ → M} {γ δ : M} {a b : σ →₀ ℕ}
     (ha : Finsupp.weight w a ≤ γ) (hb : Finsupp.weight w b ≤ δ) (h : Finsupp.weight w (a + b) = γ + δ) :
     Finsupp.weight w a = γ ∧ Finsupp.weight w b = δ := by
-  rw [map_add] at h
   have h1 : Finsupp.weight w a = γ := by
     by_contra hne
     have := add_lt_add_of_lt_of_le (lt_of_le_of_ne ha hne) hb
-    rw [h] at this
+    rw [← h, map_add] at this
     exact lt_irrefl _ this
   refine ⟨h1, ?_⟩
-  rw [h1] at h
-  exact le_antisymm (le_of_add_le_add_left h.le) (le_of_add_le_add_left h.ge)
+  rw [map_add, h1] at h
+  exact add_left_cancel h
 
 theorem LeadAt.mul {w : σ → M} {γ δ : M} {f g tf tg : MvPolynomial σ R}
     (hf : LeadAt w γ f tf) (hg : LeadAt w δ g tg) : LeadAt w (γ + δ) (f * g) (tf * tg) := by
@@ -151,13 +150,12 @@ theorem weight_wt (n N : ℕ) (v : Bool) : Finsupp.weight (wt n N v) = rho n N v
   rw [← map_nsmul, Finsupp.smul_single, smul_eq_mul, mul_one]
 
 theorem wt_zero {n N : ℕ} (v : Bool) {x : ℕ × Fin n} (hx : x.1 ≠ N) : wt n N v x = 0 := by
-  have h : ∀ j : Fin n, (Finsupp.single x 1 : ℕ × Fin n →₀ ℕ) (N, rw_ v j) = 0 := fun j => by
-    rw [Finsupp.single_apply, if_neg]
-    rintro rfl
-    exact hx rfl
-  show toLex (fun j => (Finsupp.single x 1 : ℕ × Fin n →₀ ℕ) (N, rw_ v j)) = 0
-  simp only [h]
-  rfl
+  show (fun j : Fin n => (Finsupp.single x 1 : ℕ × Fin n →₀ ℕ) (N, rw_ v j)) = (0 : Fin n → ℕ)
+  funext j
+  change (Finsupp.single x 1 : ℕ × Fin n →₀ ℕ) (N, rw_ v j) = 0
+  rw [Finsupp.single_apply, if_neg]
+  rintro rfl
+  exact hx rfl
 
 theorem wt_lt {n N : ℕ} (v : Bool) {m h : Fin n} (hmh : if v then m < h else h < m) :
     wt n N v (N, m) < wt n N v (N, h) := by
@@ -496,8 +494,7 @@ theorem col_lead (R : Type*) [CommRing R] {n N : ℕ} {isVec : ℕ → Bool} {B 
 private theorem compl_seg_lemma_8 {n : ℕ} (k : ℕ) :
     (univ.filter fun m : Fin n => m.val < k)ᶜ = univ.filter fun m : Fin n => k ≤ m.val := by
   ext x
-  simp only [Finset.mem_compl, Finset.mem_filter, Finset.mem_univ, true_and]
-  constructor <;> intro h <;> omega
+  simp only [Finset.mem_compl, Finset.mem_filter, Finset.mem_univ, true_and, not_lt]
 
 private theorem card_seg_lemma_9 {n : ℕ} (k : ℕ) (hk : k ≤ n) : (univ.filter fun m : Fin n => m.val < k).card = k := by
   have e : (univ.filter fun m : Fin n => m.val < k).map Fin.valEmbedding = range k := by
@@ -589,9 +586,8 @@ theorem psi_lead (R : Type) [CommRing R] {n N : ℕ} {isVec : ℕ → Bool} {B :
         (psiPath R isVec μ (N + 1) (canIdx (μ (N + 1))))
         ((ε : MvPolynomial (ℕ × Fin n) R) * psiPath R isVec μ N (canIdx (μ N)) * monomial (DD μ N) 1) := by
   classical
-  have hp0 := isPath_trunc hp
   obtain ⟨hfin1, -⟩ := Formalism.InvariantFactorPaths.GelfandTsetlinBases.pathProductDegrees R n (N + 1) isVec B μ _ hp (isIndex_can _)
-  obtain ⟨hfin0, -⟩ := Formalism.InvariantFactorPaths.GelfandTsetlinBases.pathProductDegrees R n N isVec B μ _ hp0 (isIndex_can _)
+  obtain ⟨hfin0, -⟩ := Formalism.InvariantFactorPaths.GelfandTsetlinBases.pathProductDegrees R n N isVec B μ _ (isPath_trunc hp) (isIndex_can _)
   have hchg := Formalism.InvariantFactorPaths.GelfandTsetlinBases.Paths.path_finite hp (Nat.lt_succ_self N)
   obtain ⟨S, hS1, hS0, hSc⟩ : ∃ S : Finset ℤ,
       Function.mulSupport (fun c : ℤ =>
@@ -684,9 +680,7 @@ theorem psiPath_congr (R : Type*) [CommRing R] {n : ℕ} (isVec : ℕ → Bool) 
 theorem isPath_congr {n N : ℕ} {isVec : ℕ → Bool} {B : ℕ → ℕ} {μ μ' : ℕ → Fin n → ℤ}
     (h : ∀ i ≤ N, μ i = μ' i) (hp : IsPath n isVec B μ N) : IsPath n isVec B μ' N := by
   obtain ⟨h0, h1, h2⟩ := hp
-  refine ⟨by rw [← h 0 (Nat.zero_le _)]; exact h0, fun i hi => by rw [← h i hi]; exact h1 i hi, fun i hi => ?_⟩
-  rw [← h i hi.le, ← h (i + 1) hi]
-  exact h2 i hi
+  exact ⟨by simpa [h 0 (Nat.zero_le _)] using h0, fun i hi => by simpa [h i hi] using h1 i hi, fun i hi => by simpa [h i hi.le, h (i + 1) hi] using h2 i hi⟩
 
 theorem DD_apply {n : ℕ} (μ : ℕ → Fin n → ℤ) (N : ℕ) (m : Fin n) :
     DD μ N (N, m) = (|μ (N + 1) m - μ N m|).toNat := by

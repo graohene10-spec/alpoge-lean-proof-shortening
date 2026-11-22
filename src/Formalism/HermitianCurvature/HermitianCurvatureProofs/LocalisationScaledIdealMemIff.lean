@@ -33,8 +33,7 @@ theorem conjStable_inv (A : FI E) (hA0 : A ≠ 0) (hA : ConjStable E A) : ConjSt
   intro x hx
   rw [FractionalIdeal.mem_inv_iff hA0] at hx ⊢
   intro y hy
-  have := conjStable_one E _ (hx _ (hA y hy))
-  rwa [map_mul, complexConj_apply_apply] at this
+  simpa [map_mul, complexConj_apply_apply] using conjStable_one E _ (hx _ (hA y hy))
 
 theorem conjStable_pow (A : FI E) (hA : ConjStable E A) (n : ℕ) : ConjStable E (A ^ n) := by
   induction n with
@@ -53,8 +52,7 @@ theorem dd_ne_zero : dd E ≠ 0 := by
   simpa [dd, FractionalIdeal.coeIdeal_eq_zero] using differentIdeal_ne_bot
 
 theorem dual_one : FractionalIdeal.dual ℤ ℚ (1 : FI E) = (dd E)⁻¹ := by
-  unfold dd
-  rw [coeIdeal_differentIdeal ℤ ℚ, inv_inv]
+  simp [dd, coeIdeal_differentIdeal ℤ ℚ]
 
 theorem conjStable_dd : ConjStable E (dd E) := by
   have h : ConjStable E (dd E)⁻¹ := by
@@ -73,8 +71,7 @@ theorem conjStable_span (x : E) (hx : complexConj E x = x) :
   rw [FractionalIdeal.mem_spanSingleton] at hy ⊢
   obtain ⟨z, rfl⟩ := hy
   refine ⟨ringOfIntegersComplexConj E z, ?_⟩
-  rw [Algebra.smul_def, Algebra.smul_def, map_mul, hx]
-  rfl
+  simp [Algebra.smul_def, map_mul, hx]
 
 theorem powConjStable : PowConjStable := by
   intro E _ _ _ g k ν
@@ -227,11 +224,10 @@ theorem between : Between := by
   refine ⟨fun t ht => ?_, fun t ht => ((mem_twLat E A B s t).1 ht).1⟩
   rw [mem_twLat]
   refine ⟨hBA ht, ?_⟩
-  have h1 : complexConj E t ∈ B := hB t ht
   have h2 : (-1 : E) ^ s * complexConj E t ∈ B := by
     rcases neg_one_pow_eq_or E s with h | h <;> rw [h]
-    · simpa using h1
-    · rw [neg_one_mul]; exact B.coeToSubmodule.neg_mem h1
+    · simpa using hB t ht
+    · rw [neg_one_mul]; exact B.coeToSubmodule.neg_mem (hB t ht)
   exact B.coeToSubmodule.sub_mem ht h2
 
 theorem degreeFacts : DegreeFacts := by
@@ -384,9 +380,8 @@ theorem idl_ne_zero (g : ℕ) (k ν : ℤ) (hg : 0 < g) : idl E g k ν ≠ 0 := 
 
 theorem idl_mul (g : ℕ) (k ν : ℤ) (hg : 0 < g) :
     idl E g k ν * FractionalIdeal.spanSingleton _ (g : E) = idl E g (k + 1) ν := by
-  have hgE : (g : E) ≠ 0 := by exact_mod_cast hg.ne'
   unfold idl
-  rw [mul_assoc, FractionalIdeal.spanSingleton_mul_spanSingleton, ← zpow_add_one₀ hgE]
+  rw [mul_assoc, FractionalIdeal.spanSingleton_mul_spanSingleton, ← zpow_add_one₀ (by exact_mod_cast hg.ne')]
 
 theorem dual_le (h1 : Formalism.FourierDecayAlt.L.DualLatticeInclusion) (h2 : PowConjStable) (h3 : Between)
     (g : ℕ) (ν : ℤ) (s : ℕ) (hg : 0 < g) :

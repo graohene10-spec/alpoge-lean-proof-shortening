@@ -267,8 +267,7 @@ theorem Nu_span (u : I) : Submodule.span K (C.Nu u : Set (C.M u).V) = ⊤ := by
   exact Submodule.smul_mem _ _ h1
 
 theorem Nu_rank (u : I) : Formalism.HN.rkK (C.Nu u) = Formalism.HN.rkK (C.M u).L := by
-  unfold Formalism.HN.rkK
-  rw [C.Nu_span u, (C.M_good u).2.2]
+  simpa only [Formalism.HN.rkK] using congrArg (fun L : Submodule K (C.M u).V => Module.finrank K L) (show Submodule.span K ↑(C.Nu u) = Submodule.span K ↑(C.M u).L by rw [C.Nu_span u, (C.M_good u).2.2])
 
 theorem NuH_good (u : I) : (C.NuH u).Good := ⟨(C.M_good u).1, C.Nu_fg u, C.Nu_span u⟩
 
@@ -358,8 +357,7 @@ theorem mem_localization_iff (w : HeightOneSpectrum (𝓞 K)) (L : Submodule (�
 
 theorem localizedAt_eq_iff_localized_eq (w : HeightOneSpectrum (𝓞 K)) (A B : Submodule (𝓞 K) V) :
     atW w A = atW w B ↔ Formalism.HermitianLatticesTheory.localization₂ w.asIdeal A = Formalism.HermitianLatticesTheory.localization₂ w.asIdeal B := by
-  rw [← atW_restrictScalars, ← atW_restrictScalars]
-  exact (Submodule.restrictScalars_injective (𝓞 K) (Ow w) V).eq_iff.symm
+  simpa only [← atW_restrictScalars] using (Submodule.restrictScalars_injective (𝓞 K) (Ow w) V).eq_iff.symm
 
 theorem isLattice_map_equiv (e : V ≃ₗ[K] V') {L : Submodule (𝓞 K) V} (h : Submodule.IsLattice K L) :
     Submodule.IsLattice K (L.map (e.toLinearMap.restrictScalars (𝓞 K))) where
@@ -527,9 +525,7 @@ theorem finite_prW {K : Type} [Field K] [NumberField K] (p : ℕ) : {w : HeightO
   · refine Set.Finite.subset Set.finite_empty fun w hw => ?_
     exact absurd (hw.trans hp) (prW_prime w).ne_zero
   · refine (finite_places_over (K := K) hp).subset fun w hw => ?_
-    show ((p : ℕ) : 𝓞 K) ∈ w.asIdeal
-    rw [← (show prW w = p from hw)]
-    exact natCast_prW_mem w
+    simpa [← (show prW w = p from hw)] using natCast_prW_mem w
 
 theorem localLattice_at_T_eq {u : Pr.Word} (Sv : Serv W Ch u) (w : HeightOneSpectrum (𝓞 X.K)) (h : prW w = Pr.T u) :
     NuAt Sv w = NlamG W Ch u w := by
@@ -739,8 +735,7 @@ theorem ifz_log_x_le (s : Scale) : s.eps * Real.log s.x ≤ s.L := by
   have hx0 : 0 < s.x := by linarith [s.one_lt_alt]
   have h := Real.log_le_sub_one_of_pos (Real.rpow_pos_of_pos hx0 s.eps)
   rw [Real.log_rpow hx0] at h
-  unfold Scale.L
-  linarith
+  simpa [Scale.L] using h.trans (sub_le_self (s.x ^ s.eps) (zero_le_one : (0 : ℝ) ≤ 1))
 
 theorem ifz_b'_le_a (s : Scale) : s.b' ≤ s.a := by
   have ha : 0 < s.a := by unfold Scale.a Scale.b; have := s.one_lt_alt; positivity
@@ -919,8 +914,7 @@ theorem dsigC_pos (hW : W.Ok) (τ : X.Tau) : 0 < dsigC W τ := by
 
 theorem dsigC_eq_lamSH {P : HCParam R} {τ : X.Tau} (hP : RowPar.of P = W.row τ) :
     dsigC W τ = Formalism.QuantumDeterminants.fdegHC (Formalism.MainNotions.S.lamSH R P) := by
-  unfold dsigC
-  rw [← hP, lamRowC_of]
+  simp only [dsigC, ← hP, lamRowC_of]
   exact (iface_fdegHC_cast (Formalism.MainNotions.S.dimS_eq R) (Formalism.MainNotions.S.lamS R P)).symm
 
 theorem iface_fdegHC_eq_dimVN {n : ℕ} (lam : Fin n → ℝ) (h : StrictAnti lam) :
@@ -1095,10 +1089,9 @@ theorem Serv.NP_le {u : Pr.Word} (Sv : Serv W Ch u) (w : HeightOneSpectrum (𝓞
     rw [algebraMap_smul]
     exact e'
   have hmem : ψ ∈ MramV W Ch u := by
-    have h3 : (algebraMap (𝓞 X.K) X.K (((prW w : ℕ) : 𝓞 X.K) ^ Sv.tau w)) • ψ ∈ MramV W Ch u := by
-      rw [h2]
-      exact φ.2
-    exact (Submodule.smul_mem_iff _ hp').1 h3
+    refine (Submodule.smul_mem_iff _ hp').1 ?_
+    rw [h2]
+    exact φ.2
   exact ⟨⟨ψ, hmem⟩, hψ, Subtype.ext e'⟩
 
 theorem NuC_le_ItM (hPr : Pr.Ok) (u : Pr.Word)

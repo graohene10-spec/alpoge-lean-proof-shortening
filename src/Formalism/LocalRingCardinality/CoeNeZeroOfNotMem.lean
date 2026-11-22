@@ -325,9 +325,7 @@ theorem localization_map₂ (w : HeightOneSpectrum (𝓞 K)) (f : V →ₗ[K] V'
     · rw [← algebraMap_smul K s, smul_smul]
       change ((s : K) * (s : K)⁻¹) • x ∈ L
       rw [mul_inv_cancel₀ hs0, one_smul]; exact hx
-    · have h2 : f x = (s : K) • y := by
-        have : f x = s • y := hxy
-        rw [this, ← algebraMap_smul K s]
+    · have h2 : f x = (s : K) • y := by rw [algebraMap_smul K s]; exact hxy
       change f ((s : K)⁻¹ • x) = y
       rw [map_smul, h2, smul_smul, inv_mul_cancel₀ hs0, one_smul]
   · rintro ⟨x, ⟨s, hs, hx⟩, rfl⟩

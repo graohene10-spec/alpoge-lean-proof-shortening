@@ -92,20 +92,16 @@ private theorem dgS_eq_zero_of_none_used (p : ℕ) (pos : Fin N → ℤ) (mu : F
 private theorem dgS_succ_eq_of_not_used (p : ℕ) (pos : Fin N → ℤ) (mu : Fin (N + 1) → Fin k → ℤ) (c : ℤ) (j : ℕ) (hj : j < N)
     (hu : ¬ IsUsed mu c ⟨j, hj⟩) (s : ℤ) : dgS p pos mu c (j + 1) s = dgS p pos mu c j s := by
   funext i
-  simp only [dgS]
-  split_ifs with h1 h2 h2
-  · rfl
-  · exfalso
-    apply h2
-    refine ⟨?_, h1.2⟩
-    by_cases h : i.val < j
-    · exact h
-    · have e : i = ⟨j, hj⟩ := Fin.ext (show i.val = j by have := h1.1; omega)
-      subst e
-      exact absurd h1.2 hu
-  · exfalso
-    exact h1 ⟨Nat.lt_succ_of_lt h2.1, h2.2⟩
-  · rfl
+  by_cases hi : i = ⟨j, hj⟩
+  · subst hi
+    simp [dgS, hu]
+  · have hne : i.val ≠ j := fun e => hi (Fin.ext e)
+    simp only [dgS]
+    split_ifs with h1 h2 h2
+    · rfl
+    · exact (h2 ⟨by omega, h1.2⟩).elim
+    · exact (h1 ⟨Nat.lt_succ_of_lt h2.1, h2.2⟩).elim
+    · rfl
 
 private theorem eI_eq_dgS_succ_of_first_used (p : ℕ) (pos : Fin N → ℤ) (mu : Fin (N + 1) → Fin k → ℤ) (c : ℤ) (j : ℕ) (hj : j < N)
     (hu : IsUsed mu c ⟨j, hj⟩) (h : ∀ i : Fin N, i.val < j → ¬ IsUsed mu c i) :

@@ -77,11 +77,8 @@ lemma jetPair_C_left (c : K) (F : MvPowerSeries ι K) :
   classical
   rw [jetPair_eq_sum (MvPolynomial.C c) F {0}]
   · simp [mfact, MvPowerSeries.coeff_zero_eq_constantCoeff_apply]
-  · intro κ hκ
-    rw [MvPolynomial.mem_support_iff, MvPolynomial.coeff_C] at hκ
-    rw [Finset.mem_singleton]
-    by_contra h
-    exact hκ (if_neg (fun h' => h h'.symm))
+  · rw [MvPolynomial.support_C]
+    split_ifs <;> simp
 
 lemma mfact_add_single (κ : ι →₀ ℕ) (i : ι) :
     mfact (κ + Finsupp.single i 1) = mfact κ * (κ i + 1) := by

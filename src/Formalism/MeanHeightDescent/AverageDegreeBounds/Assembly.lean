@@ -94,13 +94,10 @@ theorem covolume_assembly_of_slope_mu (hLM : LcvMu) : CovolumeEstimateOfSlopeCha
   have hL1 : 1 ≤ L := by rw [hL]; exact Real.one_le_rpow hx heps.le
   have hb0 : 0 < b := by rw [hb]; exact Real.exp_pos _
   have hrd0 : 0 ≤ Real.log rd := Real.log_nonneg hrd
-  have hlx0 : 0 ≤ Real.log x := Real.log_nonneg hx
-  have hlogb : Real.log (b * rd) = L + Real.log rd := by
-    rw [Real.log_mul (by positivity) (by positivity), hb, Real.log_exp]
   have hLLge : L + Real.log rd ≤ LL0 := by
-    rw [hLL0, hlogb]
+    rw [hLL0, Real.log_mul (by positivity) (by positivity), hb, Real.log_exp]
     have : L + Real.log rd ≤ (L + Real.log rd) * llx := le_mul_of_one_le_right (by linarith) hll
-    linarith
+    linarith [Real.log_nonneg hx]
   have hchain := slope_lower_chain_holds Pl w c1 ua muU muA muN muG
     (Formalism.HN.muDef (Pi.basisFun K (Fin d)) XW M) mmax dA dB dN dg db C1 Cf LL0 L b rd m q' cfl ε δ Q P Λ G P9
     h41 hcfl hfl hdA hAB hBε hε hP hdesc hcQ hΛ hεQ hd hsum hdb hdb3 hδ hδ12 hcut hmuN hmm hG h9 hsmall

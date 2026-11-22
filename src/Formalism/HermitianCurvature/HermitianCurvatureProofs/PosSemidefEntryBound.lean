@@ -64,12 +64,9 @@ theorem pSDClosed : PSDClosed := by
     tendsto_finsetSum _ fun x hx => tendsto_finsetSum _ fun y hy => (hl x hx y hy).const_mul _
   constructor
   · have h1 := (Complex.continuous_im.tendsto _).comp ht
-    have h2 : (fun j => (∑ x ∈ F, ∑ y ∈ F, a x * conj (a y) * k j x y).im) = fun _ => (0 : ℝ) := by
-      funext j; exact (hk j a).1
-    have h3 : Tendsto (fun j => (∑ x ∈ F, ∑ y ∈ F, a x * conj (a y) * k j x y).im) atTop
-        (𝓝 ((∑ x ∈ F, ∑ y ∈ F, a x * conj (a y) * l x y).im)) := h1
-    rw [h2] at h3
-    exact (tendsto_nhds_unique h3 tendsto_const_nhds)
+    have h2 : ∀ j, (∑ x ∈ F, ∑ y ∈ F, a x * conj (a y) * k j x y).im = 0 :=
+      fun j => (hk j a).1
+    exact tendsto_nhds_unique (by simpa only [Function.comp_def, h2] using h1) tendsto_const_nhds
   · have h1 : Tendsto (fun j => (∑ x ∈ F, ∑ y ∈ F, a x * conj (a y) * k j x y).re) atTop
         (𝓝 ((∑ x ∈ F, ∑ y ∈ F, a x * conj (a y) * l x y).re)) :=
       (Complex.continuous_re.tendsto _).comp ht
@@ -78,8 +75,7 @@ theorem pSDClosed : PSDClosed := by
 theorem boundedSubseq : BoundedSubseq := by
   intro I _ θ C hC
   have := Fintype.ofFinite I
-  have hb : ∀ j, θ j ∈ Metric.closedBall (0 : I → ℂ) (max C 0) := by
-    intro j
+  have hb : ∀ j, θ j ∈ Metric.closedBall (0 : I → ℂ) (max C 0) := fun j => by
     rw [mem_closedBall_zero_iff, pi_norm_le_iff_of_nonneg (le_max_right _ _)]
     exact fun i => (hC j i).trans (le_max_left _ _)
   obtain ⟨l, -, φ, hφ, hl⟩ := tendsto_subseq_of_bounded Metric.isBounded_closedBall hb

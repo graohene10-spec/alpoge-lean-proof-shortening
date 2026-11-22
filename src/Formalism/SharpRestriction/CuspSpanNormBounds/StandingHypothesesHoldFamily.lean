@@ -298,8 +298,7 @@ theorem le_of_le_four_mul_of_mul_le_chain {v k Del Cl m b1 B : ℝ} (hk : 0 ≤ 
     (v1 : v ≤ 4 * k * Del) (h1 : Cl * (m * k * Del) ≤ b1) (h2 : b1 ≤ B) : v ≤ B := by
   have h0 : 0 ≤ k * Del := mul_nonneg hk hDel
   have h4 : 4 ≤ Cl * m := by nlinarith
-  have h3 : 4 * (k * Del) ≤ Cl * m * (k * Del) := mul_le_mul_of_nonneg_right h4 h0
-  linarith
+  nlinarith [mul_le_mul_of_nonneg_right h4 h0]
 
 end S7real
 
@@ -318,9 +317,8 @@ theorem lamS_hi (τ : D.what₂.Tau) (i : Fin D.R.r) (h : ¬ i.val < D.R.k - 1) 
   have hi := i.isLt
   have hr : D.R.r = D.R.k + D.R.m - 1 := rfl
   have hk := D.R.m_add_three_le_k
-  have h' : i.val - (D.R.k - 1) < D.R.m := by omega
   have h2 : 1 ≤ i.val - (D.R.k - 1) + 1 ∧ i.val - (D.R.k - 1) + 1 ≤ D.R.m := ⟨by omega, by omega⟩
-  simp only [lamS, bOne, dif_neg h, dif_pos h', dif_pos h2]
+  simp only [lamS, bOne, dif_neg h, dif_pos (show i.val - (D.R.k - 1) < D.R.m by omega), dif_pos h2]
   rfl
 
 theorem bOne_gap (τ : D.what₂.Tau) (G : ℝ) (hG : 0 ≤ G)
@@ -598,8 +596,7 @@ theorem eps_pos' : 0 < eps := by
   rw [← Fm.L_eps 0 i]; exact (Fm.L 0 i).sc.eps_pos
 
 theorem cGam_pos : 0 < Fm.CGam := by
-  obtain ⟨i⟩ := Fm.Ix_zero
-  rw [← Fm.CGam_eq 0 i]; exact (Fm.L 0 i).CGam_pos
+  exact Nonempty.elim Fm.Ix_zero fun i => by simpa [← Fm.CGam_eq 0 i] using (Fm.L 0 i).CGam_pos
 
 theorem scL_eq (x : ℝ) (hx1 : Fm.x1 < x) (i : Fm.Ix x) : (Fm.L x i).sc.L = (x ^ (eps / 8)) ^ 8 := by
   have hxpos : 0 ≤ x := le_trans (le_trans zero_le_one Fm.one_lt_family_threshold.le) hx1.le
@@ -2078,12 +2075,11 @@ theorem splitsCompl_of_ncard (E : Type) [Field E] [NumberField E] (p : ℕ) (hp 
     omega
 
 theorem root_discriminant_ge_two (D : D7) (_h : UnusedSlot33.Conclusion1 D) : 2 ≤ D.host.rdE := by
-  have h1 : (4 * D.R.ord : ℝ) ≤ D.host.rdE ^ 2 := D.host.der.rd_sq_ge
   have h2 : (1 : ℝ) ≤ D.R.ord := by exact_mod_cast D.R.ord_pos
   have h3 : 0 ≤ D.host.rdE := by unfold Host.rdE; positivity
   by_contra hc
   push Not at hc
-  nlinarith
+  nlinarith [(show (4 * D.R.ord : ℝ) ≤ D.host.rdE ^ 2 from D.host.der.rd_sq_ge), h2, h3]
 
 theorem level_norm_one_mod_conductor (D : D7) (u : D.what₂.Word) : ShortIntervalPrimes.NormOneMod D (NE D) (D.mem u).A.T := by
   obtain ⟨π, hK, hT, hπ⟩ := D.T_norm u

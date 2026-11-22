@@ -100,8 +100,7 @@ section SymFrameLemmas
 variable {κ : Type} [CommRing κ]
 
 theorem fine_self_lt {n i : ℕ} (h : i < n) : fine n [] i = i := by
-  unfold fine
-  rw [if_pos h]
+  rw [fine, if_pos h]
 
 theorem mem_HPsymF_iff {n k rS : ℕ} (h : k + rS ≤ n) {M : GL (Fin n) κ} :
     M ∈ HPsymF κ n k rS ↔

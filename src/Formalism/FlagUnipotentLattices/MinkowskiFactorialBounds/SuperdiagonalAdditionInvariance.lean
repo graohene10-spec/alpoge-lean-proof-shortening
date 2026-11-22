@@ -252,8 +252,7 @@ theorem gauss_summand_formula : GaussSummand := by
 
 theorem homomorphism_count : HomCount := by
   intro O I _ _ _ _ n
-  have e : ((Fin n → O) →ₗ[O] I) ≃ (Fin n → I) := ((Pi.basisFun O (Fin n)).constr O).symm.toEquiv
-  rw [Nat.card_congr e, Nat.card_fun]; simp
+  rw [Nat.card_congr (((Pi.basisFun O (Fin n)).constr O).symm.toEquiv), Nat.card_fun]; simp
 
 theorem overlattice_count_formula : OverlatticeCount := by
   intro O A _ _ _ _ m h
@@ -266,9 +265,7 @@ theorem weighted_cauchy_schwarz : WeightedCS := by
     _ ≤ _ := by
       refine Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul _ (fun i _ => (inv_pos.2 (hW i)).le)
         (fun i _ => mul_nonneg (hW i).le (sq_nonneg _)) (fun i _ => ?_)
-      have := (hW i).ne'
-      apply le_of_eq
-      field_simp
+      simp [← mul_assoc, inv_mul_cancel₀ (hW i).ne']
 
 theorem type_cauchy_schwarz : TypeCS := by
   intro D Ty _ _ w amp hw
@@ -786,12 +783,8 @@ theorem determinant_annihilates : DetKills := by
     rw [Matrix.vecMul_vecMul, Matrix.mul_adjugate, Matrix.vecMul_smul, Matrix.vecMul_one]
   have h2 := congrFun h1 i
   rw [Pi.smul_apply, smul_eq_mul] at h2
-  rw [← h2]
-  simp only [Matrix.vecMul, dotProduct]
-  refine O.sum_mem fun j _ => O.mul_mem ?_ (hadj j i)
-  have := hp j
-  rw [gram_pair] at this
-  exact this
+  rw [← h2, Matrix.vecMul, dotProduct]
+  exact O.sum_mem fun j _ => O.mul_mem (by simpa [hGd, Matrix.vecMul, dotProduct, gram_pair] using hp j) (hadj j i)
 
 theorem unimodular_split : UnimodSplit := by
   intro E _ _ V _ _ h O m f hG ⟨d, hd, hdd⟩ v hp
@@ -904,10 +897,9 @@ theorem class_number_squares : ClassSquares := by
     refine Finset.sum_congr rfl fun i hi => ?_
     rw [inner_sum, Finset.sum_filter]
     refine Finset.sum_congr rfl fun j _ => ?_
-    have hi' := (Finset.mem_filter.1 hi).2
-    have : (Quotient.mk s j = c) ↔ s.r i j := by
-      rw [← hi', Quotient.eq]; exact ⟨fun h => s.symm h, fun h => s.symm h⟩
-    simp only [this]
+    simp only [(show ((Quotient.mk s j = c) ↔ s.r i j) from by
+      rw [← (Finset.mem_filter.1 hi).2, Quotient.eq]
+      exact ⟨s.symm, s.symm⟩)]
   simp_rw [h1]
   rw [Finset.sum_fiberwise]
 
@@ -1394,10 +1386,7 @@ lemma shear_pair (t : Fin r → V) (ht : ∀ j i, h (t j) (e i) = 0) (v : V) (i 
 
 lemma shear_inv (t : Fin r → V) (ht : ∀ j i, h (t j) (e i) = 0) (v : V) :
     shear h e (fun j => - t j) (shear h e t v) = v := by
-  rw [shear_apply]
-  simp only [shear_pair h e t ht]
-  rw [shear_apply]
-  simp
+  simp [shear_apply, ht]
 
 end sametrace
 
@@ -1755,10 +1744,7 @@ theorem dualCapV (H : DualCap) : DualCapV := by
 theorem leakProb : LeakProb := by
   intro S _ _ P n
   have e : {u : Fin n → S // ∀ k, u k ∈ P} ≃ (Fin n → P) :=
-    { toFun := fun u k => ⟨u.1 k, u.2 k⟩
-      invFun := fun u => ⟨fun k => (u k).1, fun k => (u k).2⟩
-      left_inv := fun _ => rfl
-      right_inv := fun _ => rfl }
+    Equiv.subtypePiEquivPi
   rw [Nat.card_congr e, Nat.card_fun, Nat.card_fin, ← mul_pow]
   congr 1
   have := Submodule.card_eq_card_quotient_mul_card P
@@ -2298,14 +2284,11 @@ variable {F : Type} [Field F] [Fintype F]
 
 lemma mulVec_surj {j n : ℕ} (M : Matrix (Fin j) (Fin n) F) (hM : LinearIndependent F M.row) :
     Function.Surjective M.mulVec := by
-  have h1 : M.rank = j := by simpa using hM.rank_matrix
   have h2 : LinearMap.range M.mulVecLin = ⊤ := by
     apply Submodule.eq_top_of_finrank_eq
-    rw [← Matrix.rank, h1]; simp
-  intro y
-  have : y ∈ LinearMap.range M.mulVecLin := by rw [h2]; trivial
-  obtain ⟨x, hx⟩ := this
-  exact ⟨x, hx⟩
+    rw [← Matrix.rank, show M.rank = j by simpa using hM.rank_matrix]
+    simp
+  exact LinearMap.range_eq_top.mp h2
 
 lemma fiber_card [DecidableEq F] {j n : ℕ} (M : Matrix (Fin j) (Fin n) F)
     (hM : LinearIndependent F M.row) (g : Fin j → F) :
@@ -2579,8 +2562,7 @@ theorem primitive_density_split_form : PrimDensitySplitForm := by
 
 theorem primitive_density_split : PrimDensitySplit := by
   intro K _ _ n m Gm hn
-  have := primitive_density_split_form K n m 1 Gm hn (by simp)
-  simpa [Matrix.one_apply, mul_ite, ite_mul, Finset.sum_ite_eq] using this
+  simpa [Matrix.one_apply, mul_ite, ite_mul, Finset.sum_ite_eq] using primitive_density_split_form K n m 1 Gm hn (by simp)
 
 section inert
 variable {K L : Type} [Field K] [Fintype K] [Field L] [Fintype L] [Algebra K L]
@@ -2886,12 +2868,7 @@ lemma step_arith (q N a W Qj Cj C' lo hi : ℝ) (hq : 2 ≤ q) (hN : 0 < N) (ha 
   have hq0 : 0 < q := by linarith
   have hd0 : 0 < d := by rw [hd]; positivity
   have haN : a = N * d := by rw [hd]; field_simp
-  have hW0 : 0 < W := by
-    by_contra h
-    push Not at h
-    have : W * a ≤ 0 := mul_nonpos_of_nonpos_of_nonneg h ha.le
-    have : 0 < N ^ 2 := by positivity
-    linarith
+  have hW0 : 0 < W := pos_of_mul_pos_left (by rw [hWa]; positivity) ha.le
   have hNW : N = W * d := by
     have : W * d * N = N * N := by rw [mul_assoc, mul_comm d N, ← haN, hWa]; ring
     exact (mul_right_cancel₀ hN.ne' this).symm
@@ -2910,7 +2887,6 @@ lemma step_arith (q N a W Qj Cj C' lo hi : ℝ) (hq : 2 ≤ q) (hN : 0 < N) (ha 
   have hhi' : hi = (1 + q * d) * (W / q) := by
     rw [hhi, hNW]; field_simp
   have hWq : 0 < W / q := by positivity
-  have hCj0 : 0 ≤ Cj := le_trans (mul_nonneg (by linarith) hQ) h1
   have hA : 0 ≤ q ^ 2 - q - 2 := by nlinarith
   have key1 : (1 + d) * (1 + q * d) ≤ 1 + q ^ 2 * d := by
     nlinarith [mul_nonneg hd0.le hA, mul_nonneg hd0.le (sub_nonneg.2 hqd1)]
@@ -2926,14 +2902,15 @@ lemma step_arith (q N a W Qj Cj C' lo hi : ℝ) (hq : 2 ≤ q) (hN : 0 < N) (ha 
       _ = ((1 - d) * Qj) * lo := by rw [hlo']; ring
       _ ≤ Cj * lo := by
           apply mul_le_mul_of_nonneg_right h1
-          rw [hlo']; positivity
+          rw [hlo']
+          exact mul_nonneg hl0 hWq.le
       _ ≤ C' := hC1
   · calc C' ≤ Cj * hi := hC2
       _ ≤ ((1 + d) * Qj) * hi := by
           apply mul_le_mul_of_nonneg_right h2
           rw [hhi']; positivity
       _ = ((1 + d) * (1 + q * d)) * (Qj * (W / q)) := by rw [hhi']; ring
-      _ ≤ _ := mul_le_mul_of_nonneg_right key1 hP
+      _ ≤ (1 + q ^ 2 * d) * (Qj * (W / q)) := mul_le_mul_of_nonneg_right key1 hP
 
 section inert4
 variable {K L : Type} [Field K] [Fintype K] [Field L] [Fintype L] [Algebra K L]

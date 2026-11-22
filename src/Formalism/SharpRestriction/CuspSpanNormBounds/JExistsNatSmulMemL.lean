@@ -31,20 +31,17 @@ theorem j_exists_nat_smul_memL {E : Type} [Field E] [NumberField E] {V : Type}
       rw [← algebraMap_smul E (r i) (g i : V), hr i, mul_smul, Int.cast_smul_eq_zsmul]
     rw [hcomb]
     exact Submodule.sum_mem _ fun i _ => M.smul_mem _ (g i).2
-  have key : ((m.natAbs : ℤ)) • x ∈ M := by
-    rcases Int.natAbs_eq m with h | h
-    · rwa [← h]
-    · rw [h, neg_smul] at hmx
-      exact M.neg_mem_iff.mp hmx
   refine ⟨m.natAbs, Int.natAbs_pos.mpr hm0, ?_⟩
-  rwa [natCast_zsmul] at key
+  rcases Int.natAbs_eq m with h | h
+  · rwa [h, natCast_zsmul] at hmx
+  · rw [h, neg_smul] at hmx
+    simpa only [natCast_zsmul] using M.neg_mem_iff.mp hmx
 
 theorem m_exists_smul_memL {E : Type} [Field E] [NumberField E] [StarRing E]
     {S : Formalism.BasicNotions.HSpace E} (M : Submodule (𝓞 E) S.V) {x : S.V}
     (hx : x ∈ Submodule.span E (M : Set S.V)) : ∃ d : 𝓞 E, d ≠ 0 ∧ d • x ∈ M := by
   obtain ⟨n, hn, hnx⟩ := j_exists_nat_smul_memL M hx
-  refine ⟨(n : 𝓞 E), Nat.cast_ne_zero.mpr hn.ne', ?_⟩
-  rwa [Nat.cast_smul_eq_nsmul]
+  exact ⟨(n : 𝓞 E), Nat.cast_ne_zero.mpr hn.ne', by rwa [Nat.cast_smul_eq_nsmul]⟩
 
 theorem c_lat_multL {E : Type} [Field E] [NumberField E] [StarRing E]
     {S : Formalism.BasicNotions.HSpace E} {Λ : Submodule (𝓞 E) S.V} (hΛ : Submodule.IsLattice E Λ)

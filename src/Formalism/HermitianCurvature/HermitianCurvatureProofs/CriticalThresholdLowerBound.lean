@@ -13,8 +13,7 @@ lemma prod_Ioc_shift (f : ℕ → ℝ) (p a b : ℕ) :
 
 lemma Icc_one_eq (p : ℕ) : Icc 1 p = Ioc 0 p := by
   ext i
-  simp only [Finset.mem_Icc, Finset.mem_Ioc]
-  constructor <;> intro h <;> exact ⟨by omega, by omega⟩
+  simp only [Finset.mem_Icc, Finset.mem_Ioc, Nat.lt_iff_add_one_le, Nat.zero_add]
 
 lemma vand_split (p q : ℕ) (x : ℕ → ℝ) :
     Vand (p + q) x = Vand p x * (∏ i ∈ Icc 1 p, ∏ j ∈ Icc 1 q, (x i - x (j + p))) *
@@ -80,10 +79,8 @@ lemma b_step (c : Cfg) (h : c.Ok) (i : ℕ) (hi : 1 ≤ i) :
 
 lemma b_ge_one (c : Cfg) (h : c.Ok) (j : ℕ) (hj : 1 ≤ j) (hm : j ≤ c.m) : 1 ≤ c.b j := by
   rcases Nat.eq_or_lt_of_le hj with h1 | h1
-  · rw [← h1]
-    exact h.hb1
-  · have h2 := b_step c h 1 le_rfl j h1 hm
-    linarith [h.hb1]
+  · simpa [← h1] using h.hb1
+  · linarith [b_step c h 1 le_rfl j h1 hm, h.hb1]
 
 lemma one_le_prod_real {α : Type} (s : Finset α) (f : α → ℝ) (h : ∀ i ∈ s, 1 ≤ f i) :
     1 ≤ ∏ i ∈ s, f i := by
@@ -443,8 +440,7 @@ lemma vand_one (x : ℕ → ℝ) : Vand 1 x = 1 := by
 
 lemma vand_head (q : ℕ) (x : ℕ → ℝ) :
     Vand (q + 1) x = (∏ j ∈ Icc 1 q, (x 1 - x (j + 1))) * Vand q (fun j => x (j + 1)) := by
-  rw [Nat.add_comm q 1, vand_split 1 q x, vand_one]
-  simp only [Finset.Icc_self, Finset.prod_singleton, one_mul]
+  rw [Nat.add_comm q 1, vand_split 1 q x, vand_one, Finset.Icc_self, Finset.prod_singleton, one_mul]
 
 lemma vand_last (p : ℕ) (x : ℕ → ℝ) :
     Vand (p + 1) x = Vand p x * ∏ i ∈ Icc 1 p, (x i - x (p + 1)) := by

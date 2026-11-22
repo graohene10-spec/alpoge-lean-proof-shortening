@@ -406,8 +406,7 @@ theorem Knat_eq (L : Levels o r k) :
 
 theorem JH_eq (L : Levels o r k) : L.JH = (upUniG 𝔽 k).comap (red o (Fin k)) := by
   ext x
-  rw [L.mem_JH, Subgroup.mem_comap]
-  rfl
+  exact L.mem_JH x
 
 end Local
 
@@ -475,8 +474,7 @@ theorem corner_level_product : Formalism.FourierDecayAlt.S3.KppProduct := by
     obtain ⟨n, κ, h, hN, rfl, hκ, rfl⟩ := lift_decomp x nb hb hn hx
     exact ⟨n, κ, h, hN, (L.mem_JH h).2 hbU, hκ, rfl⟩
   · rintro ⟨n, κ, h, hN, hh, hκ, hx⟩
-    have hx' : x = n * phi o r k h * κ := Units.ext hx
-    rw [hx', map_mul, MonoidHom.mem_ker.1 hκ, mul_one, map_mul, red_phi]
+    rw [(Units.ext hx : x = n * phi o r k h * κ), map_mul, MonoidHom.mem_ker.1 hκ, mul_one, map_mul, red_phi]
     exact (mem_PG _ _).2 ⟨_, _, (L.mem_JH h).1 hh, isN_red hN, rfl⟩
 
 end Formalism.FourierDecayAlt.P

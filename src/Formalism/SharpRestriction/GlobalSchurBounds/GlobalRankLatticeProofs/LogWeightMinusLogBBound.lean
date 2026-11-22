@@ -8,13 +8,8 @@ theorem b_ge_one_section_B (D : D7) (sc : Scale) (C0 Δ : ℝ) (w : ℕ → D.wh
     (ρ : D.what₂.Tau) (j : ℕ) (hj : j < D.R.m) : 1 ≤ bN D ρ j := by
   unfold DataB at hB
   obtain ⟨hpi, hlogv, hf, hmk, hk, hg, hΔ, hv1, hv2, hu1, hu2, hu3, hw, hinc, hb0, hgap⟩ := hB
-  have hL := scale_one_le_L sc
-  have hkpos : (0 : ℝ) < D.R.k := by
-    have hm : (1 : ℝ) ≤ D.R.m := by exact_mod_cast (by omega : 1 ≤ D.R.m)
-    nlinarith
   have hk1 : (1 : ℝ) ≤ D.R.k := by
-    have : 0 < D.R.k := by exact_mod_cast hkpos
-    exact_mod_cast Nat.one_le_of_lt this
+    exact_mod_cast (Nat.le_trans (by omega : (1 : ℕ) ≤ D.R.m + 3) D.R.m_add_three_le_k)
   have hx := sc.one_lt_alt
   have hpos : ∀ i, i < D.R.m → 1 ≤ bN D ρ i := by
     intro i
@@ -59,14 +54,10 @@ theorem log_weight_minus_log_b_bound (D : D7) (sc : Scale) (C0 Δ : ℝ) (w : �
   unfold DataB at hB
   obtain ⟨hpi, hlogv, hf, hmk, hk, hg, hΔ, hv1, hv2, hu1, hu2, hu3, hw, hinc, hb0, hgap⟩ := hB
   obtain ⟨hw0, hbw, habs⟩ := hw ρ j hj
-  have hL := scale_one_le_L sc
   have hx := sc.one_lt_alt
-  have hkpos : (0 : ℝ) < D.R.k := by
-    have hm : (1 : ℝ) ≤ D.R.m := by exact_mod_cast (by omega : 1 ≤ D.R.m)
-    nlinarith
+  have hL := scale_one_le_L sc
   have hk1 : (1 : ℝ) ≤ D.R.k := by
-    have : 0 < D.R.k := by exact_mod_cast hkpos
-    exact_mod_cast Nat.one_le_of_lt this
+    exact_mod_cast (le_trans (by norm_num : (1 : ℕ) ≤ 5) D.R.k_ge)
   have hBpos : 0 < bN D ρ j := by linarith
   have hratio : Real.log (w j ρ) - Real.log (bN D ρ j) ≤ 1 / sc.x := by
     rw [← Real.log_div hw0.ne' hBpos.ne']

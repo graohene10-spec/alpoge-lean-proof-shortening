@@ -221,12 +221,9 @@ theorem seq_step (hG : ∀ j, Low 1 (G j)) (hg : ∀ j, Low 2 (g j)) (n : ℕ) (
 theorem seq_stable (hG : ∀ j, Low 1 (G j)) (hg : ∀ j, Low 2 (g j)) (n m : ℕ) (hnm : n ≤ m)
     (i : ι) : Low n (seq G g m i - seq G g n i) := by
   induction m, hnm using Nat.le_induction with
-  | base => rw [sub_self]; exact low_of_zero _
+  | base => simpa using low_of_zero n
   | succ m hnm ih =>
-    have e : seq G g (m + 1) i - seq G g n i =
-        (seq G g (m + 1) i - seq G g m i) + (seq G g m i - seq G g n i) := by abel
-    rw [e]
-    exact low_add (low_mono hnm (seq_step hG hg m i)) ih
+    simpa only [sub_add_sub_cancel] using low_add (low_mono hnm (seq_step hG hg m i)) ih
 
 theorem coeff_lim (d : τ →₀ ℕ) (i : ι) :
     coeff d (lim G g i) = coeff d (seq G g (d.degree + 1) i) :=
@@ -235,9 +232,8 @@ theorem coeff_lim (d : τ →₀ ℕ) (i : ι) :
 theorem lim_close (hG : ∀ j, Low 1 (G j)) (hg : ∀ j, Low 2 (g j)) (n : ℕ) (i : ι) :
     Low n (lim G g i - seq G g n i) := by
   intro d hd
-  have := seq_stable hG hg (d.degree + 1) n (by omega) i d (by omega)
-  rw [map_sub, sub_eq_zero] at this
-  rw [map_sub, coeff_lim, this, sub_self]
+  have h := seq_stable hG hg (d.degree + 1) n (by omega) i d (by omega)
+  simpa [map_sub, coeff_lim, neg_sub, neg_zero] using congrArg (fun x => -x) h
 
 theorem lim_low (hG : ∀ j, Low 1 (G j)) (hg : ∀ j, Low 2 (g j)) (i : ι) :
     Low 1 (lim G g i) := by

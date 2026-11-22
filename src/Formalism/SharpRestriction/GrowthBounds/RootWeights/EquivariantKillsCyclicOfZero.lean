@@ -15,8 +15,7 @@ def weightHeightRootWeights (nu : Fin n → ℤ) : ℤ := ∑ c : Fin n, ((c : �
 
 theorem weight_height_root_weights_add_root (nu : Fin n → ℤ) (a b : Fin n) :
     weightHeightRootWeights (nu + rootW a b) = weightHeightRootWeights nu + (((a : ℕ) : ℤ) - ((b : ℕ) : ℤ)) := by
-  unfold weightHeightRootWeights rootW
-  simp only [Pi.add_apply, Pi.sub_apply, mul_add, Finset.sum_add_distrib, mul_sub, Finset.sum_sub_distrib]
+  simp only [weightHeightRootWeights, rootW, Pi.add_apply, Pi.sub_apply, mul_add, Finset.sum_add_distrib, mul_sub, Finset.sum_sub_distrib]
   simp [Pi.single_apply]
 
 theorem lowering_monomial_raises_height {E : GLOps n K V} (hs : OperatorsShiftWeightsByRoots E) {mu : Fin n → ℤ} {v : V}

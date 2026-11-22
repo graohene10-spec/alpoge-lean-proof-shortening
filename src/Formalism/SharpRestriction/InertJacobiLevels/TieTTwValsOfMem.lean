@@ -268,17 +268,15 @@ theorem tie_ioTot_below (p : ℕ) (hp : p.Prime) (hle : (p : ℝ) ≤ L0.sc.X'' 
   rw [← sum_sz_const p hp _ hS]
   unfold ioTot
   refine Finset.sum_congr rfl (fun w hw' => ?_)
-  have hwp : D.what₂.places.resChar w = p := (hS w).1 hw'
   show SizeData₂.sz w (G.ioP X0 K (G.aL L0) (G.bL L0) (D.what₂.places.resChar w)) = _
-  rw [hwp]
+  rw [(hS w).1 hw']
 
 theorem tie_ioTot_above (p : ℕ) (h : L0.sc.X'' D.R.n < (p : ℝ)) :
     ioTot (tieWeightData L0 X0 K dr len hw hg hu) p = 0 := by
   unfold ioTot
   refine Finset.sum_eq_zero (fun w hw' => ?_)
-  have hwp : D.what₂.places.resChar w = p := (Finset.mem_filter.1 hw').2
-  show SizeData₂.sz w (G.ioP X0 K (G.aL L0) (G.bL L0) (D.what₂.places.resChar w)) = 0
-  rw [hwp, ioP_eq_zero_of_lt L0 X0 K _ _ _ h]
+  change SizeData₂.sz w (G.ioP X0 K (G.aL L0) (G.bL L0) (D.what₂.places.resChar w)) = 0
+  rw [(Finset.mem_filter.1 hw').2, ioP_eq_zero_of_lt L0 X0 K _ _ _ h]
   simp [SizeData₂.sz]
 
 theorem tie_TTw_vals (w : D.what₂.places.Pl) :

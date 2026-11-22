@@ -21,11 +21,10 @@ theorem norm_natCast_eq_one_of_not_dvd {l m : ℕ} (hl : l.Prime) (hlt : ‖(l :
 theorem norm_natCast_eq_pow_padicValNat {l n : ℕ} (hl : l.Prime) (hlt : ‖(l : K)‖ < 1)
     (hn : n ≠ 0) : ‖(n : K)‖ = ‖(l : K)‖ ^ padicValNat l n := by
   have hfac := Nat.ordProj_mul_ordCompl_eq_self n l
-  have hnd := Nat.not_dvd_ordCompl hl hn
-  rw [Nat.factorization_def n hl] at hfac hnd
   conv_lhs => rw [← hfac]
-  rw [Nat.cast_mul, norm_mul, Nat.cast_pow, norm_pow, norm_natCast_eq_one_of_not_dvd hl hlt hnd,
-    mul_one]
+  rw [Nat.cast_mul, norm_mul, Nat.cast_pow, norm_pow,
+    norm_natCast_eq_one_of_not_dvd hl hlt (Nat.not_dvd_ordCompl hl hn), mul_one,
+    Nat.factorization_def n hl]
 
 end Norms
 

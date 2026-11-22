@@ -162,7 +162,6 @@ theorem columnWeight_spread_off_top (P : ParameterChoice' D L) (u : D.what₂.Wo
     (ht : (D.eTau τ : D.R.GG) ∉ D.host.topPlaces) :
     ((((D.fm u).lam 0 τ).w (lamFst D) - ((D.fm u).lam 0 τ).w (lamLst D) : ℤ) : ℝ) ≤ 3 * L.Sc := by
   have hk := D.R.five_le_k
-  have hkR := P.five_le_k
   rw [columnWeight_spread_eq u τ]
   have h1 := P.cloud_place_bound τ (by omega) ht
   have h2 := P.uk_extreme τ (by omega) ht
@@ -170,7 +169,7 @@ theorem columnWeight_spread_off_top (P : ParameterChoice' D L) (u : D.what₂.Wo
   have h4 := (L.cloud_v τ ⟨D.R.k - 2, by omega⟩).1
   rw [h2]
   push_cast at h1 ⊢
-  linarith
+  linarith [P.five_le_k, h1, h3, h4]
 
 theorem columnWeight_spread_le (P : ParameterChoice' D L) (u : D.what₂.Word) (τ : D.what₂.Tau) :
     ((((D.fm u).lam 0 τ).w (lamFst D) - ((D.fm u).lam 0 τ).w (lamLst D) : ℤ) : ℝ) ≤ 3 * L.sc.a := by

@@ -87,15 +87,13 @@ theorem twoRealCharNoCommonZeroOfBounds : TwoRealOf := by
     rw [hL]; exact Real.log_le_log (by norm_num) (by linarith)
   have hLhalf : 1 / 2 < L := by have := Real.log_two_gt_d9; linarith
   have hL0 : 0 < L := by linarith
-  have hAL0 : 0 < 20 * A * L := mul_pos (mul_pos (by norm_num) hA0) hL0
   obtain ⟨e, he⟩ : ∃ e : ℝ, e = 1 / (20 * A * L) := ⟨_, rfl⟩
-  have he0 : 0 < e := by rw [he]; exact one_div_pos.mpr hAL0
-  have hE : 20 * A * L * e = 1 := by rw [he]; exact mul_one_div_cancel hAL0.ne'
+  have he0 : 0 < e := by rw [he]; exact one_div_pos.mpr (mul_pos (mul_pos (by norm_num) hA0) hL0)
+  have hE : 20 * A * L * e = 1 := by rw [he]; exact mul_one_div_cancel (mul_pos (mul_pos (by norm_num) hA0) hL0).ne'
   have hAL : A * L = 3 * |C| * L + 2 * C' * L + L := by rw [hA]; ring
-  have hAL10 : 10 ≤ 20 * A * L := by nlinarith
   have he10 : e ≤ 1 / 10 := by
-    have := mul_le_mul_of_nonneg_left hAL10 he0.le
-    linarith
+    rw [he]
+    exact one_div_le_one_div_of_le (by norm_num) (by nlinarith)
   have hreg : ∀ β : ℝ, InRegion (1 / (20 * A)) q (β : ℂ) → 1 - e ≤ β := by
     intro β hr
     simp only [InRegion, Complex.ofReal_im, Complex.ofReal_re, abs_zero, zero_add] at hr
@@ -137,8 +135,7 @@ theorem twoRealCharNoCommonZeroOfBounds : TwoRealOf := by
     intro h
     apply h12
     calc χ₁ = χ₁ * χ₂ ^ 2 := by rw [h₂, mul_one]
-      _ = χ₁ * χ₂ * χ₂ := by rw [pow_two, mul_assoc]
-      _ = χ₂ := by rw [h, one_mul]
+      _ = χ₂ := by rw [pow_two, ← mul_assoc, h, one_mul]
   have h12b : (negLD (χ₁ * χ₂) ((1 + 2 * e : ℝ) : ℂ)).re ≤ C * L := by
     obtain ⟨Z, m, hZ, -, -, hb⟩ := hC q (χ₁ * χ₂) h12ne 0
     have hb' := hb (1 + 2 * e) hσ hσ6
@@ -147,8 +144,7 @@ theorem twoRealCharNoCommonZeroOfBounds : TwoRealOf := by
     have hs0 : (((1 + 2 * e : ℝ) : ℂ) + ((0 : ℝ) : ℂ) * I) = ((1 + 2 * e : ℝ) : ℂ) := by simp
     have hl : (negLD (χ₁ * χ₂) (((1 + 2 * e : ℝ) : ℂ) + ((0 : ℝ) : ℂ) * I)).re =
         (negLD (χ₁ * χ₂) ((1 + 2 * e : ℝ) : ℂ)).re := by rw [hs0]
-    have h02 : |(0 : ℝ)| + 2 = 2 := by norm_num
-    rw [h02, ← hL] at hb'
+    rw [show |(0 : ℝ)| + 2 = 2 by norm_num, ← hL] at hb'
     linarith
   have hpos := (hPos q (1 + 2 * e) hσ).2.2 χ₁ χ₂ h₁ h₂
   have k1 := hbound χ₁ h₁1 β₁ hr₁ hz₁

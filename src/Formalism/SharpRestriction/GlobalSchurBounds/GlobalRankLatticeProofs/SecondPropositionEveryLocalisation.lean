@@ -116,14 +116,11 @@ end SlopeTestRemainingChoices
 open SlopeTestRemainingChoices
 
 theorem second_proposition_every_localisation (D : D7) : Conclusion2 D := by
-  have hCM := D.host.der.cmType
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
   · intro φ
-    rw [mem_PhiEmb_iff, mem_PhiEmb_iff]
-    exact hCM.1 φ
+    simpa only [mem_PhiEmb_iff] using (D.host.der.cmType).1 φ
   · rintro φ ⟨g, hg, rfl⟩ x hx
-    show D.host.φ₀ (D.host.sigmaOf g x) = D.host.φ₀ x
-    rw [sigmaOf_fix_K D g hg x hx]
+    exact congrArg D.host.φ₀ (sigmaOf_fix_K D g hg x hx)
   · intro τ hτ
     exact D.R.toFrame.hostPartner τ hτ
   · intro h t

@@ -21,18 +21,14 @@ private lemma digits_sum_le_sub_one_mul_log_add_one (p : ℕ) [hp : Fact p.Prime
   rcases Nat.eq_zero_or_pos n with rfl | hpos
   · simp only [Nat.digits_zero, List.sum_nil, Nat.cast_zero]
     exact mul_nonneg (by linarith) (by positivity)
-  · have hlen := Nat.digits_len p n hp.out.one_lt hpos.ne'
-    have hsum : (p.digits n).sum ≤ (p.digits n).length * (p - 1) := by
+  · have hsum : (p.digits n).sum ≤ (Nat.log p n + 1) * (p - 1) := by
+      have hlen := Nat.length_digits p n hp.out.one_lt hpos.ne'
       have := List.sum_le_card_nsmul (p.digits n) (p - 1)
         (fun x hx => Nat.le_sub_one_of_lt (Nat.digits_lt_base hp.out.one_lt hx))
-      simpa [smul_eq_mul] using this
-    rw [hlen] at hsum
-    have hlog : Nat.log p n ≤ Nat.log p Xb := Nat.log_mono_right hn
-    have h2 : ((p.digits n).sum : ℝ) ≤ ((Nat.log p n : ℝ) + 1) * ((p : ℝ) - 1) := by
-      have h3 := (Nat.cast_le (α := ℝ)).mpr hsum
-      rw [Nat.cast_mul, Nat.cast_add, Nat.cast_one, Nat.cast_sub hp.out.one_lt.le, Nat.cast_one] at h3
-      exact h3
-    have hl : (Nat.log p n : ℝ) ≤ Nat.log p Xb := by exact_mod_cast hlog
+      simpa [hlen, smul_eq_mul] using this
+    have h2 := (Nat.cast_le (α := ℝ)).mpr hsum
+    rw [Nat.cast_mul, Nat.cast_add, Nat.cast_one, Nat.cast_sub hp.out.one_lt.le, Nat.cast_one] at h2
+    have hl : (Nat.log p n : ℝ) ≤ Nat.log p Xb := by exact_mod_cast Nat.log_mono_right hn
     nlinarith
 
 lemma per_rowX (p : ℕ) [hp : Fact p.Prime] (Xb S o z e Mm : ℕ) (κ κ4 lgv : ℝ)

@@ -52,17 +52,15 @@ theorem class_sum_dual_le_fixed : ClassSumDualLeF := by
   rw [mem_valLatF]
   intro c0
   rw [Formalism.HermitianLatticesTheory.dualBasic_mem_dual] at hy
-  have hyinv : ∀ c γ, ρ c γ (I y c) = I y c := (hI (I y)).mp ⟨y, rfl⟩
-  set N : K := (Fintype.card (Gam c0) : K) with hN
+  set N : K := (Fintype.card (Gam c0) : K)
   have hN0 : N ≠ 0 := card_ne (K := K) (Γ := Gam c0)
-  let z0 : invSub (ρ c0) := ⟨N⁻¹ • I y c0, (invSub (ρ c0)).smul_mem _ (hyinv c0)⟩
+  let z0 : invSub (ρ c0) := ⟨N⁻¹ • I y c0, (invSub (ρ c0)).smul_mem _ ((hI (I y)).mp ⟨y, rfl⟩ c0)⟩
   have hz0 : z0 ∈ Formalism.HermitianLatticesTheory.dual (pair.domRestrict₁₂ (invSub (ρ c0)) (invSub (ρ c0)))
       ((Nab c0).comap ((invSub (ρ c0)).subtype.restrictScalars (𝓞 K))) := by
     rw [Formalism.HermitianLatticesTheory.dualBasic_mem_dual]
     intro x0 hx0
-    have hx0' : (x0 : V) ∈ Nab c0 := hx0
-    have hinv : ∀ c γ, ρ c γ ((Pi.single c0 (x0 : V) : Cl → V) c) = (Pi.single c0 (x0 : V) : Cl → V) c := by
-      intro c γ
+    have hinv : ∀ c γ, ρ c γ ((Pi.single c0 (x0 : V) : Cl → V) c) =
+        (Pi.single c0 (x0 : V) : Cl → V) c := fun c γ => by
       by_cases h : c = c0
       · subst h
         simpa using x0.2 γ
@@ -73,7 +71,7 @@ theorem class_sum_dual_le_fixed : ClassSumDualLeF := by
       intro c
       by_cases h : c = c0
       · subst h
-        simpa using hx0'
+        simpa using hx0
       · simp [Pi.single_eq_of_ne h]
     have h1 := hy x hxN
     rw [hCS, hx, Finset.sum_eq_single c0 (by
@@ -147,13 +145,10 @@ theorem bounds_class_field_fixed : BoundsIClassF := by
 theorem bounds_fourth_class_fixed : BoundsIVClassF := by
   intro K _ _ _ n d H hH hdet E Pr hO Cl _ V _ _ _ _ pair I g hinj hg hCS Nab Del hNab s hs0 hDel
     DG hDG hdvd w ϖ J hϖ hJ
-  have hA := valLatF_isLattice I hinj Nab hNab
   have h1 := class_sum_dual_ge_fixed K n H Cl V pair I g hg hCS Nab Del s hDel DG hdvd
-  have h := bounds_fourth K n d H hH hdet E Pr hO _ _ hA (DG * s) (Nat.mul_pos hDG hs0) h1 w ϖ J hϖ hJ
-  have hG' : (DG : K) ≠ 0 := by exact_mod_cast hDG.ne'
-  have hs' : (s : K) ≠ 0 := by exact_mod_cast hs0.ne'
+  have h := bounds_fourth K n d H hH hdet E Pr hO _ _ (valLatF_isLattice I hinj Nab hNab) (DG * s) (Nat.mul_pos hDG hs0) h1 w ϖ J hϖ hJ
   have h4 := h.2.2.2
-  rw [Nat.cast_mul, ValuationRepresentative.vw_mul w _ _ hG' hs', ← add_assoc] at h4
+  rw [Nat.cast_mul, ValuationRepresentative.vw_mul w _ _ (by exact_mod_cast hDG.ne') (by exact_mod_cast hs0.ne'), ← add_assoc] at h4
   exact ⟨h.1, h4⟩
 
 end Formalism.DivisionValues

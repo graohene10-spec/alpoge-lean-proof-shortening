@@ -88,10 +88,9 @@ theorem Avr_inter (h : A) (Y Y' : ℂ)
     ext i j
     rw [mul_diagonal, diagonal_mul]
     fin_cases i <;> fin_cases j <;> simp [LevelData.Tvl, hp l, hc l, hci l]
-  have k00 := congrFun (congrFun key 0) 0
-  have k10 := congrFun (congrFun key 1) 0
-  rw [mul_diagonal, diagonal_mul] at k00 k10
-  exact ⟨k00, k10⟩
+  constructor
+  · simpa only [LevelData.Avr, mul_diagonal, diagonal_mul] using congrFun (congrFun key 0) 0
+  · simpa only [LevelData.Bvr, mul_diagonal, diagonal_mul] using congrFun (congrFun key 1) 0
 
 theorem fcomm {x y : A} (hx : x ∈ L.fns) (hy : y ∈ L.fns) : Commute x y := L.fns_comm x hx y hy
 
@@ -130,26 +129,21 @@ theorem p_Dri (l) : L.p l * L.Dri = L.Dri * (L.p l + algebraMap ℂ A (-1)) := b
   exact h
 
 theorem pb_Drb (l) : L.pb l * L.Drb = L.Drb * (L.pb l + algebraMap ℂ A 1) := by
-  have h := ofFn_shift (L.pb l) r L.cb (fun m => if l = m then 1 else 0) (fun m => by
+  simpa [LevelData.Drb] using ofFn_shift (L.pb l) r L.cb (fun m => if l = m then 1 else 0) (fun m => by
     rw [L.pb_cb]; split_ifs <;> simp [mul_add])
-  rw [show (∑ m : Fin r, if l = m then (1:ℂ) else 0) = 1 by simp] at h
-  exact h
 
 theorem pb_Drbi (l) : L.pb l * L.Drbi = L.Drbi * (L.pb l + algebraMap ℂ A (-1)) := by
   have h := ofFn_shift (L.pb l) r L.cbi (fun m => if l = m then -1 else 0) (fun m => by
     rw [L.pb_cbi]; split_ifs <;> simp [mul_add, sub_eq_add_neg])
-  rw [show (∑ m : Fin r, if l = m then (-1:ℂ) else 0) = -1 by simp] at h
-  exact h
+  rwa [show (∑ m : Fin r, if l = m then (-1:ℂ) else 0) = -1 by simp] at h
 
 theorem leftCorrection_intertwine {h : A} (hn : Commute L.nab h) (hz : Commute L.ζb h) (hg : Commute L.GGi h) (Y : ℂ) :
     L.l0 Y * h = h * L.l0 Y := by
-  unfold LevelData.l0
-  exact ((hn.neg_left).sub_left ((Algebra.commute_algebraMap_left _ h).mul_left (hz.mul_left hg))).eq
+  simpa [LevelData.l0] using ((hn.neg_left).sub_left ((Algebra.commute_algebraMap_left (Y + 1 / 2) h).mul_left (hz.mul_left hg))).eq
 
 theorem dualCorrection_intertwine {h : A} (hn : Commute L.nabs h) (hz : Commute L.ζ h) (hg : Commute L.GGi h) (Y : ℂ) :
     L.m0 Y * h = h * L.m0 Y := by
-  unfold LevelData.m0
-  exact ((hn.neg_left).sub_left ((Algebra.commute_algebraMap_left _ h).mul_left (hz.mul_left hg))).eq
+  simpa [LevelData.m0] using ((hn.neg_left).sub_left ((Algebra.commute_algebraMap_left (Y - 1 / 2 : ℂ) h).mul_left (hz.mul_left hg))).eq
 
 omit L in
 theorem lin_shift (n z S : A) (c c' e : ℂ) (hn : n * S = S * n + algebraMap ℂ A e * (z * S))

@@ -74,10 +74,8 @@ theorem DecoSet.smul_mem_inertSet {P : Ideal (𝓞 E)} {s : List ℕ} (a : UF E 
   refine ⟨?_, ?_, ?_⟩
   · rw [DecoSet.smul_val, DecoSet.smul_val]
     exact h1.gmap _
-  · rw [DecoSet.smul_val, DecoSet.smul_val]
-    simp only [Deco.act, h2]
-  · rw [DecoSet.smul_val, DecoSet.smul_val]
-    simp only [Deco.act, h3]
+  · simp [DecoSet.smul_val, Deco.act, h2]
+  · simp [DecoSet.smul_val, Deco.act, h3]
 
 theorem DecoSet.smul_mem_inertSet_iff {P : Ideal (𝓞 E)} {s : List ℕ} (a : UF E n × GLG E n SG)
     {d e : DecoSet E n ST SG} : a • e ∈ (a • d).inertSet P s ↔ e ∈ d.inertSet P s := by

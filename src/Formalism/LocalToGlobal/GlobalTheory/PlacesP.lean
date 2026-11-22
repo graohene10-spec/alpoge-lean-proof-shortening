@@ -463,7 +463,6 @@ theorem mertens (y : ℝ) (hy : 1 ≤ y) :
       have : n < 4 := by exact_mod_cast this
       omega
     rw [hn, Finset.sum_filter]
-    have l2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
     interval_cases n
     · simp [Nat.not_prime_zero]; exact hlog0
     · simp [Finset.sum_range_succ, Nat.not_prime_zero, Nat.not_prime_one]; exact hlog0
@@ -515,10 +514,9 @@ section Family
 theorem exists_tau_eq_natCast {D : D7} {L : SizeData₂ D} (X : G.Inst D L) (K : G.Consts) (a b : G.HH D → ℤ) (p : ℕ) :
     ∃ n : ℕ, G.tauP X K a b p = n := by
   classical
-  unfold G.tauP
-  split_ifs
-  · exact ⟨0, by simp⟩
-  · exact ⟨X.ep p + ∑ t0 ∈ G.VV X K a b p, D.R.m * (⌈G.tv X K a b p t0⌉₊ + G.Dp K L p + 1), by push_cast; rfl⟩
+  by_cases h : G.VV X K a b p = ∅
+  · exact ⟨0, by simp [G.tauP, h]⟩
+  · exact ⟨X.ep p + ∑ t0 ∈ G.VV X K a b p, D.R.m * (⌈G.tv X K a b p t0⌉₊ + G.Dp K L p + 1), by simp [G.tauP, h]⟩
 
 theorem VV_empty_of_ge {D : D7} {L : SizeData₂ D} (X : G.Inst D L) (K : G.Consts) (a b : G.HH D → ℤ) (p : ℕ)
     (h : L.sc.X' ≤ (p : ℝ)) : G.VV X K a b p = ∅ := by
@@ -590,8 +588,7 @@ theorem ta_le {D : D7} (L : SizeData₂ D) (S : SizesAt L) (hx5 : 5 ≤ L.sc.x) 
   have hb1 : 1 ≤ L.sc.b := by linarith
   refine le_trans h ?_
   have h1 : L.sc.b ^ δ ≤ L.sc.b := by
-    calc L.sc.b ^ δ ≤ L.sc.b ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hb1 hδ
-      _ = L.sc.b := Real.rpow_one _
+    simpa [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hb1 hδ
   have ha : L.sc.a = L.sc.x * L.sc.b := rfl
   have hx3 : 0 ≤ 2 * L.sc.x ^ 3 := by positivity
   have hP : (D.R.m : ℝ) * (D.host.TT.card : ℝ) * L.sc.a * Real.log L.sc.X' ≤
@@ -618,7 +615,7 @@ theorem ta_le {D : D7} (L : SizeData₂ D) (S : SizesAt L) (hx5 : 5 ≤ L.sc.x) 
     have : L.sc.x ^ 9 = L.sc.x * L.sc.x ^ 8 := by ring
     rw [this]
     exact mul_le_mul_of_nonneg_right hC (by linarith)
-  have h4 : 4 * |C| * L.sc.x ^ 8 + 1 ≤ L.sc.b := by nlinarith [abs_nonneg C]
+  have h4 : 4 * |C| * L.sc.x ^ 8 + 1 ≤ L.sc.b := by nlinarith [abs_nonneg C, hx8]
   have h5 : (4 * |C| * L.sc.x ^ 8 + 1) * L.sc.b ≤ L.sc.b * L.sc.b := mul_le_mul_of_nonneg_right h4 hb0.le
   have h6 : |C| * ((2 * L.sc.x ^ 3) * (2 * L.sc.x ^ 3) * (L.sc.x * L.sc.b) * L.sc.x) =
       4 * |C| * L.sc.x ^ 8 * L.sc.b := by ring
@@ -767,8 +764,7 @@ theorem settingF_of : LevelPrimeSettingFamily := by
 theorem slope_lemma_link_form : SlopeLemmaLinkForm := by
   intro eps Fm Cabs CH C0 crystallineComparison hC0 h10 hTu hCh hIn
   have tSet := settingF_of Fm hTu
-  have hNF : NuFullF Fm := Lnk.nuFullF_of Fm (Lnk.nuCommensF_of Fm crystallineComparison h10 tSet)
-  exact slope_lemma_division_form Fm crystallineComparison h10 tSet hTu (muRank_of_chosen Fm crystallineComparison hC0 hCh hNF h10 tSet) hIn.1 hIn.2.2.2.2
+  exact slope_lemma_division_form Fm crystallineComparison h10 tSet hTu (muRank_of_chosen Fm crystallineComparison hC0 hCh (Lnk.nuFullF_of Fm (Lnk.nuCommensF_of Fm crystallineComparison h10 tSet)) h10 tSet) hIn.1 hIn.2.2.2.2
 
 end Link
 

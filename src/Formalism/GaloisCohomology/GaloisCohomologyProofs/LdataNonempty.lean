@@ -16,8 +16,7 @@ theorem chi_exists (S : Set (HeightOneSpectrum (𝓞 F)))
     rw [unramOutside_iff S _ (continuous_cycZ F Ω l)]
     intro v hv A hA σ hσ
     refine Units.ext (PadicInt.ext_of_toZModPow.mp fun n => ?_)
-    rw [cycZ_toZModPow_eq (hS v hv) hA (q := 1) (fun x hx => by simpa using hσ.2 x hx) n]
-    simp
+    simp [cycZ_toZModPow_eq (hS v hv) hA (q := 1) (fun x hx => by simpa using hσ.2 x hx) n]
   refine ⟨QuotientGroup.lift (NS Ω S) (cycZ F Ω l) (fun σ h => (MonoidHom.mem_ker).2 (hU σ h)), ?_⟩
   ext σ; rfl
 

@@ -218,14 +218,11 @@ theorem second_complement_normaliser : Complement2Normaliser := by
 
 theorem second_complement_scalar : Complement2Scalar := by
   intro K _ _ _ v0 hv0 cg hcg w
-  have hcg0 : cg ≠ 0 := by
-    intro h
-    rw [h, map_zero, norm_zero] at hcg
-    exact zero_ne_one hcg
   have h1 : cg * star cg = 1 := by
     apply v0.embedding.injective
     rw [map_mul, hv0, map_one, Complex.mul_conj, Complex.normSq_eq_norm_sq, hcg]
     simp
+  have hcg0 : cg ≠ 0 := left_ne_zero_of_mul_eq_one h1
   have h2 := ValuationRepresentative.vw_mul w cg (star cg) hcg0 (by rwa [ne_eq, star_eq_zero])
   rw [h1, ValuationRepresentative.vw_one, ValuationRepresentative.vw_star] at h2
   omega

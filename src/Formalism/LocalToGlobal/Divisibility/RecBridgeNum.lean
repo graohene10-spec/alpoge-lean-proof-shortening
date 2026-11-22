@@ -41,8 +41,7 @@ theorem hB_eq (hDel : D.s.Del = (Del : ℚ)) (C : ℝ) (u : D.what₂.Word) (j :
   rfl
 
 theorem Lp_eq : (ofRecord D L Del h0).Lp = DV.Lprime D L := by
-  unfold NumDatum.Lp DV.Lprime
-  rw [ofRecord_rd]
+  simp [NumDatum.Lp, DV.Lprime, ofRecord_rd]
 
 theorem sigPar_succ (τ : D.what₂.Tau) (i : ℕ) (hi : i + 1 < D.R.k - 1 + D.R.m) :
     DV.sigPar D τ (i + 1) + 1 ≤ DV.sigPar D τ i := by
@@ -113,30 +112,26 @@ theorem aPlusQ_one_le {j : ℕ} (h1 : 1 ≤ j) (hj : j ≤ D.R.m) (τ : D.what�
 theorem apN_cast {j : ℕ} (h1 : 1 ≤ j) (hj : j ≤ D.R.m) (z : Bool × HH D) {i : ℕ} (hi : i < (D.R.sigW j).1) :
     (((ofRecord D L Del h0).apN j z i : ℕ) : ℝ) = DV.aPlus D j (tauPl D z) i := by
   obtain ⟨w, hw⟩ := DV.aPlusQ_int D j (tauPl D z) i
-  have h1w : (1 : ℚ) ≤ w := hw ▸ aPlusQ_one_le D h1 hj (tauPl D z) hi
-  have h0w : 0 ≤ w := by exact_mod_cast (show (0 : ℚ) ≤ w by linarith)
+  have h0w : 0 ≤ w := by exact_mod_cast (show (0 : ℚ) ≤ w by linarith [(hw ▸ aPlusQ_one_le D h1 hj (tauPl D z) hi)])
   unfold NumDatum.apN DV.aPlus
   rw [ofRecord_aPlus, hw, Int.floor_intCast]
-  have e : ((w.toNat : ℕ) : ℤ) = w := Int.toNat_of_nonneg h0w
-  have e2 : ((w.toNat : ℕ) : ℝ) = (w : ℝ) := by exact_mod_cast congrArg (fun x : ℤ => (x : ℝ)) e
+  have e2 : ((w.toNat : ℕ) : ℝ) = (w : ℝ) := by exact_mod_cast Int.toNat_of_nonneg h0w
   rw [e2]
   simp
 
 theorem apN_ge {j : ℕ} (h1 : 1 ≤ j) (hj : j ≤ D.R.m) (z : Bool × HH D) {i : ℕ} (hi : i < (D.R.sigW j).1) :
     1 ≤ (ofRecord D L Del h0).apN j z i := by
-  have e := apN_cast D L Del h0 h1 hj z hi
-  have h := aPlusQ_one_le D h1 hj (tauPl D z) hi
-  have : (1 : ℝ) ≤ (((ofRecord D L Del h0).apN j z i : ℕ) : ℝ) := by
-    rw [e]; unfold DV.aPlus; exact_mod_cast h
-  exact_mod_cast this
+  exact_mod_cast (show (1 : ℝ) ≤ (((ofRecord D L Del h0).apN j z i : ℕ) : ℝ) by
+    rw [apN_cast D L Del h0 h1 hj z hi]
+    unfold DV.aPlus
+    exact_mod_cast aPlusQ_one_le D h1 hj (tauPl D z) hi)
 
 theorem apN_anti {j : ℕ} (h1 : 1 ≤ j) (hj : j ≤ D.R.m) (z : Bool × HH D) {i l : ℕ} (hil : i < l) (hl : l < (D.R.sigW j).1) :
     (ofRecord D L Del h0).apN j z l ≤ (ofRecord D L Del h0).apN j z i := by
-  have el := apN_cast D L Del h0 h1 hj z hl
-  have ei := apN_cast D L Del h0 h1 hj z (show i < (D.R.sigW j).1 by omega)
-  have h := aPlusQ_anti D hj (tauPl D z) hil.le hl
   have : (((ofRecord D L Del h0).apN j z l : ℕ) : ℝ) ≤ (((ofRecord D L Del h0).apN j z i : ℕ) : ℝ) := by
-    rw [el, ei]; unfold DV.aPlus; exact_mod_cast h
+    rw [apN_cast D L Del h0 h1 hj z hl, apN_cast D L Del h0 h1 hj z (show i < (D.R.sigW j).1 by omega)]
+    unfold DV.aPlus
+    exact_mod_cast aPlusQ_anti D hj (tauPl D z) hil.le hl
   exact_mod_cast this
 
 end Formalism.L2.DIV.NumTieH

@@ -80,8 +80,7 @@ theorem Hmap_tw (K0 : Subfield K) (hK0 : IsCMSub K0) {n : ℕ} (H : Matrix (Fin 
 theorem gramStd {d : ℕ} (X : InfinitePlace K → Matrix (Fin d) (Fin d) ℂ) (v : InfinitePlace K) :
     gram X v (fun i => (Pi.single i 1 : Fin d → K)) = metMat X v := by
   ext a b
-  simp only [gram, Formalism.HN.gramPl, Matrix.of_apply]
-  rw [majAt_eq, cv_single, cv_single, single_dot_single]
+  simp [gram, Formalism.HN.gramPl, Matrix.of_apply, majAt_eq, cv_single]
 
 theorem gramR_std {D : ℕ} (Γ : Matrix (Fin D) (Fin D) K) :
     gramR Γ (fun i => (Pi.single i 1 : Fin D → K)) = Γ.det := by

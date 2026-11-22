@@ -246,10 +246,9 @@ def asm_f (p : ℕ) {σ : Type*} (t rho : σ → ℕ) (inv : Bool) (k : σ) (n :
 
 theorem asm_f_dec {p : ℕ} (h1 : HDec p) (h2 : HMul p) {σ : Type*} (t rho : σ → ℕ)
     (hr : ∀ k, rho k < p ^ (t k + 1)) (inv : Bool) (k : σ) : Dec p (1 / 4) 0 (asm_f p t rho inv k) := by
-  have := h2 (1 / 4) 0 0 (unitFn p ⟨t k, rho k, true, inv⟩) (unitFn p ⟨t k, rho k, false, inv⟩)
+  have h := h2 (1 / 4) 0 0 (unitFn p ⟨t k, rho k, true, inv⟩) (unitFn p ⟨t k, rho k, false, inv⟩)
     (by norm_num) (h1 _ (hr k)) (h1 _ (hr k))
-  rw [add_zero] at this
-  exact this
+  rwa [add_zero] at h
 
 theorem asm_prod_eq (p : ℕ) {σ : Type*} [Fintype σ] (t rho : σ → ℕ) (inv : Bool) (e' : σ → ℕ) :
     (if inv then (∏ k, cUnit (p ^ (t k + 1)) (e' k) * dUnit (p ^ (t k + 1)) (e' k) (rho k))⁻¹

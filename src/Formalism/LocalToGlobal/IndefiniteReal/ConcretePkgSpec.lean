@@ -133,9 +133,7 @@ theorem nP_pos (b : Bool) : 0 < nP F b := by
   exact_mod_cast Nat.card_pos
 
 theorem h0 (h : R.IsTup F) : (R.toCx F).H0 := by
-  refine ⟨h.mu_conj, fun w => ⟨fun hw => h.mu_ne w hw, fun hne => ?_⟩⟩
-  by_contra hw
-  exact hne (h.mu_off w hw)
+  exact ⟨h.mu_conj, fun w => ⟨h.mu_ne w, fun hne => Classical.byContradiction fun hw => hne (h.mu_off w hw)⟩⟩
 
 theorem untw (h : R.IsTup F) (C CH : ℝ) : ((R.toCx F).data F.cr false).Untwisted (R.num F C CH) := by
   intro w hw j

@@ -329,13 +329,11 @@ theorem Row.map (hQ : ∀ K X f T c, Q K X f T c → Q' K X f T c)
     (hL : ∀ (K : Ctx) (β : BPt K) (c : ℝ) (b : Bd β.D β.O c), β.Is Q → Lk K β c b → Lk' K β c (π _ _ c b))
     {H : ∀ 𝒜 : FamClass, RawSel Bd' 𝒜 → Prop} (h : Row Q' Lk' H) : Row Q Lk fun 𝒜 σ => H 𝒜 (RawSel.map π σ) := by
   obtain ⟨E, e, h⟩ := h
-  have hb : ∀ κ D O c (b : Bd D O c), Built Q Lk κ D O c b → Built Q' Lk' κ D O c (π D O c b) := fun κ D O c b hb =>
-    Built.ind (R := fun D O c b => Built Q' Lk' κ D O c (π D O c b))
-      (fun K β c b h0 h1 h2 => Built.intro h0 (hQ _ _ _ _ _ h1) (hL K β c b h1 h2)) hb
   refine ⟨fun κ D O c b => E κ D O c (π D O c b),
     EvP.mono (fun _ K _ H β hq c b hl => H β (hQ _ _ _ _ _ hq) c _ (hL K β c b hq hl)) e, fun 𝒜 σ s => h 𝒜 _ fun Fm hc => ?_⟩
   obtain ⟨κ, h1, h2, h3⟩ := s Fm hc
-  exact ⟨κ, h1, h2, fun x hx i => ⟨hb _ _ _ _ _ (h3 x hx i).1, (h3 x hx i).2⟩⟩
+  exact ⟨κ, h1, h2, fun x hx i =>
+    ⟨Built.ind (R := fun D O c b => Built Q' Lk' κ D O c (π D O c b)) (fun K β c b h0 h1 h2 => Built.intro h0 (hQ _ _ _ _ _ h1) (hL K β c b h1 h2)) (h3 x hx i).1, (h3 x hx i).2⟩⟩
 
 end Map
 

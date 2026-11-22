@@ -26,8 +26,7 @@ theorem plConj_vAdd (D : D7) (w : D.what₂.places.Pl) (x : D.what₂.LL) :
 
 theorem mem_iff_vAdd_pos {K : Type} [Field K] [NumberField K] (w : HeightOneSpectrum (𝓞 K)) (x : 𝓞 K) (hx : x ≠ 0) :
     x ∈ w.asIdeal ↔ 0 < vAdd w (x : K) := by
-  have hxK : (x : K) ≠ 0 := fun h => hx (RingOfIntegers.ext (by rw [h]; simp))
-  have hv : w.valuation K (x : K) ≠ 0 := (Valuation.ne_zero_iff _).mpr hxK
+  have hv : w.valuation K (x : K) ≠ 0 := (Valuation.ne_zero_iff _).mpr (fun h => hx (RingOfIntegers.ext (by simpa using h)))
   rw [← IsDedekindDomain.HeightOneSpectrum.valuation_lt_one_iff_mem (K := K) w x]
   unfold vAdd
   rw [neg_pos]

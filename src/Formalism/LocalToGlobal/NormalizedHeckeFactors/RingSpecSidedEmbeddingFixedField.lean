@@ -199,8 +199,7 @@ theorem Xv_read {D : D7} {K : NChiData D} (T : NormalizedCharacterCompatibility 
   refine ⟨B ∪ D.ntw.S0 s, fun P hP => ?_⟩
   obtain ⟨α, hα, x, hx, hσ⟩ := hB P (fun h => hP (Finset.mem_union_left _ h))
   refine ⟨α, hα, x, by rw [hx, zpow_zero, mul_one], fun σ hσ' => ?_⟩
-  rw [D.ntw.Xv_def s lam P (fun h => hP (Finset.mem_union_right _ h)) σ hσ']
-  exact hσ σ hσ'
+  simpa only [D.ntw.Xv_def s lam P (fun h => hP (Finset.mem_union_right _ h)) σ hσ'] using hσ σ hσ'
 
 theorem units_zpow_map {O : Type} [CommRing O] (f : O →+* ℂ) (u : Oˣ) (n : ℤ) :
     f ((u ^ n : Oˣ) : O) = (f (u : O)) ^ n := by

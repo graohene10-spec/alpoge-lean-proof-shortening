@@ -90,9 +90,7 @@ theorem thetaDenominator_of_values (X : Loc D) (C : ℝ) (h : ThetaDenominatorVa
   classical
   obtain ⟨n, -, -, -, h4⟩ := h
   refine ⟨fun i => Finset.univ.sup (fun lam : D.ntw.abelian₂ i => X.cE i lam + n i lam), ?_⟩
-  intro i hi Q hQ lam s hs δ
-  exact IntAfter.mono (Finset.le_sup (f := fun lam : D.ntw.abelian₂ i => X.cE i lam + n i lam) (Finset.mem_univ lam))
-    (h4 i hi Q hQ lam s hs δ)
+  exact fun i hi Q hQ lam s hs δ => IntAfter.mono (Finset.le_sup (f := fun lam : D.ntw.abelian₂ i => X.cE i lam + n i lam) (Finset.mem_univ lam)) (h4 i hi Q hQ lam s hs δ)
 
 def familyThetaDenominatorValues {eps : ℝ} (Fm : Formalism.MainNotions.FamP eps) (XF : ∀ x (_ : Fm.x1 < x) (i : Fm.Ix x), Loc (Fm.D x i)) (C : ℝ) : Prop :=
   ∀ x (hx : Fm.x1 < x) (i : Fm.Ix x), ThetaDenominatorValues (Fm.D x i) (XF x hx i) C
@@ -196,13 +194,10 @@ theorem ordRule_idx {σ : Type} [DecidableEq σ] (o : List σ) (h : o.Nodup) :
   | cons a t ih =>
     rw [List.nodup_cons] at h
     rw [List.pairwise_cons]
-    refine ⟨fun u' hu' _ => ?_, ?_⟩
-    · have hua : ¬ (a = u') := fun e => h.1 (e ▸ hu')
-      simp [List.idxOf_cons, hua]
-    · refine (ih h.2).imp_of_mem fun {u u'} hu hu' hr hne => ?_
-      have hua : ¬ (a = u) := fun e => h.1 (e ▸ hu)
-      have hua' : ¬ (a = u') := fun e => h.1 (e ▸ hu')
-      simpa [List.idxOf_cons, hua, hua'] using hr hne
+    have hne_a : ∀ u ∈ t, a ≠ u := fun u hu e => h.1 (e ▸ hu)
+    refine ⟨fun u' hu' _ => by simp [List.idxOf_cons, hne_a u' hu'], ?_⟩
+    refine (ih h.2).imp_of_mem fun {u u'} hu hu' hr hne => ?_
+    simpa [List.idxOf_cons, hne_a u hu, hne_a u' hu'] using hr hne
 
 variable {D} in
 
@@ -418,9 +413,7 @@ theorem ONTw.sum_le {L : SizeData₂ D} {C : ℝ} (h : ONTw D L C) (T : Finset D
   have h0 : 0 ≤ SizeData₂.lwP w := by
     unfold SizeData₂.lwP Formalism.BasicNotions.lw
     exact div_nonneg (Real.log_natCast_nonneg _) (Nat.cast_nonneg _)
-  apply mul_le_mul_of_nonneg_left _ h0
-  unfold DV.ur
-  exact mul_le_mul_of_nonneg_left (hle w (hT w hw)) (Nat.cast_nonneg _)
+  exact mul_le_mul_of_nonneg_left (by simpa only [DV.ur] using mul_le_mul_of_nonneg_left (hle w (hT w hw)) (Nat.cast_nonneg (D.what₂.places.ramIdx w))) h0
 
 def ONTwJ (L : SizeData₂ D) (C : ℝ) : Prop :=
   ∃ (fl : ℕ → ℕ → ℝ) (r : ℕ → D.what₂.places.Pl → ℝ), (∀ j l, 0 ≤ fl j l) ∧ (∀ j w, 0 ≤ r j w) ∧

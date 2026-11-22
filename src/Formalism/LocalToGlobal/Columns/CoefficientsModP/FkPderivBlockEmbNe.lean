@@ -77,12 +77,10 @@ theorem fk_fock_prod (s : Finset ι) (f g : ι → MvPolynomial (Fin n × Fin n)
     have hz : ∀ (h : ι → MvPolynomial (Fin n × Fin n) K) (v : Fin n × Fin n),
         pderiv (τ, v) (∏ τ' ∈ s, Formalism.GradedWeylDivisibility.blockEmb K τ' (h τ')) = 0 := by
       intro h v
-      refine Finset.prod_induction _ (fun P => pderiv (τ, v) P = 0) ?_ ?_ ?_
-      · intro a b ha hb
-        rw [Derivation.leibniz, ha, hb, smul_zero, smul_zero, add_zero]
-      · exact (pderiv (τ, v)).map_one_eq_zero
-      · intro τ' hτ'
-        exact fk_pderiv_blockEmb_ne (fun e : τ = τ' => hτ (by rw [e]; exact hτ')) v _
+      exact Finset.prod_induction _ (fun P => pderiv (τ, v) P = 0)
+        (fun a b ha hb => by simp [Derivation.leibniz, ha, hb])
+        (pderiv (τ, v)).map_one_eq_zero
+        (fun τ' hτ' => fk_pderiv_blockEmb_ne (fun e : τ = τ' => hτ (by rw [e]; exact hτ')) v _)
     rw [Finset.prod_insert hτ, Finset.prod_insert hτ, Finset.prod_insert hτ, fk_fock_mul τ _ _ (hz f) (hz g), ih]
 
 end Ten
@@ -100,8 +98,7 @@ variable {K : Type} [Field K] (K0 : Subfield K)
 theorem fk_coeff_mem {σ : Type} {P : MvPolynomial σ K} (hP : P ∈ (map (σ := σ) K0.subtype).range) (m : σ →₀ ℕ) :
     coeff m P ∈ K0 := by
   obtain ⟨Q, rfl⟩ := hP
-  rw [MvPolynomial.coeff_map]
-  exact (coeff m Q).2
+  simp [MvPolynomial.coeff_map]
 
 theorem fk_int_mem {σ : Type} (P : MvPolynomial σ ℤ) :
     map (Int.castRingHom K) P ∈ (map (σ := σ) K0.subtype).range := by
@@ -137,8 +134,7 @@ theorem fk_fock_mem [StarRing K] {σ : Type} (P : MvPolynomial σ ℤ) {Q : MvPo
     (hQ : Q ∈ (map (σ := σ) K0.subtype).range) : fockS (map (Int.castRingHom K) P) Q ∈ K0 := by
   unfold fockS
   refine sum_mem fun m _ => mul_mem (mul_mem ?_ (fk_coeff_mem K0 hQ m)) (natCast_mem K0 _)
-  rw [coeff_map, eq_intCast, star_intCast]
-  exact intCast_mem K0 _
+  simp [coeff_map, eq_intCast, star_intCast]
 
 theorem fk_extNorm_mem [StarRing K] {ι : Type} [Fintype ι] {n : ℕ} (lam : ι → DomWeight n) : extNorm K lam ∈ K0 := by
   unfold extNorm
@@ -190,8 +186,7 @@ theorem pairingRational_holds : PairRat := by
   obtain ⟨Pi, hPi⟩ := bVVfun_int K lam i
   obtain ⟨Pj, hPj⟩ := bVVfun_int K lam j
   rw [pairK_apply, pairP_apply, bVV_coe, bVV_coe, fockL_apply, hPi, hPj]
-  refine mul_mem (div_mem (fk_gramTw_mem K0 lam G hG) (fk_extNorm_mem K0 lam)) (fk_fock_mem K0 _ ?_)
-  exact fk_blockAct_mem K0 _ (fun τ a b => hG τ b a) (fk_int_mem K0 _)
+  exact mul_mem (div_mem (fk_gramTw_mem K0 lam G hG) (fk_extNorm_mem K0 lam)) (fk_fock_mem K0 _ (fk_blockAct_mem K0 _ (fun τ a b => hG τ b a) (fk_int_mem K0 _)))
 
 theorem actionRational_holds : ActRat := by
   intro K _ ι _ n lam K0 g hg i j

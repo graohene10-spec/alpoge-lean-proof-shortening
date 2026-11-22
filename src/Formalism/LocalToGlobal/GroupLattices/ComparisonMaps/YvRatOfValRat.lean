@@ -210,9 +210,7 @@ theorem cmp_inj u (w : D.what₂.places.Pl) (hg : GIdx D.host (D.mem u).A.T (D.w
 theorem cmp_mem_span u (w : D.what₂.places.Pl) (hg : GIdx D.host (D.mem u).A.T (D.what₂.places.resChar w))
     (x : ((D.fm u).lat 0).V) :
     c.cmp u w hg x ∈ Submodule.span (D.gat u w hg).Kf ((D.gat u w hg).M : Set (D.gat u w hg).Fn) := by
-  have hx : x ∈ Submodule.span D.what₂.LL (((D.fm u).lat 0).L : Set ((D.fm u).lat 0).V) := by
-    rw [((D.fm u).lat_good 0).2.2]; trivial
-  induction hx using Submodule.span_induction with
+  induction (show x ∈ Submodule.span D.what₂.LL (((D.fm u).lat 0).L : Set ((D.fm u).lat 0).V) from by simp [((D.fm u).lat_good 0).2.2]) using Submodule.span_induction with
   | mem y hy =>
     apply Submodule.subset_span
     rw [← c.cmp_M u w hg]
@@ -261,13 +259,11 @@ theorem yvRat_of_valRat (h : ValRat c) (u : D.what₂.Word) (w : D.what₂.place
     (hg : GIdx D.host (D.mem u).A.T (D.what₂.places.resChar w)) (v : Fin (D.gat u w hg).P.nV) :
     ∃ yL : ((D.fm u).lat 0).V →ₗ[D.what₂.LL] ((D.fm u).lat 0).V,
       ∀ x, (D.gat u w hg).yv v (c.cmp u w hg x) = c.cmp u w hg (yL x) := by
-  have hex : ∀ x, ∃ y, c.cmp u w hg y = yK (D.gat u w hg) v (c.cmp u w hg x) := by
-    intro x
-    rw [yK_apply]
-    refine (range_cmp c h u w hg _).2 ⟨yv_span (D.gat u w hg) v _ (cmp_mem_span c u w hg x) D, ?_⟩
-    exact (ratFn_iff _ _ _).2 (yv_rat _ _ v _ ((ratFn_iff _ _ _).1 (ValRat.all c h u w hg x)))
-  exact ⟨descOp (c.embW u w hg) (c.cmp u w hg) (c.cmp_smul u w hg) (cmp_inj c u w hg) (yK (D.gat u w hg) v) hex,
+  refine ⟨descOp (c.embW u w hg) (c.cmp u w hg) (c.cmp_smul u w hg) (cmp_inj c u w hg) (yK (D.gat u w hg) v) (fun x => ?_),
     fun x => by rw [descOp_spec, yK_apply]⟩
+  rw [yK_apply]
+  refine (range_cmp c h u w hg _).2 ⟨yv_span (D.gat u w hg) v _ (cmp_mem_span c u w hg x) D, ?_⟩
+  exact (ratFn_iff _ _ _).2 (yv_rat _ _ v _ ((ratFn_iff _ _ _).1 (ValRat.all c h u w hg x)))
 
 end Rec
 

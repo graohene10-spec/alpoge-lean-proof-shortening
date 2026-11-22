@@ -94,12 +94,8 @@ theorem eta_datumOf (hT : InstanceCompatible X K Ce Del h0) : (datumOf D L Del h
 
 theorem ins_eq (hT : InstanceCompatible X K Ce Del h0) : ins (baseOf D L) K Ce = insOf X := by
   have h1 : (bsH : G.HH D → G.HH D → G.HH D) = X.bs := funext fun h => funext fun t => (hT.bs h t).symm
-  have h2 : (fun p n' TT a b => sInf (Loc.kapISet (baseOf D L) K p n' TT a b)) = X.kapI := by
-    funext p n' TT a b
-    exact (hT.kap p n' TT a b).symm
-  have h3 : (fun p : ℕ => ⌈Ce * ((baseOf D L).R.f : ℝ) * ((baseOf D L).R.k : ℝ) ^ 2 * Real.logb p (baseOf D L).sc.a⌉₊) = X.ep := by
-    funext p
-    exact (hT.ep p).symm
+  have h2 : (fun p n' TT a b => sInf (Loc.kapISet (baseOf D L) K p n' TT a b)) = X.kapI := funext fun p => funext fun n' => funext fun TT => funext fun a => funext fun b => (hT.kap p n' TT a b).symm
+  have h3 : (fun p : ℕ => ⌈Ce * ((baseOf D L).R.f : ℝ) * ((baseOf D L).R.k : ℝ) ^ 2 * Real.logb p (baseOf D L).sc.a⌉₊) = X.ep := funext fun p => (hT.ep p).symm
   unfold ins
   rw [h2, h3]
   show Ins.mk bsH _ _ = _
@@ -153,16 +149,12 @@ theorem log_DGamM_le : Real.log (DGamM N : ℝ) ≤ 12 * N.R.f * N.Nm * Real.log
   have h1 := log_minkM_le_two (2 * N.R.f * N.Nm)
   have e : ((2 * N.R.f * N.Nm : ℕ) : ℝ) = 2 * ((N.R.f : ℝ) * N.Nm) := by push_cast; ring
   rw [e] at h1
-  have e2 : (2 : ℝ) * (2 * ((N.R.f : ℝ) * N.Nm)) = 2 * 2 * ((N.R.f : ℝ) * N.Nm) := by ring
-  have h2 : Real.log (2 * (2 * ((N.R.f : ℝ) * N.Nm))) = Real.log 2 + Real.log 2 + Real.log ((N.R.f : ℝ) * N.Nm) := by
-    rw [e2, Real.log_mul (by norm_num) (by linarith), Real.log_mul (by norm_num) (by norm_num)]
-  have h3 : Real.log 2 ≤ Real.log ((N.R.f : ℝ) * N.Nm) := Real.log_le_log (by norm_num) hy
-  rw [h2] at h1
-  have h4 : 2 * (2 * ((N.R.f : ℝ) * N.Nm)) * (Real.log 2 + Real.log 2 + Real.log ((N.R.f : ℝ) * N.Nm)) ≤
-      2 * (2 * ((N.R.f : ℝ) * N.Nm)) * (3 * Real.log ((N.R.f : ℝ) * N.Nm)) :=
-    mul_le_mul_of_nonneg_left (by linarith) (by linarith)
+  have hlog : Real.log (2 * (2 * ((N.R.f : ℝ) * N.Nm))) ≤ 3 * Real.log ((N.R.f : ℝ) * N.Nm) := by
+    rw [Real.log_mul (by norm_num) (by linarith), Real.log_mul (by norm_num) (by linarith)]
+    linarith [Real.log_le_log (by norm_num : (0 : ℝ) < 2) hy]
   calc Real.log (DGamM N : ℝ)
-      ≤ 2 * (2 * ((N.R.f : ℝ) * N.Nm)) * (3 * Real.log ((N.R.f : ℝ) * N.Nm)) := h1.trans h4
+      ≤ 2 * (2 * ((N.R.f : ℝ) * N.Nm)) * Real.log (2 * (2 * ((N.R.f : ℝ) * N.Nm))) := h1
+    _ ≤ 2 * (2 * ((N.R.f : ℝ) * N.Nm)) * (3 * Real.log ((N.R.f : ℝ) * N.Nm)) := mul_le_mul_of_nonneg_left hlog (by positivity)
     _ = 12 * N.R.f * N.Nm * Real.log ((N.R.f : ℝ) * N.Nm) := by ring
 
 variable {D : D7} {L : SizeData₂ D} {Del h0 : ℕ}
@@ -328,17 +320,12 @@ theorem isInert_iff (p : ℕ) :
 
 theorem sum_lifts (m : ℕ) (F : ℕ → ℝ) : ∑ j : Fin m, F (j.1 + 1) = ∑ j ∈ Finset.Icc 1 m, F j := by
   rw [Fin.sum_univ_eq_sum_range (fun j => F (j + 1)) m]
-  refine Finset.sum_bij (fun j _ => j + 1) ?_ ?_ ?_ ?_
-  · intro j hj
-    have := Finset.mem_range.1 hj
-    exact Finset.mem_Icc.2 ⟨by omega, by omega⟩
-  · intro a _ b _ h
-    omega
-  · intro b hb
-    obtain ⟨h1, h2⟩ := Finset.mem_Icc.1 hb
-    exact ⟨b - 1, Finset.mem_range.2 (by omega), by omega⟩
-  · intro _ _
-    rfl
+  refine Finset.sum_bij (fun j _ => j + 1)
+    (fun j hj => Finset.mem_Icc.2 ⟨by omega, Nat.succ_le_of_lt (Finset.mem_range.1 hj)⟩)
+    (fun a _ b _ h => by omega) ?_ (fun _ _ => rfl)
+  intro b hb
+  obtain ⟨h1, h2⟩ := Finset.mem_Icc.1 hb
+  exact ⟨b - 1, Finset.mem_range.2 (by omega), by omega⟩
 
 variable {N}
 

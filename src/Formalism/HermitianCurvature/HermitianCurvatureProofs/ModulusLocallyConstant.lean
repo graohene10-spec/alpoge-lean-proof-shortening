@@ -60,9 +60,7 @@ theorem reps_nonempty {L₁ L₂ : AddSubgroup K} {S : Finset K} (hS : IsReps S 
 
 theorem ringInv_eq {z a : K} (h : z * a = 1) : Ring.inverse z = a := by
   have hz : IsUnit z := IsUnit.of_mul_eq_one a h
-  calc Ring.inverse z = Ring.inverse z * (z * a) := by rw [h, mul_one]
-    _ = (Ring.inverse z * z) * a := by ring
-    _ = a := by rw [Ring.inverse_mul_cancel z hz, one_mul]
+  rw [← mul_one (Ring.inverse z), ← h, ← mul_assoc, Ring.inverse_mul_cancel z hz, one_mul]
 
 theorem addChar_ne_zero {G : Type} [AddGroup G] (φ : AddChar G ℂ) (x : G) : φ x ≠ 0 := by
   intro h
@@ -74,15 +72,10 @@ theorem mem_mulR_iff {R : Subring K} {a b : K} (hab : a * b = 1) (x : K) :
   rw [AddSubgroup.mem_map]
   constructor
   · rintro ⟨r, hr, rfl⟩
-    have e : b * (AddMonoidHom.mulLeft a) r = r := by
-      rw [AddMonoidHom.coe_mulLeft]
-      linear_combination r * hab
-    rw [e]
-    exact hr
+    simpa [AddMonoidHom.coe_mulLeft, show b * (a * r) = r by linear_combination r * hab] using hr
   · intro h
     refine ⟨b * x, h, ?_⟩
-    rw [AddMonoidHom.coe_mulLeft]
-    linear_combination x * hab
+    simp [AddMonoidHom.coe_mulLeft, show a * (b * x) = x by linear_combination x * hab]
 
 theorem pow_mul_pow_one {p q : K} (hpq : p * q = 1) (m : ℕ) : p ^ m * q ^ m = 1 := by
   rw [← mul_pow, hpq, one_pow]
@@ -522,8 +515,7 @@ theorem smallUnits : Formalism.FourierDecayAlt.A6.SmallUnits := by
   have hpq : (ϖ : K) * ((ϖ⁻¹ : Kˣ) : K) = 1 := ϖ.mul_inv
   obtain ⟨m, hm⟩ := small hD hQ hpq hp hex hV
   refine ⟨ϖ ^ m, hm _ ?_⟩
-  rw [Units.val_pow_eq_pow_val, mul_comm, pow_mul_pow_one hpq]
-  exact R.one_mem
+  simp [Units.val_pow_eq_pow_val, mul_comm, pow_mul_pow_one hpq]
 
 theorem compactOpenChoice : Formalism.FourierDecayAlt.A6.LatChoice := by
   intro K _ _ _ R ψ hD hQ

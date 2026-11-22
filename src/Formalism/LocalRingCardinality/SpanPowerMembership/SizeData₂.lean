@@ -231,8 +231,7 @@ theorem scale_w''_bounds (sc : Scale) (n : ℕ) (hn : 1 ≤ n) : 0 ≤ sc.w'' n 
   rw [e]
   refine ⟨by positivity, ?_⟩
   rw [div_le_iff₀ (by positivity)]
-  have h1 : (1 : ℝ) ≤ n * sc.X' := one_le_mul_of_one_le_of_one_le hn' hX
-  nlinarith
+  nlinarith [one_le_mul_of_one_le_of_one_le hn' hX]
 
 theorem exampleScale_pow_le_level (m T : ℕ) (hm : m = 2) (hT : 55 ≤ T) : sc0.b ^ ((m : ℝ) / 2) ≤ (T : ℝ) := by
   subst hm

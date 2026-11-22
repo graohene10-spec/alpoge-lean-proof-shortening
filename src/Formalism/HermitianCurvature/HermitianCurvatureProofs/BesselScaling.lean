@@ -37,10 +37,8 @@ def scaleG (D : RealPlaceData k r Wp Wq) (c : ℝ≥0) (hc : 0 < c) : RealPlaceD
 
 theorem iteratedDeriv_two_const_mul (c : ℂ) (f : ℝ → ℂ) :
     iteratedDeriv 2 (fun x => c * f x) = fun x => c * iteratedDeriv 2 f x := by
-  have h2 : ∀ g : ℝ → ℂ, iteratedDeriv 2 g = deriv (deriv g) := by
-    intro g
-    rw [iteratedDeriv_succ, iteratedDeriv_one]
-  rw [h2, h2, deriv_const_mul_field', deriv_const_mul_field']
+  rw [iteratedDeriv_succ, iteratedDeriv_one, deriv_const_mul_field', deriv_const_mul_field']
+  rw [iteratedDeriv_succ, iteratedDeriv_one]
 
 theorem oneMinusDD_const_mul (c : ℂ) (h : ℝ → ℝ → ℂ) (t₁ t₂ : ℝ) :
     oneMinusDD (fun a b => c * h a b) t₁ t₂ = c * oneMinusDD h t₁ t₂ := by

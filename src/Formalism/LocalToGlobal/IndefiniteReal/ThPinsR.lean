@@ -172,13 +172,11 @@ theorem chiW_val {μ0 : T0} (hL : R.toLevCh.Is μ0) (t : T0) (P : Pl D.host.E) (
     (x : (AE D)ˣ) (hx : (x : AE D) = Formalism.L2.JoinChr.locE D e (Formalism.L2.Host.unif P : D.host.Eˣ)) :
     (((Lift.chrTh (R.toLevCh.mu t) R.eta ((i : ℕ) + 1)).2 x : Circle) : ℂ) =
       (((R.C.mu0 i * R.xiH t * R.C.eta⁻¹).val P : ℂˣ) : ℂ) := by
-  have h1 := (hL.mu0 i).2 P e he _ x hx
-  have h2 := (hL.xi t).2 P e he _ x hx
-  have h3 := hL.eta.2 P e he _ x hx
   show (((R.mu0 ((i : ℕ) + 1) x * R.xi t x * (R.eta x)⁻¹ : Circle)) : ℂ) =
     ((((R.C.mu0 i).locK P (Formalism.L2.Host.unif P) * (R.xiH t).locK P (Formalism.L2.Host.unif P) *
       (R.C.eta.locK P (Formalism.L2.Host.unif P))⁻¹ : ℂˣ)) : ℂ)
-  rw [Circle.coe_mul, Circle.coe_mul, Circle.coe_inv, h1, h2, h3, Units.val_mul, Units.val_mul, Units.val_inv_eq_inv_val]
+  rw [Circle.coe_mul, Circle.coe_mul, Circle.coe_inv, (hL.mu0 i).2 P e he _ x hx,
+    (hL.xi t).2 P e he _ x hx, hL.eta.2 P e he _ x hx, Units.val_mul, Units.val_mul, Units.val_inv_eq_inv_val]
 
 theorem ext_fin {V : HSp D} (c : CoefA V) (hc : c.Is) (f : Bridge.Gf V → c.W) {h : GA D V} (hh : h ∈ GfC V) :
     c.ext f h = f (fin V h) := by

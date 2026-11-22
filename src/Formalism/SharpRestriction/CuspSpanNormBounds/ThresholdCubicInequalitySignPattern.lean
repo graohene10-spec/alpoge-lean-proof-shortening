@@ -89,14 +89,11 @@ theorem gapC_le (D : D7) (C Cl : ℝ) (hCl : C ≤ Cl) (h25 : 0 < Cl) :
     C * D.R.k * (D.R.m : ℝ) ^ 3 ≤ Cl * D.R.k * (D.R.m : ℝ) ^ 4 := by
   have hk : (0 : ℝ) ≤ (D.R.k : ℝ) := by linarith [five_le_k D]
   have hm : (1 : ℝ) ≤ (D.R.m : ℝ) := by linarith [two_le_mR D]
-  have hm0 : (0 : ℝ) ≤ (D.R.m : ℝ) := by linarith
-  have hm3 : (0 : ℝ) ≤ (D.R.m : ℝ) ^ 3 := pow_nonneg hm0 3
+  have hm3 : (0 : ℝ) ≤ (D.R.m : ℝ) ^ 3 := pow_nonneg (by linarith) 3
   have h1 : C * (D.R.k : ℝ) * (D.R.m : ℝ) ^ 3 ≤ Cl * (D.R.k : ℝ) * (D.R.m : ℝ) ^ 3 :=
     mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hCl hk) hm3
-  have h2 : (D.R.m : ℝ) ^ 3 ≤ (D.R.m : ℝ) ^ 4 := by
-    calc (D.R.m : ℝ) ^ 3 = (D.R.m : ℝ) ^ 3 * 1 := by ring
-      _ ≤ (D.R.m : ℝ) ^ 3 * (D.R.m : ℝ) := mul_le_mul_of_nonneg_left hm hm3
-      _ = (D.R.m : ℝ) ^ 4 := by ring
+  have h2 : (D.R.m : ℝ) ^ 3 ≤ (D.R.m : ℝ) ^ 4 :=
+    pow_le_pow_right₀ hm (by norm_num)
   have h3 : (0 : ℝ) ≤ Cl * (D.R.k : ℝ) := mul_nonneg h25.le hk
   calc C * (D.R.k : ℝ) * (D.R.m : ℝ) ^ 3 ≤ Cl * (D.R.k : ℝ) * (D.R.m : ℝ) ^ 3 := h1
     _ ≤ Cl * (D.R.k : ℝ) * (D.R.m : ℝ) ^ 4 := mul_le_mul_of_nonneg_left h2 h3
@@ -239,7 +236,6 @@ theorem NonGenericAndKTwoTheorems.Hyp_of (D : D7) (large₂ : SizeData₂ D) (C'
   obtain ⟨a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a20, a21, a22,
     a23, a24, a25⟩ := hH
   obtain ⟨d1, d2, d3, d4, d5, d6, d7, d8, d9, d10, d11, d12, d13, d14⟩ := hD
-  have hnm : (0 : ℝ) ≤ (D.R.r : ℝ) * (D.R.m : ℝ) ^ 10 := by positivity
   have hgap := gapC_le D Cl Cl le_rfl a25
   have hG0 : 0 ≤ Cl * (D.R.k : ℝ) * (D.R.m : ℝ) ^ 3 := mul_nonneg (mul_nonneg a25.le (by positivity)) (by positivity)
   refine ⟨by linarith, ?_, ?_, ?_, a5.trans (sqrt_le_sq_nat _), ?_, D.sp.cm.cmUnram⟩
@@ -247,7 +243,7 @@ theorem NonGenericAndKTwoTheorems.Hyp_of (D : D7) (large₂ : SizeData₂ D) (C'
     fin_cases i
     · exact ⟨a12, a13⟩
     · exact ⟨a14, a15⟩
-  · exact fun τ => gap_all _ _ hG0 (fun i hi => lt_of_le_of_lt (by linarith) (a22 τ i hi))
+  · exact fun τ => gap_all _ _ hG0 (fun i hi => lt_of_le_of_lt (by linarith [show (0 : ℝ) ≤ (D.R.r : ℝ) * (D.R.m : ℝ) ^ 10 by positivity]) (a22 τ i hi))
   · have := (le_div_iff₀ a25).mp a11
     linarith
   · exact fun u => ⟨(a23 u).2, Nat.Coprime.mul_right
@@ -839,11 +835,9 @@ theorem LocalBesselAndTopKernel.NV_core (D : D7) (large₂ : SizeData₂ D) (C0 
   have hf : FiniteDimensional ℂ Wp := by
     obtain ⟨g, _, hU⟩ := hπ
     exact hU.2.1
-  have hσ' : IsDSHpk D.R.k D.R.rS (CayleySignature.eps48 D.R.k D.R.rS) (CayleySignature.lam48 D.R.k D.R.rS (v48 D τ) (b48 D τ)) σ := by
-    rw [lambda_highest_weight_eq, epsilon_signature_eq]; exact hσ
-  have hw' : IsLowUnitH D.R.k D.R.rS (CayleySignature.eps48 D.R.k D.R.rS) (CayleySignature.lam48 D.R.k D.R.rS (v48 D τ) (b48 D τ)) σ w := by
-    rw [lambda_highest_weight_eq, epsilon_signature_eq]; exact hw
-  have := h D.R.k D.R.rS z _ (uS D u τ) (v48 D τ) (b48 D τ) hSet hGap H σ hσ' Wp π hπ w hw' μG μS ν hG hS hQ
+  unfold IsRowsDS at hσ
+  rw [← lambda_highest_weight_eq, ← epsilon_signature_eq] at hσ hw
+  have := h D.R.k D.R.rS z _ (uS D u τ) (v48 D τ) (b48 D τ) hSet hGap H σ hσ Wp π hπ w hw μG μS ν hG hS hQ
   rw [psiS_eq]
   exact this
 
@@ -1586,9 +1580,9 @@ theorem S0.family_statements_all (At : ∀ x, Fm.x1 < x → ∀ i : Fm.Ix x, Ter
     (familyMassIdentity : AdmissibleBoundsFromSource.FamilyTwelfthHypothesis) (familyMassRatio : LocalBesselAndTopKernel.SecondSizeStatement Fm) (familyMassSecondLine : LocalBesselAndTopKernel.BesselFormLine Fm) (familyTheoremThreeBound : LocalBesselAndTopKernel.FamilyThirdTheoremHypothesis Fm C3)
     (iM1' : NonGenericAndKTwoTheorems.FamilyMassFirstHypothesis Fm) (iM2' : NonGenericAndKTwoTheorems.FamilyMassSecondHypothesis Fm) (iSW : LocalBesselAndTopKernel.LocalGenericDensity Fm) (familyMassExponential : NonGenericAndKTwoTheorems.FamilyMassLatticeBound Fm) :
     AdmissibleBoundsFromSource.ConclusionF1 Fm ⟨g.C0, g.Cg, g.cb, g.Cu, g.cT, g.CT⟩ ∧ FrobeniusProjectedBounds.ConclusionF2 Fm g.Cg g.cb g.Cu g.cT g.CT g.C0 := by
-  have hca' : ca.Ok g.Cg := hca
+  have hca' := hca
   obtain ⟨hA1, hA2, hA3, hcL, hcN, hCN, hCE, -⟩ := hca
-  have h71 : ∀ Cg cb Cu cT CT C0 : ℝ, FrobeniusProjectedBounds.ConclusionF1 Fm At Cg cb Cu cT CT C0 := fun Cg cb Cu cT CT C0 =>
+  have h71 (Cg cb Cu cT CT C0 : ℝ) : FrobeniusProjectedBounds.ConclusionF1 Fm At Cg cb Cu cT CT C0 :=
     s71a Cg cb Cu cT CT C0 ⟨under_b Fm pExp _ _ _ _ _ _ (fun _ _ h => h), under_b Fm familyVolumeLowerBound _ _ _ _ _ _ (fun _ _ h => h),
       under_b Fm pId _ _ _ _ _ _ (fun _ _ h => h)⟩
   obtain ⟨h27a, h27b, h27c, -, -, h27f, h27g⟩ :=
@@ -1599,11 +1593,10 @@ theorem S0.family_statements_all (At : ∀ x, Fm.x1 < x → ∀ i : Fm.Ix x, Ter
   have hN1 := familyGenericCountBound (UniformConstantsAndStatements.family_first_package_of_source Fm g a ca.C1 ca.C2 ca.A5 hCl hC' hA1 hC1 hA2 hA3 pExp p2a pMain s29n hB1 hB2 hB3
     h27b h27c h28')
   have hN2 := familyNongenericCountBound (UniformConstantsAndStatements.family_admissible_package_of_source Fm g a pExp pMain s29n hB1 hB2 hB3)
-  have h27 := s27a hGiv (LocalBesselAndTopKernel.family_first_package_of_source Fm At Cw Y Zl cN Vm _ _ _ _ _ _ _ _ _ _ settingGapConstant x₀ i₀ (by linarith) h48C pExp p2a pM pDec
+  refine ⟨s76 hGiv hca' hGam (AdmissibleBoundsFromSource.family_first_package_of_source Fm g ca pExp pId p2a familyVolumeLowerBound pIdG familyStandingLowerBound pAbs familyWeylLawBound familyMassIdentity hK2 hK3 h28 hN1 hN2
+    (s27a hGiv (LocalBesselAndTopKernel.family_first_package_of_source Fm At Cw Y Zl cN Vm _ _ _ _ _ _ _ _ _ _ settingGapConstant x₀ i₀ (by linarith) h48C pExp p2a pM pDec
     pDens pCnt pForm pArith pRk familySchurOrthogonality lWitt familyMassFirstBound weylLawBound iSW h26 h26b h07
-    (s48 familySettingGapBound (CayleySignature.theta_condition_family_of_linked Fm h30) familySchurSetting))
-  refine ⟨s76 hGiv hca' hGam (AdmissibleBoundsFromSource.family_first_package_of_source Fm g ca pExp pId p2a familyVolumeLowerBound pIdG familyStandingLowerBound pAbs familyWeylLawBound familyMassIdentity hK2 hK3 h28 hN1 hN2 h27
-    h27a h27b h27c h27f h27g), ?_⟩
+    (s48 familySettingGapBound (CayleySignature.theta_condition_family_of_linked Fm h30) familySchurSetting))) h27a h27b h27c h27f h27g), ?_⟩
   exact s71b ⟨hcL, hcN, hCN, hCE, hGam⟩
     ⟨under_b Fm pExp _ _ _ _ _ _ (fun _ _ h => h), under_b Fm p2a _ _ _ _ _ _ (fun _ _ h u u' Φ hS _ hs => h u u' Φ hS hs),
       FrobeniusProjectedBounds.injectivity_family_of_theorem Fm _ _ _ _ _ _ ca.C1 ca.C2 ca.A5 ca.cL hCl hC' hA1 hC1 hA2 hA3 h27b h27c h28,

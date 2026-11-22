@@ -46,8 +46,7 @@ theorem cnt_eq (o : Finset (Fin (D.nB j + D.r))) (i : D.ML) (l0 : Fin (D.nB j + 
 
 theorem cnt_zero (o : Finset (Fin (D.nB j + D.r))) (i : D.ML) (h : ∀ l, D.fk j o l ≠ i) :
     D.cnt j o i = 0 := by
-  unfold cnt
-  exact Finset.sum_eq_zero fun l _ => if_neg (h l)
+  simp [cnt, h]
 
 theorem cnt_le_one (o : Finset (Fin (D.nB j + D.r))) (i : D.ML) : D.cnt j o i ≤ 1 := by
   by_cases h : ∃ l, D.fk j o l = i
@@ -152,8 +151,7 @@ theorem PsiP_HomD {nc : ℕ} (col : Fin nc → MvPolynomial (Fin (D.nB j + D.r) 
     (hcol : ∀ k, col k ∈ PolK K D.r (fun i => if i ∈ occ k then 1 else 0)) :
     HomD (fun i => ∑ k, D.cnt j (occ k) i) (D.PsiP j col occ) := by
   unfold PsiP
-  refine HomD_prod _ _ _ fun k _ => ?_
-  exact HomD_rename (D.fk j (occ k)) (D.fk_inj j _) _ _ ((mem_PolK_iff _ _).mp (hcol k))
+  exact HomD_prod _ _ _ fun k _ => HomD_rename (D.fk j (occ k)) (D.fk_inj j _) _ _ ((mem_PolK_iff _ _).mp (hcol k))
 
 theorem PsiP_support {nc : ℕ} (col : Fin nc → MvPolynomial (Fin (D.nB j + D.r) × Fin D.r) K)
     (occ : Fin nc → Finset (Fin (D.nB j + D.r)))

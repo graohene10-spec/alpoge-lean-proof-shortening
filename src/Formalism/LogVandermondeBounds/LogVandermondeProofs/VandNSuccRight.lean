@@ -7,12 +7,10 @@ open Finset
 lemma anti_of_step (f : ℕ → ℝ) (N : ℕ) (h : ∀ i, i + 1 < N → f (i + 1) < f i) :
     ∀ i j, i < j → j < N → f j < f i := by
   intro i j hij hjN
-  induction j with
-  | zero => omega
-  | succ j ih =>
-    rcases Nat.lt_succ_iff_lt_or_eq.1 hij with h' | h'
-    · exact lt_trans (h j (by omega)) (ih h' (by omega))
-    · subst h'; exact h i hjN
+  refine Nat.le_induction (m := i + 1) (P := fun n _ => n < N → f n < f i) ?_ ?_ j (Nat.succ_le_of_lt hij) hjN
+  · exact fun hN => h i hN
+  · intro n hn ih hN
+    exact lt_trans (h n (by omega)) (ih (by omega))
 
 lemma gap_of_step (f : ℕ → ℝ) (N : ℕ) (h : ∀ i, i + 1 < N → 1 ≤ f (i + 1) - f i) :
     ∀ i j, i < j → j < N → 1 ≤ f j - f i := by

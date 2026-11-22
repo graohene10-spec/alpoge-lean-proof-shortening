@@ -15,8 +15,7 @@ lemma re_sub_le_re_of_mem_closedBall {z₀ w : ℂ} {r : ℝ} (hw : w ∈ Metric
 lemma norm_le_norm_add_of_mem_closedBall {z₀ w : ℂ} {r : ℝ} (hw : w ∈ Metric.closedBall z₀ r) : ‖w‖ ≤ ‖z₀‖ + r := by
   rw [Metric.mem_closedBall, dist_eq_norm] at hw
   calc ‖w‖ = ‖z₀ + (w - z₀)‖ := by rw [add_sub_cancel]
-    _ ≤ ‖z₀‖ + ‖w - z₀‖ := norm_add_le _ _
-    _ ≤ ‖z₀‖ + r := by linarith
+    _ ≤ ‖z₀‖ + r := by linarith [norm_add_le z₀ (w - z₀)]
 
 lemma norm_center_le (t : ℝ) : ‖(11 / 10 : ℂ) + t * I‖ ≤ 11 / 10 + |t| := by
   calc

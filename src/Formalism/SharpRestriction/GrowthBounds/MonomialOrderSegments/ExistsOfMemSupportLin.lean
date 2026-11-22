@@ -52,9 +52,7 @@ theorem preimage_TLset (j : Fin D.J) (m : Fin D.r) :
     (D.TLset j m).preimage D.iotaL D.iotaL_injective.injOn = D.Tset j m := by
   ext x
   rw [Finset.mem_preimage]
-  rcases x with b | t
-  · simp [iotaL, TLset, Tset, mb, mlab]
-  · simp [iotaL, TLset, Tset, mb, mlab]
+  rcases x with b | t <;> simp [iotaL, TLset, Tset, mb, mlab]
 
 theorem ph_rename_iotaL (p : ℕ) (G : MvPolynomial (D.OL × Fin D.r) K) :
     D.ph p (rename (Prod.map D.iotaL id) G) = G := by

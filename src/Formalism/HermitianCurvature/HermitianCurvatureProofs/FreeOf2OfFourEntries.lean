@@ -143,10 +143,8 @@ lemma gauss_entries (Fs dd ls l p t F : SlopeTestRemainingChoices S A) :
   simp only [d0_eq_diagonal, Matrix.mul_fin_two, mul_one, one_mul, mul_zero, zero_mul, add_zero, zero_add, mul_add, add_mul, mul_assoc]
 
 lemma lam_conj (l : SlopeTestRemainingChoices S A) : (!![1, 0; l, 1] : M2 (SlopeTestRemainingChoices S A))ᴴ = !![1, star l; 0, 1] := by
-  first
-  | (refine Matrix.ext fun i j => ?_
-     fin_cases i <;> fin_cases j <;> simp)
-  | (ext i j; fin_cases i <;> fin_cases j <;> simp)
+  refine Matrix.ext fun i j => ?_
+  fin_cases i <;> fin_cases j <;> simp
 
 lemma diag_conj (x y : SlopeTestRemainingChoices S A) : (!![x, 0; 0, y] : M2 (SlopeTestRemainingChoices S A))ᴴ = !![star x, 0; 0, star y] := by
   ext i j

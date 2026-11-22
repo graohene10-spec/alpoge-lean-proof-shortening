@@ -41,14 +41,11 @@ private theorem UpperTheory.Reformulated.B.Qk29.wtGe_mul {K : Type*} [NormedFiel
   apply IsUltrametricDist.norm_sum_le_of_forall_le_of_nonneg (Real.rpow_pos_of_pos hpi _).le
   intro p hp
   have hn : p.1 + p.2 = n := by simpa using hp
-  have h1 := hf p.1
-  have h2 := hg p.2
-  unfold UpperTheory.Reformulated.B.Qk29.MonoWtGe at h1 h2
   have he : a + b - UpperTheory.Reformulated.B.Qk29.dot n r =
       (a - UpperTheory.Reformulated.B.Qk29.dot p.1 r) + (b - UpperTheory.Reformulated.B.Qk29.dot p.2 r) := by
     rw [← hn, UpperTheory.Reformulated.B.Qk29.dot_add]; ring
   rw [he, Real.rpow_add hpi, norm_mul]
-  exact mul_le_mul h1 h2 (norm_nonneg _) (Real.rpow_pos_of_pos hpi _).le
+  exact mul_le_mul (by simpa [UpperTheory.Reformulated.B.Qk29.MonoWtGe] using hf p.1) (by simpa [UpperTheory.Reformulated.B.Qk29.MonoWtGe] using hg p.2) (norm_nonneg _) (Real.rpow_pos_of_pos hpi _).le
 
 theorem UpperTheory.Reformulated.B.Qk29.wtGe_prod.{u, v, w} :
     ∀ {K : Type u} [inst : NormedField K] {ι : Type v} [IsUltrametricDist K] {pi : ℝ},

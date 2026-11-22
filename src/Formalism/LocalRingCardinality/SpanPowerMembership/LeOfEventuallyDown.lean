@@ -121,17 +121,16 @@ theorem limsup_liminf_bounds {ε δ : ℝ} (hε0 : 0 < ε) (hε1 : ε < 1) (hδ 
     rw [Measure.addHaar_closedBall_mul lam X ht.le hr.le, ← mul_div_assoc, ENNReal.mul_div_mul_left]
     · exact (ENNReal.ofReal_pos.mpr (pow_pos ht _)).ne'
     · exact ENNReal.ofReal_ne_top
-  have hup : Tendsto (fun r => ENNReal.ofReal ((1 + ε) ^ finrank ℝ V) *
-      (nu (closedBall X ((1 + ε) * r)) / lam (closedBall X ((1 + ε) * r)))) (𝓝[>] 0)
-      (𝓝 (ENNReal.ofReal ((1 + ε) ^ finrank ℝ V) * nu.rnDeriv lam X)) :=
-    ENNReal.Tendsto.const_mul (hXt.comp (tendsto_mul_pos (by linarith))) (Or.inr ENNReal.ofReal_ne_top)
-  have hlo : Tendsto (fun r => ENNReal.ofReal ((1 - ε) ^ finrank ℝ V) *
-      (nu (closedBall X ((1 - ε) * r)) / lam (closedBall X ((1 - ε) * r)))) (𝓝[>] 0)
-      (𝓝 (ENNReal.ofReal ((1 - ε) ^ finrank ℝ V) * nu.rnDeriv lam X)) :=
-    ENNReal.Tendsto.const_mul (hXt.comp (tendsto_mul_pos (by linarith))) (Or.inr ENNReal.ofReal_ne_top)
-  have hev : ∀ᶠ r in 𝓝[>] (0 : ℝ), 0 < r ∧ r < δ := by
-    filter_upwards [self_mem_nhdsWithin, nhdsWithin_le_nhds (gt_mem_nhds hδ)] with r h0 h1
-    exact ⟨h0, h1⟩
+  have hconst (t : ℝ) (ht : 0 < t) :
+      Tendsto (fun r => ENNReal.ofReal (t ^ finrank ℝ V) *
+        (nu (closedBall X (t * r)) / lam (closedBall X (t * r)))) (𝓝[>] 0)
+        (𝓝 (ENNReal.ofReal (t ^ finrank ℝ V) * nu.rnDeriv lam X)) :=
+    ENNReal.Tendsto.const_mul (hXt.comp (tendsto_mul_pos ht)) (Or.inr ENNReal.ofReal_ne_top)
+  have hup := hconst (1 + ε) (by linarith)
+  have hlo := hconst (1 - ε) (by linarith)
+  have hev : ∀ᶠ r in 𝓝[>] (0 : ℝ), 0 < r ∧ r < δ :=
+    Filter.Eventually.and (self_mem_nhdsWithin : ∀ᶠ r in 𝓝[>] (0 : ℝ), 0 < r)
+      (nhdsWithin_le_nhds (gt_mem_nhds hδ) : ∀ᶠ r in 𝓝[>] (0 : ℝ), r < δ)
   refine ⟨nu.rnDeriv lam X, hXf.ne, ?_, ?_⟩
   · refine (Filter.limsup_le_limsup ?_).trans hup.limsup_eq.le
     filter_upwards [hev] with r hr

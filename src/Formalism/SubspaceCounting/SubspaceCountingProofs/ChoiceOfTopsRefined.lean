@@ -36,11 +36,9 @@ theorem w_union {S R a b : Finset ℕ} (δ : ℝ) (h : Disjoint S R) (ha : a ⊆
     δ ^ (a ∪ b).card * (1 - δ) ^ ((S ∪ R).card - (a ∪ b).card) =
       (δ ^ a.card * (1 - δ) ^ (S.card - a.card)) * (δ ^ b.card * (1 - δ) ^ (R.card - b.card)) := by
   have hab : Disjoint a b := disjoint_of_subset_left ha (disjoint_of_subset_right hb h)
-  rw [card_union_of_disjoint hab, card_union_of_disjoint h]
   have h1 := card_le_card ha
   have h2 := card_le_card hb
-  rw [show S.card + R.card - (a.card + b.card) = (S.card - a.card) + (R.card - b.card) by omega,
-    pow_add, pow_add]
+  rw [card_union_of_disjoint hab, card_union_of_disjoint h, show S.card + R.card - (a.card + b.card) = (S.card - a.card) + (R.card - b.card) by omega, pow_add, pow_add]
   ring
 
 theorem prob_and_eq_mul_of_disjoint (S R : Finset ℕ) (δ : ℝ) (h : Disjoint S R) (A B : Finset ℕ → Prop) :
@@ -220,8 +218,7 @@ theorem cell_eq {r u s c : ℕ} (hc : 1 ≤ c) :
   ring
 
 theorem cell_card {r u s c : ℕ} (hc : 1 ≤ c) : (cell r u s c).card = u := by
-  rw [cell_eq hc, Nat.card_Ico]
-  omega
+  rw [cell_eq hc, Nat.card_Ico, Nat.add_sub_cancel_left]
 
 theorem cell_sub_tile {r u s c : ℕ} (hc : 1 ≤ c) (hc' : c ≤ 6 * r + 1) :
     cell r u s c ⊆ tile r u s := by

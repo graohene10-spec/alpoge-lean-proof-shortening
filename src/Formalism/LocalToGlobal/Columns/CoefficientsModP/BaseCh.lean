@@ -43,9 +43,7 @@ theorem bc_VV_eq (K : Type) [Field K] (lam : ι → DomWeight n) :
     VV K lam = Submodule.span K (nbGen fun τ => bideterminantsOfShape K (lam τ).natW) := by
   have h : (fun τ => nablaSq K n (lam τ)) = fun τ => Submodule.span K (bideterminantsOfShape K (lam τ).natW) := by
     funext τ
-    unfold nablaSq
-    rw [Formalism.GradedWeylDivisibility.standardMonomialSpanDomain K n n (lam τ).natW]
-    rfl
+    simpa [nablaSq, bideterminantsOfShape] using Formalism.GradedWeylDivisibility.standardMonomialSpanDomain K n n (lam τ).natW
   rw [VV, h, nb_tensorLat_span]
 
 theorem bc_gen_bid (lam : ι → DomWeight n) :
@@ -167,8 +165,7 @@ theorem bc_map_fockS {K K' : Type} [Field K] [StarRing K] [Field K'] [StarRing K
     (hj : ∀ x, j (star x) = star (j x)) {σ : Type} (f g : MvPolynomial σ K) :
     fockS (MvPolynomial.map j f) (MvPolynomial.map j g) = j (fockS f g) := by
   rw [fockS_eq_sum _ _ f.support (support_map_subset j f), fockS, map_sum]
-  refine Finset.sum_congr rfl fun m _ => ?_
-  rw [map_mul, map_mul, hj, coeff_map, coeff_map, map_natCast]
+  exact Finset.sum_congr rfl fun m _ => by rw [map_mul, map_mul, hj, coeff_map, coeff_map, map_natCast]
 
 theorem bc_map_extNorm {K K' : Type} [Field K] [StarRing K] [Field K'] [StarRing K'] (j : K →+* K')
     (hj : ∀ x, j (star x) = star (j x)) {ι : Type} [Fintype ι] {n : ℕ} (lam : ι → DomWeight n) :
@@ -235,8 +232,7 @@ theorem bc_osmul_map_mem_iff {σ : Type} (N : Submodule (𝓞 K') (MvPolynomial 
 
 theorem bc_map_osmul_mem {σ : Type} (N : Submodule (𝓞 K') (MvPolynomial σ K')) (r : 𝓞 K) {F : MvPolynomial σ K}
     (h : MvPolynomial.map j F ∈ N) : MvPolynomial.map j (r • F) ∈ N := by
-  rw [bc_map_osmul]
-  exact N.smul_mem _ h
+  exact (bc_osmul_map_mem_iff j N r F).1 (N.smul_mem _ h)
 
 def bcV {n : ℕ} (x : Fin n → K) : Fin n → K' := fun a => j (x a)
 
@@ -273,16 +269,14 @@ theorem bc_bcLat_span {n : ℕ} (S : Set (Fin n → K)) :
 theorem bc_bcPol_span {σ : Type} (S : Set (MvPolynomial σ K)) :
     bcPol j (Submodule.span (𝓞 K) S) =
       Submodule.span (𝓞 K') ((fun F : MvPolynomial σ K => MvPolynomial.map j F) '' S) := by
-  apply le_antisymm
-  · unfold bcPol
-    rw [Submodule.span_le]
+  refine le_antisymm ?_ (Submodule.span_mono (Set.image_mono Submodule.subset_span))
+  · simp only [bcPol, Submodule.span_le]
     rintro _ ⟨x, hx, rfl⟩
     induction hx using Submodule.span_induction with
     | mem x hx => exact Submodule.subset_span ⟨x, hx, rfl⟩
     | zero => simp only [map_zero]; exact Submodule.zero_mem _
     | add x y _ _ hx hy => simp only [map_add]; exact Submodule.add_mem _ hx hy
     | smul r x _ hx => exact bc_map_osmul_mem j _ r hx
-  · exact Submodule.span_mono (Set.image_mono Submodule.subset_span)
 
 theorem baseChangeTauLattice_holds : BaseChangeTauLat := by
   intro E K K' _ _ _ _ _ _ j ι n emb τ L
@@ -437,13 +431,10 @@ end LocBC
 
 theorem nabDelBaseChange_of (h1 : NabIndep) (h2 : DelIndep) (h3 : NabDelLoc) : NabDelBaseChange := by
   intro K K' _ _ _ _ j ι _ n lam M hM
+  obtain ⟨e1, e2⟩ := baseChangeStandard_holds K K' j ι n lam
   constructor
-  · exact bc_transLat j lam _ _ (baseChangeStandard_holds K K' j ι n lam).1 M hM
-      (fun w' B B' hB hB' F => h1 K' ι n lam w' _ B B' hB hB' F)
-      (fun w B hB => (h3 K ι n lam M hM w B hB).1)
-  · exact bc_transLat j lam _ _ (baseChangeStandard_holds K K' j ι n lam).2 M hM
-      (fun w' B B' hB hB' F => h2 K' ι n lam w' _ B B' hB hB' F)
-      (fun w B hB => (h3 K ι n lam M hM w B hB).2)
+  · exact bc_transLat j lam _ _ e1 M hM (fun w' B B' hB hB' F => h1 K' ι n lam w' _ B B' hB hB' F) (fun w B hB => (h3 K ι n lam M hM w B hB).1)
+  · exact bc_transLat j lam _ _ e2 M hM (fun w' B B' hB hB' F => h2 K' ι n lam w' _ B B' hB hB' F) (fun w B hB => (h3 K ι n lam M hM w B hB).2)
 
 section Descent
 

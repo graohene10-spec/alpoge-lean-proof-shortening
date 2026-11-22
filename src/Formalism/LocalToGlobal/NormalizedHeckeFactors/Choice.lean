@@ -61,14 +61,12 @@ def avD (D : D7) (Av : TwAv D) (i : D.ntw.Tw) : Finset (PlE D.host) :=
 theorem avRec_subset_avD (D : D7) (Av : TwAv D) (i : D.ntw.Tw) : AvRec D ⊆ avD D Av i := by
   classical
   intro v hv
-  unfold avD
-  exact Finset.mem_union_left _ hv
+  simpa [avD] using Finset.mem_union_left _ hv
 
 theorem av_subset_avD (D : D7) (Av : TwAv D) (i : D.ntw.Tw) : Av i ⊆ avD D Av i := by
   classical
   intro v hv
-  unfold avD
-  exact Finset.mem_union_right _ hv
+  simpa [avD] using Finset.mem_union_right _ hv
 
 def placesOverQ0 (D : D7) : Finset (PlE D.host) :=
   (placesOver_finite_av D.host.E (AbsolutelyIrreducibleSpan.q0 D) (Host.leastSplitAuxiliaryPrimeThetaChain_spec D).1.ne_zero).toFinset
@@ -126,12 +124,9 @@ theorem places_over_q0_subset_avD (D : D7) (i : D.ntw.Tw) : placesOverQ0 D ⊆ a
 
 theorem places_over_q0_subset_avRec (D : D7) : placesOverQ0 D ⊆ AvRec D := by
   intro v hv
-  rw [mem_places_over_q0] at hv
   rw [mem_avRec]
-  refine ⟨AbsolutelyIrreducibleSpan.q0 D, ?_, hv⟩
-  have hq : q0Av D = AbsolutelyIrreducibleSpan.q0 D := rfl
-  have hne : q0Av D ≠ 0 := hq ▸ (Host.leastSplitAuxiliaryPrimeThetaChain_spec D).1.ne_zero
-  rw [← hq]
+  refine ⟨q0Av D, ?_, (mem_places_over_q0 v).1 hv⟩
+  have hne : q0Av D ≠ 0 := (Host.leastSplitAuxiliaryPrimeThetaChain_spec D).1.ne_zero
   unfold avPrimes
   simp [hne]
 
@@ -257,8 +252,7 @@ theorem twGoodAt_of_tied (hT : NChoiceTied D C I Av) (hconds : Formalism.MainNot
     (hset : ∀ w, TwistedAt D w → BlochKatoReduction.Gen.SetHyp (BlochKatoReduction.bk0 D) (C.twI w))
     (hI : ∀ w, TwistedAt D w → I.Ok (C.twI w)) : TwGoodAt D C I := by
   intro w hw
-  exact ⟨hI w hw, expGood_anti (avRec_subset_avD D Av _)
-    (hT.good w hw (And.intro hconds (And.intro (hW1 w hw) (And.intro (hset w hw) (hI w hw)))))⟩
+  exact ⟨hI w hw, expGood_anti (avRec_subset_avD D Av _) (hT.good w hw ⟨hconds, hW1 w hw, hset w hw, hI w hw⟩)⟩
 
 open Classical in
 
@@ -313,12 +307,8 @@ theorem exists_tied_choice (D : D7) (I : TwIn D) (Av : TwAv D) (twI : D.what₂.
       ∀ w, ExpHyp D I (twI w) → ExpGood D I (avD D Av (twI w)) (twI w) ⟨Q w, k' w, BlochKatoReduction.Gen.psiAt (sd w) (psi' w)⟩ := by
   refine ⟨fun w => (expPick D I (avD D Av (twI w)) (twI w)).1, fun w => (expPick D I (avD D Av (twI w)) (twI w)).2.1,
     fun w => BlochKatoReduction.Gen.psiAt (sd w) (expPick D I (avD D Av (twI w)) (twI w)).2.2, fun w w' h => ?_, fun w hE => ?_⟩
-  · unfold twPack
-    rw [psiAt_psiAt, psiAt_psiAt]
-    exact congrArg (fun i => (⟨i, expPick D I (avD D Av i) i⟩ : TwPack D)) h
-  · have hG := expPick_good D I (avD D Av (twI w)) (twI w) hE
-    rw [psiAt_psiAt]
-    exact hG
+  · simpa [twPack, psiAt_psiAt] using congrArg (fun i => (⟨i, expPick D I (avD D Av i) i⟩ : TwPack D)) h
+  · simpa [psiAt_psiAt] using expPick_good D I (avD D Av (twI w)) (twI w) hE
 
 theorem sidePl_conj (D : D7) (hstar : ∀ x : D.LL0, star (x : D.what₂.LL) ∈ D.LL0) (w : D.what₂.places.Pl)
     (i : D.ntw.Tw) (s : Bool) (h : SidePl D w i s) : SidePl D (D.what₂.places.conj w) i (!s) := by
@@ -440,11 +430,9 @@ theorem twInOf_ok_iff (D : D7) (E : IntegralHeckeForms.XD D) (N0 : D.ntw.Tw → 
     exact ⟨hF j hj b, _, hB j hj b⟩
   · intro h
     refine ⟨fun j hj b => (h j hj b).1, fun j hj b => ?_⟩
-    have hx := (h j hj b).2
-    show IntegralHeckeForms.BasisOf D.nexp i j b (IntegralHeckeForms.SgJ D.nexp E i j b)
-      (if h : ∃ S, IntegralHeckeForms.BasisOf D.nexp i j b (IntegralHeckeForms.SgJ D.nexp E i j b) S then h.choose else ∅)
-    rw [dif_pos hx]
-    exact hx.choose_spec
+    change IntegralHeckeForms.BasisOf D.nexp i j b (IntegralHeckeForms.SgJ D.nexp E i j b) (if h : ∃ S, IntegralHeckeForms.BasisOf D.nexp i j b (IntegralHeckeForms.SgJ D.nexp E i j b) S then h.choose else ∅)
+    rw [dif_pos (h j hj b).2]
+    exact (h j hj b).2.choose_spec
 
 theorem twInAll_ok_iff (D : D7) (N0 : D.ntw.Tw → ℕ) (i : D.ntw.Tw) :
     (twInAll D N0).Ok i ↔ ∀ j ∈ Finset.Icc 1 D.R.m, ∀ b : Bool,
@@ -529,13 +517,11 @@ theorem th_all_fg (i : D.ntw.Tw) (j : ℕ) (b : Bool) :
     ((D.nexp.MtLat_fg i j b 0 ∅ 1).map _).restrictScalars
   let ι : D.nexp.Fm i j b →ₗ[D.ntw.O i] D.ntw.Ok i 0 ⊗[D.ntw.O i] D.nexp.Fm i j b :=
     TensorProduct.mk (D.ntw.O i) (D.ntw.Ok i 0) (D.nexp.Fm i j b) 1
-  have hιe : ι = ((Algebra.linearMap (D.ntw.O i) (D.ntw.Ok i 0)).rTensor (D.nexp.Fm i j b)) ∘ₗ
-      (TensorProduct.lid (D.ntw.O i) (D.nexp.Fm i j b)).symm.toLinearMap := by
-    ext x; simp [ι]
   have hι : Function.Injective ι := by
-    rw [hιe]
-    exact (Module.Flat.rTensor_preserves_injective_linearMap _ (D.ntw.Ok_inj i 0)).comp
-      (TensorProduct.lid (D.ntw.O i) (D.nexp.Fm i j b)).symm.injective
+    simpa [ι, Function.Injective] using
+      (Module.Flat.rTensor_preserves_injective_linearMap
+        (Algebra.linearMap (D.ntw.O i) (D.ntw.Ok i 0)) (D.ntw.Ok_inj i 0)).comp
+        (TensorProduct.lid (D.ntw.O i) (D.nexp.Fm i j b)).symm.injective
   refine Submodule.fg_of_fg_map_injective ι hι (Submodule.FG.of_le hN ?_)
   rw [IntegralHeckeForms.Th, Submodule.map_span, Submodule.span_le]
   rintro _ ⟨_, ⟨a, ha, rfl⟩, rfl⟩
@@ -574,11 +560,9 @@ theorem exists_basisOf_of_fg (i : D.ntw.Tw) (j : ℕ) (b : Bool) (Sg : Set (D.ne
     simp
   refine ⟨Finset.univ.image f, ?_, ?_, ?_⟩
   · rw [hS]; rintro _ ⟨k, rfl⟩; exact (a k).2
-  · have h1 : LinearIndepOn (D.ntw.O i) g (Set.range f) := by
-      rw [linearIndepOn_range_iff hf, hgf]
-      exact bs.linearIndependent.map' M.subtype M.ker_subtype
-    rw [← hS] at h1
-    exact h1
+  · change LinearIndepOn (D.ntw.O i) g (↑(Finset.univ.image f))
+    rw [hS, linearIndepOn_range_iff hf, hgf]
+    exact bs.linearIndependent.map' M.subtype M.ker_subtype
   · change Submodule.span (D.ntw.O i) (g '' _) = M
     rw [hS, ← Set.range_comp, hgf, Set.range_comp, ← Submodule.map_span, bs.span_eq, Submodule.map_top,
       Submodule.range_subtype]

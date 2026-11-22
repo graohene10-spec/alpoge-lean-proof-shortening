@@ -112,8 +112,7 @@ theorem image_plOver {g : ℕ} (hg : g.Prime) :
     refine ⟨v.isPrime, ⟨?_⟩⟩
     refine (span_isMaximal hg).eq_of_le (Ideal.comap_ne_top _ v.isPrime.ne_top) ?_
     rw [Ideal.span_singleton_le_iff_mem, Ideal.mem_comap]
-    have hv' : ((g : ℕ) : 𝓞 K) ∈ v.asIdeal := hv
-    simpa using hv'
+    simpa [plOver] using hv
   · rintro ⟨hPp, hPl⟩
     have hgP : ((g : ℕ) : 𝓞 K) ∈ P := by
       have h1 : (g : ℤ) ∈ P.under ℤ := hPl.over ▸ Ideal.mem_span_singleton_self _
@@ -162,8 +161,7 @@ section Record
 variable (D : D7)
 
 theorem finrank_hostF_eq : Module.finrank ℚ D.host.F = D.R.f := by
-  rw [D.host.der.finrank_F]
-  rfl
+  exact D.host.der.finrank_F
 
 theorem typedPl_eq : typedPl D = plOver D.host.F (D.host.g 0) ∪ plOver D.host.F (D.host.g 1) := rfl
 

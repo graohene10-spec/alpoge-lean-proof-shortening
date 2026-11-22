@@ -595,8 +595,7 @@ theorem HomD.X_mul (j0 : Fin N) (a : Fin n) (hF : HomD de F) :
   intro m hm i
   rw [MvPolynomial.support_X_mul] at hm
   obtain ⟨m', hm', rfl⟩ := Finset.mem_map.1 hm
-  simp only [addLeftEmbedding_apply]
-  rw [multideg_single_add, hF m' hm' i]
+  simp only [addLeftEmbedding_apply, multideg_single_add, hF m' hm' i]
 
 theorem wedgeR_hom (j0 : Fin N) (K : Finset (Fin n) → MvPolynomial (Fin N × Fin n) R) (hK : ∀ J, HomD de (K J))
     (J : Finset (Fin n)) : HomD (fun i => (if i = j0 then 1 else 0) + de i) (wedgeR (letVec R j0) K J) := by
@@ -707,15 +706,10 @@ theorem column_height_le_used_count {N r : ℕ} {LL : Letters (Fin N)} {d : Fin 
   induction k with
   | zero =>
     intro hk
-    have h0 : (⟨0, hk⟩ : Fin (N + 1)) = 0 := rfl
-    rw [h0, P.zero]
     have h1 : colH (0 : Fin r → ℤ) c = 0 := by
-      unfold colH
-      rw [Finset.card_eq_zero, Finset.filter_eq_empty_iff]
-      intro m _
-      simp only [Pi.zero_apply]
-      omega
-    omega
+      simp [colH, show ¬ c ≤ 0 by omega]
+    rw [show (⟨0, hk⟩ : Fin (N + 1)) = 0 from rfl, P.zero, h1]
+    exact Nat.zero_le _
   | succ k ih =>
     intro hk
     have hlt : k < N := by omega
@@ -757,11 +751,8 @@ theorem column_height_eq_rank_nonpos {N r : ℕ} {LL : Letters (Fin N)} {d : Fin
   induction k with
   | zero =>
     intro hk
-    have h0 : (⟨0, hk⟩ : Fin (N + 1)) = 0 := rfl
-    rw [h0, P.zero]
-    unfold colH
-    rw [Finset.filter_true_of_mem (fun m _ => by simpa using hc)]
-    simp
+    rw [show (⟨0, hk⟩ : Fin (N + 1)) = 0 from rfl, P.zero]
+    simp [colH, hc]
   | succ k ih =>
     intro hk
     have hlt : k < N := by omega
@@ -1323,9 +1314,7 @@ theorem multideg_single (l : ι) (c : Fin r) (i : ι) :
       intro hh; exact hb (Prod.mk.inj hh).2.symm
     · intro hc; exact absurd (Finset.mem_univ c) hc
   · rw [if_neg h]
-    refine Finset.sum_eq_zero fun b _ => ?_
-    rw [Finsupp.single_apply, if_neg]
-    intro hh; exact h (Prod.mk.inj hh).1
+    exact Finset.sum_eq_zero fun b _ => by simp [h]
 
 def polProj (K : Type*) [Field K] {ι : Type*} {r : ℕ} (d : ι → ℕ) : Module.End K (MvPolynomial (ι × Fin r) K) :=
   (basisMonomials (ι × Fin r) K).constr K fun m => if (∀ i, multideg m i = d i) then monomial m 1 else 0
@@ -2234,12 +2223,7 @@ theorem isoPol_GLRel (LL : Letters ι) (S : Set ι) : GLRel (glOps K r LL S) := 
   rw [h]
   rw [LinearMap.sub_apply]
   congr 1
-  · split_ifs
-    · exact isoPolDer_apply LL S a d F
-    · simp
-  · split_ifs
-    · exact isoPolDer_apply LL S c b F
-    · simp
+  all_goals split_ifs <;> simp [isoPolDer_apply, glOps]
 
 theorem isoPol_euler (l : ι) (a : Fin r) (m : ι × Fin r →₀ ℕ) (c : K) :
     (X (l, a) : MvPolynomial (ι × Fin r) K) * pderiv (l, a) (monomial m c) = (m (l, a) : K) • monomial m c := by
@@ -2363,9 +2347,8 @@ variable {n : ℕ} {K V : Type*} [Field K] [AddCommGroup V] [Module K V] (E : GL
 
 theorem Stab_iSup {J : Sort*} (f : J → Submodule K V) (h : ∀ i, Stab E (f i)) : Stab E (⨆ i, f i) := by
   intro a b x hx
-  have hle : (⨆ i, f i) ≤ (⨆ i, f i).comap (E a b) :=
-    iSup_le fun i y hy => Submodule.mem_iSup_of_mem i (h i a b y hy)
-  exact hle hx
+  exact ((iSup_le fun i y hy => Submodule.mem_iSup_of_mem i (h i a b y hy)) :
+    (⨆ i, f i) ≤ (⨆ i, f i).comap (E a b)) hx
 
 theorem Stab_inf (A B : Submodule K V) (hA : Stab E A) (hB : Stab E B) : Stab E (A ⊓ B) :=
   fun a b x hx => ⟨hA a b x hx.1, hB a b x hx.2⟩
@@ -2373,8 +2356,7 @@ theorem Stab_inf (A B : Submodule K V) (hA : Stab E A) (hB : Stab E B) : Stab E 
 theorem Stab_sup (A B : Submodule K V) (hA : Stab E A) (hB : Stab E B) : Stab E (A ⊔ B) := by
   intro a b x hx
   obtain ⟨y, hy, z, hz, rfl⟩ := Submodule.mem_sup.1 hx
-  rw [map_add]
-  exact Submodule.add_mem _ (Submodule.mem_sup_left (hA a b y hy)) (Submodule.mem_sup_right (hB a b z hz))
+  simpa only [map_add] using Submodule.add_mem (A ⊔ B) (Submodule.mem_sup_left (hA a b y hy)) (Submodule.mem_sup_right (hB a b z hz))
 
 def isoSet (Om : Set (Fin n → ℤ)) (P : Submodule K V) : Set V :=
   {x | ∃ nu ∈ Om, ∃ v ∈ P, IsHWV E nu v ∧ ∃ u ∈ Umon E, x = u v}

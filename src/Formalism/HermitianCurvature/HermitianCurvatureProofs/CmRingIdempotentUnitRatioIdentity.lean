@@ -89,9 +89,6 @@ lemma quantOne (x fr mr K P W Del : ℝ) (hx : 1 ≤ x) (hm : 0 < mr) (hmf : mr 
   have hm3 : mr ^ 3 ≤ fr ^ 4 := by
     calc mr ^ 3 ≤ fr ^ 3 := pow_le_pow_left₀ hm.le hmf 3
       _ ≤ fr ^ 4 := pow_le_pow_right₀ hf (by norm_num)
-  have hx3 : x ≤ x ^ 3 := by
-    calc x = x ^ 1 := (pow_one x).symm
-      _ ≤ x ^ 3 := pow_le_pow_right₀ hx (by norm_num)
   have A1 : (P * W) ^ 2 * (x * (10 * mr) ^ 3) = P ^ 2 * (1000 * W ^ 2) * x * mr ^ 3 := by ring
   rw [A1]
   have B1 : P ^ 2 * (1000 * W ^ 2) * x * mr ^ 3 ≤ P ^ 2 * x * x * fr ^ 4 := by
@@ -99,7 +96,7 @@ lemma quantOne (x fr mr K P W Del : ℝ) (hx : 1 ≤ x) (hm : 0 < mr) (hmf : mr 
     have hp2 : 0 ≤ P ^ 2 := sq_nonneg P
     nlinarith [mul_le_mul_of_nonneg_left this (mul_nonneg hp2 hx0.le)]
   have B2 : P ^ 2 * x * x * fr ^ 4 ≤ x ^ 4 * fr ^ 4 * K := by
-    have hxx : x * x ≤ x ^ 4 := by nlinarith
+    have hxx : x * x ≤ x ^ 4 := by simpa [pow_two] using pow_le_pow_right₀ hx (by norm_num : (2:ℕ) ≤ 4)
     have : P ^ 2 * (x * x) * fr ^ 4 ≤ K * x ^ 4 * fr ^ 4 := by
       apply mul_le_mul_of_nonneg_right _ (by positivity)
       exact mul_le_mul hPK hxx (by positivity) hK

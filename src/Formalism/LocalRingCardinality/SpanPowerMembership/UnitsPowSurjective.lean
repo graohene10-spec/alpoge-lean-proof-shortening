@@ -11,13 +11,11 @@ section ToC
 variable (p : ℕ) [Fact p.Prime]
 
 theorem teich_charZero : CharZero (WittVector p (AlgebraicClosure (ZMod p))) := by
-  let f : ℤ_[p] →+* WittVector p (AlgebraicClosure (ZMod p)) :=
-    (WittVector.map (algebraMap (ZMod p) (AlgebraicClosure (ZMod p)))).comp
-      (WittVector.equiv p).symm.toRingHom
-  have hf : Function.Injective f :=
-    (WittVector.map_injective _ (algebraMap (ZMod p) (AlgebraicClosure (ZMod p))).injective).comp
-      (WittVector.equiv p).symm.injective
-  exact charZero_of_injective_ringHom hf
+  exact charZero_of_injective_ringHom
+    (f := (WittVector.map (algebraMap (ZMod p) (AlgebraicClosure (ZMod p)))).comp
+      (WittVector.equiv p).symm.toRingHom)
+    ((WittVector.map_injective _ (algebraMap (ZMod p) (AlgebraicClosure (ZMod p))).injective).comp
+      (WittVector.equiv p).symm.injective)
 
 theorem teich_card_Fbar : #(AlgebraicClosure (ZMod p)) = ℵ₀ := by
   refine le_antisymm ?_ (Cardinal.aleph0_le_mk _)
@@ -31,8 +29,7 @@ def teichCoeffEquiv (R : Type) : WittVector p R ≃ (ℕ → R) where
   right_inv f := by funext n; rfl
 
 theorem mk_wittVector : #(WittVector p (AlgebraicClosure (ZMod p))) = 𝔠 := by
-  rw [Cardinal.mk_congr (teichCoeffEquiv p (AlgebraicClosure (ZMod p)))]
-  simp [teich_card_Fbar]
+  simpa [teich_card_Fbar] using Cardinal.mk_congr (teichCoeffEquiv p (AlgebraicClosure (ZMod p)))
 
 abbrev TeichOm : Type :=
   AlgebraicClosure (FractionRing (WittVector p (AlgebraicClosure (ZMod p))))
@@ -222,8 +219,7 @@ theorem teichIota_inj (x y : AlgebraicClosure (ZMod g)) (hx : x ≠ 0) (hy : y �
   rw [extZeroHom_of_ne _ hx, extZeroHom_of_ne _ hy] at h
   have h1 := Units.ext h
   rw [(iotaU_exists g l).choose_spec ⟨_, hX⟩, (iotaU_exists g l).choose_spec ⟨_, hY⟩] at h1
-  have h2 := iotaSub_injective g l h1
-  exact congrArg (fun u : primeToSub g l => ((u.1 : (AlgebraicClosure (ZMod g))ˣ) : AlgebraicClosure (ZMod g))) h2
+  exact congrArg (fun u : primeToSub g l => ((u.1 : (AlgebraicClosure (ZMod g))ˣ) : AlgebraicClosure (ZMod g))) (iotaSub_injective g l h1)
 
 end Iota
 

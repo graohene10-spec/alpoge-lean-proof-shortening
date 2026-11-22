@@ -19,17 +19,15 @@ theorem cinv_inv_up {U : Matrix (Fin n) (Fin n) K} (hU : IsUpUni U) : IsUpUni U�
   have hT : U.BlockTriangular id := fun i j hij => (hU i j).1 hij
   haveI : Invertible U := Matrix.invertibleOfIsUnitDet U hdet
   have hI : (U⁻¹).BlockTriangular id := Matrix.blockTriangular_inv_of_blockTriangular hT
-  intro i j
-  refine ⟨fun h => hI (show id j < id i from h), ?_⟩
+  refine fun i j => ⟨fun h => hI (show id j < id i from h), ?_⟩
   rintro rfl
   have h1 : (U⁻¹ * U) i i = 1 := by rw [Matrix.nonsing_inv_mul _ hdet]; simp
-  rw [Matrix.mul_apply, Finset.sum_eq_single i] at h1
+  rw [Matrix.mul_apply, Finset.sum_eq_single_of_mem i (Finset.mem_univ i)] at h1
   · rwa [(hU i i).2 rfl, mul_one] at h1
   · intro k _ hk
     rcases lt_or_gt_of_ne hk with h | h
     · rw [hI (show id k < id i from h), zero_mul]
     · rw [(hU k i).1 h, mul_zero]
-  · simp
 
 theorem cinv_mul_left {U A : Matrix (Fin n) (Fin n) K} (hU : IsUpUni U) (hA : StrictUp A) :
     StrictUp (U * A) ∧ ∀ (a : Fin n) (h : a.val + 1 < n), (U * A) a ⟨a.val + 1, h⟩ = A a ⟨a.val + 1, h⟩ := by

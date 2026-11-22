@@ -52,9 +52,8 @@ lemma qx_equiv (hd : IsStripData B be Str ps) (e : M'.ι ≃ M.ι × κ) (hT : I
     ∑ k, M'.A i k * (qx_ph ps e CF x k I : GLCoord ℤ n) =
       ∑ I', (qx_ph ps e CF x i I' : GLCoord ℤ n) * TMat (x.2 : Fin n → ℤ) I' I := by
   obtain ⟨j, nu, hnu⟩ := x
-  have hmu := CF.dom j
-  have hT' : ∀ i j, M'.A i j = M.A (e i).1 (e j).1 * B (e i).2 (e j).2 := hT
-  simp only [qx_ph_apply, hT', Int.cast_sum, Int.cast_mul]
+  simp only [qx_ph_apply, (show ∀ i j, M'.A i j = M.A (e i).1 (e j).1 * B (e i).2 (e j).2 from hT),
+    Int.cast_sum, Int.cast_mul]
   rw [← e.symm.sum_comp]
   simp only [Equiv.apply_symm_apply, Fintype.sum_prod_type]
   calc ∑ m, ∑ k, M.A (e i).1 m * B (e i).2 k *
@@ -75,7 +74,7 @@ lemma qx_equiv (hd : IsStripData B be Str ps) (e : M'.ι ≃ M.ι × κ) (hT : I
         conv_lhs => enter [2, k]; rw [sum_comm]
         refine sum_congr rfl fun K' _ => sum_congr rfl fun K _ => sum_congr rfl fun k _ => by ring
     _ = _ := by
-        simp only [qx_ps_equiv hd hmu hnu, mul_sum, sum_mul]
+        simp only [qx_ps_equiv hd (CF.dom j) hnu, mul_sum, sum_mul]
         rw [sum_comm]
         refine sum_congr rfl fun I' _ => sum_congr rfl fun K _ => by ring
 

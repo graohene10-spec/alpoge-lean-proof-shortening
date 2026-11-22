@@ -630,9 +630,7 @@ theorem hypH_toData {CH : ℝ} (hCH : 26 ≤ CH) (h : Dt.Hyp CH) : (toData Dt).H
     have e1 : (r : ℝ) * (⌈Dt.c⌉₊ : ℝ) ≤ r * (2 * Dt.c) := mul_le_mul_of_nonneg_left hc hr
     have e2 : (26 : ℝ) * (r * Dt.c) ≤ CH * (r * Dt.c) := mul_le_mul_of_nonneg_right hCH (mul_nonneg hr hc0)
     nlinarith
-  have := key (zE J ((toData Dt).nxt j)) (zE_nxt Dt j) i
-  rw [dLL_eq]
-  exact this
+  simpa [dLL_eq, TwistData.P, PlaneGramData.SignedChainData.P] using key (zE J ((toData Dt).nxt j)) (zE_nxt Dt j) i
 
 theorem hc_toData (h : 4 * (Dt.Dm + Dt.Dl + 3 * Dt.kp) < Dt.c) : (toData Dt).Hc p 1 := by
   simpa [TwistData.Hc, Dm_eq, Dl_eq, kapD_eq] using lt_of_lt_of_le h (Nat.le_ceil _)

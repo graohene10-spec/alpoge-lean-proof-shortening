@@ -15,8 +15,7 @@ def tTi (k r : ℕ) : Matrix (Fin (2 * r + k + 1)) (Fin (2 * r + k + 1)) ℂ := 
 
 theorem I_pow_unit (n : ℕ) : star (Complex.I ^ n) * Complex.I ^ n = 1 := by
   rw [star_pow, ← mul_pow]
-  have h : star Complex.I * Complex.I = 1 := by
-    rw [Complex.star_def, Complex.conj_I]; simp
+  have h : star Complex.I * Complex.I = 1 := by simp [Complex.conj_I]
   rw [h, one_pow]
 
 theorem dT_unit {k r : ℕ} (i : Fin (2 * r + k + 1)) : star (dT k r i) * dT k r i = 1 := by
@@ -33,8 +32,7 @@ theorem tTi_mul_tT (k r : ℕ) : tTi k r * tT k r = 1 := by
 
 theorem tT_mul_tTi (k r : ℕ) : tT k r * tTi k r = 1 := by
   rw [tTi, tT, Matrix.diagonal_mul_diagonal]
-  simp only [dT_unit']
-  exact Matrix.diagonal_one
+  simpa only [dT_unit'] using (Matrix.diagonal_one : Matrix.diagonal (1 : Fin (2 * r + k + 1) → ℂ) = 1)
 
 theorem tT_inv (k r : ℕ) : (tT k r)⁻¹ = tTi k r := by
   exact Matrix.inv_eq_left_inv (tTi_mul_tT k r)
@@ -100,9 +98,7 @@ theorem conjT_tT (k r : ℕ) : (tT k r)ᴴ = tTi k r := by
   simp [tT, tTi, Matrix.diagonal_conjTranspose]
 
 theorem conjT_tTi (k r : ℕ) : (tTi k r)ᴴ = tT k r := by
-  rw [tT, tTi, Matrix.diagonal_conjTranspose]
-  congr 1
-  funext i
+  rw [← conjT_tT]
   simp
 
 theorem tT_mem_UH (k r : ℕ) : tT k r ∈ UH (Hpk k r) := by

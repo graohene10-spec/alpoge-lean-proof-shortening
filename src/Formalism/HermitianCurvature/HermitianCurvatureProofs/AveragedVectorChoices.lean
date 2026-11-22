@@ -328,8 +328,7 @@ theorem mean_prod {K : Type} [CommRing K] (hCM : CharMean) (R : Subring K) (ψ :
   by_cases hR : a ∈ perp ψ R.toAddSubgroup
   · rw [if_pos hR, mul_one, hCM K ψ R.toAddSubgroup L₂ A le₂ hA a hR]
   · rw [if_neg hR, mul_zero, if_neg]
-    intro h2
-    exact hR fun l hl => h2 l (le₂ hl)
+    exact fun h2 => hR (fun l hl => h2 l (le₂ hl))
 
 theorem cutNormEval_main : CutNormEval := by
   intro hCM hPL K _ _ _ R ψ hD hn s F Om Lc D hOc z₁ hz₁ h hh h' hh'

@@ -263,8 +263,7 @@ theorem toZMod_injOn_mu : Set.InjOn (PadicInt.toZMod (p := l)) (mu l : Set ℤ_[
 theorem toZMod_surjOn_mu_nonzero : Set.SurjOn (PadicInt.toZMod (p := l)) (mu l : Set ℤ_[l])
     ((univ.erase (0 : ZMod l) : Finset (ZMod l)) : Set (ZMod l)) := by
   intro x hx
-  have hx0 : x ≠ 0 := (Finset.mem_erase.mp hx).1
-  obtain ⟨d, ⟨hd, hdx⟩, _⟩ := existsUnique_teichmuller_lift l x hx0
+  obtain ⟨d, ⟨hd, hdx⟩, _⟩ := existsUnique_teichmuller_lift l x (Finset.mem_erase.mp hx).1
   exact ⟨d, hd, hdx⟩
 
 theorem card_mu_eq_sub_one : (mu l).card = l - 1 := by
@@ -438,8 +437,7 @@ lemma prod_Ioo_eq_prod_range {M : Type} [CommMonoid M] (l : ℕ) (F : ℕ → M)
 
 lemma hasSubst_one_add_X_pow_sub_one_alt {R : Type} [CommRing R] (l : ℕ) :
     HasSubst ((1 + X) ^ l - 1 : R⟦X⟧) := by
-  apply PowerSeries.HasSubst.of_constantCoeff_zero
-  change PowerSeries.constantCoeff ((1 + X) ^ l - 1 : R⟦X⟧) = 0
+  apply PowerSeries.HasSubst.of_constantCoeff_zero'
   simp
 
 lemma hasSubst_X_pow_of_ne_zero {R : Type} [CommRing R] {l : ℕ} (hl : l ≠ 0) :
@@ -715,9 +713,8 @@ theorem subst_zero_eq_zero {a : R⟦X⟧} (ha : HasSubst a) : (0 : R⟦X⟧).sub
   rw [← PowerSeries.coe_substAlgHom ha, map_zero]
 
 theorem hasSubst_unit_mul_X_pow (n : ℕ) (hn : 0 < n) (w : (R⟦X⟧)ˣ) : HasSubst ((w : R⟦X⟧) * X ^ n) := by
-  apply PowerSeries.HasSubst.of_constantCoeff_zero
-  change PowerSeries.constantCoeff ((w : R⟦X⟧) * X ^ n) = 0
-  simp [zero_pow hn.ne']
+  exact PowerSeries.HasSubst.of_constantCoeff_zero (show PowerSeries.constantCoeff ((w : R⟦X⟧) * X ^ n) = 0 by
+    simp [zero_pow hn.ne'])
 
 theorem cancel_unit_mul_X_pow (n : ℕ) (w : (R⟦X⟧)ˣ) {a b : R⟦X⟧}
     (h : (w : R⟦X⟧) * X ^ n * a = (w : R⟦X⟧) * X ^ n * b) : a = b := by
@@ -988,10 +985,8 @@ theorem inc_X_sub_l_eq_q0 : inc l O (X - C (l : O)) = q0 l O := by
   rw [inc, ← PowerSeries.coe_substAlgHom hs, map_sub, q0]
   congr 1
   · rw [PowerSeries.coe_substAlgHom, PowerSeries.subst_X hs]
-  calc PowerSeries.substAlgHom hs (C (l : O)) = PowerSeries.substAlgHom hs ((l : O) • 1) := by
-        rw [PowerSeries.smul_eq_C_mul, mul_one]
-    _ = (l : O) • PowerSeries.substAlgHom hs 1 := map_smul _ _ _
-    _ = C (l : O) := by rw [map_one, PowerSeries.smul_eq_C_mul, mul_one]
+  · simpa only [PowerSeries.smul_eq_C_mul, mul_one, map_one] using
+      (map_smul (PowerSeries.substAlgHom hs) (l : O) (1 : O⟦X⟧))
 
 theorem br_eq_X_mul_const (c : ℤ_[l]) :
     ∃ s : O⟦X⟧, br l O c = X * s ∧ constantCoeff s = algebraMap ℤ_[l] O c := by
@@ -1103,8 +1098,7 @@ lemma one_add_pow_eq_linear_add_sq_mul {R : Type} [CommRing R] (x : R) (n : ℕ)
   | succ n ih =>
     obtain ⟨e, he⟩ := ih
     refine ⟨(n : R) + e + x * e, ?_⟩
-    rw [pow_succ, he]
-    push_cast
+    rw [pow_succ, he, Nat.cast_add, Nat.cast_one]
     ring
 
 section
@@ -1498,8 +1492,7 @@ theorem det_sigma_reindexed_square_block {n : ℕ} (Φ : Matrix (Fin n) (Fin n) 
 end PartE
 
 theorem minors_divide_all_holds : MinorsDvdAll := by
-  intro R _ m p t x P
-  exact ⟨fun h f g => dvd_det_submatrix_of_minorsDvd x P h f g, fun h f g _ _ => h f g⟩
+  exact fun R _ m p t x P => ⟨dvd_det_submatrix_of_minorsDvd x P, fun h f g _ _ => h f g⟩
 
 theorem minors_dvd_mul_holds : MinorsDvdMul := by
   intro R _ m n p r t x G P H h f g _ _
@@ -1835,18 +1828,13 @@ theorem exists_largest_moved_point {N : ℕ} (σ : Equiv.Perm (Fin N)) (hσ : σ
   have hS : S.Nonempty := ⟨j1, by simp [S, hj1]⟩
   refine ⟨S.max' hS, ?_, ?_⟩
   · have hm : σ (S.max' hS) ≠ S.max' hS := (Finset.mem_filter.mp (S.max'_mem hS)).2
-    rcases lt_or_gt_of_ne hm with h | h
-    · exact h
-    · exfalso
-      have hfix : σ (σ (S.max' hS)) = σ (S.max' hS) := by
-        by_contra hc
-        have : σ (S.max' hS) ∈ S := by simp [S, hc]
-        exact absurd (S.le_max' _ this) (not_le.mpr h)
-      exact hm (σ.injective hfix)
+    have hle : σ (S.max' hS) ≤ S.max' hS :=
+      S.le_max' _ (Finset.mem_filter.mpr
+        ⟨Finset.mem_univ _, fun hfix => hm (σ.injective hfix)⟩)
+    exact lt_of_le_of_ne hle hm
   · intro j hj
     by_contra hc
-    have : j ∈ S := by simp [S, hc]
-    exact absurd (S.le_max' _ this) (not_le.mpr hj)
+    exact absurd (S.le_max' _ (by simp [S, hc])) (not_le.mpr hj)
 
 theorem c2_holds_alt : C2 := by
   intro k _ 𝒰 _ _ V _ _ _ _ N E u lam v hup hdiag

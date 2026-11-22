@@ -298,9 +298,8 @@ lemma wedge_pl {o cost : ℕ} {Kj : Finset (Fin (r + K)) → MvPolynomial σ R} 
     Finset.sum_mul]
   refine Finset.sum_congr rfl fun a ha => ?_
   rw [cmp_term o _ (hyp a), hD, Jp_erase_ca, Jt_erase_ca, card_filter_ca]
-  by_cases hJ : Jt J = ∅
-  · rw [hJ]; simp; ring
-  · rw [htn _ hJ]; simp
+  by_cases hJ : Jt J = ∅ <;> simp [hJ, htn]
+  ring
 
 lemma contr_pl {o cost : ℕ} {Kj : Finset (Fin (r + K)) → MvPolynomial σ R} {pl : Finset (Fin r) → MvPolynomial σ R}
     {tn : Finset (Fin K) → MvPolynomial σ R} {y : Fin (r + K) → MvPolynomial σ R}
@@ -313,10 +312,9 @@ lemma contr_pl {o cost : ℕ} {Kj : Finset (Fin (r + K)) → MvPolynomial σ R} 
     weightedHomogeneousComponent wv (cost + o) (contrR y Kj J) =
       contrR (fun a => y (Fin.castAdd K a)) pl (Jp J) * tn (Jt J) := by
   unfold contrR
-  rw [sum_split, Jp_compl, Jt_compl, map_add, map_sum, map_sum,
-    Finset.sum_eq_zero (s := univ \ Jt J)
-      (fun a ha => cmp_of_Ord (hoff J a (by simpa using ha) _) (Nat.lt_succ_self _)), add_zero,
-    Finset.sum_mul]
+  rw [sum_split, Jp_compl, Jt_compl, map_add, map_sum,
+    cmp_of_Ord (Ord.sum (s := univ \ Jt J) (fun b hb => hoff J b (by simpa using hb) _))
+      (Nat.lt_succ_self _), add_zero, Finset.sum_mul]
   refine Finset.sum_congr rfl fun a ha => ?_
   rw [cmp_term o _ (hyp a), hD, Jp_insert_ca, Jt_insert_ca, card_filter_ca]
   by_cases hJ : Jt J = ∅

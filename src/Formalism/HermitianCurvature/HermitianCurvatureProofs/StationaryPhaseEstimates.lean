@@ -137,12 +137,8 @@ theorem inner_osc (hOm : OmConverges) (hCut : CutPhiBound) (hIn : InnerXY) {m : 
     apply h0; simpa using hD
   have hΦ0 := derivBound_mono hΦ (Nat.zero_le k) (singleton_subset_detSet (m := m) hD)
   obtain ⟨hC1, hC2⟩ := hC V Φ _ _ (‖t‖ ^ (-ε)) (one_le_tau ht ht1 hε) hΦ0
-  have e : (fun Z : Mat (m + 1 + 1) => C * (K * min 1 (‖Z‖ ^ (-A)))) =
-      fun Z => (C * K) * min 1 (‖Z‖ ^ (-A)) := by
-    funext Z; ring
-  rw [e] at hC1 hC2
-  have i1 := (hOm m β A (C * K) hA V _ t c ht hc hC1).1
-  have i2 := (hOm m β A (C * K) hA V _ t c ht hc hC2).1
+  have i1 := (hOm m β A (C * K) hA V _ t c ht hc (by simpa only [mul_assoc] using hC1)).1
+  have i2 := (hOm m β A (C * K) hA V _ t c ht hc (by simpa only [mul_assoc] using hC2)).1
   obtain ⟨j1, j2⟩ := hIn m β t c ht V _ i1
   exact ⟨i1, i2, j1, j2⟩
 
@@ -602,9 +598,7 @@ theorem _root_.Formalism.FourierDecayAlt.P.stationary_estimate_of_parts : Formal
     _ = _ := by ring
 
 theorem gr_norm_psi (β w : ℂ) : ‖psi β w‖ = 1 := by
-  unfold psi
-  rw [mul_comm]
-  exact Complex.norm_exp_ofReal_mul_I _
+  simpa only [psi, mul_comm] using Complex.norm_exp_ofReal_mul_I _
 
 section
 

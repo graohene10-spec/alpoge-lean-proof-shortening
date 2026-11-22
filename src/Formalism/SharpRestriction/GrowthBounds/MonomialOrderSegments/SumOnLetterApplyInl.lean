@@ -194,8 +194,7 @@ theorem sum_onLetter_apply_inr (D : TwistData K) (M : D.EA) (s : Finset D.Tau) (
       if t ∈ s then M (Sum.inr t, a) else 0 := by
   classical
   rw [Finsupp.finsetSum_apply]
-  simp only [onLetter_apply, letE_apply, Sum.inr.injEq]
-  rw [Finset.sum_ite_eq]
+  simp only [onLetter_apply, letE_apply, Sum.inr.injEq, Finset.sum_ite_eq]
 
 theorem sum_onLetter_apply_inl (D : TwistData K) (M : D.EA) (s : Finset D.Tau) (b : D.Lb) (a : Fin D.r) :
     (∑ t' ∈ s, onLetter (Sum.inr t' : D.OL) (letE M (Sum.inr t'))) (Sum.inl b, a) = 0 := by

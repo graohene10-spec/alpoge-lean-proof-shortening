@@ -72,8 +72,7 @@ lemma KKc_eq (LL : LiftLetters (Fin N)) (g : Matrix (Fin k) (Fin k) (WF p f)) (z
     (mu : Fin (N + 1) → Fin k → ℤ) (c : ℤ) :
     KKc p f (O := O) LL g z mu c = ZZ p (letG p f (O := O) LL g) LL.pos mu c N z := by
   unfold KKc ZZ; simp only [KKstate_eq]
-  generalize KKs p (letG p f (O := O) LL g) LL.pos mu c N = st
-  rcases st with ⟨a, _ | sl⟩ <;> rfl
+  rfl
 
 end Link
 

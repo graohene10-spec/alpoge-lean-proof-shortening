@@ -1247,8 +1247,7 @@ theorem pe_t_le {e : ℝ} (he : L.Ct + 3 ≤ e) : (D.R.t : ℝ) ≤ L.sc.x ^ e :
   L.t_win.2.trans (Lnk.rpow_mono' _ (by linarith))
 
 theorem pe_m_le (sM : SizeM L) : (D.R.m : ℝ) ≤ L.sc.x := by
-  have h := (Lnk.winA sM).trans (Lnk.rpow_mono' L.sc (b := 1) (by linarith [L.sc.eps_lt]))
-  rwa [Real.rpow_one] at h
+  simpa only [Real.rpow_one] using (Lnk.winA sM).trans (Lnk.rpow_mono' L.sc (b := 1) (by linarith [L.sc.eps_lt]))
 
 theorem pe_N_le (sM : SizeM L) (sK : SizeK L) (h3 : 3 ≤ L.sc.x) {e : ℝ} (he : 40 ≤ e) (hc : L.Ct + 3 ≤ e) :
     ((D.R.N D.R.m : ℕ) : ℝ) ≤ L.sc.x ^ e := by
@@ -1276,16 +1275,14 @@ theorem pe_N_le (sM : SizeM L) (sK : SizeK L) (h3 : 3 ≤ L.sc.x) {e : ℝ} (he 
   linarith
 
 theorem threshold_prime_le_pow (sK : SizeK L) : L.sc.p0 D.R.k ≤ L.sc.x ^ (36 : ℝ) := by
-  have hx := scale_pos_alt L.sc
   unfold Scale.p0 Scale.A
   have h1 : (D.R.k : ℝ) ^ 2 ≤ L.sc.x ^ (10 : ℝ) := by
-    have := pow_le_pow_left₀ (Nat.cast_nonneg D.R.k) (Lnk.winC sK) 2
-    rw [pe_sq, show (2 : ℝ) * 5 = 10 by norm_num] at this
-    exact this
+    have h := pow_le_pow_left₀ (Nat.cast_nonneg D.R.k) (Lnk.winC sK) 2
+    rwa [pe_sq, show (2 : ℝ) * 5 = 10 by norm_num] at h
   calc (D.R.k : ℝ) ^ 2 * L.sc.x ^ (26 : ℝ) ≤ L.sc.x ^ (10 : ℝ) * L.sc.x ^ (26 : ℝ) :=
-        mul_le_mul_of_nonneg_right h1 (Real.rpow_nonneg hx.le _)
+        mul_le_mul_of_nonneg_right h1 (Real.rpow_nonneg (scale_pos_alt L.sc).le _)
     _ = L.sc.x ^ (36 : ℝ) := by
-        rw [← Real.rpow_add hx]; norm_num
+        rw [← Real.rpow_add (scale_pos_alt L.sc)]; norm_num
 
 theorem threshold_prime_nonneg : 0 ≤ L.sc.p0 D.R.k := by
   have hx := scale_pos_alt L.sc
@@ -1667,15 +1664,9 @@ theorem box_marg (p : ℕ) (t0 : HH D) (W : Finset ℤ) :
   refine ⟨(margC (phi D p t0) (fun t => if t ∈ D.host.TT then W else {0}) : ℕ), ?_, ?_⟩
   · intro F
     unfold box boxLoc
-    exact marg_sum (phi D p t0) (phi_inj p t0) _ _ (fun i => by
-      by_cases h : phi D p t0 i ∈ D.host.TT
-      · rw [if_pos h, if_pos ((hmem i).2 h)]
-      · rw [if_neg h, if_neg (mt (hmem i).1 h)]) F
+    exact marg_sum (phi D p t0) (phi_inj p t0) _ _ (fun i => if_congr (hmem i) rfl rfl) F
   · unfold box boxLoc
-    exact marg_card (phi D p t0) (phi_inj p t0) _ _ (fun i => by
-      by_cases h : phi D p t0 i ∈ D.host.TT
-      · rw [if_pos h, if_pos ((hmem i).2 h)]
-      · rw [if_neg h, if_neg (mt (hmem i).1 h)])
+    exact marg_card (phi D p t0) (phi_inj p t0) _ _ (fun i => if_congr (hmem i) rfl rfl)
 
 end Formalism.L2.GlobalTheoryTheory.Loss.Marg
 
@@ -1972,16 +1963,11 @@ theorem chBad_mono {Cb : ℝ} (h : ChBad_at X Cb) : ChBad_at X (max Cb 0) := by
   unfold ChBad_at at h ⊢
   refine le_trans h ?_
   have hx : 0 < L.sc.x := lt_trans one_pos L.sc.one_lt_alt
-  have hS : 0 ≤ ∑ p ∈ largeOrderResiduePrimes L, Real.log (p : ℝ) / p :=
-    Finset.sum_nonneg fun p _ => div_nonneg (Real.log_natCast_nonneg p) (Nat.cast_nonneg p)
-  have hd : 0 ≤ L.sc.delta1 := Real.rpow_nonneg hx.le _
-  have h2 : 0 ≤ L.sc.x ^ (-2 : ℝ) := Real.rpow_nonneg hx.le _
-  have hn : (0 : ℝ) ≤ D.R.n := Nat.cast_nonneg _
+  have hK : 0 ≤ L.sc.x ^ (-2 : ℝ) * L.sc.delta1 * D.R.n * ∑ p ∈ largeOrderResiduePrimes L, Real.log (p : ℝ) / p :=
+    mul_nonneg (mul_nonneg (mul_nonneg (Real.rpow_nonneg hx.le (-2 : ℝ)) (Real.rpow_nonneg hx.le _)) (Nat.cast_nonneg _))
+      (Finset.sum_nonneg fun p _ => div_nonneg (Real.log_natCast_nonneg p) (Nat.cast_nonneg p))
   have hm : Cb ≤ max Cb 0 := le_max_left _ _
-  have : Cb * (L.sc.x ^ (-2 : ℝ) * L.sc.delta1 * D.R.n * ∑ p ∈ largeOrderResiduePrimes L, Real.log (p : ℝ) / p) ≤
-      max Cb 0 * (L.sc.x ^ (-2 : ℝ) * L.sc.delta1 * D.R.n * ∑ p ∈ largeOrderResiduePrimes L, Real.log (p : ℝ) / p) :=
-    mul_le_mul_of_nonneg_right hm (by positivity)
-  nlinarith [this]
+  nlinarith [mul_le_mul_of_nonneg_right hm hK]
 
 end AtRecord
 

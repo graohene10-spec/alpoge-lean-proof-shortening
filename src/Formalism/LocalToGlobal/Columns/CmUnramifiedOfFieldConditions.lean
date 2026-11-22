@@ -747,8 +747,7 @@ theorem prod_enumSeq {α : Type} [Zero α] (e : X.Tau ≃ Fin X.f) (F : X.Tau �
 
 theorem dstarC_eq (u : Pr.Word) (hw : ∀ τ, WeylDim (W.lamTrue u 0 τ)) (e : X.Tau ≃ Fin X.f) :
     dstarC W Ch u = massk X R * (IpiC Ch : ℝ) * ∏ ρ ∈ range X.f, dimVN (enumSeq e (hcSeq W u) ρ) R.k := by
-  rw [prod_enumSeq e (hcSeq W u) fun x => dimVN x R.k, dstarC]
-  exact congrArg _ (prod_congr rfl fun τ _ => dimC_eq W u τ (hw τ))
+  rw [prod_enumSeq e (hcSeq W u) (fun x => dimVN x R.k), dstarC, prod_congr rfl fun τ _ => dimC_eq W u τ (hw τ)]
 
 theorem vandN_hcSeq_pos (u : Pr.Word) (τ : X.Tau) (hw : WeylDim (W.lamTrue u 0 τ)) : 0 < vandN (hcSeq W u τ) R.k := by
   have h1 : 0 < dimC W u τ := by
@@ -864,8 +863,7 @@ theorem cm_unramified_of_field_conditions {X : Fields} (hX : X.AbelianUnramified
   have hq : Algebra.IsQuadraticExtension X.F X.E := { finrank_eq_two' := hX.ok.rankE }
   let c : Gal(X.E/X.F) := AlgEquiv.ofRingEquiv (f := starRingAut) (fun r => hX.ok.star_F r)
   have hP0 : P ≠ ⊥ := Ring.ne_bot_of_isMaximal_of_not_isField hP (RingOfIntegers.not_isField X.E)
-  have hPp : P.IsPrime := hP.isPrime
-  have hun := hX.unram ⟨P, hPp, hP0⟩
+  have hun := hX.unram ⟨P, hP.isPrime, hP0⟩
   have hlo : P.LiesOver (P.under (𝓞 X.F)) := ⟨rfl⟩
   have hp0 : P.under (𝓞 X.F) ≠ ⊥ := Ideal.IsIntegral.comap_ne_bot (𝓞 X.F) hP0
   have hcard : Nat.card (P.inertia Gal(X.E/X.F)) = 1 := by
@@ -882,18 +880,15 @@ theorem cm_unramified_of_field_conditions {X : Fields} (hX : X.AbelianUnramified
     rw [h1]
     exact P.neg_mem (hall x)
   have hc1 : c = 1 := by
-    have hb := (Subgroup.card_eq_one (H := P.inertia Gal(X.E/X.F))).mp hcard
-    rw [hb] at hc
+    rw [(Subgroup.card_eq_one (H := P.inertia Gal(X.E/X.F))).mp hcard] at hc
     exact hc
-  have hτ : Nonempty X.Tau := by
+  obtain ⟨τ⟩ : Nonempty X.Tau := by
     rw [← Fintype.card_pos_iff, hX.ok.card_Tau]
     exact Module.finrank_pos
-  obtain ⟨τ⟩ := hτ
   apply hX.ok.emb_ne τ τ
   ext x
-  have h2 : star x = x := congrArg (fun s : Gal(X.E/X.F) => s x) hc1
   show X.emb τ x = X.emb τ (star x)
-  rw [h2]
+  rw [show star x = x from congrArg (fun s : Gal(X.E/X.F) => s x) hc1]
 
 end Unram
 
@@ -920,8 +915,7 @@ theorem Sizes.three_le_g {X : Fields} {Pr : Primes X} {R : Ranks} {W : Wts X Pr.
   omega
 
 theorem Dat.Ok.f_le_k {D : Dat} (hD : D.Ok) : D.X.f ≤ D.R.k := by
-  rw [hD.f_eq]
-  exact D.R.f_le_k
+  exact le_trans (le_of_eq hD.f_eq) D.R.f_le_k
 
 theorem Dat.Ok.finrank_MfV {D : Dat} (hD : D.Ok) (u : D.Pr.Word) :
     (finrank D.X.K (MfV D.W D.Ch u) : ℝ) = dstarC D.W D.Ch u * ((D.Pr.T u : ℝ) ^ D.R.k - 1) ^ D.X.f :=

@@ -68,18 +68,15 @@ theorem eq_glob_of_hat {Λ M : Submodule (𝓞 E) (n → E)} (hM : IsLat M) (g :
 
 theorem isLat_sup {A B : Submodule (𝓞 E) (n → E)} (hA : IsLat A) (hB : IsLat B) : IsLat (A ⊔ B) := by
   refine ⟨Module.Finite.iff_fg.2 ((Module.Finite.iff_fg.1 hA.1).sup (Module.Finite.iff_fg.1 hB.1)), ?_⟩
-  rw [eq_top_iff, ← hA.2]
-  exact Submodule.span_mono (fun x hx => (le_sup_left : A ≤ A ⊔ B) hx)
+  exact eq_top_iff.2 (hA.2 ▸ Submodule.span_mono (le_sup_left : A ≤ A ⊔ B))
 
 theorem glob_sup {A B : Submodule (𝓞 E) (n → E)} (hA : IsLat A) (hB : IsLat B) (g : GL n 𝒜) :
     globLat g (A ⊔ B) = globLat g A ⊔ globLat g B := by
   apply le_antisymm
   · have h1 : A ⊔ B ≤ globLat g⁻¹ (globLat g A ⊔ globLat g B) := by
       refine sup_le ?_ ?_
-      · conv_lhs => rw [← glob_glob_inv hA g]
-        exact glob_mono _ le_sup_left
-      · conv_lhs => rw [← glob_glob_inv hB g]
-        exact glob_mono _ le_sup_right
+      · simpa only [glob_glob_inv hA g] using glob_mono g⁻¹ (le_sup_left : globLat g A ≤ globLat g A ⊔ globLat g B)
+      · simpa only [glob_glob_inv hB g] using glob_mono g⁻¹ (le_sup_right : globLat g B ≤ globLat g A ⊔ globLat g B)
     have h2 := glob_mono g h1
     rwa [glob_inv_glob (isLat_sup (isLat_glob hA g) (isLat_glob hB g))] at h2
   · exact sup_le (glob_mono g le_sup_left) (glob_mono g le_sup_right)

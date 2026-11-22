@@ -199,8 +199,7 @@ theorem fr2 {a : S} {p q r s : SlopeTestRemainingChoices S A} (hp : FreeOf a p) 
 
 theorem freeOf2_mul_of_free {a : S} {M N : M2 (SlopeTestRemainingChoices S A)} (hM : FreeOf2 a M) (hN : FreeOf2 a N) : FreeOf2 a (M * N) := by
   intro i j
-  rw [Matrix.mul_apply, Fin.sum_univ_two]
-  exact fr_add (fr_mul (hM _ _) (hN _ _)) (fr_mul (hM _ _) (hN _ _))
+  simpa only [Matrix.mul_apply, Fin.sum_univ_two] using fr_add (fr_mul (hM _ _) (hN _ _)) (fr_mul (hM _ _) (hN _ _))
 
 theorem ins_add (a : S) (M N : M2 (SlopeTestRemainingChoices S A)) : ins a (M + N) = ins a M + ins a N := by
   simp [ins, mul_add, Finset.sum_add_distrib]

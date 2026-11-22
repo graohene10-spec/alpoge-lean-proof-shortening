@@ -18,9 +18,8 @@ theorem sigmaOf_sqrtMinusD (D : D7) (g : D.R.GG) (hg : g ∈ D.R.Psi) :
 
 theorem tauE_sqrtMinusD (D : D7) (τ : D.what₂.Tau) :
     tauE D τ D.host.sqrtMinusD = Complex.I * (Real.sqrt D.host.d : ℂ) := by
-  have h1 := sigmaOf_sqrtMinusD D (D.eTau τ).1 (D.eTau τ).2
   show D.host.φ₀ ((D.host.sigmaOf (D.eTau τ).1) D.host.sqrtMinusD) = _
-  rw [h1]
+  rw [sigmaOf_sqrtMinusD D (D.eTau τ).1 (D.eTau τ).2]
   exact D.host.φ₀_mem
 
 theorem xi_zero_im_pos (D : D7) (τ : D.what₂.Tau) : 0 < (tauE D τ D.host.xi0).im := by

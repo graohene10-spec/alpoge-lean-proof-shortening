@@ -16,10 +16,8 @@ theorem gnLower : GNLower := fun _ _ _ hg => Formalism.FourierDecayAlt.P.BetaSes
 
 theorem gN_meas (k r : ℕ) : Measurable fun g : Mt k r => gN (Matrix.of g) := by
   unfold gN
-  apply Measurable.sqrt
-  refine Finset.measurable_sum _ fun i _ => Finset.measurable_sum _ fun j _ => ?_
-  have h1 : Measurable fun g : Mt k r => g i j := (measurable_pi_apply j).comp (measurable_pi_apply i)
-  exact Complex.continuous_normSq.measurable.comp h1
+  exact Measurable.sqrt (Finset.measurable_sum _ fun i _ =>
+    Finset.measurable_sum _ fun j _ => Complex.continuous_normSq.measurable.comp ((measurable_pi_apply j).comp (measurable_pi_apply i)))
 
 theorem ae_mem {k r : ℕ} {U : Set (Mat k r)} {μ : Measure (Mt k r)} (h : IsHaarOn U μ) :
     ∀ᵐ g ∂μ, Matrix.of g ∈ U := by
@@ -46,8 +44,7 @@ theorem sigmaFinite_of_haar {k r : ℕ} {U : Set (Mat k r)} {μ : Measure (Mt k 
   infer_instance
 
 theorem lmulM_cont {k r : ℕ} (a : Mat k r) : Continuous (lmulM a : Mt k r → Mt k r) := by
-  have hof : Continuous (fun x : Mt k r => (Matrix.of x : Mat k r)) := continuous_id
-  exact (continuous_const (y := a)).matrix_mul hof
+  exact (continuous_const (y := a)).matrix_mul (continuous_id : Continuous fun x : Mt k r => (Matrix.of x : Mat k r))
 
 theorem volCrude : VolCrude :=
   _root_.UpperTheory.Reformulated.B.LiftingTheory.volCrude

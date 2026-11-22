@@ -46,8 +46,7 @@ theorem mem_autLat {N : Submodule O V} {γ : V ≃ₗ[E] V} :
 
 theorem autLat_apply {N : Submodule O V} {γ : V ≃ₗ[E] V} (h : γ ∈ autLat N) {x : V}
     (hx : x ∈ N) : γ x ∈ N := by
-  have h' : HermitianLatticesTheory.gmap γ N = N := h
-  rw [← h']
+  rw [← mem_autLat.mp h]
   exact Submodule.mem_map_of_mem hx
 
 def princLev (w : Ideal O) (N : Submodule O V) : Subgroup (V ≃ₗ[E] V) where

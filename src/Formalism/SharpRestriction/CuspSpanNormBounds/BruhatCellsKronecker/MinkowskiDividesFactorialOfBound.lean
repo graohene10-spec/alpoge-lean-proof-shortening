@@ -105,10 +105,8 @@ theorem cnt_stdLat_isOrtho (K : Type) [Field K] [NumberField K] [StarRing K] (j 
     Formalism.HermitianLatticesTheory.IsOrthoLattice (Cnt.stdH K j) (Cnt.stdLat K j) j := by
   have hb : (fun i : Fin j => Pi.single i (1 : K)) = ⇑(Pi.basisFun K (Fin j)) := funext fun i => by simp
   refine ⟨fun i => Pi.single i (1 : K), ?_, ?_, rfl, ?_⟩
-  · rw [hb]
-    exact (Pi.basisFun K (Fin j)).linearIndependent
-  · rw [hb]
-    exact (Pi.basisFun K (Fin j)).span_eq
+  · simpa only [hb] using (Pi.basisFun K (Fin j)).linearIndependent
+  · simpa only [hb] using (Pi.basisFun K (Fin j)).span_eq
   · intro i i'
     simp only [Cnt.stdH, LinearMap.mk₂'ₛₗ_apply]
     rw [Finset.sum_eq_single i (fun k _ hk => by simp [Pi.single_eq_of_ne hk])
@@ -149,14 +147,13 @@ theorem lVal_bounds (D : D7) (j : ℕ) (hj : 3 ≤ j) :
   have hpos := Formalism.MainNotions.StandardLattice.lVal_pos D j (by omega)
   have hb : |Real.log (Formalism.HermitianLatticesTheory.lValEta D.host.E j)| ≤ (D.R.f : ℝ) * Real.log (Formalism.HermitianLatticeCounting.LatticeSumBounds.zetaR j) :=
     Formalism.MainNotions.StandardLattice.massIdentity_holds D j (by omega)
-  have hz : 1 ≤ Formalism.HermitianLatticeCounting.LatticeSumBounds.zetaR j := Formalism.HermitianLatticeCounting.P.one_le_zetaSeries j (by omega)
-  have hz0 : 0 < Formalism.HermitianLatticeCounting.LatticeSumBounds.zetaR j := by linarith
-  have e : (D.R.f : ℝ) * Real.log (Formalism.HermitianLatticeCounting.LatticeSumBounds.zetaR j) = Real.log (Formalism.HermitianLatticeCounting.LatticeSumBounds.zetaR j ^ D.R.f) := by
-    rw [Real.log_pow]
-  rw [e, abs_le] at hb
+  have hz0 : 0 < Formalism.HermitianLatticeCounting.LatticeSumBounds.zetaR j := lt_of_lt_of_le zero_lt_one (Formalism.HermitianLatticeCounting.P.one_le_zetaSeries j (by omega))
+  rw [← Real.log_pow, abs_le] at hb
   constructor
-  · rw [← Real.log_le_log_iff (inv_pos.2 (pow_pos hz0 _)) hpos, Real.log_inv]; exact hb.1
-  · rw [← Real.log_le_log_iff hpos (pow_pos hz0 _)]; exact hb.2
+  · rw [← Real.log_le_log_iff (inv_pos.2 (pow_pos hz0 _)) hpos, Real.log_inv]
+    exact hb.1
+  · rw [← Real.log_le_log_iff hpos (pow_pos hz0 _)]
+    exact hb.2
 
 theorem xi_explicit (D : D7) (u : D.what₂.Word) (h1 : UnitaryVolumeMass.stMassRatio D) (hv : 1 ≤ D.host.v)
     (s : ℕ) (hs : 2 ≤ s) (hsk : s ≤ D.R.k - 2) (HH C : ℝ) :
@@ -442,8 +439,7 @@ theorem card_quot_le_pow {R : Type} [CommRing R] {N : Type} [AddCommGroup N] [Mo
 theorem absNorm_ge_two {K : Type} [Field K] [NumberField K] (p : Ideal (𝓞 K)) (hp : p.IsMaximal) :
     2 ≤ Ideal.absNorm p := by
   have h0 : p ≠ ⊥ := Ring.ne_bot_of_isMaximal_of_not_isField hp (NumberField.RingOfIntegers.not_isField K)
-  have h1 : Ideal.absNorm p ≠ 0 := fun h => h0 (Ideal.absNorm_eq_zero_iff.mp h)
-  have h2 : Ideal.absNorm p ≠ 1 := fun h => hp.ne_top (Ideal.absNorm_eq_one_iff.mp h)
+  obtain ⟨h1, h2⟩ : Ideal.absNorm p ≠ 0 ∧ Ideal.absNorm p ≠ 1 := ⟨fun h => h0 (Ideal.absNorm_eq_zero_iff.mp h), fun h => hp.ne_top (Ideal.absNorm_eq_one_iff.mp h)⟩
   omega
 
 theorem absNorm_pE (D : D7) (p : Ideal (𝓞 D.host.F)) :
@@ -599,14 +595,12 @@ def Lem3Mass (D : D7) : Prop :=
 
 private theorem mass_bound_lemma (m A P B : ℝ) (L : ℕ) (hm : 0 ≤ m) (hA : 0 < A) (hP : 0 < P) (hPB : P ≤ B)
     (h : m * L = A * P) : m ≤ A * B := by
-  have hL : L ≠ 0 := by
-    intro h0
-    rw [h0, Nat.cast_zero, mul_zero] at h
+  rcases L with _ | L
+  · rw [Nat.cast_zero, mul_zero] at h
     linarith [mul_pos hA hP]
-  have hL1 : (1 : ℝ) ≤ L := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hL
-  calc m ≤ m * L := le_mul_of_one_le_right hm hL1
-    _ = A * P := h
-    _ ≤ A * B := mul_le_mul_of_nonneg_left hPB hA.le
+  · calc m ≤ m * (Nat.succ L : ℕ) := le_mul_of_one_le_right hm (by exact_mod_cast Nat.succ_le_succ (Nat.zero_le L))
+      _ = A * P := h
+      _ ≤ A * B := mul_le_mul_of_nonneg_left hPB hA.le
 
 private theorem prod_bound_lemma_2 {ι : Type} [Fintype ι] (f : ι → ℝ) (c : ℝ) (hf : ∀ i, 0 < f i ∧ f i ≤ c) :
     0 < ∏ i, f i ∧ ∏ i, f i ≤ c ^ Fintype.card ι := by

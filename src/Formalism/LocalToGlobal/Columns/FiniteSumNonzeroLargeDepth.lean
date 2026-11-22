@@ -1170,15 +1170,13 @@ variable {X : Fields} {Pr : Primes X}
 theorem mem_locLat {E : Type} [Field E] [NumberField E] {n : ℕ} (SB : Finset (HeightOneSpectrum (𝓞 E)))
     (N : Submodule (𝓞 E) (Sp E n)) (e : SB → ℤ) (z : Sp E n) :
     z ∈ locLat SB N e ↔ ∀ P : SB, ((qOf P.1 : E) ^ e P)⁻¹ • z ∈ localization₂ P.1.asIdeal N := by
-  simp only [locLat, Submodule.mem_iInf, Submodule.mem_comap]
-  rfl
+  simp [locLat]
 
 theorem mem_locLat_gmap {E : Type} [Field E] [NumberField E] [StarRing E] {n : ℕ} (SB : Finset (HeightOneSpectrum (𝓞 E)))
     (N : Submodule (𝓞 E) (Sp E n)) (e : SB → ℤ) (γ : Sp E n ≃ₗ[E] Sp E n) (z : Sp E n) :
     z ∈ locLat SB (gmap γ N) e ↔ γ.symm z ∈ locLat SB N e := by
   rw [mem_locLat, mem_locLat]
-  refine forall_congr' fun P => ?_
-  rw [mem_localization_gmap, map_smul]
+  simp only [mem_localization_gmap, map_smul]
 
 theorem ybSet_gmap {n : ℕ} (N : Submodule (𝓞 X.E) (Sp X.E n)) (γ : Sp X.E n ≃ₗ[X.E] Sp X.E n) (Y : Set (Sp X.E n)) :
     (fun v => γ v) '' Y ∈ ybSet sel mu cst (gmap γ N) ↔ Y ∈ ybSet sel mu cst N := by
@@ -1384,9 +1382,8 @@ theorem start_mem (u : Pr.Word) (Λ : LevFam X.E X.K (R.N 0) Pr.vGs)
       (frmGSD (colValF W sel mu u 0) Λ Θ).EqFun := by
   subst hΛ hΘ
   intro g p
-  have h1 := φ.2 (g.1, g.2.1) p.deco
   show (φ : (colGSD W Ch u 0).D → (colGSD W Ch u 0).V) ((g.1, g.2.1) • p.deco) = _
-  rw [h1]
+  rw [φ.2 (g.1, g.2.1) p.deco]
   have h2 : frmRho (colValF W sel mu u 0) (colLev Ch 0) (LevQFam.top X.E X.K (R.N 0) _) g =
       formRho (colVal W u 0 (Pr.vT u) Pr.vGs) (colLev Ch 0) (g.1, g.2.1) := by
     show ((((colLev Ch 0).chr g.2.1 * (LevQFam.top X.E X.K (R.N 0) _).chr g.2.2 : X.Kˣ)) : X.K) •

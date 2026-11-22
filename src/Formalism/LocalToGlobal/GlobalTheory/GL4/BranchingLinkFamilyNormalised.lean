@@ -181,17 +181,15 @@ theorem sqAct_shiftW (R : Type) [CommRing R] {N : ℕ} (lam : DomWeight N) (c : 
     rw [detShift_shiftW lam c hN, smul_smul, detPow_add, mul_comm]
 
 theorem det_blockMat {n : ℕ} (g : Matrix (Fin n) (Fin n) ℂ) : (blockMat g).det = g.det := by
-  unfold blockMat
-  rw [Matrix.det_reindex_self, Matrix.det_fromBlocks_zero₂₁, Matrix.det_one, mul_one]
+  simp [blockMat]
 
 theorem detPow_blockMat {n : ℕ} (g : GL (Fin n) ℂ) (H : GL (Fin (n + 1)) ℂ)
     (hH : (H : Matrix (Fin (n + 1)) (Fin (n + 1)) ℂ) = blockMat (g : Matrix (Fin n) (Fin n) ℂ)) (c : ℤ) :
     detPow ℂ (n + 1) H c = detPow ℂ n g c := by
   have h : Matrix.GeneralLinearGroup.det H = Matrix.GeneralLinearGroup.det g := by
     ext
-    rw [Matrix.GeneralLinearGroup.val_det_apply, Matrix.GeneralLinearGroup.val_det_apply, hH, det_blockMat]
-  unfold detPow
-  rw [h]
+    simp [Matrix.GeneralLinearGroup.val_det_apply, hH, det_blockMat]
+  simp [detPow, h]
 
 theorem normTil_shiftW {n : ℕ} (lt : DomWeight (n + 1)) (c : ℤ) (T : ℕ) (G : GL (Fin (n + 1)) ℂ)
     (hG : (G : Matrix (Fin (n + 1)) (Fin (n + 1)) ℂ) = scaleMat n T)

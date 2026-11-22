@@ -41,11 +41,9 @@ theorem weighted_mean_lemma_ge (ι : Type*) [Fintype ι] [Nonempty ι] : LemmaUg
   obtain ⟨hmax, hmu⟩ := hS2
   have h1 : wmean d (fun u => muM u - h u) + Sg0 - wmean d (fun u => dr u + BE u)
       ≤ sF d muN h := by
-    have e : wmean d (fun u => (muM u - h u + Sg0) - (dr u + BE u))
-        = wmean d (fun u => muM u - h u) + Sg0 - wmean d (fun u => dr u + BE u) := by
-      rw [wmean_sub d (fun u => muM u - h u + Sg0) (fun u => dr u + BE u),
-        wmean_add' d (fun u => muM u - h u) (fun _ => Sg0), wmean_const' hd]
-    rw [← e]
+    rw [← wmean_const' hd Sg0,
+      ← wmean_add' d (fun u => muM u - h u) (fun _ => Sg0),
+      ← wmean_sub d (fun u => muM u - h u + Sg0) (fun u => dr u + BE u)]
     unfold sF
     exact wmean_mono' hd fun u => by linarith [hmu u]
   have h2 : umax (fun u => muMaxN u - h u) ≤ umax (fun u => muMaxM u - h u) + Sg0 := by

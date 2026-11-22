@@ -20,9 +20,7 @@ lemma minorProd_map {R : Type u} [CommRing R] {σ τ : Type} {N0 N1 Cn : ℕ}
     φ (minorProd row p hp I) = minorProd (fun i b => φ (row i b)) p hp I := by
   unfold minorProd
   rw [map_prod]
-  refine Finset.prod_congr rfl fun c _ => ?_
-  rw [AlgHom.map_det]
-  rfl
+  exact Finset.prod_congr rfl fun _ _ => AlgHom.map_det (f := φ) _
 
 theorem one_row_bound : OneRow.{u} := by
   intro K _ _ N0 N1 Cn f hf hdet x hx p hp I

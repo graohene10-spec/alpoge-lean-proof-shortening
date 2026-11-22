@@ -9,12 +9,8 @@ open Formalism.BasicNotions
 
 theorem lam_entry (D : D7) (u : D.what₂.Word) (i : ℕ) (hi : i ≤ D.R.m) (τ : D.what₂.Tau) (a : Fin (D.R.N i)) :
     ((((D.fm u).lam i τ).w a : ℤ) : ℚ) = flipTwoThree.lamLiftN D u τ a.1 := by
-  rw [(D.fm u).lam_eq i hi τ a]
-  unfold flipTwoThree.lamLiftN flipTwoThree.lamCol flipTwoThree.wJ
-  by_cases h : a.1 < D.R.k
-  · simp [h]
-  · have hj : (a.1 - D.R.k) / (D.R.t + 1) < D.R.m := D.R.blk_lt hi a h
-    simp [h, hj]
+  apply Rat.cast_injective (α := ℝ)
+  simpa using Formalism.MainNotions.GlobalTheoryTheory.Alc.entryR D u i hi τ a
 
 theorem lam_entryR (D : D7) (u : D.what₂.Word) (i : ℕ) (hi : i ≤ D.R.m) (τ : D.what₂.Tau) (a : Fin (D.R.N i)) :
     ((((D.fm u).lam i τ).w a : ℤ) : ℝ) = ((flipTwoThree.lamLiftN D u τ a.1 : ℚ) : ℝ) := by

@@ -709,9 +709,8 @@ theorem mem_O_of_quad (L : LocE F E) (z : E) (t n : 𝒪[F])
     linear_combination h
 
 theorem algebraMap_mem_O (L : LocE F E) (a : 𝒪[F]) : algebraMap F E a ∈ L.O := by
-  rw [L.O_def]
-  have h : algebraMap F E (a : F) = algebraMap 𝒪[F] E a := (IsScalarTower.algebraMap_apply 𝒪[F] F E a).symm
-  rw [h]
+  rw [L.O_def, (show algebraMap F E (a : F) = algebraMap 𝒪[F] E a from
+    (IsScalarTower.algebraMap_apply 𝒪[F] F E a).symm)]
   exact isIntegral_algebraMap
 
 theorem mem_OF_of_mem_O [Nontrivial E] (L : LocE F E) (a : F) (h : algebraMap F E a ∈ L.O) : a ∈ 𝒪[F] := by

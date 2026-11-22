@@ -646,14 +646,12 @@ theorem placesOver_ncard_of_split (p : ℕ) [hp : Fact p.Prime] (hpm : p % H.con
     (placesOver H.E p).ncard = Module.finrank ℚ H.E := by
   have h1 : 1 < H.condN := lt_of_lt_of_le (by norm_num)
     (Nat.le_of_dvd (Nat.pos_of_ne_zero H.condN_ne_zero) H.sixteen_dvd_condN)
-  have hmod : p ≡ 1 [MOD H.condN] := by
-    unfold Nat.ModEq; rw [hpm, Nat.mod_eq_of_lt h1]
+  have hmod : p ≡ 1 [MOD H.condN] := hpm.trans (Nat.mod_eq_of_lt h1).symm
   have hpN : p.Coprime H.condN := Nat.coprime_of_mul_modEq_one 1 (by simpa using hmod)
   refine placesOver_ncard_of_art H p hpN ?_
   have : ZMod.unitOfCoprime p hpN = 1 := by
     apply Units.ext
-    rw [ZMod.coe_unitOfCoprime, Units.val_one, ← Nat.cast_one (R := ZMod H.condN),
-      ZMod.natCast_eq_natCast_iff]
+    rw [ZMod.coe_unitOfCoprime, Units.val_one, ← Nat.cast_one, ZMod.natCast_eq_natCast_iff]
     exact hmod
   rw [this, map_one]
 

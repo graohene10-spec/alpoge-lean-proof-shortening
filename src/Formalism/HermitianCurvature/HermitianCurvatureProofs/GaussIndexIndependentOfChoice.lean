@@ -32,24 +32,20 @@ theorem eq_zero_of_ideal (hD : LocalDatum K R ψ) (h0 : ∀ n : ℕ, n ≠ 0 →
     obtain ⟨c, -, hc⟩ := hD.isCompact.exists_mapClusterPt (f := atTop)
       (u := fun n : ℕ => (n : K) * x) (by
         rw [Filter.le_principal_iff, Filter.mem_map]; exact Filter.univ_mem' hseq)
-    have ht : Tendsto (fun p : K × K => p.1 - p.2) (𝓝 c ×ˢ 𝓝 c) (𝓝 0) := by
-      have : Continuous (fun p : K × K => p.1 - p.2) := continuous_fst.sub continuous_snd
-      have h2 := this.tendsto (c, c)
-      rwa [nhds_prod_eq, sub_self] at h2
+    have ht : Tendsto (Prod.fst - Prod.snd : K × K → K) (𝓝 c ×ˢ 𝓝 c) (𝓝 0) := by
+      simpa [nhds_prod_eq, sub_self] using
+        (continuous_fst.sub continuous_snd : Continuous (Prod.fst - Prod.snd : K × K → K)).tendsto (c, c)
     obtain ⟨U, hU, hUW⟩ := Filter.mem_prod_self_iff.1 (ht hW)
     have hfr := mapClusterPt_iff_frequently.1 hc U hU
     rw [Filter.frequently_atTop] at hfr
     obtain ⟨n, -, hn⟩ := hfr 0
     obtain ⟨m, hm, hm'⟩ := hfr (n + 1)
     refine ⟨m - n, by omega, ?_⟩
-    have : ((m - n : ℕ) : K) * x = (m : K) * x - (n : K) * x := by
-      rw [Nat.cast_sub (by omega)]; ring
-    rw [this]
+    rw [Nat.cast_sub (by omega), sub_mul]
     exact hUW (Set.mk_mem_prod hm' hn)
   by_contra hne
-  have hxx : x * x ≠ 0 := by
-    intro h
-    exact hne (IsReduced.eq_zero x ⟨2, by rw [sq]; exact h⟩)
+  have hxx : x * x ≠ 0 := fun h =>
+    hne (IsReduced.eq_zero x ⟨2, by simpa [sq] using h⟩)
   obtain ⟨V, hV, hVR⟩ := tube (fun p : K × K => p.1 * p.2) (continuous_fst.mul continuous_snd) 0
     (R : Set K) hD.isCompact {y | y ≠ x * x} isOpen_ne (by
       intro y _; simp only [zero_mul, Set.mem_ofPred_eq]; exact fun h => hxx h.symm)
@@ -105,10 +101,7 @@ theorem big (hD : LocalDatum K R ψ) {ϖ : Kˣ}
   obtain ⟨n, hn⟩ := hC.elim_directed_cover
     (fun n : ℕ => (fun y => (ϖ : K) ^ n * y) ⁻¹' (R : Set K))
     (fun n => hD.isOpen.preimage (continuous_const.mul continuous_id))
-    (by
-      intro y _
-      rw [Set.mem_iUnion]
-      exact hϖ' y)
+    (fun y _ => by simpa using hϖ' y)
     (by
       apply directed_of_isDirected_le
       intro a b hab y hy
@@ -116,7 +109,7 @@ theorem big (hD : LocalDatum K R ψ) {ϖ : Kˣ}
       show (ϖ : K) ^ (a + k) * y ∈ R
       have e : (ϖ : K) ^ (a + k) * y = (ϖ : K) ^ k * ((ϖ : K) ^ a * y) := by rw [pow_add]; ring
       rw [e]; exact R.mul_mem (R.pow_mem hϖ k) hy)
-  exact ⟨n, fun y hy => hn hy⟩
+  exact ⟨n, hn⟩
 
 theorem compact_big (hD : LocalDatum K R ψ) (ϖ : Kˣ) (n : ℕ) :
     IsCompact {y : K | (ϖ : K) ^ n * y ∈ R} := by
@@ -635,8 +628,7 @@ theorem main : GaussAdmSmall := by
   obtain ⟨V, hV, hVF⟩ := tube F hF 0 (C₂ ×ˢ {y : Fin m → K | ∀ k, y k ∈ C₁})
     (hC₂.prod (Osc.compact_box _ hC₁)) (R : Set K) hD.isOpen (by
       intro y _
-      have : F (0, y) = 0 := by simp [F]
-      rw [this]; exact R.zero_mem)
+      simp [F])
   refine ⟨V, hV, fun t z ht hz y hy => ?_⟩
   rw [Matrix.inv_eq_right_inv (hess_inv m (z * t) _ hc), quad, Units.val_mul]
   exact psi_R hD (hVF _ ht (_, y) ⟨hroot _ hz, fun k => hperp _ (hy k)⟩)
@@ -893,15 +885,11 @@ theorem isLat_inf [T2Space K] {Λ Λ' : AddSubgroup K} (h : IsLat Λ) (h' : IsLa
 
 theorem isLat_sup {L L' : AddSubgroup K} (h : IsLat L) (h' : IsLat L') : IsLat (L ⊔ L') := by
   refine ⟨AddSubgroup.isOpen_mono (le_sup_left : L ≤ L ⊔ L') h.1, ?_⟩
-  have : ((L ⊔ L' : AddSubgroup K) : Set K) = (fun p : K × K => p.1 + p.2) '' ((L : Set K) ×ˢ (L' : Set K)) := by
+  have hcoe : ((L ⊔ L' : AddSubgroup K) : Set K) =
+      (fun p : K × K => p.1 + p.2) '' ((L : Set K) ×ˢ (L' : Set K)) := by
     ext x
-    constructor
-    · intro hx
-      obtain ⟨a, ha, b, hb, rfl⟩ := AddSubgroup.mem_sup.1 hx
-      exact ⟨(a, b), ⟨ha, hb⟩, rfl⟩
-    · rintro ⟨⟨a, b⟩, ⟨ha, hb⟩, rfl⟩
-      exact AddSubgroup.mem_sup.2 ⟨a, ha, b, hb, rfl⟩
-  rw [this]
+    simp [AddSubgroup.mem_sup, Set.mem_add]
+  rw [hcoe]
   exact (h.2.prod h'.2).image (continuous_fst.add continuous_snd)
 
 theorem main : GaussIndep := by

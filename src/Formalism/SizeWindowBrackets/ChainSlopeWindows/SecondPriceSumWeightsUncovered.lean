@@ -162,8 +162,7 @@ lemma logT_of_window {D : Data U0 W Top m f} {c5 Gam : ℝ} {X : ∀ u0, W u0 �
   obtain ⟨hX, h1, h2⟩ := hLW u0 u
   have hy := (fk_pos hW).1
   obtain ⟨_, _, _, hG, hlG, _⟩ := hW
-  rw [hlG]
-  exact logT_bounds hX hG hy h1 h2
+  simpa only [hlG] using logT_bounds hX hG hy h1 h2
 
 end
 
@@ -310,10 +309,7 @@ lemma bernoulli_level (f : ℕ) {T : ℝ} (hT : 2 ≤ T) :
   have hy : 0 < T - 1 := by linarith
   have h1 : 1 / (T - 1) ≤ 1 := by rw [div_le_one hy]; linarith
   have h := one_add_mul_le_pow (a := -(1 / (T - 1))) (by linarith) f
-  have e1 : 1 + (f : ℝ) * -(1 / (T - 1)) = 1 - (f : ℝ) / (T - 1) := by ring
-  have e2 : 1 + -(1 / (T - 1)) = 1 - 1 / (T - 1) := by ring
-  rw [e1, e2] at h
-  exact h
+  simpa [sub_eq_add_neg, mul_neg, div_eq_mul_inv] using h
 
 theorem defect_bound_alt : DefectBound := by
   intro f T hT
@@ -665,9 +661,7 @@ noncomputable def D1 : Data Unit (fun _ => Fin 2) Unit 6 2 :=
     muMaxM := fun u0 u => ZiiiR D0 1 1 1 (Real.log (D0.T u0 u)) }
 
 lemma h6 : (6 : ℝ) ≤ Real.exp 2 := by
-  have h := Real.exp_one_gt_d9
-  have e : Real.exp 2 = Real.exp 1 * Real.exp 1 := by rw [← Real.exp_add]; norm_num
-  rw [e]; nlinarith
+  rw [show (2 : ℝ) = 1 + 1 by norm_num, Real.exp_add]; nlinarith [Real.exp_one_gt_d9]
 
 lemma exp_forty_eq : Real.exp 40 = Real.exp 2 * Real.exp 2 * Real.exp 36 := by
   rw [← Real.exp_add, ← Real.exp_add]; norm_num

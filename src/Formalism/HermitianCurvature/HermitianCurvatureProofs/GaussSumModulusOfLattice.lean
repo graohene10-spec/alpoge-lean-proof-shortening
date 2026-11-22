@@ -62,8 +62,7 @@ theorem p_mem (s : Finset (Fin m)) :
   Ideal.sum_mem _ fun k _ => Ideal.pow_mem_pow (X_mem k) 2
 
 theorem two_half : (2 : MvPolynomial (Fin m) ℚ) * C (1 / 2 : ℚ) = 1 := by
-  have : (2 : MvPolynomial (Fin m) ℚ) = C 2 := (map_ofNat C 2).symm
-  rw [this, ← C_mul]; norm_num
+  rw [← map_ofNat C 2, ← C_mul, show (2 : ℚ) * (1 / 2) = 1 by norm_num, MvPolynomial.C_1]
 
 theorem prod_jet (s : Finset (Fin m)) :
     (∏ k ∈ s, (1 + X k) - (1 + ∑ k ∈ s, X k + C (1 / 2 : ℚ) *
@@ -145,9 +144,7 @@ theorem prj_apply (Λ : AddSubgroup K) (x : Fin m → K) (i : Fin m) :
 
 theorem ker_prj (Λ : AddSubgroup K) : (prj Λ m).ker = PL Λ m := by
   ext x
-  rw [AddMonoidHom.mem_ker, mem_PL, funext_iff]
-  exact forall_congr' fun i => by
-    rw [prj_apply, Pi.zero_apply, QuotientAddGroup.eq_zero_iff]
+  simp [AddMonoidHom.mem_ker, mem_PL, funext_iff, prj_apply, QuotientAddGroup.eq_zero_iff]
 
 def sec (Λ : AddSubgroup K) (y : Fin m → K ⧸ Λ) : Fin m → K := fun i => Quotient.out (y i)
 
@@ -205,9 +202,7 @@ variable {K : Type} [CommRing K] {m : ℕ} (ψ : AddChar K ℂ)
 
 theorem psi_ne_zero (x : K) : ψ x ≠ 0 := by
   intro h
-  have h1 := AddChar.map_add_eq_mul ψ x (-x)
-  rw [add_neg_cancel, AddChar.map_zero_eq_one, h, zero_mul] at h1
-  exact one_ne_zero h1
+  exact (one_ne_zero : (1 : ℂ) ≠ 0) (by simpa only [h, add_neg_cancel, AddChar.map_zero_eq_one ψ, zero_mul] using AddChar.map_add_eq_mul ψ x (-x))
 
 theorem dot_perp {L : AddSubgroup K} {x u : Fin m → K} (hx : x ∈ PL L m)
     (hu : u ∈ PL (perp ψ L) m) : ψ (x ⬝ᵥ u) = 1 := by
@@ -312,10 +307,8 @@ theorem inv_mem (h2 : IsUnit (2 : K)) (hM : M.IsSymm) (hAdm : GaussAdm ψ L M) {
     (hu : u ∈ PL (perp ψ L) m) : M⁻¹ *ᵥ u ∈ PL (perp ψ (perp ψ L)) m := by
   apply mem_perp_of_dot
   intro x hx
-  have hMi : (M⁻¹).IsSymm := hM.inv
   have h1 := hAdm (x + u) (mem_PL.1 ((PL _ m).add_mem hx hu))
-  rw [psi_q_add ψ h2 hMi, hAdm x (mem_PL.1 hx), hAdm u (mem_PL.1 hu), one_mul, one_mul] at h1
-  exact h1
+  rwa [psi_q_add ψ h2 hM.inv, hAdm x (mem_PL.1 hx), hAdm u (mem_PL.1 hu), one_mul, one_mul] at h1
 
 theorem normSq_sum (h2 : IsUnit (2 : K)) (hM : M.IsSymm) (hInv : LatInvN Λ (gaussF ψ L M))
     (hu : ∀ x : K, conj (ψ x) = ψ (-x)) (hdet : IsUnit M.det)
@@ -406,9 +399,8 @@ theorem gi_of_ge {V : Type} [AddCommGroup V] {A B : AddSubgroup V} (h : B ≤ A)
 theorem rpow_of_sq {x X : ℝ} (hx : 0 < x) (hX : 0 ≤ X) (h : X ^ 2 * x = 1) :
     X = x ^ (-(1 : ℝ) / 2) := by
   have h1 : (x ^ (-(1 : ℝ) / 2)) ^ 2 = x⁻¹ := by
-    rw [← Real.rpow_natCast, ← Real.rpow_mul hx.le]
-    norm_num
-    exact Real.rpow_neg_one x
+    rw [← Real.rpow_natCast, ← Real.rpow_mul hx.le,
+      show (-(1 : ℝ) / 2) * ((2 : ℕ) : ℝ) = -1 by norm_num, Real.rpow_neg_one x]
   have h2 : X ^ 2 = (x ^ (-(1 : ℝ) / 2)) ^ 2 := by
     rw [h1]; field_simp; exact h
   exact (pow_left_inj₀ hX (Real.rpow_nonneg hx.le _) (by norm_num)).1 h2

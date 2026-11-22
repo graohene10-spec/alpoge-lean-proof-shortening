@@ -63,8 +63,7 @@ theorem xOf_redOf (m : ℕ) (p : XY m) (k : Fin (m + 1)) :
   · rw [G6.xOf_last]
     simp [redOf, triXY, strictUpper, Fin.succ_last]
   · rw [G6.xOf_castSucc]
-    have h : k.castSucc < k.succ := Fin.castSucc_lt_succ
-    simp [redOf, triXY, strictUpper, h]
+    simp [redOf, triXY, strictUpper]
 
 theorem wM_redOf (m : ℕ) (t ρ₁ : ℂ) (p : XY m) :
     wMat (m + 2) * Mcoord t (strictUpper (redOf m p).2.2.1) (redOf m p).2.2.2

@@ -17,11 +17,8 @@ theorem comm_inv {B : Type} [Monoid B] {x xi b : B} (h1 : x * xi = 1) (h2 : xi *
 theorem star_inv {B : Type} [Monoid B] [StarMul B] {x xi : B} (h1 : x * xi = 1)
     (h : star x = x) : star xi = xi := by
   have h2 : star xi * x = 1 := by
-    have := congrArg star h1
-    rwa [star_mul, h, star_one] at this
-  calc star xi = star xi * (x * xi) := by rw [h1, mul_one]
-    _ = (star xi * x) * xi := (mul_assoc _ _ _).symm
-    _ = xi := by rw [h2, one_mul]
+    simpa only [star_mul, h, star_one] using congrArg star h1
+  rw [← mul_one (star xi), ← h1, ← mul_assoc, h2, one_mul]
 
 theorem mul_mul_one {B : Type} [Monoid B] {c ci d di : B} (h1 : c * ci = 1) (h2 : d * di = 1)
     (h : Commute d ci) : c * d * (ci * di) = 1 := by

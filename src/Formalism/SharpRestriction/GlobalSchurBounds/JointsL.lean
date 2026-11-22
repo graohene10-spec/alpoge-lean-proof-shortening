@@ -486,8 +486,7 @@ end Sig
 
 theorem exists_ext {F E : Type} [Field F] [Field E] [Algebra F E] [Algebra.IsAlgebraic F E]
     (ι' : F →+* ℝ) : ∃ τ : E →+* ℂ, ∀ a, τ (algebraMap F E a) = ((ι' a : ℝ) : ℂ) := by
-  letI : Algebra F ℂ := (Complex.ofRealHom.comp ι').toAlgebra
-  exact ⟨(IsAlgClosed.lift : E →ₐ[F] ℂ).toRingHom, fun a => (IsAlgClosed.lift : E →ₐ[F] ℂ).commutes a⟩
+  letI : Algebra F ℂ := (Complex.ofRealHom.comp ι').toAlgebra; exact ⟨(IsAlgClosed.lift : E →ₐ[F] ℂ).toRingHom, (IsAlgClosed.lift : E →ₐ[F] ℂ).commutes⟩
 
 theorem isDef_of_sig {F E : Type} [Field F] [Field E] [Algebra F E] [Algebra.IsAlgebraic F E] {k : ℕ}
     (σ : E →ₐ[F] E) (J : Matrix (Fin k) (Fin k) E) (hJ : UnusedSlot33.IsHerm (σ : E →+* E) J)
@@ -780,15 +779,11 @@ theorem db_b'pos {D : D7} (L : SizeData₂ D) : 0 < L.sc.b' := by
   exact div_pos (mul_pos (lt_trans one_pos L.sc.one_lt_alt) (Real.exp_pos _)) (Real.exp_pos _)
 
 theorem db_w {D : D7} (L : SizeData₂ D) : 0 < L.sc.w'' D.R.n ∧ L.sc.w'' D.R.n ≤ L.sc.b' := by
-  obtain ⟨hk3, hm2, hkt, hkr, hn1, hf, hmk⟩ := db_rk D
-  have hx1 := L.sc.one_lt_alt
+  obtain ⟨-, -, -, -, hn1, -, -⟩ := db_rk D
   have hb'0 := db_b'pos L
-  have hxn : 1 ≤ L.sc.x * D.R.n := by nlinarith
-  constructor
-  · unfold Scale.w''
-    exact div_pos hb'0 (by linarith)
-  · unfold Scale.w''
-    exact div_le_self hb'0.le hxn
+  have hxn : 1 ≤ L.sc.x * D.R.n := by nlinarith [L.sc.one_lt_alt, hn1]
+  unfold Scale.w''
+  exact ⟨div_pos hb'0 (by linarith), div_le_self hb'0.le hxn⟩
 
 theorem db_b'le {D : D7} (L : SizeData₂ D) (S : SizesAt L) (hx : 3 ≤ L.sc.x) : L.sc.b' ≤ L.sc.b := by
   obtain ⟨hk3, hm2, -, hkr, -, -, -⟩ := db_rk D
@@ -835,14 +830,9 @@ theorem db_b'le {D : D7} (L : SizeData₂ D) (S : SizesAt L) (hx : 3 ≤ L.sc.x)
   exact le_of_mul_le_mul_right fin (by linarith)
 
 theorem eta_size_le_b_div_27 {D : D7} (L : SizeData₂ D) (S : SizesAt L) (hx : 3 ≤ L.sc.x) : L.etaSz ≤ L.sc.b / 27 := by
-  obtain ⟨hk3, hm2, hkt, hkr, hn1, hf, hmk⟩ := db_rk D
-  obtain ⟨hL1, hLx, hb2, hkb, hvb, hlx⟩ := db_basic L S hx
-  have hx0 : 0 < L.sc.x := by linarith
-  have hx1 : 1 ≤ L.sc.x := by linarith
-  have hE1 : 1 ≤ L.sc.x ^ L.sc.eps := hL1
+  obtain ⟨hk3, -, hkt, -, hn1, hf, -⟩ := db_rk D
+  obtain ⟨-, -, hb2, -, -, -⟩ := db_basic L S hx
   have hb0 : 0 < L.sc.b := by linarith
-  have hη := L.etaSz_pos
-  have hSc := L.Sc_pos
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, hEta, -⟩ := S
   have h2 : L.etaSz ≤ L.sc.b / ((D.R.t : ℝ) ^ 3 * D.R.f * (D.R.k : ℝ) ^ 3) := hEta.2.1
   have ht1 : (1 : ℝ) ≤ (D.R.t : ℝ) ^ 3 := one_le_pow₀ (by linarith)
@@ -857,22 +847,16 @@ theorem eta_size_le_b_div_27 {D : D7} (L : SizeData₂ D) (S : SizesAt L) (hx : 
 
 theorem db_xeta {D : D7} (L : SizeData₂ D) (S : SizesAt L) (hx : 3 ≤ L.sc.x) :
     (L.sc.x + 1) * L.etaSz ≤ L.sc.w'' D.R.n := by
-  obtain ⟨hk3, hm2, hkt, hkr, hn1, hf, hmk⟩ := db_rk D
-  obtain ⟨hL1, hLx, hb2, hkb, hvb, hlx⟩ := db_basic L S hx
+  obtain ⟨hk3, -, hkt, -, -, -, -⟩ := db_rk D
   have hx0 : 0 < L.sc.x := by linarith
-  have hx1 : 1 ≤ L.sc.x := by linarith
-  have hE1 : 1 ≤ L.sc.x ^ L.sc.eps := hL1
-  have hb0 : 0 < L.sc.b := by linarith
   have hη := L.etaSz_pos
-  have hSc := L.Sc_pos
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, hEta, -⟩ := S
   have h4 : (D.R.t : ℝ) * L.etaSz ≤ L.sc.w'' D.R.n / L.sc.x := hEta.2.2.2.1
   rw [le_div_iff₀ hx0] at h4
   have ht3 : (3 : ℝ) ≤ D.R.t := by linarith
   have a1 : (L.sc.x + 1) * L.etaSz ≤ 3 * L.etaSz * L.sc.x := by nlinarith
-  have a2 : 3 * L.etaSz * L.sc.x ≤ (D.R.t : ℝ) * L.etaSz * L.sc.x := by
-    have : 3 * L.etaSz ≤ (D.R.t : ℝ) * L.etaSz := mul_le_mul_of_nonneg_right ht3 hη.le
-    exact mul_le_mul_of_nonneg_right this hx0.le
+  have a2 : 3 * L.etaSz * L.sc.x ≤ (D.R.t : ℝ) * L.etaSz * L.sc.x :=
+    mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right ht3 hη.le) hx0.le
   linarith
 
 theorem db_bT {D : D7} (L : SizeData₂ D) (S : SizesAt L) (hx : 3 ≤ L.sc.x) :
@@ -907,14 +891,8 @@ theorem db_bT {D : D7} (L : SizeData₂ D) (S : SizesAt L) (hx : 3 ≤ L.sc.x) :
 
 theorem db_xS {D : D7} (L : SizeData₂ D) (S : SizesAt L) (hx : 3 ≤ L.sc.x) :
     L.sc.x * L.Sc ≤ 3 / 4 * L.sc.w'' D.R.n := by
-  obtain ⟨hk3, hm2, hkt, hkr, hn1, hf, hmk⟩ := db_rk D
-  obtain ⟨hL1, hLx, hb2, hkb, hvb, hlx⟩ := db_basic L S hx
-  have hx0 : 0 < L.sc.x := by linarith
   have hx1 : 1 ≤ L.sc.x := by linarith
-  have hE1 : 1 ≤ L.sc.x ^ L.sc.eps := hL1
-  have hb0 : 0 < L.sc.b := by linarith
-  have hη := L.etaSz_pos
-  have hSc := L.Sc_pos
+  have hSc : 0 < L.Sc := L.Sc_pos
   obtain ⟨-, -, hK, -, -, -, -, -, -, -, -, -, -, -, -, -, hDel, -⟩ := S
   have h4 : (D.R.k : ℝ) * L.Sc ≤ L.sc.w'' D.R.n := hDel.2.2.2.1
   have hk1 : L.sc.x ^ (9 / 2 + 10 * L.sc.eps - szTh L) ≤ (D.R.k : ℝ) := hK.1
@@ -923,6 +901,9 @@ theorem db_xS {D : D7} (L : SizeData₂ D) (S : SizesAt L) (hx : 3 ≤ L.sc.x) :
     Real.rpow_le_rpow_of_exponent_le hx1 (by rw [hth]; linarith [L.sc.eps_pos])
   rw [Real.rpow_two] at h2
   have h3 : 3 * L.sc.x ≤ D.R.k := by nlinarith
+  have h5 : 3 * L.sc.x * L.Sc ≤ L.sc.w'' D.R.n :=
+    (mul_le_mul_of_nonneg_right h3 hSc.le).trans h4
+  have hxSc : 0 ≤ L.sc.x * L.Sc := mul_nonneg (by linarith) hSc.le
   nlinarith
 
 theorem db_xk {D : D7} (L : SizeData₂ D) (S : SizesAt L) (hx : 3 ≤ L.sc.x) : 3 * L.sc.x ≤ D.R.k := by
@@ -1083,18 +1064,15 @@ theorem dataB_fam {eps : ℝ} (Fm : FamP eps) (x : ℝ) (h3 : 3 ≤ x) (hx : Fm.
   exact dataB_of (Fm.L x i) (Fm.params x hx i) (Fm.sizes x hx i) (by rw [Fm.L_x x i hx]; exact h3)
 
 theorem gBig_of {D : D7} (L : SizeData₂ D) (S : SizesAt L) (hx : 3 ≤ L.sc.x) : StandardLattice.GBig D := by
-  obtain ⟨hk3, hm2, hkt, hkr, hn1, hf, hmk⟩ := db_rk D
-  obtain ⟨hL1, hLx, hb2, hkb, hvb, hlx⟩ := db_basic L S hx
+  obtain ⟨hk3, -, -, -, -, -, -⟩ := db_rk D
+  obtain ⟨-, -, hb2, -, -, -⟩ := db_basic L S hx
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, -, hG, -⟩ := S
   refine ⟨0, ?_⟩
   have hg : ((D.R.k : ℝ) * L.sc.b) ^ 8 ≤ (D.host.g 0 : ℝ) := (hG 0 0).1
   have hfk : (D.R.f : ℝ) ≤ D.R.k := by
     have : D.R.f ≤ D.R.k := by unfold Ranks.f Ranks.n; exact D.R.f_le_k
     exact_mod_cast this
-  have hkb1 : 1 ≤ (D.R.k : ℝ) * L.sc.b := by nlinarith
-  have h28 : ((D.R.k : ℝ) * L.sc.b) ^ 2 ≤ ((D.R.k : ℝ) * L.sc.b) ^ 8 := pow_le_pow_right₀ hkb1 (by norm_num)
-  have h2k : 2 * (D.R.k : ℝ) ≤ (D.R.k : ℝ) * L.sc.b := by nlinarith
-  have h4 : (2 * (D.R.k : ℝ)) ^ 2 ≤ ((D.R.k : ℝ) * L.sc.b) ^ 2 := pow_le_pow_left₀ (by linarith) h2k 2
+  have h4 : (2 * (D.R.k : ℝ)) ^ 2 ≤ ((D.R.k : ℝ) * L.sc.b) ^ 8 := (pow_le_pow_left₀ (by linarith) (by nlinarith) 2).trans (pow_le_pow_right₀ (by nlinarith) (by norm_num))
   have h1 : (2 : ℝ) * D.R.f * D.R.k + 1 < (D.host.g 0 : ℝ) := by nlinarith
   have h2 : 2 * D.R.f * D.R.k + 1 < D.host.g 0 := by exact_mod_cast h1
   omega
@@ -1571,14 +1549,12 @@ theorem jnt_rpow_le_pow {x y : ℝ} (hx : 1 ≤ x) (K : ℕ) (hy : y ≤ K) : x 
 
 theorem jnt_pow_le_exp (K : ℕ) (e : ℝ) (he : 0 < e) :
     ∃ x0 : ℝ, ∀ x, x0 ≤ x → x ^ K ≤ Real.exp (x ^ e) := by
-  have h1 := (isLittleO_rpow_exp_atTop ((K : ℝ) / e)).bound one_pos
-  have h2 := (tendsto_rpow_atTop he).eventually h1
-  obtain ⟨x0, hx0⟩ := Filter.eventually_atTop.mp (h2.and (Filter.eventually_ge_atTop 0))
+  obtain ⟨x0, hx0⟩ := Filter.eventually_atTop.mp
+    (((tendsto_rpow_atTop he).eventually ((isLittleO_rpow_exp_atTop ((K : ℝ) / e)).bound one_pos)).and (Filter.eventually_ge_atTop 0))
   refine ⟨x0, fun x hx => ?_⟩
   obtain ⟨ha, hb⟩ := hx0 x hx
-  have he' : e * ((K : ℝ) / e) = K := by field_simp
-  rw [← Real.rpow_mul hb, he', Real.rpow_natCast, one_mul, Real.norm_eq_abs, Real.norm_eq_abs,
-    abs_of_nonneg (pow_nonneg hb K), abs_of_pos (Real.exp_pos _)] at ha
+  rw [← Real.rpow_mul hb, (show e * ((K : ℝ) / e) = K by field_simp), Real.rpow_natCast,
+    one_mul, Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg (pow_nonneg hb K), abs_of_pos (Real.exp_pos _)] at ha
   exact ha
 
 theorem jnt_sizes_slopes (D : D7) (L : SizeData₂ D) (hS : SizesAt L) (hx2 : 2 ≤ L.sc.x)

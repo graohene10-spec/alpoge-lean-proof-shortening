@@ -20,11 +20,9 @@ theorem ss_of_isSSRep (ρ : Γ →* GL (Fin a) k) (h : IsSSRep ρ) :
   rw [← Representation.isSemisimpleRepresentation_iff_isSemisimpleModule_asModule]
   refine ⟨fun W => ?_⟩
   obtain ⟨W', hW', hc⟩ := h W.toSubmodule (fun g v hv => W.apply_mem_toSubmodule g hv)
-  refine ⟨⟨W', fun g v hv => hW' g v hv⟩, ?_, ?_⟩
-  · rw [disjoint_iff]
-    exact Subrepresentation.toSubmodule_injective hc.inf_eq_bot
-  · rw [codisjoint_iff]
-    exact Subrepresentation.toSubmodule_injective hc.sup_eq_top
+  exact ⟨⟨W', fun g v hv => hW' g v hv⟩,
+    disjoint_iff.mpr (Subrepresentation.toSubmodule_injective hc.inf_eq_bot),
+    codisjoint_iff.mpr (Subrepresentation.toSubmodule_injective hc.sup_eq_top)⟩
 
 theorem brauerNesbitt_matrix (ρ ρ' : Γ →* GL (Fin a) k) (h : IsSSRep ρ) (h' : IsSSRep ρ')
     (hc : ∀ g, ((ρ g : GL _ _) : Matrix (Fin a) (Fin a) k).charpoly =
@@ -67,8 +65,7 @@ theorem placesOver_finite (E : Type) [Field E] [NumberField E] (p : ℕ) (hp : p
     exact_mod_cast hp
   refine (Ideal.finite_factors h0).subset fun v hv => ?_
   show v.asIdeal ∣ _
-  rw [Ideal.dvd_iff_le, Ideal.span_singleton_le_iff_mem]
-  exact hv
+  simpa [placesOver, Ideal.dvd_iff_le, Ideal.span_singleton_le_iff_mem] using hv
 
 theorem closed_of_adic {O : Type} [CommRing O] [IsLocalRing O] [IsNoetherianRing O] [TopologicalSpace O]
     [IsTopologicalRing O] (hO : IsAdic (IsLocalRing.maximalIdeal O)) {X : Type} [Fintype X]
@@ -134,9 +131,7 @@ theorem heckePol_coeff_mem (i : N.Loc) (w : PlE H) (m : ℕ) :
       ring
   rw [this]
   refine Subalgebra.add_mem _ ?_ (Subalgebra.sum_mem _ fun k _ => Subalgebra.smul_mem _ (N.hT i w k).2 _)
-  split_ifs
-  · exact Subalgebra.one_mem _
-  · exact Subalgebra.zero_mem _
+  split_ifs <;> simp
 
 def Cheb : Prop :=
   ∀ Sg : Set (PlE H), Sg.Finite →
@@ -161,9 +156,7 @@ theorem charpoly_clause_of_chebotarev (hC : Cheb N) (i : N.Loc) (r : N.X i → (
         have h2 := (hr x).2.2 w ⟨hsp, hw.1.1, hw.1.2, hw.2⟩ B g hB hF
         rw [← Matrix.reverse_charpoly, coeff_reverse, Matrix.charpoly_natDegree_eq_dim, h2,
           Fintype.card_fin]
-      show (fun x => _) ∈ N.T i
-      simp only [h1]
-      exact heckePol_coeff_mem N i w _)
+      simpa only [h1, Subalgebra.mem_toSubring] using heckePol_coeff_mem N i w (revAt R.nV j))
   intro g k
   exact ⟨⟨_, key g k⟩, fun x => rfl⟩
 
@@ -326,17 +319,15 @@ theorem continuous_of_comp {O : Type} [CommRing O] [TopologicalSpace O] [IsTopol
   rw [continuous_iff_continuousAt]
   intro x0 s hs
   have h0 : (fun y => y + f x0) ⁻¹' s ∈ 𝓝 (0 : O) :=
-    (continuous_add_right (f x0)).continuousAt.preimage_mem_nhds (by simpa using hs)
+    (continuous_add_const (f x0)).continuousAt.preimage_mem_nhds (by simpa using hs)
   obtain ⟨n, hn⟩ := (isAdic_iff.1 hJ).2 _ h0
   obtain ⟨ε, hε0, hε⟩ := hε n
-  have hU : {x | ‖ι (f x) - ι (f x0)‖ < ε} ∈ 𝓝 x0 := by
-    have hc : Continuous fun x => ‖ι (f x) - ι (f x0)‖ := (hf.sub continuous_const).norm
-    exact (isOpen_lt hc continuous_const).mem_nhds (by simpa using hε0)
+  have hU : {x | ‖ι (f x) - ι (f x0)‖ < ε} ∈ 𝓝 x0 :=
+    (isOpen_lt ((hf.sub continuous_const).norm) continuous_const).mem_nhds
+      (by simpa using hε0)
   rw [Filter.mem_map]
   filter_upwards [hU] with x hx
-  have h1 : f x - f x0 ∈ J ^ n := hε _ (by rw [map_sub]; exact hx)
-  have h2 := hn h1
-  simpa using h2
+  simpa using hn (hε (f x - f x0) (by rw [map_sub]; exact hx))
 
 theorem norm_le_one_of_finite {l : ℕ} [Fact l.Prime] {O : Type} [CommRing O] [Algebra ℤ_[l] O]
     [Module.Finite ℤ_[l] O] {L : Type} [NormedField L] (ι : O →+* L)
@@ -643,10 +634,8 @@ end Del
 theorem Del_holds (D : D7) (i : D.nd.Loc) : At.Del D.nd i := by
   intro w hS hw
   have hpD : w ∈ D.ntw.pD (D.ntw.twOf i) := by
-    have : w ∈ (D.ntw.pD (D.ntw.twOf i) : Set (HeightOneSpectrum (𝓞 D.host.E))) := by
-      rw [D.ntw.pD_eq, D.ntw.twOf_l]
-      exact hw
-    exact this
+    change w ∈ (D.ntw.pD (D.ntw.twOf i) : Set (HeightOneSpectrum (𝓞 D.host.E)))
+    simpa [D.ntw.pD_eq, D.ntw.twOf_l] using hw
   have hQ : w ∉ D.nd.Q i := Finset.disjoint_left.1 (D.nd.SQ_disj i) hS
   have hpl := D.nd.plOm.2 w
   have hψ : ∀ σ ∈ Ine (F := D.host.E) (D.nd.plOm.1 w), D.ntw.psiL i σ = 1 := by
@@ -880,9 +869,7 @@ theorem exists_unit_of_card (w : PlE H)
     exact IsPrimitiveRoot.orderOf ζ
   obtain ⟨γ', hγ', he⟩ := ζ.2
   refine ⟨γ', hγ', ?_⟩
-  have := Formalism.IrreducibleCountingLemmas.Z.phi15_is_unit_holds (N.O i) _ hp
-  rw [← he] at this
-  exact this
+  simpa [← he, chi1] using Formalism.IrreducibleCountingLemmas.Z.phi15_is_unit_holds (N.O i) _ hp
 
 theorem Y_of_a (hG : Formalism.MainNotions.SumRepresentations.At.IdempotentChoiceProperties N r ρ π S) (w : PlE H) (hw : w ∉ placesOver H.E (N.l i))
     (h15 : Nat.card ((Ine (F := H.E) (N.plOm.1 w)).map (N.chi i 1)) = 15)
@@ -948,9 +935,7 @@ theorem norm_iotaOQ_le_one (a : N.O i) : ‖iotaOQ N A i a‖ ≤ 1 := by
   refine norm_le_one_of_root _ (p.map ((iotaOQ N A i).comp (algebraMap ℤ_[N.l i] (N.O i)))) (hp.map _)
     (fun k => ?_) ?_
   · rw [coeff_map]
-    have : ((iotaOQ N A i).comp (algebraMap ℤ_[N.l i] (N.O i))) (p.coeff k) =
-        algebraMap ℚ_[N.l i] (Qbar (N.l i)) ((p.coeff k : ℤ_[N.l i]) : ℚ_[N.l i]) := A.iotaQ_alg i _
-    rw [this, norm_algebraMap']
+    rw [show ((iotaOQ N A i).comp (algebraMap ℤ_[N.l i] (N.O i))) (p.coeff k) = algebraMap ℚ_[N.l i] (Qbar (N.l i)) ((p.coeff k : ℤ_[N.l i]) : ℚ_[N.l i]) from A.iotaQ_alg i _, norm_algebraMap']
     exact PadicInt.norm_le_one _
   · rw [eval_map, ← hom_eval₂, hpa, map_zero]
 
@@ -1170,8 +1155,6 @@ theorem rhobar_fac (hC : Cheb N) (hr : GoodR N i r)
   obtain ⟨σ, ⟨⟨h1, h2⟩, h3⟩, ⟨w, hw, hsp, B, hB, hF⟩⟩ := hD.inter_open_nonempty _ ((o1.inter o2).inter o3)
     ⟨g, ⟨by simp, by simp⟩, by simp⟩
   simp only [Set.mem_union, not_or, Finset.mem_coe] at hw
-  have hres : ∀ a b : N.O i, a - b ∈ IsLocalRing.maximalIdeal (N.O i) →
-      IsLocalRing.residue (N.O i) a = IsLocalRing.residue (N.O i) b := fun a b h => Ideal.Quotient.eq.2 h
   have e1 : rb σ = rb g := by
     have : rb (g⁻¹ * σ) = 1 := h1
     rw [map_mul, map_inv, inv_mul_eq_one] at this
@@ -1181,10 +1164,10 @@ theorem rhobar_fac (hC : Cheb N) (hr : GoodR N i r)
       ((redRep N i (r x) g : GL _ _) :
         Matrix (Fin R.nV) (Fin R.nV) (IsLocalRing.ResidueField (N.O i))) := by
     ext a b
-    exact hres _ _ (h2 a b)
+    exact Ideal.Quotient.eq.2 (h2 a b)
   have e3 : ∏ c ∈ Finset.Icc 1 R.t, (X - C (IsLocalRing.residue (N.O i) ((N.chi i c σ : (N.O i)ˣ) : N.O i))) =
       ∏ c ∈ Finset.Icc 1 R.t, (X - C (IsLocalRing.residue (N.O i) ((N.chi i c g : (N.O i)ˣ) : N.O i))) :=
-    Finset.prod_congr rfl fun c hc => by rw [hres _ _ (h3 c hc)]
+    Finset.prod_congr rfl fun c hc => congrArg (fun z : IsLocalRing.ResidueField (N.O i) => X - C z) (Ideal.Quotient.eq.2 (h3 c hc))
   have hso : SplitOut N i w := ⟨hsp, hw.1.1, hw.1.2, hw.2⟩
   have k1 := hrb.2 x w hso B σ hB hF
   have k2 := (hr x).2.2 w hso B σ hB hF
@@ -1476,8 +1459,7 @@ theorem inj_of_scalars {ι : Type} [DecidableEq ι] {V W : Type} [AddCommGroup V
   choose lam hl0 hl using hl
   rw [injective_iff_map_eq_zero]
   intro f h0
-  have hf : f ∈ iSup M := htop ▸ Submodule.mem_top
-  obtain ⟨x, rfl⟩ := (Submodule.mem_iSup_iff_exists_dfinsupp M f).1 hf
+  obtain ⟨x, rfl⟩ := (Submodule.mem_iSup_iff_exists_dfinsupp M f).1 (htop ▸ Submodule.mem_top)
   have hcomm : (θ' ∘ₗ θ) ∘ₗ (DFinsupp.lsum ℕ fun σ => (M σ).subtype) =
       (DFinsupp.lsum ℕ fun σ => (M σ).subtype) ∘ₗ
         DFinsupp.mapRange.linearMap (fun σ => lam σ • (LinearMap.id : M σ →ₗ[ℂ] M σ)) := by
@@ -1492,8 +1474,7 @@ theorem inj_of_scalars {ι : Type} [DecidableEq ι] {V W : Type} [AddCommGroup V
     have := DFunLike.congr_fun h2 σ
     simp only [DFinsupp.mapRange.linearMap_apply, DFinsupp.mapRange_apply, LinearMap.smul_apply,
       LinearMap.id_apply, DFinsupp.zero_apply] at this
-    rw [(smul_eq_zero.1 this).resolve_left (hl0 σ)]
-    rfl
+    exact congrArg Subtype.val ((smul_eq_zero.1 this).resolve_left (hl0 σ))
   rw [h3, map_zero]
 
 theorem finrank_biSup {ι : Type} [DecidableEq ι] {W : Type} [AddCommGroup W] [Module ℂ W]

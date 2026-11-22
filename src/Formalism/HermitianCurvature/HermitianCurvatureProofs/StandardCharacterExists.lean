@@ -6,31 +6,19 @@ namespace Formalism.FourierDecayAlt.P.StandardCharacterExists
 
 theorem blk_cc {n : ℕ} (A : Matrix (Fin n) (Fin n) ℂ) (b a : Fin n → ℂ) (e : ℂ) (i j : Fin n) :
     blk A b a e i.castSucc j.castSucc = A i j := by
-  have h : ∀ i : Fin n, finSumFinEquiv.symm (i.castSucc : Fin (n+1)) = Sum.inl i := fun i =>
-    finSumFinEquiv_symm_apply_castAdd (n := 1) i
-  simp [blk, h]
+  simp [blk]
 
 theorem blk_cl {n : ℕ} (A : Matrix (Fin n) (Fin n) ℂ) (b a : Fin n → ℂ) (e : ℂ) (i : Fin n) :
     blk A b a e i.castSucc (Fin.last n) = b i := by
-  have h : ∀ i : Fin n, finSumFinEquiv.symm (i.castSucc : Fin (n+1)) = Sum.inl i := fun i =>
-    finSumFinEquiv_symm_apply_castAdd (n := 1) i
-  have h2 : finSumFinEquiv.symm (Fin.last n : Fin (n+1)) = Sum.inr (0 : Fin 1) :=
-    finSumFinEquiv_symm_apply_natAdd (m := n) (0 : Fin 1)
-  simp [blk, h, h2]
+  simp [blk]
 
 theorem blk_lc {n : ℕ} (A : Matrix (Fin n) (Fin n) ℂ) (b a : Fin n → ℂ) (e : ℂ) (j : Fin n) :
     blk A b a e (Fin.last n) j.castSucc = a j := by
-  have h : ∀ i : Fin n, finSumFinEquiv.symm (i.castSucc : Fin (n+1)) = Sum.inl i := fun i =>
-    finSumFinEquiv_symm_apply_castAdd (n := 1) i
-  have h2 : finSumFinEquiv.symm (Fin.last n : Fin (n+1)) = Sum.inr (0 : Fin 1) :=
-    finSumFinEquiv_symm_apply_natAdd (m := n) (0 : Fin 1)
-  simp [blk, h, h2]
+  simp [blk]
 
 theorem blk_ll {n : ℕ} (A : Matrix (Fin n) (Fin n) ℂ) (b a : Fin n → ℂ) (e : ℂ) :
     blk A b a e (Fin.last n) (Fin.last n) = e := by
-  have h2 : finSumFinEquiv.symm (Fin.last n : Fin (n+1)) = Sum.inr (0 : Fin 1) :=
-    finSumFinEquiv_symm_apply_natAdd (m := n) (0 : Fin 1)
-  simp [blk, h2]
+  simp [blk]
 
 theorem wMat_mul_apply {d : ℕ} (M : Matrix (Fin d) (Fin d) ℂ) (i j : Fin d) :
     (wMat d * M) i j = M i.rev j := by
@@ -162,12 +150,10 @@ theorem key (m : ℕ) (z : ℂ) (X : Matrix (Fin (m + 1)) (Fin (m + 1)) ℂ) (B 
       · intro h; exact absurd (Finset.mem_univ _) h
 
 theorem poly_zero (m : ℕ) (c : ℕ → ℂ) : ∑ j ∈ Finset.range (m + 1), c j * (0 : ℂ) ^ (m - j) = c m := by
-  rw [Finset.sum_eq_single m]
-  · simp
-  · intro j hj hne
-    have : j < m + 1 := Finset.mem_range.mp hj
-    rw [zero_pow (by omega), mul_zero]
-  · intro h; exact absurd (Finset.mem_range.mpr (Nat.lt_succ_self m)) h
+  have h0 : ∀ j ∈ Finset.range (m + 1), j ≠ m → c j * (0 : ℂ) ^ (m - j) = 0 := by
+    intro j hj hne
+    rw [zero_pow (by rw [Finset.mem_range] at hj; omega), mul_zero]
+  simpa using Finset.sum_eq_single m h0 (by intro h; exact absurd (Finset.mem_range.mpr (Nat.lt_succ_self m)) h)
 
 theorem poly_deriv_zero (c : ℕ → ℂ) :
     HasDerivAt (fun t : ℂ => ∑ j ∈ Finset.range (0 + 1), c j * t ^ (0 - j)) 0 0 := by
@@ -178,15 +164,13 @@ theorem poly_deriv_succ (m : ℕ) (c : ℕ → ℂ) :
   have h : ∀ j ∈ Finset.range (m + 1 + 1), HasDerivAt (fun t : ℂ => c j * t ^ (m + 1 - j))
       (c j * (((m + 1 - j : ℕ) : ℂ) * (0 : ℂ) ^ (m + 1 - j - 1))) 0 := fun j _ =>
     (hasDerivAt_pow (m + 1 - j) (0 : ℂ)).const_mul (c j)
-  have h2 := HasDerivAt.fun_sum h
-  refine h2.congr_deriv ?_
+  refine (HasDerivAt.fun_sum h).congr_deriv ?_
   rw [Finset.sum_eq_single m]
   · simp
   · intro j hj hne
-    have : j < m + 1 + 1 := Finset.mem_range.mp hj
     by_cases hj' : j = m + 1
     · subst hj'; simp
-    · rw [zero_pow (by omega)]; simp
+    · rw [zero_pow (by have := Finset.mem_range.mp hj; omega)]; simp
   · intro h; exact absurd (Finset.mem_range.mpr (by omega)) h
 
 theorem map_mul_vol (α : ℂ) (hα : α ≠ 0) :

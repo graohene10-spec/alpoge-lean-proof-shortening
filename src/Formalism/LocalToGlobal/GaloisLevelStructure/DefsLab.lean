@@ -42,9 +42,8 @@ theorem exists_level_elt (x : Formalism.CyclotomicNorms.Fbar p) (hx : x ≠ 0) :
     (FiniteField.pow_card_sub_one_eq_one (⟨x, hxK⟩ : K) h0)
 
 theorem pow_level_mul {x : Formalism.CyclotomicNorms.Fbar p} {d : ℕ} (h : x ^ (p ^ d - 1) = 1) (e : ℕ) : x ^ (p ^ (d * e) - 1) = 1 := by
-  obtain ⟨c, hc⟩ : (p ^ d - 1) ∣ (p ^ (d * e) - 1) := by
-    rw [pow_mul]; exact Nat.sub_one_dvd_pow_sub_one _ _
-  rw [hc, pow_mul, h, one_pow]
+  obtain ⟨c, hc⟩ := Nat.sub_one_dvd_pow_sub_one (p ^ d) e
+  rw [pow_mul, hc, pow_mul, h, one_pow]
 
 theorem exists_level_multiset (s : Multiset (Formalism.CyclotomicNorms.Fbar p)) (hs : (0 : Formalism.CyclotomicNorms.Fbar p) ∉ s) :
     ∃ d, 0 < d ∧ ∀ x ∈ s, x ^ (p ^ d - 1) = 1 := by

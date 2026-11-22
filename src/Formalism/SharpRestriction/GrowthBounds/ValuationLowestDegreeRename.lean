@@ -205,17 +205,15 @@ theorem twistSub_rename {R : Type} [CommRing R] {ι κ : Type} (f : ι → κ) {
     (j : Fin n) (A : MvPolynomial (ι × Fin n) R) :
     twistSub LL S j (rename (fun v : ι × Fin n => (f v.1, v.2)) A) =
       rename (fun v : ι × Fin n => (f v.1, v.2)) (twistSub (⟨fun i => LL.vec (f i)⟩ : Letters ι) (f ⁻¹' S) j A) := by
-  have h : (twistSub (R := R) LL S j).comp (rename (fun v : ι × Fin n => (f v.1, v.2))).toRingHom =
-      (rename (fun v : ι × Fin n => (f v.1, v.2))).toRingHom.comp
-        (twistSub (R := R) (⟨fun i => LL.vec (f i)⟩ : Letters ι) (f ⁻¹' S) j) := by
-    apply MvPolynomial.ringHom_ext
-    · intro c
-      simp [twistSub]
-    · intro v
-      simp only [RingHom.comp_apply, AlgHom.toRingHom_eq_coe, RingHom.coe_coe, rename_X, twistSub,
-        eval₂Hom_X', Set.mem_preimage]
-      split_ifs <;> simp_all [map_sum, rename_X]
-  exact RingHom.congr_fun h A
+  change ((twistSub (R := R) LL S j).comp (rename (fun v : ι × Fin n => (f v.1, v.2))).toRingHom) A = ((rename (fun v : ι × Fin n => (f v.1, v.2))).toRingHom.comp (twistSub (R := R) (⟨fun i => LL.vec (f i)⟩ : Letters ι) (f ⁻¹' S) j)) A
+  refine RingHom.congr_fun ?_ A
+  apply MvPolynomial.ringHom_ext
+  · intro c
+    simp [twistSub]
+  · intro v
+    simp only [RingHom.comp_apply, AlgHom.toRingHom_eq_coe, RingHom.coe_coe, rename_X, twistSub,
+      eval₂Hom_X', Set.mem_preimage]
+    split_ifs <;> simp_all [map_sum, rename_X]
 
 theorem sDegs_rename {R : Type} [CommRing R] {ι κ : Type} (f : ι → κ) (hf : Function.Injective f) {n : ℕ}
     (LL : Letters κ) (S : Set κ) (j : Fin n) (A : MvPolynomial (ι × Fin n) R) :

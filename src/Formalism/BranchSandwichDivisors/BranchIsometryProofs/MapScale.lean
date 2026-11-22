@@ -34,8 +34,7 @@ theorem ms_nPl_pos : 0 < nPl K := by
 theorem ms_htQ_bot (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ)
     (A : Submodule (𝓞 K) V) : htQ b X A ⊥ = ht b X A := by
   have hz : zl (Formalism.HermitianLatticesTheory.realize b X) (⊥ : Submodule (𝓞 K) V) = ⊥ := by
-    unfold Formalism.HN.zl
-    simp
+    simp [Formalism.HN.zl]
   have hq : ∀ L : Submodule ℤ (EuclideanSpace ℝ (InfinitePlace K × ι × Fin 2)),
       Formalism.F.quot L ⊥ = L := by
     intro L
@@ -51,11 +50,7 @@ theorem ms_htQ_bot (b : Basis ι K V) (X : InfinitePlace K → Matrix ι ι ℂ)
         | exact Submodule.starProjection_top_apply y
     ext x
     simp only [Submodule.mem_map, LinearMap.coe_restrictScalars, ContinuousLinearMap.coe_coe, hp]
-    constructor
-    · rintro ⟨y, hy, rfl⟩
-      exact hy
-    · intro hx
-      exact ⟨x, hx, rfl⟩
+    exact ⟨fun ⟨y, hy, hxy⟩ => hxy ▸ hy, fun hx => ⟨x, hx, rfl⟩⟩
   unfold Formalism.HN.htQ Formalism.HN.ht
   rw [ms_rkK_bot, hz, hq]
   simp only [Nat.cast_zero, sub_zero]

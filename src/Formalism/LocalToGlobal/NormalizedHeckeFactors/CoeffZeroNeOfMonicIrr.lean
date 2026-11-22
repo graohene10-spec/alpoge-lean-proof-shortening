@@ -41,8 +41,7 @@ theorem coeff_zero_ne_of_monic_irr {K : Type} [Field K] {P : K[X]} (hm : P.Monic
   rcases hi.isUnit_or_isUnit hq with hX' | hq'
   · exact not_isUnit_X hX'
   · apply hX
-    have hmq : q.Monic := Monic.of_mul_monic_left monic_X (by rw [← hq]; exact hm)
-    rw [hq, hmq.isUnit_iff.mp hq', mul_one]
+    rw [hq, (Monic.of_mul_monic_left monic_X (by rwa [← hq])).isUnit_iff.mp hq', mul_one]
 
 end Formalism.L2.NT
 
@@ -157,9 +156,7 @@ theorem eSerO_eq_zero {C : LabelConv (ZMod g)} (O : LabelMap (ZMod g) C) (r : �
   unfold eSerO
   apply finsum_eq_zero_of_forall_eq_zero
   intro z
-  have hne : ¬ ∃ τ : FDRep ℂ (GL (Fin r) (ZMod g)), Simple τ ∧ zIdem τ = z ∧ HasLabelO O τ f :=
-    fun ⟨_, _, _, hτ⟩ => hf (hasLabelO_spec O hτ)
-  haveI : IsEmpty (∃ τ : FDRep ℂ (GL (Fin r) (ZMod g)), Simple τ ∧ zIdem τ = z ∧ HasLabelO O τ f) := ⟨hne⟩
+  haveI : IsEmpty (∃ τ : FDRep ℂ (GL (Fin r) (ZMod g)), Simple τ ∧ zIdem τ = z ∧ HasLabelO O τ f) := ⟨fun ⟨_, _, _, hτ⟩ => hf (hasLabelO_spec O hτ)⟩
   exact finsum_of_isEmpty _
 
 end Formalism.L2.NT

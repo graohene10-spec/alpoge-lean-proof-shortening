@@ -41,8 +41,7 @@ theorem one_block11 : b11 (1 : Matrix (Idx r k) (Idx r k) A) = 1 := by
 
 theorem block12_mul (x y : Matrix (Idx r k) (Idx r k) A) :
     b12 (x * y) = b11 x * b12 y + b12 x * b22 y + b13 x * b32 y := by
-  ext a b
-  simp [b12, b11, b12, b13, b12, b22, b32, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
+  exact Matrix.ext fun a b => by simp [b12, b11, b13, b22, b32, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
 
 theorem block12_one : b12 (1 : Matrix (Idx r k) (Idx r k) A) = 0 := by
   ext a b
@@ -77,8 +76,7 @@ theorem block22_one : b22 (1 : Matrix (Idx r k) (Idx r k) A) = 1 := by
 
 theorem block23_mul (x y : Matrix (Idx r k) (Idx r k) A) :
     b23 (x * y) = b21 x * b13 y + b22 x * b23 y + b23 x * b33 y := by
-  ext a b
-  simp [b23, b21, b22, b23, b13, b23, b33, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
+  ext a b; simp [b23, b21, b22, b13, b33, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
 
 theorem block23_one : b23 (1 : Matrix (Idx r k) (Idx r k) A) = 0 := by
   ext a b
@@ -104,8 +102,7 @@ theorem block32_one : b32 (1 : Matrix (Idx r k) (Idx r k) A) = 0 := by
 
 theorem block33_mul (x y : Matrix (Idx r k) (Idx r k) A) :
     b33 (x * y) = b31 x * b13 y + b32 x * b23 y + b33 x * b33 y := by
-  ext a b
-  simp [b33, b31, b32, b33, b13, b23, b33, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
+  ext a b; simp [b33, b31, b32, b13, b23, Matrix.mul_apply, Fintype.sum_sum_type, add_assoc]
 
 theorem block33_one : b33 (1 : Matrix (Idx r k) (Idx r k) A) = 1 := by
   ext a b

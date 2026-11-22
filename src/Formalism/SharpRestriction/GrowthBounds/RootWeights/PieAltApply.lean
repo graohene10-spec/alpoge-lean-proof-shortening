@@ -38,24 +38,20 @@ theorem pie_step1 (n b : ℕ) (al : Fin n → ℕ) : alt n al * hsymm (Fin n) �
   rw [pie_alt_apply, pie_hsymm, Finset.sum_mul]
   simp_rw [pie_alt_apply]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro σ _
+  refine Finset.sum_congr rfl fun σ _ => ?_
   rw [smul_mul_assoc, Finset.mul_sum, ← Finset.smul_sum]
   congr 1
   refine Finset.sum_nbij' (fun s => s.map σ.symm) (fun s => s.map σ) (by simp) (by simp) ?_ ?_ ?_
   · intro s _
-    first
-    | simp [Sym.map_map]
-    | (apply Sym.ext; simp [Sym.coe_map, Multiset.map_map])
+    apply Sym.ext
+    simp
   · intro s _
-    first
-    | simp [Sym.map_map]
-    | (apply Sym.ext; simp [Sym.coe_map, Multiset.map_map])
+    apply Sym.ext
+    simp
   · intro s _
     rw [← Equiv.prod_comp σ (fun i => (X i : MvPolynomial (Fin n) ℤ) ^ pie_cnt s i),
       ← Finset.prod_mul_distrib]
-    apply Finset.prod_congr rfl
-    intro i _
+    refine Finset.prod_congr rfl fun i _ => ?_
     rw [Pi.add_apply, pow_add, pie_cnt_map_equiv, Equiv.symm_symm]
 
 end Formalism.MainNotions.G.GLWeightTheory

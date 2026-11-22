@@ -686,13 +686,7 @@ lemma inv_step {n : ℕ} (hn : Even n) {T : Finset ℕ} {L₂ R b K₀ : ℕ} (h
 
 lemma Ls_succ (n : ℕ) (T : Finset ℕ) (b t m : ℕ) :
     Ls n T b t (m + 1) = decide ((b + (t + 1)) % n ∈ T) :: Ls n T b (t + 1) m := by
-  unfold Ls
-  rw [List.range_succ_eq_map, List.map_cons, List.map_map]
-  congr 1
-  apply List.map_congr_left
-  intro x _
-  simp only [Function.comp_apply]
-  rw [show t + 1 + (x + 1) = t + 1 + 1 + x by omega]
+  simp [Ls, List.range_succ_eq_map, List.map_map, Function.comp_apply, Nat.add_comm, Nat.add_left_comm]
 
 lemma inv_iter {n : ℕ} (hn : Even n) {T : Finset ℕ} {L₂ R b K₀ : ℕ} (hR : 1 ≤ R) (m : ℕ) :
     ∀ t s, Inv n T L₂ R b K₀ t s → Inv n T L₂ R b K₀ (t + m) (runS R L₂ s (Ls n T b t m)) := by
@@ -727,14 +721,12 @@ theorem comb {n : ℕ} (hn2 : 2 ≤ n) (hn : Even n) {L₂ r N₁ : ℕ} (hr : 1
   have hmin : ∀ d < d₀, (b + d) % n ∉ T := by
     intro d hd hdT
     exact Nat.find_min hex hd ⟨by omega, hdT⟩
-  have hi : (b + d₀) % n < n := Nat.mod_lt _ (by omega)
-  refine ⟨(b + d₀) % n, hi, hd₀.2, ?_⟩
+  refine ⟨(b + d₀) % n, Nat.mod_lt _ (by omega), hd₀.2, ?_⟩
   have hevi : decide (Even ((b + d₀) % n)) = decide (Even (b + d₀)) := by
     simp only [even_mod hn]
   by_cases hK0 : K₀ = 0
   · simp only [init, hK0, if_true]; exact runS_bad _
   rw [init, if_neg hK0, hevi]
-  have hR : 1 ≤ 3 * r := by omega
   have hinit : Inv n T L₂ (3 * r) b K₀ d₀ (.run K₀ 0 0 true (decide (Even (b + d₀)))) := by
     refine ⟨by omega, le_rfl, by omega, Nat.zero_le _, rfl, by simpa using hd₀.2,
       fun x h1 h2 => by omega, ?_, fun _ => ⟨Fin.elim0, PRun_zero _ _ _ _ _ _ _⟩⟩
@@ -749,7 +741,7 @@ theorem comb {n : ℕ} (hn2 : 2 ≤ n) (hn : Even n) {L₂ r N₁ : ℕ} (hr : 1
     unfold cnt
     rw [this, Finset.card_singleton]
     simp
-  have hI := inv_iter hn hR (e - d₀) d₀ _ hinit
+  have hI := inv_iter hn (by omega) (e - d₀) d₀ _ hinit
   rw [show d₀ + (e - d₀) = e by omega] at hI
   have hL : (Lst n ((b + d₀) % n)).map (fun p => decide (p ∈ T)) = Ls n T b d₀ (n - 1) := by
     unfold Lst Ls

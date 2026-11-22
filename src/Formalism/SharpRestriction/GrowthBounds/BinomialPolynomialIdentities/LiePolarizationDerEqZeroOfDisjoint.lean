@@ -89,13 +89,12 @@ theorem mem_iSup_isotypic_iff_projections {e : (Fin n → ℤ) → Module.End R 
   constructor
   · intro hG mu hne
     by_contra hmu
-    apply hne
     have hle : (⨆ lam ∈ pi, isoSub (glOps R n LL S) lam) ≤ LinearMap.ker (e mu) := by
       refine iSup₂_le fun lam hlam => ?_
       intro x hx
       have : lam ≠ mu := fun h => hmu (h ▸ hlam)
       exact sys.zero_on mu lam this x hx
-    exact hle hG
+    exact hne (hle hG)
   · intro h
     obtain ⟨T, hT⟩ := sys.cover G
     rw [hT]

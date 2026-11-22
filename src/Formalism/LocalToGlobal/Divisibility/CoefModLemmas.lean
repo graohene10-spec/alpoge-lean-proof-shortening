@@ -285,8 +285,7 @@ theorem map_conjTranspose_eq {E K : Type} [Field E] [Field K] [StarRing K] {n : 
 
 theorem conjTranspose_transpose' {K : Type} [Field K] [StarRing K] {n : ℕ} (A : Matrix (Fin n) (Fin n) K) :
     (Aᵀ)ᴴ = (Aᴴ)ᵀ := by
-  ext i j
-  simp [Matrix.conjTranspose_apply]
+  rfl
 
 theorem gramHerm : GramHerm := by
   intro E K _ _ _ ι n emb cE τ h J hJ
@@ -501,8 +500,7 @@ theorem rhoK_coe {K : Type} [Field K] {ι : Type} [Fintype ι] {n : ℕ} (lam : 
 
 theorem pairInv : PairInv := by
   intro K _ _ ι _ n lam G g hg x y
-  rw [pairK_apply, pairK_apply, rhoK_coe, rhoK_coe, pairTransport K ι n lam G g g x.1 y.1]
-  simp only [hg]
+  simpa only [pairK_apply, rhoK_coe, hg] using pairTransport K ι n lam G g g x.1 y.1
 
 theorem pairSymm : PairSymm := by
   intro K _ _ ι _ n lam G hG
@@ -678,9 +676,7 @@ variable [StarRing K]
 
 theorem fockL_X_X {σ : Type} [DecidableEq σ] (i j : σ) :
     fockL (X i : MvPolynomial σ K) (X j) = if i = j then 1 else 0 := by
-  have h := fockL_X_pderiv (K := K) i 1 (X j)
-  rw [mul_one] at h
-  rw [h, ← C_1, fockL_C_left, pderiv_X]
+  rw [← mul_one (X i), fockL_X_pderiv (K := K) i 1 (X j), ← C_1, fockL_C_left, pderiv_X]
   by_cases hij : i = j
   · subst hij; simp
   · simp [hij, Ne.symm hij]

@@ -90,17 +90,9 @@ theorem one_mem_NLam (D : D7) (Λ : LatV D) {T : D.host.E} (F : LFlag (hS D) D.R
 
 theorem frameEqv_refl (D : D7) {T' : D.host.E} (F' : LFlag (VS D) D.R.rS T') :
     FrameEqv D (LinearEquiv.refl D.host.E (VS D).V) F' F' := by
-  unfold FrameEqv
   refine ⟨1, fun a b hab => Matrix.one_apply_ne (ne_of_lt hab).symm, fun a => Matrix.one_apply_eq a, ?_⟩
   funext b
-  simp only [frameAct, LinearEquiv.refl_apply]
-  rw [Finset.sum_eq_single b]
-  · simp
-  · intro a _ hab
-    rw [Matrix.one_apply_ne hab]
-    simp
-  · intro hb
-    exact absurd (Finset.mem_univ b) hb
+  simp [frameAct, LinearEquiv.refl_apply, Matrix.one_apply, Finset.sum_ite_eq']
 
 theorem TEqv_refl (D : D7) (Λ : LatV D) {T T' : D.host.E} (F : LFlag (hS D) D.R.rS T) (F' : LFlag (hS D) D.R.rS T') :
     TEqv D Λ F F' F' := by

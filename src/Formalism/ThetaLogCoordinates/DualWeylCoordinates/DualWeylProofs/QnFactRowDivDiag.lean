@@ -65,9 +65,8 @@ theorem qn_fact_rowDiv (n : ℕ) (a b : Fin n) (hab : a ≠ b) (k : ℕ) :
 
 theorem qn_T_divPowE (n : ℕ) (a b : Fin n) (hab : a ≠ b) (k : ℕ) (f : MvPolynomial (Fin n × Fin n) ℚ) :
     transposeVariables ℚ n (divPowE (glOps ℚ n (rowLetters n) Set.univ) a b k f) = rowDiv ℚ a b k (transposeVariables ℚ n f) := by
-  have hk : (k.factorial : ℚ) ≠ 0 := Nat.cast_ne_zero.2 (Nat.factorial_ne_zero k)
   rw [divPowE, LinearMap.smul_apply, map_smul, ← qn_fact_rowDiv n a b hab k f, smul_smul,
-    inv_mul_cancel₀ hk, one_smul]
+    inv_mul_cancel₀ (show (k.factorial : ℚ) ≠ 0 from Nat.cast_ne_zero.2 (Nat.factorial_ne_zero k)), one_smul]
 
 theorem qn_fact_rowDiv_diag (n : ℕ) (a : Fin n) (k : ℕ) :
     ∀ f : MvPolynomial (Fin n × Fin n) ℚ,
@@ -86,8 +85,6 @@ theorem qn_fact_rowDiv_diag (n : ℕ) (a : Fin n) (k : ℕ) :
 
 theorem qn_T_binomE (n : ℕ) (a : Fin n) (k : ℕ) (f : MvPolynomial (Fin n × Fin n) ℚ) :
     transposeVariables ℚ n (binomE (glOps ℚ n (rowLetters n) Set.univ) a k f) = rowDiv ℚ a a k (transposeVariables ℚ n f) := by
-  have hk : (k.factorial : ℚ) ≠ 0 := Nat.cast_ne_zero.2 (Nat.factorial_ne_zero k)
-  rw [binomE, LinearMap.smul_apply, map_smul, ← qn_fact_rowDiv_diag n a k f, smul_smul,
-    inv_mul_cancel₀ hk, one_smul]
+  rw [binomE, LinearMap.smul_apply, map_smul, ← qn_fact_rowDiv_diag n a k f, smul_smul, inv_mul_cancel₀ (Nat.cast_ne_zero.2 (Nat.factorial_ne_zero k)), one_smul]
 
 end Formalism.InvariantFactorPaths.ColumnFamilies

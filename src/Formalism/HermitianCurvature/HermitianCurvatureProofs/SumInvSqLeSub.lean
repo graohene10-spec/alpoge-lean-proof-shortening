@@ -122,18 +122,14 @@ lemma lin_bound (J : ℕ) (hJ : 1 ≤ J) (de : ℕ → ℝ) (h01 : ∀ i, de i =
   have h1 : ∀ d ∈ Ioc 0 J, ∑ i ∈ Icc 1 (J - d),
       (de (i + d) - de i) / (4 * (((i + d : ℕ) : ℝ) - (i : ℝ))) = B d / (4 * d) := by
     intro d _
-    rw [hB]; simp only
-    rw [Finset.sum_div]
+    simp only [hB, Finset.sum_div]
     refine Finset.sum_congr rfl fun i _ => ?_
     congr 1; push_cast; ring
   rw [Finset.sum_congr rfl h1]
   set h : ℕ := (J + 1) / 2 with hh
   have hh1 : 1 ≤ h := by omega
   have hhJ : h ≤ J := by omega
-  have hJ2 : J ≤ 2 * h := by omega
-  have h2J : 2 * h ≤ J + 1 := by omega
-  have hJ2R : (J : ℝ) ≤ 2 * h := by exact_mod_cast hJ2
-  have h2JR : 2 * (h : ℝ) ≤ J + 1 := by exact_mod_cast h2J
+  have h2JR : 2 * (h : ℝ) ≤ (J : ℝ) + 1 := by exact_mod_cast (by omega : 2 * h ≤ J + 1)
   have hhpos : (0 : ℝ) < h := by exact_mod_cast hh1
   have hJpos : (0 : ℝ) < J := by exact_mod_cast hJ
   calc |∑ d ∈ Ioc 0 J, B d / (4 * d)| ≤ ∑ d ∈ Ioc 0 J, |B d / (4 * d)| :=
@@ -145,8 +141,7 @@ lemma lin_bound (J : ℕ) (hJ : 1 ≤ J) (de : ℕ → ℝ) (h01 : ∀ i, de i =
         · rw [mem_Ioc] at hd
           have hd0 : (0 : ℝ) < d := by exact_mod_cast hd.1
           rw [abs_div, abs_of_pos (by positivity : (0 : ℝ) < 4 * d), div_le_iff₀ (by positivity)]
-          have := shift_bound1 de h01 (J - d) d
-          linarith
+          linarith [shift_bound1 de h01 (J - d) d]
         · rw [mem_Ioc] at hd
           have hd0 : (0 : ℝ) < d := by exact_mod_cast (by omega : 0 < d)
           rw [abs_div, abs_of_pos (by positivity : (0 : ℝ) < 4 * d), div_le_iff₀ (by positivity)]
@@ -163,7 +158,7 @@ lemma lin_bound (J : ℕ) (hJ : 1 ≤ J) (de : ℕ → ℝ) (h01 : ∀ i, de i =
         have h4 : Real.log J - Real.log h ≤ Real.log 2 := by
           rw [← Real.log_div (ne_of_gt hJpos) (ne_of_gt hhpos)]
           apply Real.log_le_log (by positivity)
-          rw [div_le_iff₀ hhpos]; exact hJ2R
+          rw [div_le_iff₀ hhpos]; exact_mod_cast (by omega : J ≤ 2 * h)
         have h5 : (J : ℝ) / 4 * ∑ d ∈ Ioc h J, (1 : ℝ) / d ≤ (J : ℝ) / 4 * Real.log 2 :=
           mul_le_mul_of_nonneg_left (h3.trans h4) (by positivity)
         linarith
@@ -270,11 +265,9 @@ lemma vand_ratio (p : ℕ) (x y : ℕ → ℝ) (r : ℕ → ℕ → ℝ)
     (h : ∀ i j : ℕ, 1 ≤ i → i < j → j ≤ p → x i - x j = r i j * (y i - y j)) :
     Vand p x = (∏ i ∈ Icc 1 p, ∏ j ∈ Ioc i p, r i j) * Vand p y := by
   unfold Vand
-  rw [← Finset.prod_mul_distrib]
-  refine Finset.prod_congr rfl fun i hi => ?_
-  rw [← Finset.prod_mul_distrib]
-  refine Finset.prod_congr rfl fun j hj => ?_
-  exact h i j (mem_Icc.mp hi).1 (mem_Ioc.mp hj).1 (mem_Ioc.mp hj).2
+  simp only [← Finset.prod_mul_distrib]
+  exact Finset.prod_congr rfl fun i hi => Finset.prod_congr rfl fun j hj =>
+    h i j (mem_Icc.mp hi).1 (mem_Ioc.mp hj).1 (mem_Ioc.mp hj).2
 
 lemma vand_pos (p : ℕ) (x : ℕ → ℝ) (h : ∀ i j : ℕ, 1 ≤ i → i < j → j ≤ p → x j < x i) :
     0 < Vand p x := by
@@ -485,13 +478,11 @@ lemma card_mid (c : Cfg) (hc : c.Ok) : (((Icc 2 (c.k - 1)).card : ℕ) : ℝ) = 
 lemma edge_ratio_le (c : Cfg) (de de' : ℕ → ℝ) (hc : c.Ok) (hw : IsWord c.k de)
     (hw' : IsWord c.k de') :
     ∏ i ∈ Icc 2 (c.k - 1), ((c.a - c.u de i) / (c.a - c.u de' i)) ≤ Real.exp (1 / 3) := by
-  have hkD := kDel_pos c hc
   have hk : (4 : ℝ) ≤ c.k := by exact_mod_cast hc.hk
-  have hD := hc.hDel
   refine (prod_ratio_le (Icc 2 (c.k - 1)) (fun i => c.a - c.u de i) (fun i => c.a - c.u de' i)
     (1 / (4 * c.k)) (fun i hi => ?_) (fun i hi => ?_) (fun i hi => ?_)).trans ?_
-  · have := a_sub_u_pos c de' hc hw' i hi; linarith
-  · have := a_sub_u_pos c de hc hw i hi; linarith
+  · exact lt_of_lt_of_le (kDel_pos c hc) (a_sub_u_pos c de' hc hw' i hi)
+  · exact lt_of_lt_of_le (kDel_pos c hc) (a_sub_u_pos c de hc hw i hi)
   · have h1 := a_sub_u_pos c de' hc hw' i hi
     have h2 := (abs_le.mp (u_mid_diff c de de' hc hw hw' i hi)).1
     have h3 : c.Del ≤ 1 / (4 * c.k) * (c.a - c.u de' i) := by
@@ -567,17 +558,15 @@ theorem edgeFactors : Formalism.FourierDecayAlt.Sz.EdgeFactors := by
 
 theorem edgeRatios : Formalism.FourierDecayAlt.Sz.EdgeRatios := by
   intro c de de' hc _ hw hw'
-  have hkD := kDel_pos c hc
   refine ⟨⟨?_, edge_ratio_le c de de' hc hw hw'⟩, fun ht => ⟨?_, top_ratio_le c de de' hc ht hw hw'⟩⟩
   · refine prod_ratio_ge _ (fun i => c.a - c.u de i) (fun i => c.a - c.u de' i) _
       (fun i hi => ?_) (fun i hi => ?_) (edge_ratio_le c de' de hc hw' hw)
-    · have := a_sub_u_pos c de' hc hw' i hi; linarith
-    · have := a_sub_u_pos c de hc hw i hi; linarith
-  · have hb := bp_pos c hc ht
-    refine prod_ratio_ge _ (fun i => c.u de i + c.bp) (fun i => c.u de' i + c.bp) _
+    · have := a_sub_u_pos c de' hc hw' i hi; linarith [kDel_pos c hc]
+    · have := a_sub_u_pos c de hc hw i hi; linarith [kDel_pos c hc]
+  · refine prod_ratio_ge _ (fun i => c.u de i + c.bp) (fun i => c.u de' i + c.bp) _
       (fun i hi => ?_) (fun i hi => ?_) (top_ratio_le c de' de hc ht hw' hw)
-    · have := u_mid_nonneg c de' hc hw' i hi; linarith
-    · have := u_mid_nonneg c de hc hw i hi; linarith
+    · have := u_mid_nonneg c de' hc hw' i hi; linarith [bp_pos c hc ht]
+    · have := u_mid_nonneg c de hc hw i hi; linarith [bp_pos c hc ht]
 
 end Formalism.FourierDecayAlt.P
 

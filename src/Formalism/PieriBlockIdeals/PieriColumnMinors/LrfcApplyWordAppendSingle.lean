@@ -51,8 +51,7 @@ theorem lrfc_coeffT_monomial (d u : Fin r × Fin n →₀ ℕ) (c : MvPolynomial
     lrfc_coeffT d (monomial u c) = monomial u (coeff d c) := by
   classical
   ext m
-  rw [lrfc_coeff_coeffT, coeff_monomial, coeff_monomial]
-  split_ifs <;> simp
+  by_cases h : u = m <;> simp [lrfc_coeff_coeffT, h]
 
 theorem lrfc_coeffT_C_monomial_mul (d s : Fin r × Fin n →₀ ℕ)
     (G : MvPolynomial (Fin r × Fin n) (MvPolynomial (Fin r × Fin n) R)) :

@@ -18,8 +18,7 @@ def nuOf (L : SizeData₂ D) (u : D.what₂.Word) {d : ℕ} (e : (Fin d → D.wh
 theorem map_nuOf (L : SizeData₂ D) (u : D.what₂.Word) {d : ℕ} (e : (Fin d → D.what₂.LL) ≃ₗ[D.what₂.LL] (D.div.Nu u).V) :
     (nuOf L u e).map ((e : (Fin d → D.what₂.LL) →ₗ[D.what₂.LL] (D.div.Nu u).V).restrictScalars (𝓞 D.what₂.LL)) =
       L.NuLat u := by
-  unfold nuOf
-  exact Submodule.map_comap_eq_of_surjective (fun y => ⟨e.symm y, by simp⟩) _
+  simpa only [nuOf] using Submodule.map_comap_eq_of_surjective (fun y => ⟨e.symm y, by simp⟩) (L.NuLat u)
 
 private theorem sg_eq_zero_of_not_mem_supp (L : SizeData₂ D) (u : D.what₂.Word) (w : D.what₂.places.Pl) (hw : w ∉ L.supp) :
     L.sg u w = 0 := by

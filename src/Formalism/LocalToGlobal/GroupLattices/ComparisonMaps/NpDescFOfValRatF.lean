@@ -11,9 +11,8 @@ def ValRatF {eps : ℝ} (Fm : FamP eps) : Prop :=
 
 theorem npDescF_of_valRatF {eps : ℝ} (Fm : FamP eps) (h : ValRatF Fm) : NPDescF Fm := by
   obtain ⟨x0, hx0⟩ := h
-  refine ⟨x0, fun x hx i hx1 => ?_⟩
-  refine npDesc_of_valRat _ (Fm.gatT x i) (Fm.Gx x i) (Fm.Gy x i) Fm.GK ?_ (hx0 x hx i hx1)
-  exact (Fm.ex x hx1 i).lat.vram
+  exact ⟨x0, fun x hx i hx1 => npDesc_of_valRat _ (Fm.gatT x i) (Fm.Gx x i) (Fm.Gy x i) Fm.GK
+    (Fm.ex x hx1 i).lat.vram (hx0 x hx i hx1)⟩
 
 theorem CmpTied.valRat {D : D7} {X : Formalism.L2.Herm.Herm0 D} {T : ∀ u : D.what₂.Word, Forms0 D u} {Gt : GatTies D}
     {c : LatCmp D} (K : CmpTied D X T Gt c) : ValRat c := by

@@ -66,11 +66,8 @@ theorem span_E_of_real (S : HSpace E) (hσ : ∀ (φ : E →+* ℂ) a, φ (star 
     intro x hx
     have hx' := congrArg (fun t : P ↦ (t : S.V)) (p.sum_repr ⟨x, hx⟩)
     simp only [Submodule.coe_sum, Submodule.coe_smul] at hx'
-    calc S.hT x z = S.hT (∑ j, (p.repr ⟨x, hx⟩ j) • (p j : S.V)) z := by rw [hx']
-      _ = 0 := by
-        rw [map_sum, LinearMap.sum_apply]
-        refine Finset.sum_eq_zero fun j _ ↦ ?_
-        rw [hT_smul_left, hzj, mul_zero]
+    rw [← hx']
+    simp [map_sum, LinearMap.sum_apply, hzj]
   have hw : psi M z ∈ UU M L e := psi_mem_U_all S M L e hL z
   set w : UU M L e := ⟨psi M z, hw⟩ with hwdef
   have hsub : {u : UU M L e | u ∈ abelian₂ S hσ hsig hpos M L e ∧ ‖u‖ ≤ R} ⊆

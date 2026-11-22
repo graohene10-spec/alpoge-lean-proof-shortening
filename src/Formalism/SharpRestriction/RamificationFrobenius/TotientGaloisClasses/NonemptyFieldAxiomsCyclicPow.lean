@@ -455,7 +455,6 @@ theorem gal_eq_art (σ : hostE ζ a b ≃ₐ[ℚ] hostE ζ a b) (u : (ZMod (2 ^ 
 
 theorem gal_eq_cc (σ : hostE ζ a b ≃ₐ[ℚ] hostE ζ a b) :
     (hostRaw φ hinj hH he h).gal σ = φ.cc ↔ galE φ.e ζ a b σ = cc φ.e := by
-  rw [gal_eq]
   exact ggIso_eq_iff φ hinj _ c0
 
 theorem galE_conj : galE φ.e ζ a b (hostRaw φ hinj hH he h).conj = cc φ.e := by
@@ -516,8 +515,7 @@ theorem psQ : (hostRaw φ hinj hH he h).PsQ := by
   intro u
   show (((ggIso φ hinj (art0 φ.e hH u)).1.1 : ℤˣ) : ℤ) = _
   rw [ggIso_fst]
-  apply artinMap_first_eq_jacobiSym_of_modEq
-  exact Nat.ModEq.refl _
+  exact artinMap_first_eq_jacobiSym_of_modEq φ.e hH u (Nat.ModEq.refl _)
 
 theorem exact : (hostRaw φ hinj hH he h).Exact := by
   intro l hl hld
@@ -525,9 +523,7 @@ theorem exact : (hostRaw φ hinj hH he h).Exact := by
   subst hl2
   obtain ⟨u, hu1, hu2⟩ := exact_art (e := φ.e) hH (by omega)
   refine ⟨u, hu1, fun hc => hu2 ?_⟩
-  apply (ggIso φ hinj).injective
-  rw [map_one]
-  exact hc
+  exact (ggIso φ hinj).injective (by rw [map_one]; exact hc)
 
 theorem hostDer : HostDer (hostRaw φ hinj hH he h) := by
   have hqd := hH.toHypOdd

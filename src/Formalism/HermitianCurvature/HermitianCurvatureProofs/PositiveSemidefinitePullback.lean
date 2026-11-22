@@ -21,9 +21,8 @@ def ind {α : Type} (Y A : Finset α) : Y → ℂ := fun p => if (p : α) ∈ A 
 
 theorem sum_mul_ind {α : Type} (Y A : Finset α) (hA : A ⊆ Y) (g : α → ℂ) :
     ∑ q : Y, g q * ind Y A q = ∑ q ∈ A, g q := by
-  have h := Finset.sum_coe_sort Y (fun q => g q * (if q ∈ A then (1 : ℂ) else 0))
   simp only [ind]
-  rw [h]
+  rw [Finset.sum_coe_sort Y (fun q => g q * (if q ∈ A then (1 : ℂ) else 0))]
   simp only [mul_ite, mul_one, mul_zero, Finset.sum_ite_mem, Finset.inter_eq_right.mpr hA]
 
 theorem star_ind {α : Type} (Y A : Finset α) : star (ind Y A) = ind Y A := by
@@ -122,9 +121,8 @@ theorem splitByLastSize : Formalism.FourierDecayAlt.TB.SplitBySize := by
   have h2 : ∀ s, Xs T i s ⊆ T.X i := fun s => Finset.filter_subset _ _
   rw [sum_ind_Xs T hi, form_ind (T.X i) (T.X i) (Finset.Subset.refl _)
     (fun p q => D.Kr i p q * D.gram ε i w p q)] at h
-  simp only [fun s => form_ind (T.X i) (Xs T i s) (h2 s)
-    (fun p q => D.Kr i p q * D.gram ε i w p q)] at h
-  exact h
+  simpa only [Data.Sf, fun s => form_ind (T.X i) (Xs T i s) (h2 s)
+    (fun p q => D.Kr i p q * D.gram ε i w p q)] using h
 
 open Classical in
 theorem diagStep : Formalism.FourierDecayAlt.TB.DiagStep := by

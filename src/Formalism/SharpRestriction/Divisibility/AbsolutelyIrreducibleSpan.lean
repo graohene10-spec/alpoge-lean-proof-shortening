@@ -97,7 +97,6 @@ theorem sharp_Qsp (D : D7) (μ : D.what₂.Tup) : (RowSide.sharp D).Qsp μ = D.w
 
 theorem sharp_LamSet (D : D7) (μ : D.what₂.Tup) : (RowSide.sharp D).LamSet μ = D.what₂.LamSet μ := by
   first
-  | (unfold RowSide.LamSet Rows.Data.LamSet; rw [sharp_Qsp]; try rfl; done)
   | (simp only [RowSide.LamSet, Rows.Data.LamSet, sharp_Qsp]; try rfl; done)
   | rfl
 
@@ -107,9 +106,8 @@ theorem sharp_RRset (D : D7) (μ : D.what₂.Tup) : (RowSide.sharp D).RRset μ =
   try rfl
 
 theorem sharp_RRDef (D : D7) : (RowSide.sharp D).RRDef ↔ DV.RRDef D := by
-  first
-  | (unfold RowSide.RRDef DV.RRDef; simp only [sharp_RRset]; try exact Iff.rfl; done)
-  | exact Iff.rfl
+  unfold RowSide.RRDef DV.RRDef
+  simp only [sharp_RRset]; try exact Iff.rfl
 
 theorem sharp_AIntegral (D : D7) : (RowSide.sharp D).AIntegral ↔ Rows.AIntegral D.what₂ := by
   unfold RowSide.AIntegral Rows.AIntegral
@@ -171,10 +169,8 @@ theorem rPr_mem : (rPr D).Prime ∧
     exact Nat.mul_pos (Nat.mul_pos (Nat.mul_pos (condE_pos D) (by omega)) (by omega)) (absNorm_ccK_pos D)
   obtain ⟨p, hp1, hp2⟩ :=
     Nat.exists_infinite_primes (LevelStarExponents.condE D * (D.host.pde - 1) * (D.host.pde' - 1) * Ideal.absNorm D.host.ccK + 1)
-  have hne : {p : ℕ | p.Prime ∧
-      ¬ p ∣ LevelStarExponents.condE D * (D.host.pde - 1) * (D.host.pde' - 1) * Ideal.absNorm D.host.ccK}.Nonempty :=
-    ⟨p, hp2, fun hd => absurd (Nat.le_of_dvd hN hd) (Nat.not_le.mpr (Nat.lt_of_succ_le hp1))⟩
-  exact Nat.sInf_mem hne
+  exact Nat.sInf_mem (show {p : ℕ | p.Prime ∧ ¬ p ∣ LevelStarExponents.condE D * (D.host.pde - 1) * (D.host.pde' - 1) * Ideal.absNorm D.host.ccK}.Nonempty from
+    ⟨p, hp2, fun hd => absurd (Nat.le_of_dvd hN hd) (Nat.not_le.mpr (Nat.lt_of_succ_le hp1))⟩)
 
 theorem auxiliary_prime_mem : (q0 D).Prime ∧ q0 D % (rPr D * LevelStarExponents.condE D) = 1 ∧ ¬ q0 D ∣ Ideal.absNorm D.host.ccK := by
   have hr := (rPr_mem D).1
@@ -863,10 +859,9 @@ theorem stmtFam_of_all (𝒪 : ObjClass) (𝒞 : Formalism.MainNotions.FamClass)
 
 theorem stmtClosed_of_fam (𝒪 : ObjClass) (𝒞 : Formalism.MainNotions.FamClass) (h : FamilyErrorExponentBound 𝒪 𝒞) : ClosedAbsoluteShare 𝒪 𝒞 := by
   intro K
-  refine ⟨fun l => Classical.choose (h (K l)),
-    fun l => Classical.choose (Classical.choose_spec (h (K l))),
-    fun l => Classical.choose (Classical.choose_spec (Classical.choose_spec (h (K l)))), ?_⟩
+  choose C Ch Ch' hspec using fun l => h (K l)
+  refine ⟨C, Ch, Ch', ?_⟩
   refine ⟨1, one_pos, fun eps _ _ => ⟨⟨0, fun _ => 0, fun _ => 0, fun _ => 0⟩, fun Fm CH hC _ => ?_⟩⟩
-  exact Classical.choose_spec (Classical.choose_spec (Classical.choose_spec (h (K Fm.cOut)))) Fm CH hC
+  exact hspec Fm.cOut Fm CH hC
 
 end Formalism.MainNotions.AbsolutelyIrreducibleSpan

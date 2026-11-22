@@ -139,14 +139,11 @@ def homQuotEquiv (a : O) :
 
 lemma length_hom_quot (a : O) :
     Module.length O ((O ⧸ Ideal.span ({a} : Set O)) →ₗ[O] KO O) = addVal O a := by
-  rw [(homQuotEquiv a).length_eq, lenKer O Unit (fun _ _ => a)]
-  exact congrArg _ (Matrix.det_unique _)
+  rw [(homQuotEquiv a).length_eq, lenKer O Unit (fun _ _ => a), Matrix.det_unique (fun (_ : Unit) (_ : Unit) => a)]
 
 lemma length_self_top : Module.length O O = ⊤ := by
   by_contra h
-  have hfl : IsFiniteLength O O := Module.length_ne_top_iff.mp h
-  rw [isFiniteLength_iff_isNoetherian_isArtinian] at hfl
-  haveI : IsArtinianRing O := hfl.2
+  haveI : IsArtinianRing O := (isFiniteLength_iff_isNoetherian_isArtinian.mp (Module.length_ne_top_iff.mp h)).2
   exact IsDiscreteValuationRing.not_isField O (IsArtinianRing.isField_of_isDomain O)
 
 end Matlis

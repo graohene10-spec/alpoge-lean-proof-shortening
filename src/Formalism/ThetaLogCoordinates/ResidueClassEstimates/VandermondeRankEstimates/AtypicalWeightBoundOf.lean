@@ -44,14 +44,10 @@ lemma ent_sign (h20 : PathEntryBounds) {D : Letters} {mu : D.Stages} (hW : D.Wf)
   have H := (h20 D mu hW hP).2 i hi
   have hv : D.nVec i ≤ D.Ns := by
     unfold Formalism.InvariantFactorPaths.BranchingDimensions.Letters.nVec
-    calc _ ≤ (Icc 1 i).card := Finset.card_filter_le _ _
-      _ = i := by simp
-      _ ≤ D.Ns := hi
+    exact (Finset.card_filter_le _ _).trans (by simpa using hi)
   have hc : D.nCov i ≤ D.Ns := by
     unfold Formalism.InvariantFactorPaths.BranchingDimensions.Letters.nCov
-    calc _ ≤ (Icc 1 i).card := Finset.card_filter_le _ _
-      _ = i := by simp
-      _ ≤ D.Ns := hi
+    exact (Finset.card_filter_le _ _).trans (by simpa using hi)
   exact ⟨fun h1 => H.2 m (by omega), fun h1 => H.1 m (by omega) hm⟩
 
 end TTyp
@@ -133,9 +129,7 @@ lemma getD_mem {l : List ℕ} {t : ℕ} (h : t < l.length) : l.getD t 0 ∈ l :=
   | cons x l ih =>
     cases t with
     | zero => simp
-    | succ t =>
-      rw [List.getD_cons_succ]
-      exact List.mem_cons_of_mem _ (ih (by simpa using h))
+    | succ t => simpa only [List.getD_cons_succ] using List.mem_cons_of_mem _ (ih (by simpa using h))
 
 private theorem list_getD_append_add_length (pre R : List ℕ) (u : ℕ) : (pre ++ R).getD (u + pre.length) 0 = R.getD u 0 := by
   induction pre with

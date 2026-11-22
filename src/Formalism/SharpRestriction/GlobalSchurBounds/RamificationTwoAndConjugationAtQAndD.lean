@@ -133,8 +133,7 @@ theorem tE_one : tE D 1 = 0 := by
 theorem tE_pow (g : D.R.GG) (i : ℕ) : tE D (g ^ i) = i • tE D g := by
   simp [tE, map_pow, toAdd_pow]
 theorem tE_symm_add (x y : MM D) : (tE D).symm (x + y) = (tE D).symm x * (tE D).symm y := by
-  apply (tE D).injective
-  rw [tE_mul, Equiv.apply_symm_apply, Equiv.apply_symm_apply, Equiv.apply_symm_apply]
+  exact (tE D).injective (by rw [tE_mul, Equiv.apply_symm_apply, Equiv.apply_symm_apply, Equiv.apply_symm_apply])
 theorem tE_symm_zero : (tE D).symm 0 = 1 := by
   rw [Equiv.symm_apply_eq, tE_one]
 
@@ -814,8 +813,7 @@ theorem topExcess_eq (a : HH D → ℤ) (w : HH D → ℕ → D.R.GG → ℝ) (N
       (fun ρ hρ => hN u0 _ (lift_mem D j) t ρ hρ) t]
 
 theorem cOf_mul (φ φ' : AddChar (MM D) ℂ) : cOf D (φ * φ') = cOf D φ * cOf D φ' := by
-  refine MonoidHom.ext fun g => Units.ext ?_
-  rw [MonoidHom.mul_apply, Units.val_mul, cOf_apply, cOf_apply, cOf_apply, AddChar.mul_apply]
+  exact MonoidHom.ext fun g => Units.ext (by simp only [MonoidHom.mul_apply, Units.val_mul, cOf_apply, AddChar.mul_apply])
 
 theorem cOf_psC : cOf D ThickSetMeanBounds.psC = psC D := by
   ext g

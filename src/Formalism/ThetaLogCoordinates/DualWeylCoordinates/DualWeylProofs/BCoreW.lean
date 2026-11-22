@@ -74,9 +74,7 @@ lemma qb_sum_wtT (mu : Fin n → ℤ) (I : TIdx mu) (s : Finset (Fin n)) :
 lemma qb_mem_canT (mu : Fin n → ℤ) (c : ↥(TCols mu)) (b : Fin n) :
     b ∈ (canT mu c).1 ↔ b.val < colH mu c := by
   simp only [canT, mem_map, mem_univ, true_and]
-  constructor
-  · rintro ⟨x, rfl⟩; exact x.2
-  · intro h; exact ⟨⟨b.val, h⟩, by ext; rfl⟩
+  exact ⟨(by rintro ⟨x, rfl⟩; exact x.2), fun h => ⟨⟨b.val, h⟩, by ext; rfl⟩⟩
 
 lemma qb_col_le (mu : Fin n → ℤ) (c : ↥(TCols mu)) (J : Finset (Fin n)) (hJ : J.card = colH mu c) (a : Fin n) :
     ((univ.filter (· ≤ a)).filter (· ∈ J)).card ≤ ((univ.filter (· ≤ a)).filter (· ∈ (canT mu c).1)).card := by

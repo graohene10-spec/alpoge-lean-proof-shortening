@@ -24,8 +24,7 @@ theorem evalGens_mem (Θ : Matrix g g R) (n : g → NN) (hrel : ∀ i, ∑ j, Θ
   rw [LinearMap.mem_ker]
   funext i
   rw [relMap_apply', Pi.zero_apply]
-  simp_rw [← LinearMap.map_smul]
-  rw [← map_sum, hrel i, map_zero]
+  simp only [← LinearMap.map_smul, ← map_sum, hrel i, map_zero]
 
 theorem evalGens_inj (n : g → NN) (hspan : Submodule.span R (Set.range n) = ⊤) :
     Function.Injective (fun (φ : NN →ₗ[R] M) (j : g) => φ (n j)) := by
@@ -118,8 +117,7 @@ theorem lenCoker_of_det_eq_zero (A : Matrix ι ι O) (hd : A.det = 0) :
   choose w' hw' using fun i => (addVal_le_iff_dvd (a := w i0) (b := w i)).mp
     (hi0 i (Finset.mem_univ _))
   have hw'i0 : w' i0 = 1 := by
-    have := hw' i0
-    exact (mul_left_cancel₀ hwi0 (this.symm.trans (mul_one _).symm))
+    exact mul_left_cancel₀ hwi0 (by rw [← hw' i0, mul_one])
   have hw'A : w' ᵥ* A = 0 := by
     have : w = w i0 • w' := funext fun i => by simp [hw' i]
     rw [this, Matrix.smul_vecMul] at hw
@@ -141,9 +139,8 @@ theorem lenCoker_of_det_eq_zero (A : Matrix ι ι O) (hd : A.det = 0) :
     refine ⟨Submodule.Quotient.mk (Pi.single i0 c), ?_⟩
     show I.mkQ (w' ⬝ᵥ Pi.single i0 c) = I.mkQ c
     rw [dotProduct_single, hw'i0, one_mul]
-  have h := Module.length_le_of_surjective F hF
-  rw [IdempotentNormalFormsLenFacts.length_quot_span, hϖ.addVal_pow] at h
-  simpa using h
+  simpa [I, IdempotentNormalFormsLenFacts.length_quot_span, hϖ.addVal_pow] using
+    Module.length_le_of_surjective F hF
 
 end LenCokerAux
 

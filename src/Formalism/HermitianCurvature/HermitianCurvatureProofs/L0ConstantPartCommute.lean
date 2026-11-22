@@ -25,8 +25,7 @@ lemma io_one : (io (1 : A) : SlopeTestRemainingChoices S A) = 1 := by
   exact map_one _
 
 lemma io_comm {x y : A} (h : Commute x y) : Commute (io x : SlopeTestRemainingChoices S A) (io y) := by
-  unfold Commute SemiconjBy
-  rw [← io_mul, ← io_mul, h.eq]
+  simp only [Commute, SemiconjBy, ← io_mul, h.eq]
 
 lemma io_star [StarRing A] (x : A) : star (io x : SlopeTestRemainingChoices S A) = io (star x) := by
   unfold io

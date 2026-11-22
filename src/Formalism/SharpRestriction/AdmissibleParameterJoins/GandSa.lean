@@ -42,13 +42,11 @@ theorem badOrb_congr (X : Inst D L) (h t : HH D) (T T' : Finset (HH D))
     (hT : ∀ x ∈ UnusedSlot33.coset t h, (x ∈ T ↔ x ∈ T')) : BadOrb X h t T ↔ BadOrb X h t T' := by
   unfold BadOrb
   have hpos : posOn D h (X.bs h t) T = posOn D h (X.bs h t) T' := by
-    unfold posOn
     ext j
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+    simp only [posOn, Finset.mem_filter, Finset.mem_univ, true_and]
     apply hT
     obtain ⟨i, hi⟩ := X.bs_orb h t
-    generalize X.bs h t = b at hi ⊢
-    subst hi
+    rw [congrArg (fun z => UnusedSlot33.coset z h) hi.symm]
     simp only [UnusedSlot33.coset, Set.mem_setOf_eq]
     refine ⟨((j : ℕ) : ℤ) - (i : ℤ), ?_⟩
     rw [sub_smul, natCast_zsmul, natCast_zsmul]
@@ -71,8 +69,7 @@ theorem frobenius_step_large_order {p : ℕ} (hp : IsResidueClassZero D p) : ste
 
 theorem badOrb_TT (X : Inst D L) {p : ℕ} (hp : IsResidueClassZero D p) (t : HH D) :
     BadOrb X (hP D p) t D.host.TT ↔ ¬ Good X p (X.bs (stepP D p) t) := by
-  rw [frobenius_step_large_order hp]
-  try exact Iff.rfl
+  simp [BadOrb, Good, frobenius_step_large_order hp, posOn, topsPos]
 
 theorem primes_eq (L : SizeData₂ D) :
     (AuxBlock8.primesResidueBelow D L.sc.X').filter

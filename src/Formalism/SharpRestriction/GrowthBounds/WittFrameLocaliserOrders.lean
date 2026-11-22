@@ -897,8 +897,7 @@ theorem order_filtration_prod {ι : Type*} (s : Finset ι) (P : ι → MvPolynom
   induction s using Finset.induction_on with
   | empty => simpa using one_mem_graded_zero w Fr
   | insert a s ha ih =>
-    rw [Finset.prod_insert ha, Finset.sum_insert ha]
-    exact order_filtration_mul w Fr (h a (Finset.mem_insert_self a s)) (ih fun i hi => h i (Finset.mem_insert_of_mem hi))
+    simpa [Finset.prod_insert ha, Finset.sum_insert ha] using order_filtration_mul w Fr (h a (Finset.mem_insert_self a s)) (ih fun i hi => h i (Finset.mem_insert_of_mem hi))
 
 theorem newVar_pow_mem_even_top (v : TV n' k) (hv : v.1 ∈ Fr.TT) (he : Even v.1.val) (P : ℕ) (hP : 1 ≤ P) :
     newVar w r v ^ P ∈ uniformiserOrderFiltration w Fr (if r ≤ v.2.val then 1 else 0) := by
@@ -1803,10 +1802,7 @@ theorem bd_hypII_mono {n' r : ℕ} [NeZero n'] {A B C A' B' C' : ℝ} (hA : A �
     unfold Real.logb
     exact div_nonneg hla (Real.log_natCast_nonneg p)
   have hY : 0 ≤ Y := le_trans (Nat.cast_nonneg r) h4
-  refine ⟨h1, h2, h3, h4, le_trans ?_ h5, h6, h7, le_trans ?_ h8, h9, le_trans ?_ h10⟩
-  · gcongr
-  · gcongr
-  · gcongr
+  refine ⟨h1, h2, h3, h4, le_trans ?_ h5, h6, h7, le_trans ?_ h8, h9, le_trans ?_ h10⟩ <;> gcongr
 
 theorem real_bound_monotone_constants (D : Formalism.BasicNotions.D7) {A B C A' B' C' : ℝ} (hA : A ≤ A') (hB : B ≤ B') (hC : C ≤ C')
     (h : Conclusion6 D A B C) : Conclusion6 D A' B' C' := by
@@ -2135,12 +2131,11 @@ theorem bd_oldest_far {n' r : ℕ} [NeZero n'] (F : Frames n' r) (L₁ L₂ : �
 
 theorem bd_fr_strict {n' r : ℕ} (F : Frames n' r) (hs : ∀ j : ℤ, ∀ i, i + 1 < r → F.fr j i < F.fr j (i + 1)) (j : ℤ) :
     ∀ d i, i + (d + 1) < r → F.fr j i < F.fr j (i + (d + 1)) := by
-  intro d
+  intro d i
   induction d with
-  | zero => intro i hi; exact hs j i hi
+  | zero => intro hi; exact hs j i hi
   | succ d ih =>
-    intro i hi
-    exact lt_trans (ih i (by omega)) (hs j (i + (d + 1)) hi)
+    intro hi; exact lt_trans (ih (by omega)) (hs j (i + (d + 1)) hi)
 
 theorem bd_fr_lt {n' r : ℕ} (F : Frames n' r) (hs : ∀ j : ℤ, ∀ i, i + 1 < r → F.fr j i < F.fr j (i + 1)) (j : ℤ)
     {i k : ℕ} (hik : i < k) (hk : k < r) : F.fr j i < F.fr j k := by
@@ -3193,9 +3188,7 @@ theorem map_twisted_inverse_row {g : Matrix (Fin k) (Fin k) (WF p n')} (hg : IsG
       yg p n' O n' g a b := by
   unfold yg
   rw [map_sum, sigmaMatrix_inv_at_shift hg]
-  refine Finset.sum_congr rfl fun c _ => ?_
-  rw [map_mul, MvPolynomial.map_X, MvPolynomial.map_C]
-  rfl
+  simp [map_mul, MvPolynomial.map_X, MvPolynomial.map_C, sigMat]
 
 theorem first_key_integral (Fr : Frames n' r) (hrk : r ≤ k) (g : Matrix (Fin k) (Fin k) (WF p n')) (s : ℤ) (c : Fin k) :
     InA (firstKeyMinor p O Fr hrk g s c) := by
@@ -3610,11 +3603,8 @@ theorem residue_twisted_row_eq [IsDiscreteValuationRing O] (S : UniformizedDVR p
     rw [← hι, h1, map_pow]
   rw [map_mul, MvPolynomial.map_C, hF]
   unfold newVariableIntegral
-  by_cases hb : b'.val < r
-  · rw [if_pos ((normal_variable_iff_odd_index hs b').mpr hb), if_pos hb]
-    simp [hw]
-  · rw [if_neg ((normal_variable_iff_odd_index hs b').not.mpr hb), if_neg hb]
-    simp
+  rw [normal_variable_iff_odd_index hs b']
+  by_cases hb : b'.val < r <;> simp [hb, hw]
 
 theorem third_key_residue_eq_zero [IsDiscreteValuationRing O] (S : UniformizedDVR p O) (Fr : Frames n' r) (hrk : r ≤ k)
     {g g' : Matrix (Fin k) (Fin k) (WF p n')} (hg : IsGLW g) (hg' : IsGLW g') (hn : Even n') (s : ℤ)
@@ -3882,8 +3872,7 @@ theorem bx_Gr_sum {ι : Type*} (s : Finset ι) (P : ι → MvPolynomial (TV n' k
   induction s using Finset.induction_on with
   | empty => simpa using bx_Gr_zero
   | insert a s ha ih =>
-    rw [Finset.sum_insert ha]
-    exact bx_Gr_add (h a (Finset.mem_insert_self a s)) (ih fun i hi => h i (Finset.mem_insert_of_mem hi))
+    simpa [Finset.sum_insert ha] using bx_Gr_add (h a (Finset.mem_insert_self a s)) (ih fun i hi => h i (Finset.mem_insert_of_mem hi))
 
 theorem bx_Gr_mul {P Q : MvPolynomial (TV n' k) (KK O)} (hP : bx_Gr w r P) (hQ : bx_Gr w r Q) : bx_Gr w r (P * Q) :=
   fun m => by
@@ -4011,8 +4000,7 @@ theorem bc_gr_prod (hmul : ∀ i j E E' a b, a ∈ G i E → b ∈ G j E' → a 
   | empty => simpa using AddSubmonoid.subset_closure hone
   | insert a s ha ih =>
     rw [Finset.prod_insert ha, Finset.sum_insert ha]
-    have := bc_gr_mul hmul (h a (Finset.mem_insert_self a s)) (ih fun t ht => h t (Finset.mem_insert_of_mem ht))
-    simpa using this
+    simpa using bc_gr_mul hmul (h a (Finset.mem_insert_self a s)) (ih fun t ht => h t (Finset.mem_insert_of_mem ht))
 
 theorem bc_gr_tel (hmul : ∀ i j E E' a b, a ∈ G i E → b ∈ G j E' → a * b ∈ G (i + j) (E + E'))
     (hone : (1 : P) ∈ G 0 0) (hmono : ∀ i, G i 1 ⊆ G i 0) {κ : Type*} (s : Finset κ) (a b : κ → P) (e : κ → ι)
@@ -4066,8 +4054,7 @@ theorem inWj_of_isKeyProduct {A : MvPolynomial (TV n' k) (KK O)} {s : ℕ} (hA :
   induction l with
   | nil => simpa using inWj_one
   | cons y l ih =>
-    simp only [List.map_cons, List.prod_cons, List.sum_cons]
-    exact inWj_mul (h1 y (List.mem_cons_self)).1.2.2.2.1 (ih fun z hz => h1 z (List.mem_cons_of_mem _ hz))
+    simpa only [List.map_cons, List.prod_cons, List.sum_cons] using inWj_mul (h1 y (List.mem_cons_self)).1.2.2.2.1 (ih fun z hz => h1 z (List.mem_cons_of_mem _ hz))
 
 variable (Fr)
 
@@ -4087,9 +4074,8 @@ theorem bc_IT_mul {A B : MvPolynomial (TV n' k) (KK O)} (hA : bc_IT Fr A) (hB : 
   · exact fun v hv => (Finset.mem_union.1 (vars_mul a b hv)).elim (a2 v) (b2 v)
 
 theorem bc_IT_pow {A : MvPolynomial (TV n' k) (KK O)} (hA : bc_IT Fr A) (n : ℕ) : bc_IT Fr (A ^ n) := by
-  induction n with
-  | zero => simpa using bc_IT_one
-  | succ n ih => rw [pow_succ]; exact bc_IT_mul ih hA
+  exact Nat.rec (motive := fun k => bc_IT Fr (A ^ k)) (by simpa using bc_IT_one)
+    (fun n ih => by rw [pow_succ]; exact bc_IT_mul ih hA) n
 
 theorem bc_IT_prod {κ : Type*} (s : Finset κ) (f : κ → MvPolynomial (TV n' k) (KK O)) (h : ∀ t ∈ s, bc_IT Fr (f t)) :
     bc_IT Fr (∏ t ∈ s, f t) := by
@@ -4121,10 +4107,7 @@ theorem bc_gen_mul (Dl : ℕ → MvPolynomial (TV n' k) (KK O)) : ∀ (i j : ℕ
     ⟨x2, s2, e2, A2, ν2, y2, H2, hk2, hi2, hn2, hx2, hE2, hJ2, hq2, hy2, rfl⟩
   refine ⟨x1 + x2, s1 + s2, e1 + e2, A1 * A2, ν1 + ν2, fun t => y1 t + y2 t, H1 * H2, isKeyProduct_mul hk1 hk2,
     bc_IT_mul hi1 hi2, ?_, ?_, by omega, ?_, ?_, ?_, ?_⟩
-  · intro v hv
-    rcases Finset.mem_union.1 (Finsupp.support_add hv) with h | h
-    · exact hn1 v h
-    · exact hn2 v h
+  · exact fun v hv => (Finset.mem_union.1 (Finsupp.support_add hv)).elim (hn1 v) (hn2 v)
   · simp only [Prod.fst_add]; omega
   · rw [Finsupp.sum_add_index' (fun _ => rfl) (fun _ _ _ => rfl)]; omega
   · rw [Finsupp.sum_add_index' (fun _ => rfl) (fun _ _ _ => rfl), Nat.mul_add]; omega
@@ -4709,8 +4692,7 @@ theorem otherVectorDegree_le_bound {O : Type} [CommRing O] {σN : Type} {M r : �
     symm
     apply Finset.sum_subset (Finset.subset_univ _)
     intro v _ hv
-    have h3 : m v = 0 := by simpa using hv
-    simp [h3]
+    simp [show m v = 0 by simpa using hv]
   rw [h1]
   exact Finset.le_sup
     (f := fun m : Fin M × Fin r →₀ ℕ =>
@@ -5063,8 +5045,7 @@ theorem hypothesis_numeric_bounds {n' r : ℕ} [NeZero n'] (C : ℝ) (hC : 1 ≤
     rw [e2]; exact mul_nonneg (by linarith) (by linarith)
   have hD0 : 0 ≤ Dd := by linarith
   have hfl := Nat.floor_le hD0
-  have hfl2 := Nat.lt_floor_add_one Dd
-  refine ⟨hp, hr, h1, ?_, g4, g5, by omega, ?_, by linarith, ?_, g10, h2, h3, h4, h5, h6, h7⟩
+  refine ⟨hp, hr, h1, ?_, g4, g5, by omega, ?_, by linarith [Nat.lt_floor_add_one Dd], ?_, g10, h2, h3, h4, h5, h6, h7⟩
   · exact_mod_cast g2
   · have e3 : ((L₁ : ℤ) - 1) = ((L₁ - 1 : ℕ) : ℤ) := by omega
     rw [e3, zpow_natCast] at g7
@@ -5293,9 +5274,7 @@ theorem one_le_tops_log_bound (C : ℝ) (hC : 1 ≤ C) (p r N k n' G' a c0 c'' c
   have hom : (0 : ℝ) ≤ (r : ℝ) * N * c0 + 2 * r * n' * c'' := by positivity
   have hc : (1 : ℝ) ≤ (cStar : ℝ) + ((r : ℝ) * N * c0 + 2 * r * n' * c'') := by linarith
   have hQ : (p : ℝ) ≤ ((p : ℝ) ^ G') ^ 5 := by
-    rw [← pow_mul]
-    calc (p : ℝ) = (p : ℝ) ^ 1 := (pow_one _).symm
-      _ ≤ (p : ℝ) ^ (G' * 5) := pow_le_pow_right₀ (by linarith) (by omega)
+    simpa only [pow_one, pow_mul] using (pow_le_pow_right₀ (by linarith) (by omega) : (p : ℝ) ^ 1 ≤ (p : ℝ) ^ (G' * 5))
   have a1 : (1 : ℝ) ≤ C * (k : ℝ) ^ 3 * (r : ℝ) ^ 2 * N :=
     one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le
       (one_le_mul_of_one_le_of_one_le hC (one_le_pow₀ hk')) (one_le_pow₀ hr')) hN'
@@ -5328,8 +5307,7 @@ theorem segment_length_bounds_real : ∃ C : ℝ, 1 ≤ C ∧
   have hII' := hII
   unfold Formalism.MainNotions.SourceCleaning.HypII at hII'
   obtain ⟨g1, _, _, g4, _, g6, g7, g8, g9, g10⟩ := hII'
-  have hr' : (2 : ℝ) ≤ r := by exact_mod_cast hr
-  have hY : 1 ≤ Y := by linarith
+  have hY : 1 ≤ Y := by linarith [show (2 : ℝ) ≤ (r : ℝ) by exact_mod_cast hr]
   have hk : 1 ≤ k := by omega
   have hN := frame_tops_card_pos Fr L₁ N₁ hV (by omega)
   have hL1 := one_le_first_length p k Fr.TT.card L₁ Y (by omega) hk hN hY g7

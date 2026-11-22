@@ -71,8 +71,7 @@ theorem posG_step (v : Fin (nOrb z)) (s : Fin (orderOf z)) : posG z ⟨v, posAdd
 
 theorem nOrb_mul_order : nOrb z * orderOf z = Nat.card G := by
   unfold nOrb
-  rw [← Nat.card_zpowers, mul_comm]
-  exact (Subgroup.zpowers z).card_mul_index
+  simpa only [← Nat.card_zpowers, Subgroup.index_eq_card, mul_comm] using (Subgroup.zpowers z).card_mul_index
 
 end Generic
 

@@ -43,22 +43,19 @@ lemma exists_exceptional_zero_set (cZ c₁ : ℝ) (hle : c₁ ≤ cZ)
   by_cases h : ∃ s : ℂ, InRegion c₁ q s ∧ IsLZero χ s
   · obtain ⟨s, hs, hL⟩ := h
     obtain ⟨-, hχ1, him, hder, huniq⟩ := hZ q χ s (zero_free_region_mono hle hs) hL
+    have hsc : s = ((s.re : ℝ) : ℂ) := Complex.ext (by simp) (by simp [him])
     refine ⟨{s.re}, by simp, ?_, ?_⟩
     · intro β hβ
       rw [Finset.mem_singleton] at hβ
       subst hβ
-      have hs' : s = ((s.re : ℝ) : ℂ) := Complex.ext (by simp) (by simp [him])
-      rw [← hs']
+      rw [← hsc]
       exact ⟨hχ1, hs, hL.2, hder⟩
     · intro s' hs' hL'
       obtain ⟨-, hss⟩ := huniq χ s' (zero_free_region_mono hle hs') hL'
       refine ⟨s.re, Finset.mem_singleton_self _, ?_⟩
-      rw [hss]
-      exact Complex.ext (by simp) (by simp [him])
+      simpa [hss] using hsc
   · push_neg at h
-    refine ⟨∅, by simp, by simp, ?_⟩
-    intro s hs hL
-    exact absurd hL (h s hs)
+    exact ⟨∅, by simp, by simp, fun s hs hL => absurd hL (h s hs)⟩
 
 lemma chebyshev_character_trivial_bound {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) (x : ℝ) (hx : 1 ≤ x) :
     ‖psiChi χ x - (if χ = 1 then (x : ℂ) else 0)‖ ≤ x * (Real.log x + 1) := by

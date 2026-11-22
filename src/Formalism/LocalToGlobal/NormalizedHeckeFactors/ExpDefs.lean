@@ -233,9 +233,8 @@ def charOf {K : Type} [Field K] {q : ℕ} (ζ : Kˣ) (hζ : ζ ^ q = 1) : Multip
 
 theorem charOf_one {K : Type} [Field K] {q : ℕ} (ζ : Kˣ) (hζ : ζ ^ q = 1) :
     charOf ζ hζ (Multiplicative.ofAdd 1) = ζ := by
-  have h1 : (1 : ZMod q) = ((1 : ℤ) : ZMod q) := Int.cast_one.symm
   simp only [charOf, AddMonoidHom.toMultiplicativeLeft_apply_apply, toAdd_ofAdd]
-  rw [h1, ZMod.lift_coe]
+  rw [(show (1 : ZMod q) = ((1 : ℤ) : ZMod q) from Int.cast_one.symm), ZMod.lift_coe]
   simp
 
 theorem exists_isStdGeneric {K : Type} [Field K] (hp : ∀ x, (p x).Prime)

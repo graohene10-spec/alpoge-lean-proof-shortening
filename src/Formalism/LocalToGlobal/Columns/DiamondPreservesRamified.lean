@@ -22,8 +22,7 @@ theorem Deco.IsDnA.dia1 {P : ST} {q : 𝓞 E} {a : 𝓞 E ⧸ P.1.asIdeal} {d d'
   obtain ⟨h1, h2⟩ := h
   refine ⟨?_, ?_⟩
   · ext1
-    · have h5 := congrArg Deco.N h1
-      exact h5
+    · exact (show Deco.N d' = Deco.N (d.dn P (d'.f P)) from congrArg Deco.N h1)
     · funext Q y
       have h3 : d'.f Q = (d.dn P (d'.f P)).f Q := by rw [← h1]
       simp only [Deco.dia, Deco.dn] at h3 ⊢
@@ -32,8 +31,7 @@ theorem Deco.IsDnA.dia1 {P : ST} {q : 𝓞 E} {a : 𝓞 E ⧸ P.1.asIdeal} {d d'
       · rw [Function.update_of_ne hQ]
         rw [Function.update_of_ne hQ] at h3
         rw [h3, Pi.mulSingle_eq_of_ne hQ, Units.val_one, one_mul]
-    · have h6 := congrArg Deco.be h1
-      exact h6
+    · exact (show Deco.be d' = Deco.be (d.dn P (d'.f P)) from congrArg Deco.be h1)
   · intro e he hfe
     show ((Pi.mulSingle P c : DiaG E ST) P).1 * d'.f P (q • e) = c.1 * a
     rw [Pi.mulSingle_eq_same, h2 e he hfe]

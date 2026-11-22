@@ -161,14 +161,11 @@ lemma trunc_normal (x : TruncK K' n) : ∃ k ≤ n, ∃ u : TruncK K' n, IsUnit 
     rw [hpq, map_mul, map_pow, tt_pow_ge hm, tt_pow_n]; simp
   · replace hm := not_le.mp hm
     refine ⟨m, hm.le, Ideal.Quotient.mk _ q, ?_, ?_⟩
-    · have hc : IsCoprime ((X : K'[X]) ^ n) q :=
-        IsCoprime.pow_left ((Polynomial.irreducible_X).coprime_iff_not_dvd.mpr hq)
-      obtain ⟨u, v, huv⟩ := hc
+    · obtain ⟨u, v, huv⟩ := (IsCoprime.pow_left ((Polynomial.irreducible_X).coprime_iff_not_dvd.mpr hq) : IsCoprime ((X : K'[X]) ^ n) q)
       refine isUnit_iff_exists_inv'.mpr ⟨Ideal.Quotient.mk _ v, ?_⟩
       have : Ideal.Quotient.mk (Ideal.span {(X : K'[X]) ^ n}) (u * X ^ n + v * q) = 1 := by
         rw [huv, map_one]
-      rw [map_add, map_mul, map_mul, map_pow, tt_pow_n, mul_zero, zero_add] at this
-      exact this
+      simpa [map_add, map_mul, map_pow, tt_pow_n] using this
     · rw [hpq, map_mul, map_pow, mul_comm]
 
 lemma trunc_total (x y : TruncK K' n) : x ∣ y ∨ y ∣ x := by

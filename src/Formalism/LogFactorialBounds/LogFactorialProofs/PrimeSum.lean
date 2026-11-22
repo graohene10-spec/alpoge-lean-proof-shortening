@@ -61,10 +61,7 @@ lemma sum_div_mul_log_le_log_factorial (n : ℕ) :
 lemma log_factorial_le (n : ℕ) : Real.log (n.factorial : ℕ) ≤ n * Real.log n := by
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · simp
-  · have h1 : (0 : ℝ) < (n.factorial : ℕ) := by exact_mod_cast Nat.factorial_pos n
-    have h2 : ((n.factorial : ℕ) : ℝ) ≤ (n : ℝ) ^ n := by exact_mod_cast Nat.factorial_le_pow n
-    calc Real.log (n.factorial : ℕ) ≤ Real.log ((n : ℝ) ^ n) := Real.log_le_log h1 h2
-      _ = n * Real.log n := by rw [Real.log_pow]
+  · exact (Real.log_le_log (by exact_mod_cast Nat.factorial_pos n) (by exact_mod_cast Nat.factorial_le_pow n)).trans_eq (Real.log_pow (n : ℝ) n)
 
 lemma sum_primesLE_log_div_le (n : ℕ) (hn : 1 ≤ n) :
     ∑ p ∈ Nat.primesLE n, Real.log p / p ≤ Real.log n + Real.log 4 := by

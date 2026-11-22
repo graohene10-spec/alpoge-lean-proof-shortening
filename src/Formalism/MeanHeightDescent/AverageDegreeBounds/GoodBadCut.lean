@@ -265,9 +265,8 @@ theorem smul_mem_map_cut (e : V →ₗ[K] V) (g : ℕ) (N : Submodule (𝓞 K) V
     (g : K) • y ∈ N.map (((g : K) • (LinearMap.id - e) : V →ₗ[K] V).restrictScalars (𝓞 K)) := by
   obtain ⟨hyN, hyk⟩ := hy
   refine ⟨y, hyN, ?_⟩
-  have hy0 : e y = 0 := hyk
   show (g : K) • (y - e y) = (g : K) • y
-  rw [hy0, sub_zero]
+  rw [show e y = 0 from hyk, sub_zero]
 
 theorem rk_map_cut (e : V →ₗ[K] V) (g : ℕ) (N : Submodule (𝓞 K) V) (hg : 1 ≤ g)
     (hee : e ∘ₗ e = e) (hint : ∀ x ∈ N, (g : K) • e x ∈ N) :

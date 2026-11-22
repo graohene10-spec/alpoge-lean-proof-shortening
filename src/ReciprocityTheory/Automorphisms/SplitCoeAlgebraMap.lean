@@ -46,11 +46,9 @@ theorem SplitPlace.split_mem_ideal (s : SplitPlace L) (x : 𝓞 L) :
 theorem SplitPlace.ideal_isPrime (s : SplitPlace L) : s.ideal.IsPrime := by
   rw [Ideal.isPrime_iff]
   constructor
-  · rw [Ne, Ideal.eq_top_iff_one, s.split_mem_ideal]
-    simp
+  · simp [Ideal.eq_top_iff_one, s.split_mem_ideal]
   · intro x y hxy
-    rw [s.split_mem_ideal, s.split_mem_ideal]
-    rw [s.split_mem_ideal] at hxy
+    simp only [s.split_mem_ideal] at hxy ⊢
     by_contra h
     push_neg at h
     obtain ⟨h1, h2⟩ := h
@@ -79,7 +77,6 @@ def SplitPlace.w (s : SplitPlace L) : HeightOneSpectrum (𝓞 L) :=
 theorem SplitPlace.w_under (s : SplitPlace L) :
     s.w.asIdeal.comap (algebraMap (𝓞 L⁺) (𝓞 L)) = s.v.asIdeal := by
   ext a
-  rw [Ideal.mem_comap]
   exact s.split_alg_mem a
 
 theorem SplitPlace.card_quot (s : SplitPlace L) :

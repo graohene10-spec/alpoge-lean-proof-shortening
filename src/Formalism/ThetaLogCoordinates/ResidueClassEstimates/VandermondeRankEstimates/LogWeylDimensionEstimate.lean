@@ -371,10 +371,7 @@ lemma sum_pa_le {Ns n : ℕ} {la : ℕ → ℤ} {L : ℝ} (hL0 : 0 ≤ L)
     intro j hj
     rw [Finset.mem_range] at hj
     by_cases hj0 : la j = 0
-    · rw [if_neg (show ¬(la j ≠ 0) from fun h => h hj0)]
-      refine le_of_eq (Finset.sum_eq_zero fun i _ => ?_)
-      unfold pa
-      rw [if_neg (show ¬(la i ≠ 0 ∧ la j ≠ 0) from fun h => h.2 hj0)]
+    · simp [pa, hj0]
     · rw [if_pos hj0]
       have h1 : ∑ i ∈ range j, pa la i j ≤ ∑ i ∈ range j, (if la i ≠ 0 then L else 0) := by
         apply Finset.sum_le_sum
@@ -382,9 +379,7 @@ lemma sum_pa_le {Ns n : ℕ} {la : ℕ → ℤ} {L : ℝ} (hL0 : 0 ≤ L)
         rw [Finset.mem_range] at hi
         unfold pa
         by_cases hi0 : la i = 0
-        · rw [if_neg (show ¬(la i ≠ 0 ∧ la j ≠ 0) from fun h => h.1 hi0),
-            if_neg (show ¬(la i ≠ 0) from fun h => h hi0)]
-          all_goals exact le_rfl
+        · simp [hi0]
         · rw [if_pos ⟨hi0, hj0⟩, if_pos hi0]
           exact hG i j hi hj
       have h2 : ∑ i ∈ range j, (if la i ≠ 0 then L else 0) ≤
@@ -392,9 +387,7 @@ lemma sum_pa_le {Ns n : ℕ} {la : ℕ → ℤ} {L : ℝ} (hL0 : 0 ≤ L)
         apply Finset.sum_le_sum_of_subset_of_nonneg
           (fun x hx => Finset.mem_range.mpr (lt_trans (Finset.mem_range.mp hx) hj))
         intro i _ _
-        split_ifs
-        · exact hL0
-        · exact le_rfl
+        split_ifs <;> linarith
       have h3 : ∑ i ∈ range n, (if la i ≠ 0 then L else 0) ≤ ((2 * Ns : ℕ) : ℝ) * L :=
         sum_ite_const_le (fun m => la m ≠ 0) hnz hL0
       have h4 : ((2 * Ns : ℕ) : ℝ) = 2 * (Ns : ℝ) := by push_cast; ring

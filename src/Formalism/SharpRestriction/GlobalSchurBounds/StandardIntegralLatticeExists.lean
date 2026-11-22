@@ -76,11 +76,9 @@ def prPsi (e : Formalism.HC.Frame) : e.GG →* e.GG where
 theorem prPsi_mem (e : Formalism.HC.Frame) (g : e.GG) : prPsi e g ∈ e.Psi := (Formalism.HC.Frame.mem_Psi_iff _).2 rfl
 
 theorem prPsi_of_mem (e : Formalism.HC.Frame) (g : e.GG) (h : g ∈ e.Psi) : prPsi e g = g := by
-  have h2 : g.1.2 = 1 := (Formalism.HC.Frame.mem_Psi_iff g).1 h
   obtain ⟨⟨a, b⟩, c⟩ := g
-  simp only at h2
-  subst h2
-  simp [prPsi]
+  have hb : b = 1 := by simpa using (Formalism.HC.Frame.mem_Psi_iff _).1 h
+  simp [prPsi, hb]
 
 theorem prPsi_of_not_mem (e : Formalism.HC.Frame) (g : e.GG) (h : g ∉ e.Psi) : prPsi e g = e.cc * g := by
   obtain ⟨⟨a, b⟩, c⟩ := g
@@ -290,8 +288,7 @@ theorem OrthoBasisW_std {p : ℕ} [Fact p.Prime] (ρ : D.host.E → ℂ_[p]) (h�
 
 theorem lamC_one {p : ℕ} [Fact p.Prime] (lam : Formalism.MainNotions.TaylorLogMetric.Qbar →+* ℂ_[p]) : Formalism.MainNotions.TaylorLogMetric.lamC lam 1 = 1 := by
   unfold Formalism.MainNotions.TaylorLogMetric.lamC
-  rw [dif_pos (one_mem _)]
-  exact map_one lam
+  exact (dif_pos (one_mem _)).trans (map_one lam)
 
 theorem posEmb_one {p : ℕ} [Fact p.Prime] (lam : Formalism.MainNotions.TaylorLogMetric.Qbar →+* ℂ_[p]) (φ : D.R.GG) {d : ℕ}
     (τ0 : D.what₂.Tau) (s : ZMod d) : ‖Formalism.MainNotions.TaylorLogMetric.posEmb D lam φ τ0 s 1‖ = 1 := by
@@ -648,8 +645,7 @@ theorem ColVal_pos_at {D : D7} {u : D.what₂.Word} (CV : ColVal D u) (τ : D.wh
     (v : InfinitePlace D.what₂.LL) (y : (D.sp.X 0).V) :
     0 ≤ (v.embedding (CV.rho τ ((D.sp.X 0).hT y y))).re := by
   obtain ⟨c⟩ := CV.ne
-  rw [← CV.bc_norm c τ v y]
-  exact majAt_self_re_nonneg _ _ _ _
+  simpa only [← CV.bc_norm c τ v y] using majAt_self_re_nonneg (CV.Q c τ).b (CV.Q c τ).X v (CV.bc c τ y)
 
 theorem exists_ext (D : D7) (ρ : D.host.E →+* D.what₂.LL) (σ : D.host.E →+* ℂ) :
     ∃ s : D.what₂.LL →+* ℂ, ∀ a, s (ρ a) = σ a := by
@@ -744,10 +740,7 @@ theorem bcFun_smulO (a : 𝓞 E) (y : S.V) :
 
 theorem bcFun_frame (i : Fin S.rank) : bcFun S ρ (S.frame i) = Pi.single i 1 := by
   funext j
-  simp only [bcFun, AddMonoidHom.coe_mk, ZeroHom.coe_mk, Module.Basis.repr_self]
-  by_cases h : j = i
-  · subst h; simp
-  · rw [Finsupp.single_eq_of_ne (by simpa using h), Pi.single_eq_of_ne h, map_zero]
+  simp [bcFun, Module.Basis.repr_self, Finsupp.single_apply, Pi.single_apply, eq_comm]
 
 def mkQ (Lc : Submodule (𝓞 E) S.V) (Y : InfinitePlace LL → Matrix (Fin S.rank) (Fin S.rank) ℂ) : HLat LL where
   V := Fin S.rank → LL
@@ -762,10 +755,8 @@ theorem mkQ_fg (Lc : Submodule (𝓞 E) S.V) (h : Lc.FG) :
   obtain ⟨s, hs⟩ := h
   refine ⟨s.image (bcFun S ρ), ?_⟩
   apply le_antisymm
-  · apply Submodule.span_mono
-    rw [Finset.coe_image]
-    apply Set.image_mono
-    rw [← hs]; exact Submodule.subset_span
+  · rw [Finset.coe_image]
+    exact Submodule.span_mono (Set.image_mono (by rw [← hs]; exact Submodule.subset_span))
   · rw [Submodule.span_le]
     rintro _ ⟨y, hy, rfl⟩
     rw [← hs] at hy
@@ -1101,12 +1092,10 @@ theorem Pend_beOn {D : D7} {u : D.what₂.Word} (P : product_first_zeroth_parts.
 
 theorem opNorm_zero (D : D7) (u : D.what₂.Word) (τ : D.what₂.Tau) : product_first_zeroth_parts.opNorm D u τ 0 = 0 := by
   unfold product_first_zeroth_parts.opNorm
-  apply le_antisymm
-  · apply Real.sSup_le _ le_rfl
-    rintro x ⟨f, -, rfl⟩
+  refine le_antisymm (Real.sSup_le ?_ le_rfl) (Real.sSup_nonneg ?_)
+  · rintro x ⟨f, -, rfl⟩
     simp [normFock, Formalism.REAL.fockF]
-  · apply Real.sSup_nonneg
-    rintro x ⟨f, -, rfl⟩
+  · rintro x ⟨f, -, rfl⟩
     exact Real.sqrt_nonneg _
 
 def pendJunk (D : D7) (u : D.what₂.Word) (hE : IsEmpty (D.fm u).clsP) (hC : (D.fm u).ptC = ⊥)

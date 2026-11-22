@@ -88,14 +88,10 @@ theorem dv_detA_hom (A : Fin r → ι) : letterDeterminant R A ∈ Pol R r (dv_e
     intro i _
     exact isWeightedHomogeneous_X R (letterWeight (ι := ι) (n := r)) (A (σ i), i)
   have h2 : (∑ i : Fin r, (Pi.single (A (σ i)) 1 : ι → ℕ)) = dv_eA A := by
-    unfold dv_eA
-    exact Equiv.sum_comp σ (fun l => (Pi.single (A l) 1 : ι → ℕ))
+    simpa [dv_eA] using Equiv.sum_comp σ (fun l => (Pi.single (A l) 1 : ι → ℕ))
   rw [h2] at h1
   intro m hm
-  apply h1
-  intro h0
-  apply hm
-  rw [coeff_smul, h0, smul_zero]
+  exact h1 (fun h0 => hm (by rw [coeff_smul, h0, smul_zero]))
 
 end Det
 
@@ -192,9 +188,8 @@ theorem dv_div_list (hE : FieldMultidegreeDivisibility) (LL : Letters ι) (tasks
         exact le_trans (WithTop.coe_le_coe.2 (by omega)) h2)
     refine ⟨d', Qt, hQt, ?_, fun S' x hx => ?_⟩
     · rw [List.map_cons, List.prod_cons, mul_assoc, ← hQ1e]; exact hG1
-    · have h4 := hval2 S' _ (hval1 S' x hx)
-      rw [hsum]
-      exact le_trans (WithTop.coe_le_coe.2 (by omega)) h4
+    · rw [hsum]
+      exact le_trans (WithTop.coe_le_coe.2 (by omega)) (hval2 S' _ (hval1 S' x hx))
 
 end Division
 
@@ -253,8 +248,7 @@ theorem dv_Arow_inj (hV : F.Valid L₁ N₁) (hn : Even n') (hr : 1 ≤ r) (x : 
 
 theorem dv_Arow_newer (hV : F.Valid L₁ N₁) (hn : Even n') (hr : 1 ≤ r) (x : ℤ) (l : ℕ) (hl : l < r) (y : ℤ)
     (hy : posOf n' y ∈ F.TT ∧ Even y) (hyx : y < x) (h : Arow F x l < y) : ∃ l' < l, y = Arow F x l' := by
-  have hlow := bk_Arow_low F x l
-  have hm : y ∈ evensBefore F x := (dv_ev_mem F x y).2 ⟨⟨by omega, hyx⟩, hy⟩
+  have hm : y ∈ evensBefore F x := (dv_ev_mem F x y).2 ⟨⟨by have hlow := bk_Arow_low F x l; omega, hyx⟩, hy⟩
   obtain ⟨i, hi, hiy⟩ := List.mem_iff_getElem.1 hm
   have hil : i < l := by
     by_contra hc

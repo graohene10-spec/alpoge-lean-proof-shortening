@@ -253,8 +253,7 @@ lemma Hpk_herm (k r : ℕ) : (Hpk k r)ᴴ = Hpk k r := by
   split_ifs <;> first | omega | simp
 lemma Hpk_sq (k r : ℕ) : Hpk k r * Hpk k r = 1 := (Formalism.QuantumDeterminants.hpkFacts k r).2.1
 lemma Hpk_unit (k r : ℕ) : IsUnit (Hpk k r).det := by
-  have h : (Hpk k r).det * (Hpk k r).det = 1 := by rw [← Matrix.det_mul, Hpk_sq, Matrix.det_one]
-  exact isUnit_iff_ne_zero.mpr (fun h0 => by rw [h0, zero_mul] at h; exact zero_ne_one h)
+  exact isUnit_iff_exists_inv.mpr ⟨(Hpk k r).det, by rw [← Matrix.det_mul, Hpk_sq, Matrix.det_one]⟩
 
 lemma herm_self_im (k r : ℕ) (y : Fin (2 * r + k + 1) → ℂ) : (herm (Hpk k r) y y).im = 0 := (Complex.conj_eq_iff_im).mp (herm_conj (Hpk k r) (Hpk_herm k r) y y)
 open scoped ComplexOrder in
@@ -267,9 +266,7 @@ lemma herm_nondeg (k r : ℕ) (y : Fin (2 * r + k + 1) → ℂ) (h : ∀ x, herm
     rw [Matrix.dotProduct_mulVec, dotProduct_single, mul_one] at this
     exact this
   have h2 : star y = 0 := by
-    have := congrArg (fun v => v ᵥ* Hpk k r) h1
-    simp only [Matrix.vecMul_vecMul, Hpk_sq, Matrix.vecMul_one, Matrix.zero_vecMul] at this
-    exact this
+    simpa [Matrix.vecMul_vecMul, Hpk_sq, Matrix.vecMul_one, Matrix.zero_vecMul] using congrArg (fun v => v ᵥ* Hpk k r) h1
   simpa using congrArg star h2
 
 lemma hb_re (y : Fin (2 * r' + k + 1) → ℂ) (s : ℝ) : (hb k r' y s).re = -(herm (Hpk k r') y y).re / 2 := by
@@ -717,9 +714,7 @@ lemma parametrisation_map_measure :
 
 theorem cone_eq : coneMeas k r' = ((μx.prod (volume : Measure (HPar k r')))).map (Ψt k r') := by
   unfold coneMeas
-  have e : (fun p : ℂ × HPar k r' => p.1 • (es0 k r' + liftVec k 1 r' p.2.1 + hb k r' p.2.1 p.2.2 • e0 k r')) =
-      Ψt k r' ∘ cm1Θ k r' := funext parametrisation_eq_scaled_sum
-  rw [e, ← Measure.map_map Ψt_meas parametrisation_map_measurable, parametrisation_map_measure]
+  rw [(show (fun p : ℂ × HPar k r' => p.1 • (es0 k r' + liftVec k 1 r' p.2.1 + hb k r' p.2.1 p.2.2 • e0 k r')) = Ψt k r' ∘ cm1Θ k r' from funext parametrisation_eq_scaled_sum), ← Measure.map_map Ψt_meas parametrisation_map_measurable, parametrisation_map_measure]
 
 end Formalism.FourierDecayAlt.P.B2x8
 
@@ -742,9 +737,8 @@ lemma prod_swap_measure_preserving {α β : Type*} [MeasurableSpace α] [Measura
     [SFinite μ] [SFinite ν] : MeasurePreserving Prod.swap (μ.prod ν) (ν.prod μ) := Measure.measurePreserving_swap
 
 lemma ae_second_coordinate_ne_zero : ∀ᵐ q : HPar k r' ∂(volume : Measure (HPar k r')), q.2 ≠ 0 := by
-  rw [ae_iff, Measure.volume_eq_prod]
-  have : {q : HPar k r' | ¬ q.2 ≠ 0} = Set.univ ×ˢ {0} := by ext q; simp
-  rw [this, Measure.prod_prod, Real.volume_singleton, mul_zero]
+  have hset : {q : HPar k r' | ¬ q.2 ≠ 0} = Set.univ ×ˢ {0} := by ext q; simp
+  rw [ae_iff, Measure.volume_eq_prod, hset, Measure.prod_prod, Real.volume_singleton, mul_zero]
 
 theorem Tw_mp (c₀ : ℂ) (hc : c₀ ≠ 0) :
     MeasurePreserving (Tw k r' c₀) (μx.prod (volume : Measure (HPar k r'))) (μx.prod (volume : Measure (HPar k r'))) := by
@@ -757,11 +751,8 @@ theorem Tw_mp (c₀ : ℂ) (hc : c₀ ≠ 0) :
       (fun p : HPar k r' × ℂ => (((p.1.1, -p.1.2) : HPar k r'), c₀ * hb k r' p.1.1 p.1.2 / conj p.2))
       ((volume : Measure (HPar k r')).prod μx) ((volume : Measure (HPar k r')).prod μx) := by
     refine hbase.skew_product (g := fun (q : HPar k r') (c : ℂ) => c₀ * hb k r' q.1 q.2 / conj c) ?_ ?_
-    · have h1 : Measurable fun p : HPar k r' × ℂ => hb k r' p.1.1 p.1.2 :=
-        (heisenberg_quadratic_continuous.comp continuous_fst).measurable
-      have h2 : Measurable fun p : HPar k r' × ℂ => conj p.2 :=
+    · exact ((heisenberg_quadratic_continuous.comp continuous_fst).measurable.const_mul c₀).div
         (Complex.continuous_conj.comp continuous_snd).measurable
-      exact (h1.const_mul c₀).div h2
     · filter_upwards [ae_second_coordinate_ne_zero] with q hq
       refine μx_map_inv _ (mul_ne_zero hc ?_)
       intro h0
@@ -914,8 +905,7 @@ lemma al_lev_mul (g h : Mat k r') : ιLev k 1 r' (g * h) = ιLev k 1 r' g * ιLe
   rw [← Matrix.mulVec_mulVec, levi_three_block, levi_three_block, levi_three_block, Matrix.mulVec_mulVec]
 
 lemma al_lev_one : ιLev k 1 r' (1 : Mat k r') = 1 := by
-  apply matrix_ext_three_block
-  intro a y b
+  refine matrix_ext_three_block (fun a y b => ?_)
   rw [levi_three_block, Matrix.one_mulVec, Matrix.one_mulVec]
 
 lemma al_lev_inv {g : Mat k r'} (hg : IsUnit g.det) : (ιLev k 1 r' g)⁻¹ = ιLev k 1 r' g⁻¹ := by
@@ -1004,9 +994,7 @@ lemma one_parameter_element_base_vector (x x' : HPar k r') (c : ℂ) (g₁ : Mat
     oneStep k r' x c g₁ x' *ᵥ e0 k r' = mk3 k r' (c * hb k r' (-x.1) (-x.2)) (c • (-x.1)) c := by
   unfold oneStep
   rw [← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec, heisenberg_fixes_isotropic_vector, levi_fixes_isotropic_vector, long_weyl_element_base_vector, al_heis_inv, heisenberg_three_block]
-  dsimp only
-  rw [al_herm_zero_left]
-  simp
+  simp [al_herm_zero_left]
 
 lemma al_oneStep_mem (x x' : HPar k r') {c : ℂ} (hc : c ≠ 0) {g₁ : Mat k r'} (hg : g₁ ∈ GV k r') :
     oneStep k r' x c g₁ x' ∈ GV k (1 + r') := by
@@ -1234,8 +1222,7 @@ lemma cf_heis_Ψt (x₀ : HPar k r') (p : ℂ × HPar k r') (h1 : p.1 ≠ 0) :
 lemma ae_first_coordinate_ne_zero : ∀ᵐ p : ℂ × HPar k r' ∂(μx.prod (volume : Measure (HPar k r'))), p.1 ≠ 0 := by
   rw [ae_iff]
   have h0 : μx {(0 : ℂ)} = 0 := (withDensity_absolutelyContinuous _ _) (measure_singleton 0)
-  have : {p : ℂ × HPar k r' | ¬ p.1 ≠ 0} = {(0 : ℂ)} ×ˢ Set.univ := by ext p; simp
-  rw [this, Measure.prod_prod, h0, zero_mul]
+  rw [(show {p : ℂ × HPar k r' | ¬ p.1 ≠ 0} = {(0 : ℂ)} ×ˢ Set.univ by ext p; simp), Measure.prod_prod, h0, zero_mul]
 
 lemma ae_heisenberg_parameter_ne_zero : ∀ᵐ p : ℂ × HPar k r' ∂(μx.prod (volume : Measure (HPar k r'))), p.2.2 ≠ 0 := by
   rw [ae_iff]

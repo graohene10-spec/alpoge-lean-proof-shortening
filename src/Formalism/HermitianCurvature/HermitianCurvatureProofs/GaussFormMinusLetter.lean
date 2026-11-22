@@ -183,8 +183,7 @@ theorem wt_fn (L : LevelData A r) {g : A} (hg : g ∈ zfns L) : Commute (wt L : 
 
 theorem wti_wt (L : LevelData A r) : (wti L : SlopeTestRemainingChoices S A) * wt L = 1 := by
   rw [Formalism.FourierDecayAlt.Fr.wti, Formalism.FourierDecayAlt.Fr.wt, ← io_mul, ← io_one]
-  congr 1
-  exact mon3 L.ζi_ζ L.ζbi_ζb L.GG_GGi (fcomm L (mζbi L) (mζ L))
+  rw [mon3 L.ζi_ζ L.ζbi_ζb L.GG_GGi (fcomm L (mζbi L) (mζ L))]
 
 variable {L : LevelData A r} {f : FrameData S A}
 

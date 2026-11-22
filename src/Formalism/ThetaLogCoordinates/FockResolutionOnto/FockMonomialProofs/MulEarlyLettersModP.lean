@@ -68,8 +68,7 @@ theorem glAct_X_mul_int (c : Fin r) (v : Fin N × Fin r) (g : MvPolynomial (Fin 
   · exact (X_mul_int_iff _ _).2 hg
   · rw [zero_mul]; exact Submodule.zero_mem _
   · rw [neg_mul]; exact Submodule.neg_mem _ ((X_mul_int_iff _ _).2 hg)
-  · rw [zero_mul]; exact Submodule.zero_mem _
-  · rw [zero_mul]; exact Submodule.zero_mem _
+  all_goals rw [zero_mul]; exact Submodule.zero_mem _
 
 theorem glAct_C (c d : Fin r) (a : ℚ_[p]) : glAct p LL j c d (C a) = 0 := by
   unfold glAct
@@ -253,14 +252,12 @@ theorem small_last_mul (hj : K + 1 ≤ j) (hv : LL.vec (Fin.last K) = true) (c' 
   · apply hg
     intro hle
     apply hm
-    have e : Finsupp.single (Fin.last K, c') 1 + (m - Finsupp.single (Fin.last K, c') 1) = m :=
-      add_tsub_cancel_of_le (Finsupp.single_le_iff.mpr
-        (Nat.one_le_iff_ne_zero.mpr (Finsupp.mem_support_iff.mp hs)))
-    rw [← e, last_wt LL j hj hv]
+    rw [← add_tsub_cancel_of_le (Finsupp.single_le_iff.mpr
+      (Nat.one_le_iff_ne_zero.mpr (Finsupp.mem_support_iff.mp hs))), last_wt LL j hj hv]
     rw [← withTop_shift] at hle
     refine le_trans ?_ hle
     exact_mod_cast (by split_ifs <;> omega)
-  · rw [norm_zero]; exact one_pos
+  · simp
 
 theorem modCond_last_fwd (hj : K + 1 ≤ j) (hv : LL.vec (Fin.last K) = true) (c' : Fin r)
     (g g' : MvPolynomial (Fin (K + 1) × Fin r) ℚ_[p])

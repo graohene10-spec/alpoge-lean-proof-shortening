@@ -31,15 +31,13 @@ theorem IsOrthogonalProjection.compl {P : E →L[ℂ] E} (h : IsOrthogonalProjec
 
 theorem IsOrthogonalProjection.norm_le {P : E →L[ℂ] E} (h : IsOrthogonalProjection P) (x : E) : ‖P x‖ ≤ ‖x‖ := by
   have h1 : ⟪P x, P x⟫_ℂ = ⟪x, P x⟫_ℂ := by
-    have : ⟪P x, P x⟫_ℂ = ⟪x, (adjoint P) (P x)⟫_ℂ := (adjoint_inner_right P x (P x)).symm
-    rw [this, h.sa]
-    have h2 := congrArg (fun T : E →L[ℂ] E => T x) h.idem
-    simp only [ContinuousLinearMap.comp_apply] at h2
+    rw [← adjoint_inner_right P x (P x), h.sa]
+    have h2 : P (P x) = P x := by
+      simpa only [ContinuousLinearMap.comp_apply] using
+        congrArg (fun T : E →L[ℂ] E => T x) h.idem
     rw [h2]
   have h3 : ‖P x‖ ^ 2 ≤ ‖x‖ * ‖P x‖ := by
-    have h4 := inner_self_eq_norm_sq (𝕜 := ℂ) (P x)
-    have h5 : (⟪P x, P x⟫_ℂ).re = ‖P x‖ ^ 2 := by simpa using h4
-    rw [← h5, h1]
+    rw [← inner_self_eq_norm_sq (𝕜 := ℂ) (P x), h1]
     exact le_trans (Complex.re_le_norm _) (norm_inner_le_norm _ _)
   by_cases h0 : ‖P x‖ = 0
   · rw [h0]; exact norm_nonneg _

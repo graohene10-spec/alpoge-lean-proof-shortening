@@ -67,12 +67,8 @@ def qk_add {n : ℕ} (mu : Fin n → ℤ) (s : Finset (Fin n)) : Fin n → ℤ :
 lemma qk_v_add {n : ℕ} (mu : Fin n → ℤ) (s : Finset (Fin n)) :
     qk_v (qk_add mu s) = s.piecewise (fun i => qk_v mu i - 1) (qk_v mu) := by
   funext i
-  unfold qk_v qk_add
-  by_cases hi : i ∈ s
-  · simp only [hi, if_true, piecewise_eq_of_mem]
-    push_cast
-    ring
-  · simp only [hi, if_false, piecewise_eq_of_notMem, not_false_eq_true]
+  by_cases hi : i ∈ s <;> simp [qk_v, qk_add, hi]
+  ring
 
 lemma qk_D_nondom {n : ℕ} {mu : Fin n → ℤ} (hmu : Dominant mu) (s : Finset (Fin n))
     (h : ¬ Dominant (qk_add mu s)) : qk_D (qk_v (qk_add mu s)) = 0 := by
@@ -97,12 +93,10 @@ lemma qk_mem_strVert {n : ℕ} {mu nu : Fin n → ℤ} {b : ℕ} : nu ∈ strVer
   simp only [mem_filter, Fintype.mem_piFinset, mem_Icc]
 
 lemma qk_add_sum {n : ℕ} (mu : Fin n → ℤ) (s : Finset (Fin n)) : ∑ a, (qk_add mu s a - mu a) = (s.card : ℤ) := by
-  have : ∀ a, qk_add mu s a - mu a = if a ∈ s then 1 else 0 := by
+  have : ∀ a, qk_add mu s a - mu a = if a ∈ s then (1 : ℤ) else 0 := by
     intro a
-    unfold qk_add
-    split_ifs <;> ring
-  simp only [this]
-  simp
+    by_cases ha : a ∈ s <;> simp [qk_add, ha]
+  simp [this]
 
 lemma qk_add_sel {n : ℕ} {mu nu : Fin n → ℤ} (h : ∀ a, mu a ≤ nu a ∧ nu a ≤ mu a + 1) :
     qk_add mu (univ.filter fun a => nu a = mu a + 1) = nu := by

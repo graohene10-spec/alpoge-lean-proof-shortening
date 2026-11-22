@@ -233,13 +233,10 @@ theorem base_sizes2 {D : D7} {L : SizeData₂ D} (P : ParameterChoice' D L) (hX 
   obtain ⟨s1, s2, s3, s4, s5, s6, s7⟩ := base_sizes P
   have hx := L.sc.one_lt_alt
   have hm2 : (2 : ℝ) ≤ D.R.m := by exact_mod_cast D.R.two_le_m
-  have hn1 : (1 : ℝ) ≤ D.R.n := by
-    have : 1 ≤ D.R.n := D.R.ord_pos
-    exact_mod_cast this
+  have hn1 : (1 : ℝ) ≤ D.R.n := by exact_mod_cast D.R.ord_pos
   have hN0 : (0 : ℝ) ≤ D.R.N D.R.m := Nat.cast_nonneg _
-  have hNW : (D.R.N D.R.m : ℝ) ≤ L.sc.w'' D.R.n := by
-    refine le_trans ?_ s1
-    exact le_mul_of_one_le_right hN0 (one_le_pow₀ (by linarith))
+  have hNW : (D.R.N D.R.m : ℝ) ≤ L.sc.w'' D.R.n :=
+    le_trans (le_mul_of_one_le_right hN0 (one_le_pow₀ (by linarith))) s1
   have hW0 : 0 ≤ L.sc.w'' D.R.n := le_trans hN0 hNW
   have hb0 : 0 < L.sc.b := Real.exp_pos _
   refine ⟨hNW, ?_, ?_⟩

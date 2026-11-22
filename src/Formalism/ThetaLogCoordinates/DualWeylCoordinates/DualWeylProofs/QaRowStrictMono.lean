@@ -102,15 +102,11 @@ lemma qa_cum {n : ℕ} [NeZero n] {mu : Fin n → ℤ} (I : TIdx mu) (a p : Fin 
       (∑ b : Fin n with b ≤ a, if qa_row I c q = b ∧ q.val = p.val then 1 else 0) =
         if (q.val = p.val ∧ q.val < qa_cnt I c a) then 1 else 0 := by
     intro q
-    rw [Finset.sum_filter, Finset.sum_eq_single (qa_row I c q)]
-    · have := qa_row_le_iff I c q a
-      by_cases h : qa_row I c q ≤ a
-      · simp [h, this.mp h]
-      · have h' : ¬ q.val < qa_cnt I c a := fun hh => h (this.mpr hh)
-        simp [h, h']
-    · intro b _ hb
-      simp [Ne.symm hb]
-    · simp
+    by_cases hq : q.val = p.val
+    · simp only [hq, true_and, and_true]
+      rw [Finset.sum_ite_eq]
+      simp [hq, qa_row_le_iff I c q a]
+    · simp [hq]
   simp only [h1]
   split_ifs with hp
   · have hq : p.val < colH mu c := hp.trans_le (qa_cnt_le I c a)

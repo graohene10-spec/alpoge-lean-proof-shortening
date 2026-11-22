@@ -18,17 +18,11 @@ theorem psd_congr {α : Type} {Y : Finset α} {k k' : α → α → ℂ}
 theorem psd_smul {α : Type} {Y : Finset α} {k : α → α → ℂ} (c : ℝ) (hc : 0 ≤ c) (h : TB.PSDOn Y k) :
     TB.PSDOn Y (fun x y => (c : ℂ) * k x y) := by
   unfold TB.PSDOn at *
-  first
-    | (have e : (Matrix.of fun x y : Y => (c : ℂ) * k x y) = c • Matrix.of fun x y : Y => k x y := by
-         ext x y
-         simp [Complex.real_smul]
-       rw [e]
-       exact h.smul hc)
-    | (have e : (Matrix.of fun x y : Y => (c : ℂ) * k x y) = (c : ℂ) • Matrix.of fun x y : Y => k x y := by
-         ext x y
-         simp
-       rw [e]
-       exact h.smul (Complex.zero_le_real.mpr hc))
+  have e : (Matrix.of fun x y : Y => (c : ℂ) * k x y) = c • Matrix.of fun x y : Y => k x y := by
+    ext x y
+    simp [Complex.real_smul]
+  rw [e]
+  exact h.smul hc
 
 theorem domScaleTop : DomScaleTop := by
   intro E W _ D T Th lam hlam he hD
@@ -145,23 +139,16 @@ theorem sq_sum (M : ℕ) : ∑ m ∈ Icc 2 (M + 2), (((m : ℕ) : ℝ) ^ 2)⁻¹
   induction M with
   | zero => norm_num [Finset.Icc_self]
   | succ M ih =>
-    have hs : ∑ m ∈ Icc 2 (M + 1 + 2), (((m : ℕ) : ℝ) ^ 2)⁻¹
-        = ∑ m ∈ Icc 2 (M + 2), (((m : ℕ) : ℝ) ^ 2)⁻¹ + (((M : ℝ) + 3) ^ 2)⁻¹ := by
-      rw [show M + 1 + 2 = (M + 2) + 1 by omega, Finset.sum_Icc_succ_top (by omega)]
-      first
-        | (push_cast; ring)
-        | (congr 1; push_cast; ring)
-    have hc2 : ((M + 1 : ℕ) : ℝ) + 2 = (M : ℝ) + 3 := by push_cast; ring
-    rw [hs, hc2]
+    rw [show M + 1 + 2 = (M + 2) + 1 by omega, Finset.sum_Icc_succ_top (by omega)]
+    push_cast at ih ⊢
+    have hM : (M : ℝ) + 1 + 2 = (M : ℝ) + 3 := by ring
+    have hM' : (M : ℝ) + 2 + 1 = (M : ℝ) + 3 := by ring
+    rw [hM, hM']
     have h2 : (0 : ℝ) < (M : ℝ) + 2 := by positivity
     have h3 : (0 : ℝ) < (M : ℝ) + 3 := by positivity
-    have h2' := h2.ne'
-    have h3' := h3.ne'
-    have e : ((M : ℝ) + 2)⁻¹ - ((M : ℝ) + 3)⁻¹ - (((M : ℝ) + 3) ^ 2)⁻¹
-        = (((M : ℝ) + 2) * ((M : ℝ) + 3) ^ 2)⁻¹ := by
-      field_simp
-      ring
-    have hpos : 0 ≤ (((M : ℝ) + 2) * ((M : ℝ) + 3) ^ 2)⁻¹ := by positivity
+    have hstep : (((M : ℝ) + 3) ^ 2)⁻¹ ≤ ((M : ℝ) + 2)⁻¹ - ((M : ℝ) + 3)⁻¹ := by
+      field_simp [h2.ne', h3.ne']
+      nlinarith [h3]
     linarith
 
 theorem pow_bd (m n : ℕ) (hm : 2 ≤ m) (hn : 2 ≤ n) :
@@ -173,9 +160,7 @@ theorem pow_bd (m n : ℕ) (hm : 2 ≤ m) (hn : 2 ≤ n) :
     rw [pow_add, mul_inv]
   have hR : 4 * ((2 : ℝ) ^ (2 + k))⁻¹ * ((m : ℝ) ^ 2)⁻¹ = ((m : ℝ) ^ 2)⁻¹ * ((2 : ℝ) ^ k)⁻¹ := by
     rw [pow_add, mul_inv]
-    first
-      | ring
-      | (norm_num; ring)
+    norm_num; ring
   rw [hL, hR]
   exact mul_le_mul_of_nonneg_left (inv_anti₀ (by positivity) hpk) (by positivity)
 

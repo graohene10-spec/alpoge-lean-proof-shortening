@@ -141,10 +141,9 @@ theorem rules_family_of_uniform (H : UniformExportStatement) (CB Ca : ℝ) : ∃
     KudlaFamilyStatement Fm CB Ca C C1 := by
   obtain ⟨C₀, Cv, H⟩ := H CB Ca
   refine ⟨C₀, fun C hC C1 eps Fm hA => ?_⟩
-  obtain ⟨C2, H⟩ := H C1
+  refine ⟨Cv, (H C1).choose, fun x i => (H C1).choose_spec C hC (Fm.D x i) ?_⟩
   obtain ⟨a1, a2, a3, a4, a5, a6, a7, a8, a9, a10⟩ := hA
-  exact ⟨Cv, C2, fun x i => H C hC (Fm.D x i)
-    ⟨a1 x i, a2 x i, a3 x i, a4 x i, a5 x i, a6 x i, a7 x i, a8 x i, a9 x i, a10 x i⟩⟩
+  exact ⟨a1 x i, a2 x i, a3 x i, a4 x i, a5 x i, a6 x i, a7 x i, a8 x i, a9 x i, a10 x i⟩
 
 theorem big_mono {C C' : ℝ} (h : C ≤ C') {L : Lev} {N : ℕ} {A : ℝ} {mm : ℕ} (hB : Big C' L N A mm) :
     Big C L N A mm := by

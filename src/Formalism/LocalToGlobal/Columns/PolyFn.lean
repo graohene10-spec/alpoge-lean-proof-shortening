@@ -53,12 +53,7 @@ theorem evFr_apply (G : ι → Matrix (Fin n) (Fin n) ℂ) (sh : ι → ℤ) (s 
     (P : MvPolynomial (ι × Fin n × Fin n) K) (y : Frames G) :
     evFr G sh s P y = (∏ τ, (y.1 τ).det ^ sh τ) *
       MvPolynomial.eval₂ s (fun x : ι × Fin n × Fin n => y.1 x.1 x.2.1 x.2.2) P := by
-  first
-  | (simp only [evFr, LinearMap.coe_comp, Function.comp_apply, mapS, fnOf, LinearMap.coe_mk,
-      AddHom.coe_mk, Pi.one_apply, Matrix.one_mul, MvPolynomial.eval_map]; rfl)
-  | (simp only [evFr, LinearMap.coe_comp, Function.comp_apply, mapS, fnOf, LinearMap.coe_mk,
-      AddHom.coe_mk, Pi.one_apply, Matrix.one_mul, MvPolynomial.eval_map])
-  | simp [evFr, fnOf, mapS, MvPolynomial.eval_map]
+  simp [evFr, fnOf, mapS, MvPolynomial.eval_map]
 
 theorem evFr_eq_fnOf (G : ι → Matrix (Fin n) (Fin n) ℂ) (sh : ι → ℤ) (s : K →+* ℂ)
     (P : MvPolynomial (ι × Fin n × Fin n) K) : evFr G sh s P = fnOf G sh 1 (MvPolynomial.map s P) := rfl
@@ -102,9 +97,7 @@ theorem exists_unitary_diag (X : Matrix (Fin n) (Fin n) ℂ) (hX : IsUnit X.det)
   have hdi : diagonal (fun i => (((Real.sqrt (l i) : ℝ) : ℂ))⁻¹) *
       diagonal (fun i => ((Real.sqrt (l i) : ℝ) : ℂ)) = 1 := by
     rw [diagonal_mul_diagonal, ← diagonal_one]
-    congr 1
-    funext i
-    exact inv_mul_cancel₀ (hdd i)
+    exact congrArg diagonal (funext fun i => inv_mul_cancel₀ (hdd i))
   have hL : Vᴴ * (V * diagonal (fun i => ((l i : ℝ) : ℂ)) * Vᴴ) * V = diagonal (fun i => ((l i : ℝ) : ℂ)) := by
     rw [← Matrix.mul_assoc Vᴴ, ← Matrix.mul_assoc Vᴴ, hV1, Matrix.one_mul, Matrix.mul_assoc, hV1,
       Matrix.mul_one]
@@ -121,10 +114,9 @@ theorem exists_unitary_diag (X : Matrix (Fin n) (Fin n) ℂ) (hX : IsUnit X.det)
         funext i
         have hs : ((Real.sqrt (l i) : ℝ) : ℂ) * ((Real.sqrt (l i) : ℝ) : ℂ) = ((l i : ℝ) : ℂ) := by
           rw [← Complex.ofReal_mul, Real.mul_self_sqrt (hl i).le]
-        have hsi := hdd i
         simp only [Pi.star_apply, star_inv₀, Complex.star_def, Complex.conj_ofReal]
         rw [← hs]
-        field_simp
+        field_simp [hdd i]
   · rw [conjTranspose_conjTranspose]; exact hV2
   · calc X = X * V * (diagonal (fun i => (((Real.sqrt (l i) : ℝ) : ℂ))⁻¹) *
           diagonal (fun i => ((Real.sqrt (l i) : ℝ) : ℂ))) * Vᴴ := by
@@ -150,11 +142,9 @@ theorem circle_infinite : {z : ℂ | star z * z = 1}.Infinite := by
 
 theorem unitary_udv (u v : Matrix (Fin n) (Fin n) ℂ) (d : Fin n → ℂ) (hu : uᴴ * u = 1) (hv : vᴴ * v = 1)
     (hd : ∀ c, star (d c) * d c = 1) : (u * diagonal d * v)ᴴ * (u * diagonal d * v) = 1 := by
-  have h1 : star d * d = 1 := funext fun c => hd c
   have hD : (diagonal d)ᴴ * diagonal d = 1 := by
     rw [diagonal_conjTranspose, diagonal_mul_diagonal]
-    rw [show (fun i => star d i * d i) = (1 : Fin n → ℂ) from h1]
-    exact diagonal_one
+    exact (congrArg diagonal (funext fun c => hd c)).trans diagonal_one
   calc (u * diagonal d * v)ᴴ * (u * diagonal d * v) =
       vᴴ * ((diagonal d)ᴴ * (uᴴ * u) * diagonal d) * v := by
         simp only [conjTranspose_mul, Matrix.mul_assoc]
@@ -217,14 +207,13 @@ theorem eq_zero_of_forall_isUnit (P : MvPolynomial (ι × Fin n × Fin n) ℂ)
   have h2 : P * detAll ι n = 0 := by
     apply MvPolynomial.funext
     intro x
-    obtain ⟨y, hy⟩ : ∃ y : ι → Matrix (Fin n) (Fin n) ℂ,
-        (fun z : ι × Fin n × Fin n => y z.1 z.2.1 z.2.2) = x := ⟨fun τ a b => x (τ, a, b), rfl⟩
-    subst hy
+    obtain ⟨y, rfl⟩ : ∃ y : ι → Matrix (Fin n) (Fin n) ℂ,
+        (fun z : ι × Fin n × Fin n => y z.1 z.2.1 z.2.2) = x :=
+      ⟨fun τ a b => x (τ, a, b), rfl⟩
     rw [map_mul, map_zero, eval_detAll]
     by_cases hy : ∀ τ, IsUnit (y τ).det
     · rw [h y hy, zero_mul]
-    · push_neg at hy
-      obtain ⟨τ, hτ⟩ := hy
+    · obtain ⟨τ, hτ⟩ := not_forall.mp hy
       rw [Finset.prod_eq_zero (Finset.mem_univ τ) (by simpa [isUnit_iff_ne_zero] using hτ), mul_zero]
   exact (mul_eq_zero.mp h2).resolve_right detAll_ne_zero
 
@@ -305,8 +294,7 @@ theorem stdFrC_isON (emb : ι → E →+* ℂ) : (stdFrC (n := n) emb).IsON := f
 
 theorem natW_anti (lam : DomWeight n) : Antitone lam.natW := by
   intro i j hij
-  simp only [DomWeight.natW]
-  exact Int.toNat_le_toNat (by linarith [lam.anti hij])
+  simpa only [DomWeight.natW] using Int.toNat_le_toNat (by linarith [lam.anti hij])
 
 def extV (K : Type) [Field K] (lam : ι → DomWeight n) : VV K lam :=
   ⟨∏ τ, Formalism.GradedWeylDivisibility.blockEmb K τ (extremal K n (lam τ)),

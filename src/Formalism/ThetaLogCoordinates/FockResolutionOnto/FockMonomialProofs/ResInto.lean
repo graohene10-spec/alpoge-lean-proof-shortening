@@ -75,12 +75,10 @@ theorem resL_glAct {N r : ℕ} (LL : Letters N) (j : ℕ) (c d : Fin r) (v : Fin
   · obtain ⟨hc, hd⟩ := h i hij
     by_cases hv : LL.vec i
     · simp only [hij, hv, if_true, LinearMap.comp_apply, LinearMap.mulLeft_apply]
-      rw [resL_X_mul v (i, c) hc]
-      exact congrArg (X (i, c) * ·) (resL_pderiv v (i, d) hd e x)
+      exact (resL_X_mul v (i, c) hc e (pderiv (i, d) x)).trans (congrArg (X (i, c) * ·) (resL_pderiv v (i, d) hd e x))
     · simp only [hij, hv, if_true, Bool.false_eq_true, if_false, LinearMap.neg_apply,
         LinearMap.comp_apply, LinearMap.mulLeft_apply, map_neg]
-      rw [resL_X_mul v (i, d) hd]
-      exact congrArg (fun y => -(X (i, d) * y)) (resL_pderiv v (i, c) hc e x)
+      exact (congrArg (fun y => -y) (resL_X_mul v (i, d) hd e (pderiv (i, c) x))).trans (congrArg (fun y => -(X (i, d) * y)) (resL_pderiv v (i, c) hc e x))
   · simp [hij]
 
 end Res

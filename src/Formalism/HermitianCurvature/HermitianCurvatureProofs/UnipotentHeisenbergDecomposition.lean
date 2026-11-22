@@ -475,8 +475,7 @@ theorem unipotent_haar_base_case : Formalism.FourierDecayAlt.B2.NBase := by
   constructor
   · rintro ⟨_, _, h⟩
     ext i j
-    have := h i j (Nat.zero_le _) (by have := j.isLt; omega) (Nat.zero_le _)
-    rw [this, Matrix.one_apply]
+    simpa [Matrix.one_apply] using h i j (Nat.zero_le _) (by have := j.isLt; omega) (Nat.zero_le _)
   · rintro rfl
     refine ⟨?_, ?_, ?_⟩
     · show (1 : Mat k 0)ᴴ * Hpk k 0 * 1 = Hpk k 0

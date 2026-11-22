@@ -127,10 +127,7 @@ def GSD.extZ (c : S.Cl) : S.V →ₗ[K] S.EqFun :=
 open Classical in
 theorem GSD.extZ_apply (c c' : S.Cl) (x : S.V) :
     ((S.extZ h hf c x : S.EqFun) : S.D → S.V) (S.outSec.rep c') = if c' = c then x else 0 := by
-  have h1 := congrFun ((S.resFree h S.outSec hf).apply_symm_apply (Pi.single c x)) c'
-  rw [GSD.resFree_apply] at h1
-  rw [Pi.single_apply] at h1
-  exact h1
+  simpa [GSD.extZ, GSD.resFree_apply, Pi.single_apply] using congrFun ((S.resFree h S.outSec hf).apply_symm_apply (Pi.single c x)) c'
 
 theorem GSD.extZ_injective (c : S.Cl) : Function.Injective (S.extZ h hf c) := by
   classical

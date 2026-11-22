@@ -33,19 +33,13 @@ private theorem vAdd_algebraMap_eq_vw_of_ne_zero (w : HeightOneSpectrum (𝓞 K)
 
 theorem vAdd_eq_vw (w : HeightOneSpectrum (𝓞 K)) (x : K) (hx : x ≠ 0) : vAdd w x = vw w x := by
   obtain ⟨a, b, hb, rfl⟩ := IsFractionRing.div_surjective (A := 𝓞 K) x
-  have hb0 : b ≠ 0 := nonZeroDivisors.ne_zero hb
   have hbK : algebraMap (𝓞 K) K b ≠ 0 := IsFractionRing.to_map_ne_zero_of_mem_nonZeroDivisors hb
-  have haK : algebraMap (𝓞 K) K a ≠ 0 := by
-    intro h; apply hx; rw [h, zero_div]
-  have ha0 : a ≠ 0 := by
-    rintro rfl; exact haK (map_zero _)
-  have hq : algebraMap (𝓞 K) K a / algebraMap (𝓞 K) K b * algebraMap (𝓞 K) K b = algebraMap (𝓞 K) K a :=
-    div_mul_cancel₀ _ hbK
+  have ha0 : a ≠ 0 := fun h => hx (by simp [h])
   have h1 := vAdd_mul_of_ne_zero w hx hbK
   have h2 := vw_mul_of_ne_zero w hx hbK
-  rw [hq] at h1 h2
+  rw [div_mul_cancel₀ _ hbK] at h1 h2
   have e1 := vAdd_algebraMap_eq_vw_of_ne_zero w a ha0
-  have e2 := vAdd_algebraMap_eq_vw_of_ne_zero w b hb0
+  have e2 := vAdd_algebraMap_eq_vw_of_ne_zero w b (nonZeroDivisors.ne_zero hb)
   linarith
 
 def VGeq (w : HeightOneSpectrum (𝓞 K)) (s : ℝ) (z : K) : Prop := z = 0 ∨ s ≤ (vAdd w z : ℝ)

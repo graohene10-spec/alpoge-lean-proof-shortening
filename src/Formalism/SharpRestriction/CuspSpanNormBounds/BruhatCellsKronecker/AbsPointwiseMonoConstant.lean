@@ -76,8 +76,7 @@ theorem cell_mem_blockEnds (D : D7) {z z' : Fin (2 * D.R.rS + D.R.k + 1) → ℂ
 
 theorem cell_last_mem {r : ℕ} (p : Point ℂ (r + 1)) : r + 1 ∈ ptBlockEnds p := by
   apply mem_blockEnds_of_take p (p.1.map Prod.snd).length (r + 1) (by omega)
-  rw [List.take_length]
-  exact p.2.2.symm
+  simpa only [List.take_length] using p.2.2.symm
 
 end Formalism.MainNotions.BridgeLemma
 
@@ -117,8 +116,7 @@ theorem leadMinor_blockEnd_ne {i : ℕ} (p : Point ℂ i) (l : ℕ) (h : l ∈ p
     rw [← Formalism.MainNotions.BesselShellMomentBounds.ptMat_eq]
     exact Formalism.MainNotions.BesselShellMomentBounds.leadMinorK_eq _ _ _
   rw [e, Formalism.HermitianLatticeCounting.Final.ExpansionTerms.e4aValue]
-  refine Finset.prod_ne_zero_iff.2 (fun a _ => mul_ne_zero (pow_ne_zero _ (by norm_num)) (pow_ne_zero _ ?_))
-  exact Formalism.MainNotions.BesselShellMomentBounds.toT_ne p a
+  exact Finset.prod_ne_zero_iff.2 (fun a _ => mul_ne_zero (pow_ne_zero _ (by norm_num)) (pow_ne_zero _ (Formalism.MainNotions.BesselShellMomentBounds.toT_ne p a)))
 
 theorem cell_ne_of_mem (D : D7) {z z' : Fin (2 * D.R.rS + D.R.k + 1) → ℂ} {γ : MatKR D.R.k D.R.rS}
     {p : Point ℂ (D.R.rS + 1)} (h : RelPt D z z' γ p) (l : ℕ) (hm : l ∈ ptBlockEnds p) : DminN z z' γ l ≠ 0 := by

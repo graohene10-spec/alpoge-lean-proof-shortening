@@ -24,9 +24,8 @@ theorem cnorm_star {n : ℕ} (u : Fin n → ℂ) : Formalism.HermitianLatticesTh
 theorem norm_dot_le {n : ℕ} (y w : Fin n → ℂ) :
     ‖y ⬝ᵥ w‖ ≤ Formalism.HermitianLatticesTheory.cnorm y * Formalism.HermitianLatticesTheory.cnorm w := by
   have h1 : ‖y ⬝ᵥ w‖ ≤ ∑ i, ‖y i‖ * ‖w i‖ := by
-    first
-      | simpa [dotProduct, norm_mul] using norm_sum_le Finset.univ fun i => y i * w i
-      | simpa [Matrix.dotProduct, norm_mul] using norm_sum_le Finset.univ fun i => y i * w i
+    simpa [dotProduct, norm_mul] using
+      norm_sum_le Finset.univ fun i => y i * w i
   exact h1.trans (Real.sum_mul_le_sqrt_mul_sqrt _ _ _)
 
 theorem star_dot_self {n : ℕ} (w : Fin n → ℂ) :
@@ -35,14 +34,9 @@ theorem star_dot_self {n : ℕ} (w : Fin n → ℂ) :
     Real.sq_sqrt (Finset.sum_nonneg fun i _ => by positivity)
   rw [h]
   push_cast
-  first
-    | simp only [dotProduct, Pi.star_apply]
-    | simp only [Matrix.dotProduct, Pi.star_apply]
+  simp only [dotProduct, Pi.star_apply]
   refine Finset.sum_congr rfl fun i _ => ?_
-  first
-    | exact Complex.conj_mul' (w i)
-    | exact_mod_cast Complex.conj_mul' (w i)
-    | exact RCLike.conj_mul (w i)
+  exact Complex.conj_mul' (w i)
 
 theorem opNorm_le_iff {a D : ℕ} (A : Matrix (Fin D) (Fin a) ℂ) (c : ℝ) (hc : 0 ≤ c) :
     ‖LinearMap.toContinuousLinearMap (Matrix.toEuclideanLin A)‖ ≤ c ↔
@@ -81,9 +75,8 @@ def pmat {K : Type} [Field K] [NumberField K] {a D : ℕ} (v : InfinitePlace K)
 theorem pairC_eq {K : Type} [Field K] [NumberField K] {a D : ℕ} (v : InfinitePlace K)
     (B : (Fin a → K) →ₗ[K] Module.Dual K (Fin D → K)) (x : Fin a → ℂ) (y : Fin D → ℂ) :
     pairC v B x y = y ⬝ᵥ (pmat v B).mulVec x := by
-  first
-    | simp only [pairC, pmat, dotProduct, Matrix.mulVec, Matrix.of_apply, Finset.mul_sum]
-    | simp only [pairC, pmat, Matrix.dotProduct, Matrix.mulVec, Matrix.of_apply, Finset.mul_sum]
+  simp only [pairC, pmat, dotProduct, Matrix.mulVec, Matrix.of_apply,
+    Finset.mul_sum]
   rw [Finset.sum_comm]
   refine Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun i _ => ?_
   ring
@@ -125,19 +118,17 @@ open OperatorNormFrames
 theorem frobenius_norm_rational : FnormRat := by
   unfold FnormRat
   intro K _ _ _ n X v x y
-  have hx : (fun i => v.embedding (x i)) = Formalism.HermitianLatticesTheory.vecAt (Pi.basisFun K (Fin n)) v x := by
+  have hvec : ∀ z : Fin n → K, (fun i => v.embedding (z i)) =
+      Formalism.HermitianLatticesTheory.vecAt (Pi.basisFun K (Fin n)) v z := by
+    intro z
     funext i
-    show v.embedding (x i) = v.embedding ((Pi.basisFun K (Fin n)).repr x i)
-    rw [Pi.basisFun_repr]
-  have hy : (fun i => v.embedding (y i)) = Formalism.HermitianLatticesTheory.vecAt (Pi.basisFun K (Fin n)) v y := by
-    funext i
-    show v.embedding (y i) = v.embedding ((Pi.basisFun K (Fin n)).repr y i)
+    show v.embedding (z i) = v.embedding ((Pi.basisFun K (Fin n)).repr z i)
     rw [Pi.basisFun_repr]
   refine ⟨?_, ?_, ?_⟩
   · simp only [fnorm, Formalism.HermitianLatticesTheory.normAt, Formalism.HermitianLatticesTheory.fcoord]
-    rw [hx]
+    rw [hvec x]
   · simp only [fmaj, Formalism.HermitianLatticesTheory.majAt, Formalism.HermitianLatticesTheory.fcoord]
-    rw [hx, hy]
+    rw [hvec x, hvec y]
   · simp only [fnorm, fmaj]
     rw [← star_dot_self]
     rfl
@@ -150,8 +141,7 @@ theorem operator_norm_dual : OpNormDual := by
   · intro h x y
     have h1 := h ((XM v)⁻¹.mulVec x) ((XE v)⁻¹.mulVec y)
     rw [dot_frames, mul_inv_mulVec _ (hE v), mul_inv_mulVec _ (hM v)] at h1
-    rw [pairC_eq]
-    exact h1
+    simpa only [pairC_eq, fnorm] using h1
   · intro h x y
     have h1 := h ((XM v).mulVec x) ((XE v).mulVec y)
     rw [pairC_eq] at h1
@@ -262,10 +252,7 @@ theorem cnorm_sq_mulVec {n d : ℕ} (Z : Matrix (Fin d) (Fin n) ℂ) (y : Fin n 
 theorem cnorm_le_of_orth {n : ℕ} (p q : Fin n → ℂ) (h : star p ⬝ᵥ q = 0) :
     Formalism.HermitianLatticesTheory.cnorm p ≤ Formalism.HermitianLatticesTheory.cnorm (p + q) := by
   have h2 : star q ⬝ᵥ p = 0 := by
-    have e : star q ⬝ᵥ p = star (star p ⬝ᵥ q) := by
-      first
-        | simp [dotProduct, mul_comm]
-        | simp [Matrix.dotProduct, mul_comm]
+    have e : star q ⬝ᵥ p = star (star p ⬝ᵥ q) := by simp [dotProduct, mul_comm]
     rw [e, h, star_zero]
   have key : ((Formalism.HermitianLatticesTheory.cnorm (p + q) ^ 2 : ℝ) : ℂ) =
       ((Formalism.HermitianLatticesTheory.cnorm p ^ 2 + Formalism.HermitianLatticesTheory.cnorm q ^ 2 : ℝ) : ℂ) := by
@@ -274,8 +261,7 @@ theorem cnorm_le_of_orth {n : ℕ} (p q : Fin n → ℂ) (h : star p ⬝ᵥ q = 
       | rw [add_dotProduct, dotProduct_add, dotProduct_add, h, h2]
       | rw [Matrix.add_dotProduct, Matrix.dotProduct_add, Matrix.dotProduct_add, h, h2]
     ring
-  have key' := Complex.ofReal_injective key
-  nlinarith [cnorm_nonneg p, cnorm_nonneg (p + q), sq_nonneg (Formalism.HermitianLatticesTheory.cnorm q)]
+  nlinarith [Complex.ofReal_injective key, cnorm_nonneg p, cnorm_nonneg (p + q), sq_nonneg (Formalism.HermitianLatticesTheory.cnorm q)]
 
 theorem quot_rep {n D : ℕ} (Hc X0 : Matrix (Fin n) (Fin n) ℂ) (h0 : IsUnit X0.det)
     (hH : (X0⁻¹)ᴴ * X0⁻¹ = Hc) (Pc : Matrix (Fin D) (Fin n) ℂ) (XQ : Matrix (Fin D) (Fin D) ℂ)
@@ -525,9 +511,7 @@ def gmap (v : InfinitePlace K) (Y : Matrix (Fin D) (Fin D) ℂ) (x : Fin D → K
 theorem map_mulVec_emb {n : ℕ} (v : InfinitePlace K) (N : Matrix (Fin D) (Fin n) K) (x : Fin n → K) :
     (fun i => v.embedding (N.mulVec x i)) = (N.map v.embedding).mulVec fun i => v.embedding (x i) := by
   ext i
-  first
-    | simp [Matrix.mulVec, dotProduct, map_sum, map_mul]
-    | simp [Matrix.mulVec, Matrix.dotProduct, map_sum, map_mul]
+  simp [Matrix.mulVec, dotProduct, map_sum, map_mul]
 
 end G
 

@@ -143,8 +143,7 @@ theorem interlaceRatio : InterlaceRatio := by
   intro k u u' ρ l Y hl1 hlk h hc
   rcases hc with hA | hB
   · exact ratio_core k u u' ρ l Y hl1 hlk h hA
-  · have := ratio_core k u' u ρ l Y hl1 hlk (interlaces_swap h) hB
-    rwa [mul_comm (|Y + 1/2 + u' l|), mul_comm (∏ i ∈ Icc 1 k, (Y + 1/2 + u' i))] at this
+  · simpa only [mul_comm, mul_left_comm, mul_assoc] using ratio_core k u' u ρ l Y hl1 hlk (interlaces_swap h) hB
 
 end Formalism.FourierDecayAlt.P.Interlace
 

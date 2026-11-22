@@ -196,13 +196,11 @@ theorem pairingBNondegenerate_holds : PairBNondeg := by
 
 theorem pairingBRational_holds : PairBRat := by
   intro K _ ι _ n lam K0 i j
-  have h := @pairingRational_holds K _ starRingOfComm ι _ n lam K0 (fun _ => 1)
+  rw [pairBK_apply, ← pairP_trivial]
+  exact @pairingRational_holds K _ starRingOfComm ι _ n lam K0 (fun _ => 1)
     (fun τ a b => by
       simp only [Matrix.one_apply]
-      split_ifs
-      exacts [K0.one_mem, K0.zero_mem]) i j
-  rw [pairBK_apply, ← pairP_trivial]
-  exact h
+      split_ifs <;> simp [K0.one_mem, K0.zero_mem]) i j
 
 private theorem actP_one' {K : Type} [Field K] {ι : Type} [Fintype ι] {n : ℕ} (lam : ι → DomWeight n)
     (F : Pol K ι n) : actP lam (1 : ι → GL (Fin n) K) F = F := by
@@ -263,8 +261,7 @@ theorem pairingBStar_holds : PairBStar := by
 
 theorem pairB_vecP {K : Type} [Field K] (φ v : Fin 2 → K) :
     pairB (fun _ : Unit => lamVec) (vecP φ) (vecP v) = φ ⬝ᵥ v := by
-  rw [← pairP_trivial, @pairP_vecP K _ starRingOfComm]
-  simp only [Matrix.one_mulVec]
+  rw [← pairP_trivial, @pairP_vecP K _ starRingOfComm, Matrix.one_mulVec]
   rfl
 
 private theorem actP_lamVec_vecP {K : Type} [Field K] (h : Unit → GL (Fin 2) K) (w : Fin 2 → K) :
@@ -283,14 +280,12 @@ theorem actP_invTrK_vecP_and_actP_vecP {K : Type} [Field K] (g : Unit → GL (Fi
       actP (fun _ => lamVec) g (vecP v) = vecP ((g () : Matrix (Fin 2) (Fin 2) K) *ᵥ v) := ⟨actP_lamVec_vecP (invTrK g) φ, actP_lamVec_vecP g v⟩
 
 theorem pairB_char {K : Type} [Field K] (e : ℤ) : pairB (fun _ : Unit => lamChar e) (1 : Pol K Unit 1) 1 = 1 := by
-  rw [← pairP_trivial, @pairP_char K _ starRingOfComm]
-  simp
+  simpa [← pairP_trivial] using @pairP_char K _ starRingOfComm e (fun _ => 1)
 
 theorem pb_invTrK_invTrK {K : Type} [Field K] {ι : Type} {n : ℕ} (g : ι → GL (Fin n) K) : invTrK (invTrK g) = g := by
   funext τ
   apply Units.ext
-  change ((g τ : Matrix (Fin n) (Fin n) K)ᵀ)ᵀ = (g τ : Matrix (Fin n) (Fin n) K)
-  exact Matrix.transpose_transpose _
+  exact Matrix.transpose_transpose (g τ : Matrix (Fin n) (Fin n) K)
 
 private theorem actP_mul' {K : Type} [Field K] {ι : Type} [Fintype ι] {n : ℕ} (lam : ι → DomWeight n)
     (a b : ι → GL (Fin n) K) (F : Pol K ι n) : actP lam (a * b) F = actP lam a (actP lam b F) := by

@@ -42,10 +42,8 @@ theorem adjointness_of_bessel_transform : Formalism.FourierDecayAlt.B.AssembleAd
   have hT : ∀ τ, betaInfTau D τ (opApply Θ F) F' = betaInfTau D τ F (opAdj Θ F') := fun τ =>
     hRP k r Wp Wq D τ _ _ _ _ (hPA k r Wp Wq D UU Θ hStab hSm hCom F F' hCk hCk' hS hS' hIC)
   rw [hB2 _ _ h3 h2, hB2 _ _ h1 h4]
-  first
-  | (unfold betaInf; simp only [hT])
-  | (simp only [betaInf, hT])
-  | (unfold betaInf; rw [hT])
+  try unfold betaInf
+  simp only [hT]
 
 theorem adjointness_polynomially_bounded : Formalism.FourierDecayAlt.B.AssemblePoly := by
   intro hSC k r Wp Wq _ _ _ _ _ _ D A hA hCC hB3 Θ ε d hε hd hSm hCom hPoly F F' hF hF' hsF hsF'

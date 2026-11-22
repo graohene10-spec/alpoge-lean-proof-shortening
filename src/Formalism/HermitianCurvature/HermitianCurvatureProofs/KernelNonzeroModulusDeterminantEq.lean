@@ -75,9 +75,7 @@ theorem relIndex_ne_zero {U A : AddSubgroup V} (hU : IsOpen (U : Set V))
 
 theorem gi_pos {A B : AddSubgroup V} (hA : Lat A) (hB : Lat B) : 0 < gi A B := by
   unfold gi
-  have h1 : B.relIndex A ≠ 0 := relIndex_ne_zero hB.op hA.cp
-  have h2 : A.relIndex B ≠ 0 := relIndex_ne_zero hA.op hB.cp
-  exact div_pos (Nat.cast_pos.mpr (Nat.pos_of_ne_zero h1)) (Nat.cast_pos.mpr (Nat.pos_of_ne_zero h2))
+  exact div_pos (Nat.cast_pos.mpr (Nat.pos_of_ne_zero (relIndex_ne_zero hB.op hA.cp))) (Nat.cast_pos.mpr (Nat.pos_of_ne_zero (relIndex_ne_zero hA.op hB.cp)))
 
 theorem gi_trans {A B C : AddSubgroup V} (hA : Lat A) (hB : Lat B) (hC : Lat C) :
     gi A B * gi B C = gi A C := by
@@ -187,8 +185,7 @@ theorem map_mv_mul (M N : Matrix ι ι K) (A : AddSubgroup (ι → K)) :
     A.map (mv (M * N)) = (A.map (mv N)).map (mv M) := by
   rw [AddSubgroup.map_map]
   congr 1
-  refine AddMonoidHom.ext fun v => ?_
-  simp [Matrix.mulVec_mulVec]
+  exact AddMonoidHom.ext fun v => by simp [Matrix.mulVec_mulVec]
 
 theorem map_le_of_int {M : Matrix ι ι K} (hM : ∀ i j, M i j ∈ R) :
     (LL R ι).map (mv M) ≤ LL R ι := by
@@ -485,8 +482,7 @@ theorem exists_pow_mem {R : Subring K} {ϖ : K} (hϖ : ϖ ∈ R) (h : ∀ x : K,
     {α : Type} [Fintype α] (f : α → K) : ∃ m : ℕ, ∀ a, ϖ ^ m * f a ∈ R := by
   choose g hg using fun a => h (f a)
   refine ⟨∑ a, g a, fun a => ?_⟩
-  have hle : g a ≤ ∑ b, g b := Finset.single_le_sum (fun b _ => Nat.zero_le (g b)) (Finset.mem_univ a)
-  obtain ⟨k, hk⟩ := Nat.exists_eq_add_of_le hle
+  obtain ⟨k, hk⟩ := Nat.exists_eq_add_of_le (Finset.single_le_sum (fun b _ => Nat.zero_le (g b)) (Finset.mem_univ a))
   rw [hk, pow_add, mul_comm (ϖ ^ g a) (ϖ ^ k), mul_assoc]
   exact R.mul_mem (R.pow_mem hϖ k) (hg a)
 
@@ -695,13 +691,10 @@ theorem good_step (hd : LocalDatum K R ψ) (hG : Good R ι) : Good R (ι ⊕ Uni
 
 theorem good_equiv (e : ι ≃ κ) (hG : Good R ι) : Good R κ := by
   intro M hM
-  have h1 : reindex e e (reindex e.symm e.symm M) = M := by
-    ext i j
-    simp
   have h2 : IsUnit (reindex e.symm e.symm M).det := by
     rwa [Matrix.det_reindex_self]
-  rw [← h1, dl_reindex, hG _ h2]
-  simp only [Matrix.det_reindex_self]
+  rw [← dl_reindex (e := e.symm)]
+  simpa only [Matrix.det_reindex_self] using hG (reindex e.symm e.symm M) h2
 
 theorem good_fin (hd : LocalDatum K R ψ) : ∀ n : ℕ, Good R (Fin n)
   | 0 => by
@@ -762,9 +755,8 @@ variable {K : Type} [CommRing K] {R : Subring K}
 theorem det_orbZ (w : Point K) (p : lowW K w.1 w.2 × upUniG K w.1.sum) :
     (orbZ w p).det = (pt w.1 w.2).det := by
   obtain ⟨h1, -⟩ := p.1.2
-  have h2 : IsUpUni ((p.2 : GL (Fin w.1.sum) K) : Matrix (Fin w.1.sum) (Fin w.1.sum) K) := p.2.2
   unfold orbZ
-  rw [Matrix.det_mul, Matrix.det_mul, isLowUni_det _ h1, isUpUni_det _ h2, one_mul, mul_one]
+  rw [Matrix.det_mul, Matrix.det_mul, isLowUni_det _ h1, isUpUni_det _ p.2.2, one_mul, mul_one]
 
 theorem isUnit_det_pt (s : List ℕ) (t : ℕ → Kˣ) : IsUnit (pt s t).det := Matrix.isUnit_det_of_right_inverse (Formalism.DoubleCosetMeasures.P.Phase.pt_mul_ptI s t)
 
@@ -815,15 +807,8 @@ theorem prod_addBlock (h : Point K) (s : ℕ) (t : Kˣ) :
     (∏ a : Fin (addBlock h s t).1.sum,
       (((addBlock h s t).2 (blk (addBlock h s t).1 a) : Kˣ) : K)) =
       (∏ a : Fin h.1.sum, ((h.2 (blk h.1 a) : Kˣ) : K)) * (t : K) ^ s := by
-  have e1 : (∏ a : Fin (addBlock h s t).1.sum,
-      (((addBlock h s t).2 (blk (addBlock h s t).1 a) : Kˣ) : K)) =
-      ∏ i ∈ Finset.range (addBlock h s t).1.sum,
-        (((addBlock h s t).2 (blk (addBlock h s t).1 i) : Kˣ) : K) :=
-    Fin.prod_univ_eq_prod_range (fun i => (((addBlock h s t).2 (blk (addBlock h s t).1 i) : Kˣ) : K)) _
-  have e2 : (∏ a : Fin h.1.sum, ((h.2 (blk h.1 a) : Kˣ) : K)) =
-      ∏ i ∈ Finset.range h.1.sum, ((h.2 (blk h.1 i) : Kˣ) : K) :=
-    Fin.prod_univ_eq_prod_range (fun i => ((h.2 (blk h.1 i) : Kˣ) : K)) _
-  rw [e1, e2]
+  rw [Fin.prod_univ_eq_prod_range (fun i => (((addBlock h s t).2 (blk (addBlock h s t).1 i) : Kˣ) : K)) _]
+  rw [Fin.prod_univ_eq_prod_range (fun i => ((h.2 (blk h.1 i) : Kˣ) : K)) _]
   simp only [addBlock]
   rw [List.sum_append, List.sum_singleton, Finset.prod_range_add]
   congr 1
@@ -905,7 +890,6 @@ theorem kernel_block_diagonal_by_modulus : Formalism.FourierDecayAlt.A5.KpBlockD
   exact kernel_nonzero_modulus_determinant_eq hd w w' h
 
 theorem added_block_kernel_block_diagonal : Formalism.FourierDecayAlt.A5.NsBlockDiag := by
-  intro K _ _ _ R ψ hd h h' _
-  exact ⟨fun h0 => kernel_nonzero_modulus_determinant_eq hd h h' h0, fun s t hne => added_block_kernel_modulus_det_eq hd h h' s t hne⟩
+  intro K _ _ _ R ψ hd h h' _; exact ⟨kernel_nonzero_modulus_determinant_eq hd h h', added_block_kernel_modulus_det_eq hd h h'⟩
 
 end Formalism.FourierDecayAlt.P

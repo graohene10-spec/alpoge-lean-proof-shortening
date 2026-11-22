@@ -35,15 +35,11 @@ theorem mem_nabla_iff_coordinate_integral {E : GLOps n (KK O) V} {lam : Fin n �
   · intro H u hu
     obtain ⟨c, hc⟩ := H u hu
     refine ⟨c, ?_⟩
-    have h := h2 _ hc
-    rw [map_sub, map_smul, h1, smul_eq_mul, mul_one, sub_eq_zero] at h
-    exact h
+    simpa only [map_sub, map_smul, h1, smul_eq_mul, mul_one, sub_eq_zero] using h2 _ hc
   · intro H u hu
     obtain ⟨c, hc⟩ := H u hu
     refine ⟨c, ?_⟩
-    have h := h3 (u x)
-    rw [hc] at h
-    exact h
+    simpa only [hc] using h3 (u x)
 
 theorem enveloping_coordinate_separates [NeZero n] [CharZero (KK O)] {E : GLOps n (KK O) V} {lam : Fin n → ℤ} {v : V}
     (hI : IsIrrHW E lam v)

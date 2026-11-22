@@ -104,8 +104,7 @@ theorem eN_lt_iff (hN : N = m + 1) (i j : Fin m) :
 
 theorem eN_inl_lt_inr (hN : N = m + 1) (i : Fin m) (u : Unit) :
     eN hN (Sum.inl i) < eN hN (Sum.inr u) := by
-  rw [Fin.lt_iff_val_lt_val, eN_inl, eN_inr]
-  exact i.isLt
+  simp [Fin.lt_def, eN_inl, eN_inr]
 
 theorem blkM_isLowUni (hN : N = m + 1) (A : Matrix (Fin m) (Fin m) K)
     (b a : Fin m → K) (d : K) : IsLowUni (blkM hN A b a d) ↔ IsLowUni A ∧ b = 0 ∧ d = 1 := by
@@ -351,8 +350,7 @@ variable {m N : ℕ}
 
 theorem sec_mul_low (hN : N = m + 1) (A A' : Matrix (Fin m) (Fin m) K) (a a' : Fin m → K) :
     blkM hN A 0 a 1 * blkM hN A' 0 a' 1 = blkM hN (A * A') 0 (a ᵥ* A' + a') 1 := by
-  rw [blkM_mul]
-  congr 1 <;> simp
+  simp [blkM_mul]
 
 theorem sec_mul_up (hN : N = m + 1) (A A' : Matrix (Fin m) (Fin m) K) (b b' : Fin m → K) :
     blkM hN A b 0 1 * blkM hN A' b' 0 1 = blkM hN (A * A') (A *ᵥ b' + b) 0 1 := by
@@ -499,9 +497,7 @@ theorem sec_mem_int {n : ℕ} {H : Subgroup (GL (Fin n) K)} (g : H) (hd : (sec_m
   · intro h
     refine ⟨h, ?_⟩
     let B : Matrix (Fin n) (Fin n) R := fun a b => ⟨sec_m g a b, h a b⟩
-    have hB : R.subtype.mapMatrix B = sec_m g := by
-      ext a b
-      rfl
+    have hB : R.subtype.mapMatrix B = sec_m g := rfl
     have hinv : (((g : GL (Fin n) K)⁻¹ : GL (Fin n) K) : Matrix (Fin n) (Fin n) K) = (sec_m g).adjugate := by
       rw [Matrix.coe_units_inv, Matrix.inv_def]
       simp [sec_m] at hd ⊢
@@ -692,10 +688,8 @@ theorem sec_upJ_int (h : Point K) (c : Kˣ) (b : upUniG K h.1.sum) (ρ : Fin h.1
       rwa [Matrix.coe_units_inv] at h2
     have hinv : (sec_m b)⁻¹ * sec_m b = 1 := by
       rw [sec_m, ← Matrix.coe_units_inv, ← Units.val_mul, inv_mul_cancel, Units.val_one]
-    have e : ρ = (sec_m b)⁻¹ *ᵥ (sec_m b *ᵥ ρ) := by
-      rw [Matrix.mulVec_mulVec, hinv, Matrix.one_mulVec]
-    rw [e]
-    exact sec_mulVec_int R hinvI hb j
+    have h := sec_mulVec_int R hinvI hb j
+    rwa [Matrix.mulVec_mulVec, hinv, Matrix.one_mulVec] at h
   · rintro ⟨hA, hρ⟩
     exact ⟨hA, fun i => sec_mulVec_int R hA hρ i, fun j => R.zero_mem, R.one_mem⟩
 
@@ -1073,9 +1067,7 @@ theorem iso_vec_eta {X : Type} (x : Fin N → X) :
     iso_vec hN (fun i => x (eN hN (Sum.inl i))) (x (eN hN (Sum.inr ()))) = x := by
   funext z
   obtain ⟨w, rfl⟩ := (eN hN).surjective z
-  rcases w with i | ⟨⟩
-  · exact iso_vec_inl hN _ _ i
-  · exact iso_vec_inr hN _ _ ()
+  rcases w with i | ⟨⟩ <;> simp [iso_vec]
 
 theorem iso_vec_ext {X : Type} {x y : Fin N → X}
     (h1 : ∀ i, x (eN hN (Sum.inl i)) = y (eN hN (Sum.inl i)))
@@ -1524,13 +1516,9 @@ theorem mem_range_iC (Z : Matrix (Fin m) (Fin m) K) (hd : IsUnit Z.det) (x : Fin
     funext j; rw [P.coeLin_apply]
   refine ⟨Submodule.Quotient.mk b, ?_⟩
   funext j
-  have h1 : iC R Z (Submodule.Quotient.mk b) j =
-      (latZ R Z).liftQ (A5x3.rowFun R Z j) (A5x3.rowFun_kills R Z hd j)
-        (Submodule.Quotient.mk (Quotient.out (Submodule.Quotient.mk b : coker R Z))) := rfl
-  have h2 : (Submodule.Quotient.mk (Quotient.out (Submodule.Quotient.mk b : coker R Z)) :
-      coker R Z) = Submodule.Quotient.mk b := Quotient.out_eq _
-  rw [h1, h2, Submodule.liftQ_apply, A5x3.rowFun_apply, hb, mulVec_mulVec,
-    Matrix.nonsing_inv_mul Z hd, one_mulVec, mk_outV]
+  rw [show iC R Z (Submodule.Quotient.mk b) j = (latZ R Z).liftQ (A5x3.rowFun R Z j) (A5x3.rowFun_kills R Z hd j) (Submodule.Quotient.mk (Quotient.out (Submodule.Quotient.mk b : coker R Z))) from rfl,
+    show (Submodule.Quotient.mk (Quotient.out (Submodule.Quotient.mk b : coker R Z)) : coker R Z) = Submodule.Quotient.mk b from Quotient.out_eq _,
+    Submodule.liftQ_apply, A5x3.rowFun_apply, hb, mulVec_mulVec, Matrix.nonsing_inv_mul Z hd, one_mulVec, mk_outV]
 
 theorem iA_eZ (Z : Matrix (Fin m) (Fin m) K) (α : coker R Z →ₗ[R] KR R) :
     α (eZ R Z) = Submodule.Quotient.mk (lastE (outV R (iA R Z α))) := by
@@ -1546,8 +1534,7 @@ theorem iA_eZ (Z : Matrix (Fin m) (Fin m) K) (α : coker R Z →ₗ[R] KR R) :
 theorem iC_mu (Z : Matrix (Fin m) (Fin m) K) (hZ : IsInt R Z) (hd : IsUnit Z.det)
     (β : coker R Z) :
     A5x6.muZ R Z hd β = Submodule.Quotient.mk (lastE (outV R (iC R Z β))) := by
-  obtain ⟨b, hb, hβ⟩ := iC_spec R Z hZ hd β
-  conv_lhs => rw [← hβ]
+  obtain ⟨b, hb, rfl⟩ := iC_spec R Z hZ hd β
   rw [A5x6.muZ_mk, P.lamLin_apply, hb, mulVec_mulVec, Matrix.nonsing_inv_mul Z hd, one_mulVec,
     P.lastCoord_apply]
   rfl

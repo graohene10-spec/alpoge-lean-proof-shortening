@@ -354,10 +354,8 @@ theorem chiScalar_eq (mt chi : G →* ℂˣ) (N N' : ℕ) (x x' : G) : chiScalar
   rw [MonoidHom.mul_apply, MonoidHom.mul_apply, MonoidHom.inv_apply, hz, hz, zpow_neg, zpow_neg]
   generalize chi x ^ (((N' / 2 : ℕ) : ℤ)) = c
   generalize chi x' ^ (((N / 2 : ℕ) : ℤ)) = d
-  generalize mt x = a
-  generalize mt x' = b
-  calc a⁻¹ * c⁻¹ * (b * d) * (c * d⁻¹) = (a⁻¹ * b) * (c⁻¹ * c) * (d * d⁻¹) := by ac_rfl
-    _ = a⁻¹ * b := by rw [inv_mul_cancel, mul_inv_cancel, mul_one, mul_one]
+  calc (mt x)⁻¹ * c⁻¹ * (mt x' * d) * (c * d⁻¹) = ((mt x)⁻¹ * mt x') * (c⁻¹ * c) * (d * d⁻¹) := by ac_rfl
+    _ = (mt x)⁻¹ * mt x' := by rw [inv_mul_cancel, mul_inv_cancel, mul_one, mul_one]
 
 theorem rhoA_chi (D : Formalism.BasicNotions.D7) (m1 : D.Dt →* ℂˣ) (N N' : ℕ) (x x' : D.Dt) :
     Formalism.MainNotions.GL3Columns.rhoA D m1 N' x * Formalism.MainNotions.GL3Columns.rhoA' D m1 N x' *
@@ -596,8 +594,7 @@ variable {X : Fields} {Pr : Primes X} {R : Ranks} (W : Wts X Pr.Word R)
 theorem lamTrue_last_two (u : Pr.Word) (τ : X.Tau) (i j : Fin (R.N R.m)) (hi : i.1 = R.N R.m - 1) (hj : j.1 = R.N R.m - 2) :
     (W.lamTrue u R.m τ).w i = (W.lamTrue u R.m τ).w j := by
   unfold Wts.lamTrue shiftW Wts.lamN Examples₂.lamOf
-  simp only [dif_pos (le_refl R.m)]
-  rw [Examples₂.wtQ_eq_wtN, Examples₂.wtQ_eq_wtN, hi, hj, wtN_last_two]
+  simp only [dif_pos (le_refl R.m), Examples₂.wtQ_eq_wtN, hi, hj, wtN_last_two]
 
 theorem sameShift_of_interlace (u : Pr.Word) (τ : X.Tau)
     (hI : Interlace (N_m_succ R) (W.lamTrue u R.m τ) (W.sgTrue τ)) :
@@ -1473,10 +1470,7 @@ theorem lm_fockB_ne [CharZero K] {σ : Type} (f : MvPolynomial σ ℚ) (hf : f �
 theorem lm_blockEmb_ne {k : ℕ} (τ : ι) (f : MvPolynomial (Fin k × Fin k) K) (hf : f ≠ 0) :
     Formalism.GradedWeylDivisibility.blockEmb K τ f ≠ 0 := by
   unfold Formalism.GradedWeylDivisibility.blockEmb
-  intro h
-  apply hf
-  have hinj : Function.Injective (fun v : Fin k × Fin k => (τ, v)) := fun a b e => by simpa using e
-  exact rename_injective _ hinj (by rw [h, map_zero])
+  exact fun h => hf (rename_injective (fun v : Fin k × Fin k => (τ, v)) (fun a b e => by simpa using e) (by rw [h, map_zero]))
 
 theorem lm_ten_ne {k : ℕ} (f : ι → MvPolynomial (Fin k × Fin k) K) (hf : ∀ τ, f τ ≠ 0) : ten f ≠ 0 := by
   unfold ten
@@ -2052,9 +2046,8 @@ theorem brOne_member (D : Formalism.BasicNotions.D7) (u : D.what₂.Word) (τ : 
       ∃ f ∈ delSq ℂ _ (lamTr D u τ), brOne ℂ (Nm_succ D.R).symm (lamTr D u τ) (sgTr D u τ) f ≠ 0 := by
   have hI' := (interlace_iff _ _ (Nm_succ D.R)).1 hI
   have hS := sameShiftTr D u τ hI
-  refine ⟨fun f => ?_, xiBr ℂ (Nm_succ D.R).symm (lamTr D u τ) (sgTr D u τ), ?_, brOne_xi_ne _ _ _ hI' hS⟩
-  · rw [← nablaSq_eq_delSq]; exact brOne_mem _ _ _ f
-  · rw [← nablaSq_eq_delSq]; exact xiBr_mem _ _ _ hI' hS
+  refine ⟨fun f => ?_, xiBr ℂ (Nm_succ D.R).symm (lamTr D u τ) (sgTr D u τ), by simpa only [← nablaSq_eq_delSq] using xiBr_mem _ _ _ hI' hS, brOne_xi_ne _ _ _ hI' hS⟩
+  · simpa only [← nablaSq_eq_delSq] using brOne_mem (K := ℂ) _ _ _ f
 
 end RecP
 
@@ -3302,13 +3295,11 @@ theorem inB_comm_add {n : ℕ} {A A' : Module.End ℤ (BP ℤ n)} {B B' : Module
 
 theorem inB_comm_mul {n : ℕ} {A A' : Module.End ℤ (BP ℤ n)} {B B' : Module.End ℚ (BP ℚ n)}
     (h : inB_Comm A B) (h' : inB_Comm A' B') : inB_Comm (A * A') (B * B') := by
-  intro p
-  rw [Module.End.mul_apply, Module.End.mul_apply, h, h']
+  exact fun p => (h (A' p)).trans (congrArg B (h' p))
 
 theorem inB_comm_zsmul {n : ℕ} {A : Module.End ℤ (BP ℤ n)} {B : Module.End ℚ (BP ℚ n)} (z : ℤ)
     (h : inB_Comm A B) : inB_Comm (z • A) (z • B) := by
-  intro p
-  rw [LinearMap.smul_apply, LinearMap.smul_apply, map_zsmul, h p]
+  exact fun p => by simpa only [LinearMap.smul_apply, map_zsmul] using congrArg (fun q => z • q) (h p)
 
 theorem inB_comm_intCast {n : ℕ} (z : ℤ) :
     inB_Comm (n := n) ((z : ℤ) : Module.End ℤ (BP ℤ n)) ((z : ℤ) : Module.End ℚ (BP ℚ n)) := by
@@ -4566,8 +4557,7 @@ theorem brOne_isBr {N n : ℕ} (hN : N = n + 1) (l : Formalism.BasicNotions.DomW
     fun g f _ => brOne_sqAct hN l s hS g f, fun a f _ => brOne_last hN l s hI a f, fun f hf => ?_⟩
   · rw [← Formalism.L2.Col.nablaSq_eq_delSq]; exact brOne_mem hN l s f
   · rw [← Formalism.L2.Col.nablaSq_eq_delSq]; exact xiBr_mem hN l s hI hS
-  · rw [← Formalism.L2.Col.nablaSq_eq_delSq] at hf
-    refine (nm_le hN l s hI hS f hf).trans (mul_le_mul_of_nonneg_right (nm_bd_of hN l s hI hS (nm_kap_le hN l s hI hS)) ?_)
+  · refine (nm_le hN l s hI hS f (by simpa only [Formalism.L2.Col.nablaSq_eq_delSq] using hf)).trans (mul_le_mul_of_nonneg_right (nm_bd_of hN l s hI hS (nm_kap_le hN l s hI hS)) ?_)
     by_cases h0 : f = 0
     · subst h0; simp [Formalism.BasicNotions.normFock, nm_fockF_zero_left]
     · exact (nm_normFock_pos _ f h0).le
@@ -4624,11 +4614,10 @@ theorem ta_blk_monomial {n n' : ℕ} (F : ι → MvPolynomial (Fin n × Fin n) �
     (mon : ι × Fin n × Fin n →₀ ℕ) :
     blk F (MvPolynomial.monomial mon 1) = Formalism.MainNotions.product_first_zeroth_parts.ten fun τ => F τ (MvPolynomial.monomial
       (mon.comapDomain (Prod.mk τ) (Prod.mk_right_injective τ).injOn) 1) := by
-  have := (MvPolynomial.basisMonomials (ι × Fin n × Fin n) ℂ).constr_basis ℂ
+  have h := (MvPolynomial.basisMonomials (ι × Fin n × Fin n) ℂ).constr_basis ℂ
     (fun mon => Formalism.MainNotions.product_first_zeroth_parts.ten fun τ => F τ (MvPolynomial.monomial
       (mon.comapDomain (Prod.mk τ) (Prod.mk_right_injective τ).injOn) 1)) mon
-  rw [MvPolynomial.coe_basisMonomials] at this
-  exact this
+  rwa [MvPolynomial.coe_basisMonomials] at h
 
 theorem ta_sum_map_comap {α : Type} (mon : ι × α →₀ ℕ) :
     ∑ σ, (mon.comapDomain (Prod.mk σ) (Prod.mk_right_injective σ).injOn).mapDomain (Prod.mk σ) = mon := by
@@ -4736,8 +4725,7 @@ theorem brTen_ne (hI : (D.fm u).SgInterlace) : ∃ p ∈ CSpan ((D.fm u).lam D.R
 theorem seenAt_of_fullAt (hI : (D.fm u).SgInterlace) (w : D.what₂.places.Pl) (c : (D.fm u).clsP) (hF : FullAt D u coM w c) :
     SeenAt D u coM w c := by
   obtain ⟨p, hp, hne⟩ := brTen_ne (D := D) (u := u) hI
-  obtain ⟨φ, hφ, e⟩ := hF p hp
-  exact ⟨φ, hφ, by rw [e]; exact hne⟩
+  exact (hF p hp).imp fun φ h => ⟨h.1, by rw [h.2]; exact hne⟩
 
 theorem lowerTieAt_norm (h : LowerTieAt D u coM gP) (w : D.what₂.places.Pl) (φ : Fn D u D.R.m) (hφ : φ ∈ (D.fm u).Fi D.R.m) :
     ((D.fm u).ipP (Pt D u φ) (Pt D u φ)).re = lowerNormAt D u coM gP w φ := by
@@ -4898,13 +4886,11 @@ theorem lowerTie_rigid_br (h : LowerTie D u) (P' : Pend D u) (a : D.what₂.Tau 
     unfold beOnVal
     refine mul_ne_zero (abs_ne_zero.2 ?_) (Real.sqrt_pos.2 (nm_kapR_pos _ _ _ hI' hS)).ne'
     exact_mod_cast cBr_ne_zero _ _ _ hI'
-  have h1 := lowerTie_beOn h τ
   have h2 := P'.beOn_eq τ
-  rw [hb τ, ta_opNorm_smul, ← h1] at h2
-  have h3 : (‖a τ‖ - 1) * (D.fm u).beOn τ = 0 := by linarith
-  rcases mul_eq_zero.mp h3 with h | h
-  · linarith
-  · exact absurd h hb0
+  rw [hb τ, ta_opNorm_smul, ← lowerTie_beOn h τ] at h2
+  have h2' : ‖a τ‖ * (D.fm u).beOn τ = 1 * (D.fm u).beOn τ := by
+    linarith
+  exact mul_right_cancel₀ hb0 h2'
 
 theorem pend_unique (P : Pend D u) (w : D.what₂.places.Pl) (φ : Fn D u D.R.m) (hφ : φ ∈ (D.fm u).Fi D.R.m) (hz : Pt D u φ ∈ (D.fm u).ptC)
     (z : (D.mem u).P.Wrow) (hz' : z ∈ (D.fm u).ptC)
@@ -4970,13 +4956,11 @@ theorem eps_homog {n : ℕ} (l : DomWeight n) (f : MvPolynomial (Fin n × Fin n)
 
 theorem eps_aeval_neg {σ : Type} (f : MvPolynomial σ ℂ) (d : ℕ) (hf : f.IsHomogeneous d) :
     aeval (fun v => -X v) f = ((-1 : ℂ) ^ d) • f := by
-  conv_lhs => rw [f.as_sum]
-  conv_rhs => rw [f.as_sum]
-  rw [map_sum, Finset.smul_sum]
+  rw [f.as_sum, map_sum, Finset.smul_sum]
   refine Finset.sum_congr rfl fun m hm => ?_
-  have hdeg : (Finsupp.weight 1) m = d := hf (mem_support_iff.1 hm)
   have e : ∑ i ∈ m.support, m i = d := by
-    rw [← hdeg, Finsupp.weight_apply, Finsupp.sum]; simp
+    rw [← hf (mem_support_iff.1 hm), Finsupp.weight_apply, Finsupp.sum]
+    simp
   have hp : (m.prod fun i k => (-X i : MvPolynomial σ ℂ) ^ k) = (-1 : MvPolynomial σ ℂ) ^ d * m.prod fun i k => X i ^ k := by
     unfold Finsupp.prod
     rw [Finset.prod_congr rfl fun i _ => neg_pow (X i : MvPolynomial σ ℂ) (m i), Finset.prod_mul_distrib,

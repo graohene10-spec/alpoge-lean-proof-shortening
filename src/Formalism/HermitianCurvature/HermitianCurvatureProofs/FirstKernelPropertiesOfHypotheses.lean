@@ -401,12 +401,8 @@ theorem first_kernel_periodic_of_formula (hF : SingleBlockFormula) : SingleBlock
   have e : (Submodule.Quotient.mk (c : K) : KR R) = Submodule.Quotient.mk (c' : K) := by
     rw [Submodule.Quotient.eq, mem_rangeR]
     exact hc
-  have e2 : ∀ {n n' : ℕ} (Z : Matrix (Fin n) (Fin n) K) (Z' : Matrix (Fin n') (Fin n') K),
-      singleBlockInner R ψ Z Z' (c : K) = singleBlockInner R ψ Z Z' (c' : K) := by
-    intro n n' Z Z'
-    unfold singleBlockInner
-    rw [e]
-  simp only [e2]
+  simp only [singleBlockInner]
+  rw [e]
 
 theorem first_kernel_parseval_of_formula (hF : SingleBlockFormula) (hI : IntFinite) (hCD : CharOrthDual) (hCO : CharOrth)
     (hCC : CokerCard) : SingleBlockParseval := by
@@ -587,8 +583,7 @@ private lemma isPSD_real_rescale {X : Type} (F : Finset X) (k : X → X → ℂ)
     refine Finset.sum_congr rfl fun x _ => Finset.sum_congr rfl fun y _ => ?_
     rw [map_mul, Complex.conj_ofReal]
     ring
-  rw [e]
-  exact h _
+  simpa only [← e] using h (fun x => a x * (c x : ℂ))
 
 theorem second_gram_of_kernel_gram (hG : KpGram) (hM : ModMul) : BlockKernelPosSemidef := by
   classical

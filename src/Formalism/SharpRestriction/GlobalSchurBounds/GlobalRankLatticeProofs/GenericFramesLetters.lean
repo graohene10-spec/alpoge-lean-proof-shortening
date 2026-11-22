@@ -74,12 +74,10 @@ theorem sum_log_sq_le (N : ℕ) : ∑ q ∈ Finset.Icc 1 N, Real.log q / (q : �
 
 private theorem inv_succ_le_log_succ_sub_log (y : ℝ) (hy : 1 ≤ y) :
     1 / (y + 1) ≤ Real.log (y + 1) - Real.log y := by
-  have hy0 : 0 < y := by linarith
-  have hy1 : (0 : ℝ) < y + 1 := by linarith
-  have h1 := Real.log_le_sub_one_of_pos (div_pos hy0 hy1)
-  rw [Real.log_div hy0.ne' hy1.ne'] at h1
+  have h1 := Real.log_le_sub_one_of_pos (div_pos (by linarith : (0 : ℝ) < y) (by linarith : (0 : ℝ) < y + 1))
+  rw [Real.log_div (by linarith : (0 : ℝ) < y).ne' (by linarith : (0 : ℝ) < y + 1).ne'] at h1
   have e : y / (y + 1) = 1 - 1 / (y + 1) := by
-    rw [eq_sub_iff_add_eq, ← add_div, div_self hy1.ne']
+    rw [eq_sub_iff_add_eq, ← add_div, div_self (by linarith : (0 : ℝ) < y + 1).ne']
   linarith
 
 private theorem sum_Icc_inv_le_one_add_log (N : ℕ) :

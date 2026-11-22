@@ -116,10 +116,9 @@ theorem uG_det_ne : (uG O n).det ≠ 0 := by
       rename (Sum.inr : Fin n × Fin n → UV n) (Matrix.mvPolynomialX (Fin n) (Fin n) O).det :=
     (AlgHom.map_det _ _).symm
   rw [h, h2]
-  intro h0
-  have := (rename_injective (Sum.inr : Fin n × Fin n → UV n) Sum.inr_injective (R := O))
-    (h0.trans (map_zero _).symm)
-  exact Matrix.det_mvPolynomialX_ne_zero (Fin n) O this
+  exact fun h0 => Matrix.det_mvPolynomialX_ne_zero (Fin n) O
+    (rename_injective (Sum.inr : Fin n × Fin n → UV n) Sum.inr_injective (R := O)
+      (h0.trans (map_zero _).symm))
 
 theorem uS_ne : uS O n ≠ 0 := by
   rw [uS_eq]
@@ -130,8 +129,7 @@ theorem uB_det : (uB O n).det = ∏ i : Fin n, X (Sum.inl (i, i)) := by
   rw [Matrix.det_of_isLowerTriangular]
   · simp [uB]
   · intro i j hij
-    have : i < j := hij
-    simp [uB, not_le.mpr this]
+    simp [uB, not_le.mpr (show i < j from hij)]
 
 abbrev UA := Localization.Away (uS O n)
 
@@ -152,13 +150,11 @@ theorem unit_of_dvd (q : MvPolynomial (UV n) O) (h : q ∣ uS O n) :
   isUnit_of_dvd_unit (map_dvd _ h) (uS_unit O n)
 
 theorem base_matrix_det_isUnit : IsUnit (G0 O n).det := by
-  have h : (G0 O n).det = algebraMap (MvPolynomial (UV n) O) (UA O n) (uG O n).det := (RingHom.map_det _ _).symm
-  rw [h]
+  rw [show (G0 O n).det = algebraMap (MvPolynomial (UV n) O) (UA O n) (uG O n).det from (RingHom.map_det _ _).symm]
   exact unit_of_dvd O n _ (Dvd.intro_left _ (uS_eq O n).symm)
 
 theorem lower_triangular_base_det_isUnit : IsUnit (B0 O n).det := by
-  have h : (B0 O n).det = algebraMap (MvPolynomial (UV n) O) (UA O n) (uB O n).det := (RingHom.map_det _ _).symm
-  rw [h, uB_det]
+  rw [(show (B0 O n).det = algebraMap (MvPolynomial (UV n) O) (UA O n) (uB O n).det from (RingHom.map_det _ _).symm), uB_det]
   exact unit_of_dvd O n _ (Dvd.intro _ (uS_eq O n).symm)
 
 theorem lower_triangular_base_diag_isUnit (i : Fin n) : IsUnit (B0 O n i i) := by
@@ -474,9 +470,7 @@ def genG : Matrix (Fin n) (Fin n) (GLCoord O n) :=
   (genMat O n).map (algebraMap (MvPolynomial (Fin n × Fin n) O) (GLCoord O n))
 
 theorem genG_det_unit : IsUnit (genG O n).det := by
-  have h : (genG O n).det = algebraMap (MvPolynomial (Fin n × Fin n) O) (GLCoord O n) (genMat O n).det :=
-    (RingHom.map_det _ _).symm
-  rw [h]
+  rw [show (genG O n).det = algebraMap (MvPolynomial (Fin n × Fin n) O) (GLCoord O n) (genMat O n).det from (RingHom.map_det _ _).symm]
   exact IsLocalization.Away.algebraMap_isUnit _
 
 theorem genG_unit : IsUnit (aeval (fun x : Fin n × Fin n => genG O n x.1 x.2) (genMat O n).det) := by
@@ -520,8 +514,7 @@ theorem genA_00 : genA O n 0 0 = gam O n := by
   rfl
 
 theorem genA_det_unit : IsUnit (genA O n).det := by
-  have h : (genA O n).det = iotaA O n (genG O (n + 1)).det := (AlgHom.map_det _ _).symm
-  rw [h]
+  rw [show (genA O n).det = iotaA O n (genG O (n + 1)).det from (AlgHom.map_det _ _).symm]
   exact (genG_det_unit O (n + 1)).map _
 
 theorem genA_unit : IsUnit (aeval (fun x : Fin (n + 1) × Fin (n + 1) => genA O n x.1 x.2) (genMat O (n + 1)).det) := by
@@ -558,10 +551,8 @@ theorem res_inj (O : Type) [CommRing O] [IsDomain O] (r : ℕ) (c : ℤ) (ka : F
     (hf' : f' ∈ HB O (r + 1) c ka) (h : evalG (R := O) (resMat O r) hM f = evalG (R := O) (resMat O r) hM f') :
     f = f' := by
   apply CA_inj O (r + 1)
-  have h1 := cellFormula O r hf hM
-  have h2 := cellFormula O r hf' hM
-  rw [h] at h1
-  exact h1.trans h2.symm
+  change iotaA O (r + 1) f = iotaA O (r + 1) f'
+  rw [cellFormula O r hf hM, cellFormula O r hf' hM, h]
 
 section Loc
 
@@ -699,8 +690,7 @@ theorem mapC_unit {n : ℕ} (σ : Type) (g : Matrix (Fin n) (Fin n) A)
     (hg : IsUnit (aeval (fun x : Fin n × Fin n => g x.1 x.2) (genMat O n).det)) :
     IsUnit (aeval (fun x : Fin n × Fin n => (g.map (cAlg O A σ)) x.1 x.2) (genMat O n).det) := by
   rw [aeval_genMat_det] at hg ⊢
-  have h : (g.map (cAlg O A σ)).det = cAlg O A σ g.det := (AlgHom.map_det _ _).symm
-  rw [h]
+  rw [show (g.map (cAlg O A σ)).det = cAlg O A σ g.det from (AlgHom.map_det _ _).symm]
   exact hg.map _
 
 theorem resEv_const (g : Matrix (Fin (r + 1)) (Fin (r + 1)) A)
@@ -1847,18 +1837,17 @@ theorem weight_vector_own_isotypic_highest {E : GLOps n K V} (hE : IsGLRep E) {m
   exact hh.2
 
 theorem lowIm_diag {E : GLOps n K V} (hE : IsGLRep E) (c : Fin n) : ∀ x ∈ lowIm E, E c c x ∈ lowIm E := by
-  have : lowIm E ≤ (lowIm E).comap (E c c) := by
-    refine iSup_le fun a => iSup_le fun b => iSup_le fun hab => ?_
-    rintro _ ⟨y, rfl⟩
-    rw [Submodule.mem_comap, gl_commutation_apply hE c c a b y]
-    refine Submodule.sub_mem _ (Submodule.add_mem _ (range_le_lowIm E hab ⟨_, rfl⟩) ?_) ?_
-    · split_ifs with h
-      · subst h; exact range_le_lowIm E hab ⟨_, rfl⟩
-      · exact Submodule.zero_mem _
-    · split_ifs with h
-      · subst h; exact range_le_lowIm E hab ⟨_, rfl⟩
-      · exact Submodule.zero_mem _
-  exact fun x hx => this hx
+  change lowIm E ≤ (lowIm E).comap (E c c)
+  refine iSup_le fun a => iSup_le fun b => iSup_le fun hab => ?_
+  rintro _ ⟨y, rfl⟩
+  rw [Submodule.mem_comap, gl_commutation_apply hE c c a b y]
+  refine Submodule.sub_mem _ (Submodule.add_mem _ (range_le_lowIm E hab ⟨_, rfl⟩) ?_) ?_
+  · split_ifs with h
+    · subst h; exact range_le_lowIm E hab ⟨_, rfl⟩
+    · exact Submodule.zero_mem _
+  · split_ifs with h
+    · subst h; exact range_le_lowIm E hab ⟨_, rfl⟩
+    · exact Submodule.zero_mem _
 
 theorem weight_vector_other_isotypic_in_lowering_image {E : GLOps n K V} (hE : IsGLRep E) {mu ν : Fin n → ℤ} (hne : mu ≠ ν) {x : V}
     (hx : x ∈ isoSub E ν) (hw : x ∈ weightSp E mu) : x ∈ lowIm E := by
@@ -1909,9 +1898,7 @@ theorem wtProj_other {n : ℕ} {E : GLOps n K V} (hE : IsGLRep E) (la : Fin n �
 
 theorem wt_split {n : ℕ} {E : GLOps n K V} (hE : IsGLRep E) (la : Fin n → ℤ) (x : V) :
     ∃ a ∈ weightSp E la, ∃ b ∈ ⨆ (ν : Fin n → ℤ) (_ : ν ≠ la), weightSp E ν, a + b = x := by
-  have : x ∈ weightSp E la ⊔ ⨆ (ν : Fin n → ℤ) (_ : ν ≠ la), weightSp E ν := by
-    rw [(wt_isCompl hE la).sup_eq_top]; trivial
-  exact Submodule.mem_sup.1 this
+  exact Submodule.mem_sup.1 ((wt_isCompl hE la).sup_eq_top.symm ▸ Submodule.mem_top)
 
 theorem wtProj_stable {n : ℕ} {E : GLOps n K V} (hE : IsGLRep E) (la : Fin n → ℤ) (U : Submodule K V)
     (hU : ∀ a, ∀ x ∈ U, E a a x ∈ U) {x : V} (hx : x ∈ U) : wtProj hE la x ∈ U := by
@@ -1925,25 +1912,18 @@ theorem wtProj_stable {n : ℕ} {E : GLOps n K V} (hE : IsGLRep E) (la : Fin n �
     · exact hall la h
     · rw [Finsupp.notMem_support_iff.1 h]; exact Submodule.zero_mem _
   have : wtProj hE la x = f la := by
-    rw [← hsum, map_sum]
-    by_cases h : la ∈ f.support
-    · rw [Finset.sum_eq_single la]
-      · exact wtProj_same hE la (hf la)
-      · intro ν _ hν
-        exact wtProj_other hE la (Submodule.mem_iSup_of_mem ν (Submodule.mem_iSup_of_mem hν (hf ν)))
-      · intro h'; exact absurd h h'
-    · rw [Finsupp.notMem_support_iff.1 h]
-      refine Finset.sum_eq_zero fun ν hν => ?_
-      have hne : ν ≠ la := fun h' => h (h' ▸ hν)
-      exact wtProj_other hE la (Submodule.mem_iSup_of_mem ν (Submodule.mem_iSup_of_mem hne (hf ν)))
+    rw [← hsum, map_sum, Finset.sum_eq_single la]
+    · exact wtProj_same hE la (hf la)
+    · intro ν _ hν
+      exact wtProj_other hE la (Submodule.mem_iSup_of_mem ν (Submodule.mem_iSup_of_mem hν (hf ν)))
+    · intro h
+      rw [Finsupp.notMem_support_iff.1 h, map_zero]
   rw [this]; exact hfla
 
 theorem wt_orth {n : ℕ} {E : GLOps n K V} (B : V →ₗ[K] V →ₗ[K] K)
     (hB : ∀ a b x y, B (E a b x) y = B x (E b a y)) {la ν : Fin n → ℤ} (hne : ν ≠ la) {x z : V}
     (hx : x ∈ weightSp E la) (hz : z ∈ weightSp E ν) : B x z = 0 := by
-  obtain ⟨c, hc⟩ : ∃ c, ν c ≠ la c := by
-    by_contra h
-    exact hne (funext fun a => by_contra fun h' => h ⟨a, h'⟩)
+  obtain ⟨c, hc⟩ := not_forall.1 (fun h => hne (funext h))
   have h1 := hB c c x z
   rw [(mem_weightSpace_iff_diagonal_rep E la x).1 hx c, (mem_weightSpace_iff_diagonal_rep E ν z).1 hz c, map_smul, map_smul,
     LinearMap.smul_apply, smul_eq_mul, smul_eq_mul] at h1
@@ -2927,9 +2907,7 @@ theorem keptSum_eq_sum {aTop : Fin X.s → ℕ} (hfin : {b | Kept X.p X.r (X.S C
   classical
   unfold keptSum
   rw [finsum_eq_sum_of_support_subset (s := hfin.toFinset)]
-  · refine Finset.sum_congr rfl fun b hb => ?_
-    have hk : Kept X.p X.r (X.S C0 CE1 CE2) aTop b := hfin.mem_toFinset.1 hb
-    rw [if_pos hk]
+  · exact Finset.sum_congr rfl fun b hb => if_pos (hfin.mem_toFinset.1 hb)
   · intro b hb
     rw [Function.mem_support] at hb
     rw [Finset.mem_coe, hfin.mem_toFinset]
@@ -3653,7 +3631,6 @@ theorem finrank_blockLat {s : ℕ} (O : Type) [CommRing O] [IsDomain O] [IsDiscr
     Module.finrank O (blockLat O p r S aTop aPlus m b) = blockRank O p r S aTop aPlus m b := by
   rw [finrank_eq_finrank_span]
   unfold blockLat blockRank
-  simp only
   rw [span_inf_bbSpec hV]
 
 theorem restRk_proved (C0 CE1 CE2 : ℝ) (X : flipOneThree.Inst) : RestRk C0 CE1 CE2 X :=
@@ -3668,9 +3645,8 @@ theorem totalDegree_pol_le {K : Type} [CommSemiring K] (d : Fin N → ℕ) (y : 
     (hy : y ∈ Pol K r d) : y.totalDegree ≤ ∑ a, d a := by
   unfold MvPolynomial.totalDegree
   refine Finset.sup_le fun m hm => ?_
-  have h1 : ∀ i, multideg m i = d i := (MvPolynomial.mem_restrictSupport_iff K).1 hy (by simpa using hm)
   rw [Finsupp.sum_fintype _ _ (fun _ => rfl), Fintype.sum_prod_type]
-  exact le_of_eq (Finset.sum_congr rfl fun i _ => h1 i)
+  exact le_of_eq (Finset.sum_congr rfl fun i _ => ((MvPolynomial.mem_restrictSupport_iff K).1 hy (by simpa using hm)) i)
 
 theorem totalDegree_xi_le (t b : ℕ) (g : MvPolynomial (BVar N r t) (KK O)) (hg : g ∈ XiPolZ O N r t b) :
     g.totalDegree ≤ b := by

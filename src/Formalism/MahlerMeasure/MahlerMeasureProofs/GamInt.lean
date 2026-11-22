@@ -248,9 +248,7 @@ theorem norm_fact (t : ℕ) : ‖(t.factorial : ℚ_[p])‖ = (p : ℝ) ^ (-(pad
 
 theorem norm_desc_le (x a : ℕ) : ‖((x.descFactorial a : ℕ) : ℚ_[p])‖ ≤ (p : ℝ) ^ (-(padicValNat p a.factorial : ℤ)) := by
   rw [Nat.descFactorial_eq_factorial_mul_choose, Nat.cast_mul, norm_mul, norm_fact]
-  have h1 := norm_natCast_le_one' (p := p) (x.choose a)
-  have h2 := zpow_pos' (p := p) (-(padicValNat p a.factorial : ℤ))
-  nlinarith [norm_nonneg ((x.choose a : ℕ) : ℚ_[p])]
+  simpa using mul_le_mul_of_nonneg_left (norm_natCast_le_one' (p := p) (x.choose a)) (zpow_pos' (p := p) (-(padicValNat p a.factorial : ℤ))).le
 
 theorem norm_sum_le_bound {ι : Type} (s : Finset ι) (f : ι → ℚ_[p]) (K : ℝ) (hK : 0 ≤ K)
     (h : ∀ i ∈ s, ‖f i‖ ≤ K) : ‖∑ i ∈ s, f i‖ ≤ K := by
@@ -297,9 +295,8 @@ theorem fock_def' (F G : MvPolynomial σ ℚ_[p]) :
 theorem fock_eq_sum (F G : MvPolynomial σ ℚ_[p]) (s : Finset (σ →₀ ℕ)) (h : F.support ⊆ s) :
     Formalism.GM.M.fock p F G = ∑ m ∈ s, F.coeff m * G.coeff m * wf m := by
   rw [fock_def']
-  apply Finset.sum_subset h
-  intro m _ hm
-  rw [notMem_support_iff.mp hm]; ring
+  exact Finset.sum_subset h (fun m _ hm => by
+    rw [notMem_support_iff.mp hm]; ring)
 
 theorem fock_symm (F G : MvPolynomial σ ℚ_[p]) : Formalism.GM.M.fock p F G = Formalism.GM.M.fock p G F := by
   rw [fock_eq_sum F G _ (Finset.subset_union_left (s₂ := G.support)),
@@ -338,12 +335,10 @@ theorem fock_smul_right (c : ℚ_[p]) (F G : MvPolynomial σ ℚ_[p]) :
 
 theorem fock_X_mul (i : σ) (g h : MvPolynomial σ ℚ_[p]) :
     Formalism.GM.M.fock p (X i * g) h = Formalism.GM.M.fock p g (pderiv i h) := by
-  have hs : (X i * g).support = g.support.map (addRightEmbedding (Finsupp.single i 1)) := by
-    rw [mul_comm]; exact support_mul_X i g
-  rw [fock_def', hs, Finset.sum_map, fock_def']
+  rw [mul_comm (X i) g, fock_def', support_mul_X, Finset.sum_map, fock_def']
   refine Finset.sum_congr rfl (fun m _ => ?_)
   simp only [addRightEmbedding_apply]
-  rw [mul_comm (X i) g, coeff_mul_X, coeff_pderiv, wf_add_single]
+  rw [coeff_mul_X, coeff_pderiv, wf_add_single]
   push_cast; ring
 
 theorem fock_monomial (α α' : σ →₀ ℕ) (c c' : ℚ_[p]) :
@@ -1018,13 +1013,11 @@ theorem vW_ge (δ : Fin (N + 1 + 1) × Fin r →₀ ℕ) {T B : ℕ} (hB : Nat.l
     ∑ i, padicValNat p (δv δ i).factorial ≤
       padicValNat p (∏ v : Fin (N + 1 + 1) × Fin r, (δ v).factorial) + (N + 2) * (r * B) := by
   rw [v_prod _ _ (fun v _ => (Nat.factorial_pos _).ne'), Fintype.sum_prod_type]
-  have : ∀ i : Fin (N + 1 + 1), padicValNat p (δv δ i).factorial ≤
-      ∑ c : Fin r, padicValNat p (δ (i, c)).factorial + r * B := by
-    intro i
-    have := vfact_sum (p := p) (univ : Finset (Fin r)) (fun c => δ (i, c)) (hT i) hB
-    simpa [δv] using this
-  calc ∑ i, padicValNat p (δv δ i).factorial ≤ ∑ i : Fin (N + 1 + 1), (∑ c : Fin r, padicValNat p (δ (i, c)).factorial + r * B) :=
-        sum_le_sum (fun i _ => this i)
+  calc ∑ i, padicValNat p (δv δ i).factorial ≤
+      ∑ i : Fin (N + 1 + 1), (∑ c : Fin r, padicValNat p (δ (i, c)).factorial + r * B) := by
+        apply sum_le_sum
+        intro i _
+        simpa [δv] using vfact_sum (p := p) (univ : Finset (Fin r)) (fun c => δ (i, c)) (hT i) hB
     _ = _ := by rw [sum_add_distrib]; simp
 
 end grp

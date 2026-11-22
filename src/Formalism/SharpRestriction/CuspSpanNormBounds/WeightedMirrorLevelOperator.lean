@@ -460,8 +460,7 @@ theorem IsEePM.sum {n : ℕ} {ι : Type*} (s : Finset ι) (M : ι → C.FM n) (h
   induction s using Finset.induction_on with
   | empty => simpa using IsEePM.zero
   | insert a s ha ih =>
-    rw [Finset.sum_insert ha]
-    exact IsEePM.add (h a (Finset.mem_insert_self a s)) (ih fun i hi => h i (Finset.mem_insert_of_mem hi))
+    simpa [Finset.sum_insert ha] using IsEePM.add (h a (Finset.mem_insert_self a s)) (ih fun i hi => h i (Finset.mem_insert_of_mem hi))
 
 theorem fmul_sub_mid {n : ℕ} (X M N Z : C.FM n) :
     C.fmul X (C.fmul M Z) - C.fmul X (C.fmul N Z) = C.fmul X (C.fmul (M - N) Z) := by
@@ -475,8 +474,7 @@ theorem ee_nil_eq (Y : ℂ) :
     C.ee SS [] Y = ∑ l : Fin B.k0, C.fmul (C.fdiag (fun _ ρ => (Y + (B.rhoP ρ l : ℂ))⁻¹))
       (fun s t x => if s = t then (zOf x / star (zOf x)) • SS l x else 0) := by
   funext s t x
-  have sub : ∀ a c : Fin ([] : List (Bool × ℝ)).length → Fin 2, a = c := fun a c => funext fun i => absurd i.2 (by simp)
-  have hst : s = t := sub _ _
+  have hst : s = t := funext fun i => Fin.elim0 i
   subst hst
   simp only [Ctx.ee, Ctx.fmul, Ctx.fdiag, shInv, if_true, Matrix.sum_apply, Finset.sum_apply]
   rw [Finset.smul_sum]
@@ -484,7 +482,7 @@ theorem ee_nil_eq (Y : ℂ) :
   rw [Finset.sum_eq_single s]
   · simp
   · intro v _ hv
-    exact absurd (sub _ _) hv
+    exact absurd (funext fun i => Fin.elim0 i) hv
   · intro hs
     exact absurd (Finset.mem_univ s) hs
 

@@ -319,9 +319,8 @@ variable {K : Type} [Field K] [NumberField K] [StarRing K] {G : Type} [Group G] 
 
 theorem lf_lvlH_pos (h : BlockHyp B ℓ v0 s) (v : InfinitePlace K) :
     ((B.S.lvlH B.r ℓ.P ℓ.ψ).map v.embedding).PosDef := by
-  have hP := (level_idempotent_spec K v0 h.conj G ℓ.P ℓ.ψ).1
   have hE : ∀ i j, B.S.lvlE B.r ℓ.P ℓ.ψ i j ∈ cmMax K :=
-    image_idempotent_rational K B.S.dim (B.S.gaMat B.r (lvlIdem ℓ.P ℓ.ψ)) (gaMat_rat B.S B.r h.ok.actRat _ hP.rat)
+    image_idempotent_rational K B.S.dim (B.S.gaMat B.r (lvlIdem ℓ.P ℓ.ψ)) (gaMat_rat B.S B.r h.ok.actRat _ ((level_idempotent_spec K v0 h.conj G ℓ.P ℓ.ψ).1).rat)
   exact cut_posDef B.S.H (B.S.lvlE B.r ℓ.P ℓ.ψ) lf_lvlE_inj hE (Nat.card ℓ.P) Nat.card_pos v (h.ok.hpos v)
 
 theorem lf_exp_incl (hE : ExpWSpec) (h : BlockHyp B ℓ v0 s) (w : HeightOneSpectrum (𝓞 K)) (ϖ : 𝓞 K)
@@ -395,13 +394,11 @@ theorem hform_eq_csum (x y : Fin B.S.dim → K) :
 
 theorem opMat_comm (hc : Col.PairComm B.op) (i j : B.Pl × ℕ) :
     B.opMat i * B.opMat j = B.opMat j * B.opMat i := by
-  simp only [BlockDat.opMat]
-  rw [← LinearMap.toMatrix_mul, ← LinearMap.toMatrix_mul, (hc i j).eq]
+  simp only [BlockDat.opMat, ← LinearMap.toMatrix_mul, (hc i j).eq]
 
 theorem opMat_actMat (hG : ∀ i g, Commute (B.op i) (B.r g)) (i : B.Pl × ℕ) (g : G) :
     B.opMat i * B.S.actMat B.r g = B.S.actMat B.r g * B.opMat i := by
-  simp only [BlockDat.opMat, CSD.actMat]
-  rw [← LinearMap.toMatrix_mul, ← LinearMap.toMatrix_mul, (hG i g).eq]
+  simp only [BlockDat.opMat, CSD.actMat, ← LinearMap.toMatrix_mul, (hG i g).eq]
 
 theorem opMat_gaMat (hG : ∀ i g, Commute (B.op i) (B.r g)) (i : B.Pl × ℕ) (a : MonoidAlgebra K G) :
     B.opMat i * B.S.gaMat B.r a = B.S.gaMat B.r a * B.opMat i := by
@@ -1028,8 +1025,7 @@ theorem tt_fE_lPr (h : BlockHyp B ℓ v0 s) (hZ : B.Z0 ℓ Z = ⊤) :
 theorem tt_fix (h : BlockHyp B ℓ v0 s) (z : Fin (B.dZ ℓ Z) → K) :
     (B.vProj ℓ).mulVec ((B.fE ℓ Z).mulVec z) = (B.fE ℓ Z).mulVec z := by
   have e : B.vProj ℓ * B.fE ℓ Z = B.fE ℓ Z := by
-    have h2 : B.vProj ℓ = B.vE ℓ * B.vPr ℓ := (lf_v_proj h).2.symm
-    rw [h2]
+    rw [show B.vProj ℓ = B.vE ℓ * B.vPr ℓ from (lf_v_proj h).2.symm]
     unfold fE
     rw [Matrix.mul_assoc, ← Matrix.mul_assoc (B.vPr ℓ), (lf_v_proj h).1.1, Matrix.one_mul]
   rw [Matrix.mulVec_mulVec, e]
@@ -1123,10 +1119,8 @@ theorem reg_lvlE_surj : Function.Surjective ((regCSD ℚ G).lvlE (regAct ℚ G) 
   have htop : LinearMap.range ((regCSD ℚ G).gaMat (regAct ℚ G) (lvlIdem (⊥ : Subgroup G) 1)).mulVecLin = ⊤ := by
     rw [e]
     exact LinearMap.range_eq_top.2 fun x => ⟨x, by simp⟩
-  have h2 := h.trans htop
   intro x
-  obtain ⟨y, hy⟩ := LinearMap.range_eq_top.1 h2 x
-  exact ⟨y, hy⟩
+  exact LinearMap.range_eq_top.1 (h.trans htop) x
 
 theorem card_ne : (Fintype.card G : ℚ) ≠ 0 := by
   exact Nat.cast_ne_zero.mpr Fintype.card_ne_zero
@@ -1185,8 +1179,7 @@ theorem reg_hphi (u : Fin (regCSD ℚ G).dim → ℚ) (hu : (regE G).mulVec u = 
   simpa using (reg_const G u hu c).trans h0
 
 theorem toyB_dZ_eq_one (v0 : InfinitePlace ℚ) : (exampleB G).dZ (trivialCharacterLevel G ⊥) (exampleB G).ZH = 1 := by
-  have h1 : (exampleB G).dZ (trivialCharacterLevel G ⊥) (exampleB G).ZH ≤ 1 :=
-    BlockDat.tt_dZ_le_one (toyB_blockHyp G ⊥ v0) (regPhi G) (reg_hphi G)
+  have h1 := BlockDat.tt_dZ_le_one (Z := (exampleB G).ZH) (toyB_blockHyp G ⊥ v0) (regPhi G) (reg_hphi G)
   have h2 := toyB_dZ_pos G ⊥
   omega
 

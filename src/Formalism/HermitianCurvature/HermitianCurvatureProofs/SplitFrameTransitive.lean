@@ -13,11 +13,9 @@ lemma exists_equiv_comp {A V : Type*} [AddCommGroup A] [Module K A] [AddCommGrou
     (LinearEquiv.ofInjective i hi).symm ≪≫ₗ LinearEquiv.ofInjective i' hi'
   obtain ⟨g, hg⟩ := Submodule.exists_linearEquiv_restrict_eq f
   refine ⟨g, fun x => ?_⟩
-  have h1 := hg ⟨i x, LinearMap.mem_range_self i x⟩
   have h2 : (LinearEquiv.ofInjective i hi).symm ⟨i x, LinearMap.mem_range_self i x⟩ = x := by
     rw [LinearEquiv.symm_apply_eq]; rfl
-  simp only [f, LinearEquiv.trans_apply, h2] at h1
-  rw [← h1]; rfl
+  simpa [f, LinearEquiv.trans_apply, h2] using (hg ⟨i x, LinearMap.mem_range_self i x⟩).symm
 
 lemma exists_factor {A B U : Type*} [AddCommGroup A] [Module K A] [AddCommGroup B] [Module K B]
     [AddCommGroup U] [Module K U] (R : A →ₗ[K] B) (f : A →ₗ[K] U)
@@ -138,19 +136,15 @@ lemma injective_iff_kerPart (π : V →ₗ[K] A) (σ : A →ₗ[K] V) (hσ : ∀
   · rintro h x ⟨hx1, hx2⟩
     apply h
     have h1 : π (j x) = 0 := hx1
-    have h2 : (kerPart π σ hσ j x : V) = 0 := by
-      rw [LinearMap.mem_ker.mp hx2]; rfl
-    rw [kerPart_coe, h1, map_zero, sub_zero] at h2
-    exact h2
+    have h2 := congrArg Subtype.val (LinearMap.mem_ker.mp hx2)
+    simpa [kerPart_coe, h1] using h2
   · rintro h x hx
     have hx' : j x = 0 := hx
     apply h
-    refine ⟨?_, ?_⟩
-    · show π (j x) = 0
-      rw [hx', map_zero]
-    · show kerPart π σ hσ j x = 0
-      apply Subtype.ext
-      rw [kerPart_coe, hx']; simp
+    refine ⟨by simp [hx'], ?_⟩
+    show kerPart π σ hσ j x = 0
+    apply Subtype.ext
+    simp [kerPart_coe, hx']
 
 def fibEquiv (π : V →ₗ[K] A) (σ : A →ₗ[K] V) (hσ : ∀ x, π (σ x) = x) (R : A' →ₗ[K] A) :
     {j : A' →ₗ[K] V // Function.Injective j ∧ π ∘ₗ j = R} ≃

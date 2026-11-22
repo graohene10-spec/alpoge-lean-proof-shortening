@@ -120,14 +120,9 @@ lemma rowDeg_shape {d N0 N1 p : ℕ} (s s' : ZMod d) (k : Fin N0) (τ : Fin p �
   · subst hs
     rw [if_pos rfl, Finset.card_filter]
     refine Finset.sum_congr rfl fun i _ => ?_
-    by_cases h : τ i = k
-    · simp [h]
-    · simp [h]
+    by_cases h : τ i = k <;> simp [h]
   · rw [if_neg hs]
-    refine Finset.sum_eq_zero fun i _ => Finset.sum_eq_zero fun b _ => ?_
-    rw [if_neg]
-    intro hh
-    exact hs hh.1.symm
+    simp [Ne.symm hs]
 
 lemma op_minor_mem {K : Type u} [Field K] {d N0 N1 p : ℕ} (s : ZMod d) (A : Fin p → Fin N0 → K)
     (I : Fin p → Fin N1) (mono : ZV d N0 N1 →₀ ℕ)

@@ -34,13 +34,10 @@ lemma re_pos_of_inRegion {c : ℝ} {q : ℕ} [NeZero q] {s : ℂ} (hc : c ≤ 1 
 lemma one_sub_div_log_le_re {c cz : ℝ} {q : ℕ} [NeZero q] {s : ℂ} (hcz : 0 < cz) (h : c ≤ cz)
     (hs : InRegion c q s) : 1 - cz / Real.log (|s.im| + 2) ≤ s.re := by
   unfold InRegion at hs
-  have hq := one_le_natCast q
-  have hT : (2 : ℝ) ≤ |s.im| + 2 := by linarith [abs_nonneg s.im]
-  have hlogT : 0 < Real.log (|s.im| + 2) := Real.log_pos (by linarith)
+  have hlogT : 0 < Real.log (|s.im| + 2) := Real.log_pos (by linarith [abs_nonneg s.im])
   have hle : Real.log (|s.im| + 2) ≤ Real.log ((q : ℝ) * (|s.im| + 2)) :=
-    Real.log_le_log (by linarith) (by nlinarith)
-  have hLpos := log_mul_abs_add_two_pos q s.im
-  have h1 := div_le_div_of_nonneg_right h hLpos.le
+    Real.log_le_log (by linarith [abs_nonneg s.im]) (by nlinarith [one_le_natCast q, abs_nonneg s.im])
+  have h1 := div_le_div_of_nonneg_right h (log_mul_abs_add_two_pos q s.im).le
   have h2 := div_le_div_of_nonneg_left hcz.le hlogT hle
   linarith
 

@@ -66,9 +66,7 @@ theorem eq_zpow_on_support (g z : Perm α) (hg : g.IsCycle) (hz : z * g = g * z)
     intro h
     apply ha
     apply z.injective
-    have h2 : (z * g) a = (g * z) a := by rw [hz]
-    simp only [Perm.mul_apply] at h2
-    rw [h2, h]
+    simpa [Perm.mul_apply, h] using congrArg (fun p : Perm α => p a) hz
   obtain ⟨j, hj⟩ := hcyc hza
   refine ⟨j, fun d hd => ?_⟩
   obtain ⟨i, rfl⟩ := hcyc hd

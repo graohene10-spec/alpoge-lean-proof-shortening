@@ -22,11 +22,9 @@ local notation "𝒜" => E ⊗[F] FiniteAdeleRing (𝓞 F) F
 
 theorem mem_crdLat (S : HSpace E) (L : Submodule (𝓞 E) S.V) (x : Fin S.rank → E) :
     x ∈ crdLat S L ↔ (crd S).symm x ∈ L := by
-  constructor
-  · rintro ⟨y, hy, rfl⟩
-    simpa using hy
-  · intro h
-    exact ⟨_, h, by simp⟩
+  refine ⟨fun h => ?_, fun h => ⟨(crd S).symm x, h, by simp⟩⟩
+  rcases h with ⟨y, hy, rfl⟩
+  simpa using hy
 
 theorem isLat_crd (S : HSpace E) (L : Submodule (𝓞 E) S.V) (h : Submodule.IsLattice E L) :
     IsLat (crdLat S L) := by
@@ -34,9 +32,7 @@ theorem isLat_crd (S : HSpace E) (L : Submodule (𝓞 E) S.V) (h : Submodule.IsL
   have h1 : ((crdLat S L : Submodule (𝓞 E) (Fin S.rank → E)) : Set (Fin S.rank → E)) = (crd S) '' (L : Set S.V) := by
     ext x
     rw [SetLike.mem_coe, mem_crdLat]
-    constructor
-    · intro hx; exact ⟨_, hx, by simp⟩
-    · rintro ⟨y, hy, rfl⟩; simpa using hy
+    exact ⟨fun hx => ⟨(crd S).symm x, hx, by simp⟩, fun ⟨y, hy, hxy⟩ => by simpa [← hxy] using hy⟩
   rw [h1]
   show Submodule.span E ((crd S : S.V →ₗ[E] (Fin S.rank → E)) '' (L : Set S.V)) = ⊤
   rw [Submodule.span_image, h.span_eq_top, Submodule.map_top, LinearMap.range_eq_top]
